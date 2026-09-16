@@ -16,6 +16,8 @@ there for exactly that reason (it folds `_purchase_total`).
 """
 
 from __future__ import annotations
+from dataclasses import replace
+from .reference_identity import scope_entity_store, scope_reference_store
 
 from ..data.registry import Registry
 from .evaluate import ArithmeticLog, evaluate
@@ -53,6 +55,127 @@ def _sign(verb: str, reg: Registry, strict: bool = False) -> int | None:
 
 
 
+def _resolve_relation(store: FactStore, relation: Relation, log: ArithmeticLog) -> Relation | None:
+    """Recover an omitted item from the exact standard's unique inventory.
+
+    Saturation and comparison validation share this projection. Other actors
+    cannot supply the measure, and multiple measures remain ambiguous before
+    filtering by the activity predicate.
+    """
+    if relation.measure is not None:
+        return relation
+    from . import deixis
+
+    scoped = scope_reference_store(store, relation.standard_ref)
+    if scoped is None:
+        return None
+    quantities = [q for q in scoped.by_kind(Quantity) if q.entity == relation.standard_ref.head]
+    candidates = {q.measure for q in quantities}
+    recovered = deixis.resolve(
+        [deixis.Referent(dimension=deixis.DISCOURSE, key=measure)
+         for measure in sorted(candidates)],
+        deixis.Origo(sentence=relation.provenance.sentence),
+        deixis.constant, dimension=deixis.DISCOURSE, journal=log.journal,
+        source="relation-elided-measure",
+    )
+    if recovered is None:
+        return None
+    # The noun itself was omitted, so its unique observed modifier belongs to
+    # the recovered item. This is not a bare-noun -> subset alias: an explicit
+    # measure returned above unchanged. Rival modifiers retain an unconstrained
+    # whole-item interpretation rather than selecting one of their amounts.
+    modifiers = {q.measure_qualifier or None for q in quantities if q.measure == recovered.key}
+    qualifier = relation.measure_qualifier
+    if qualifier is None and len(modifiers) == 1:
+        qualifier = next(iter(modifiers))
+    return replace(relation, measure=recovered.key, measure_qualifier=qualifier)
+
+
+def _relation_item_evidence(store, relation, reference, measure, reg, log):
+    """The comparison supplies its item constraint and both observed roles."""
+    return _item_evidence(store, reference, measure, relation.verb,
+                          relation.measure_qualifier,
+                          (relation.subject_ref, relation.standard_ref), reg, log)
+
+
+def _item_evidence(store, reference, measure, verb, qualifier, peers, reg, log):
+    """Project one role onto its item, independently of its actor.
+
+    Compatibility keys may have been split by the fact store; the separate
+    item qualifier remains authoritative. An omitted flat modifier can alias
+    an explicit modifier only in a unique compatible projection. A derived
+    bare state is not permission to replace a stated qualified snapshot.
+    The caller still chooses the state or activity fold and its time scope.
+    """
+    from .measures import _resolve_measure_against
+
+    scoped = scope_reference_store(store, reference)
+    if scoped is None:
+        return None
+    quantities = [q for q in scoped.by_kind(Quantity) if q.entity == reference.head]
+    measure = _resolve_measure_against(
+        measure, {q.measure.split("[", 1)[0] for q in quantities}, reg,
+        journal=log.journal)
+    if measure is None:
+        return None
+    quantities = [q for q in quantities if q.measure.split("[", 1)[0] == measure]
+    state = any(reg.word_in_category(verb, category)
+                for category in ("state", "non_event_verb"))
+    if not state:
+        quantities = [q for q in quantities if q.verb == verb]
+        # A positive object-bearing predication states an event without a
+        # count, even when no explicit quantifier is present. A known subtotal
+        # cannot account for its unknown contribution to the requested item.
+        if any(p.polarity and p.subject == reference.head and p.verb == verb
+               and p.dobj is not None and p.dobj.split("[", 1)[0] == measure
+               for p in scoped.by_kind(Predication)):
+            return None
+    wanted = qualifier or None
+    if wanted:
+        observed = set()
+        for side in peers:
+            other = scope_reference_store(store, side)
+            if other is not None:
+                observed.update(q.measure_qualifier for q in other.by_kind(Quantity)
+                                if q.entity == side.head and q.measure.split("[", 1)[0] == measure
+                                and (state or q.verb == verb) and q.measure_qualifier)
+        exact = [q for q in quantities if q.measure_qualifier == wanted]
+        bare = [q for q in quantities if not q.measure_qualifier]
+        direct_bare = [q for q in bare if not q.provenance.source.startswith("synth/")]
+        # A directly stated whole does not identify a part. A whole state
+        # may coexist with a separately known part; an unqualified event is
+        # an additional occurrence whose contribution to the part is unknown.
+        if direct_bare and (not state or any(not q.is_state for q in direct_bare)):
+            return None
+        bare = [q for q in bare if q.provenance.source.startswith("synth/")]
+        if state and any(q.is_state and not q.provenance.source.startswith("synth/")
+                         for q in exact):
+            # A synthesized whole projection cannot mask a directly asserted
+            # part. A directly stated whole, however, is not that same part.
+            bare = [q for q in bare if not (q.is_state and q.provenance.source.startswith("synth/"))]
+        if bare and observed != {wanted}:
+            return None
+        if state and any(q.is_state for q in exact) and any(q.is_state for q in bare):
+            return None  # a whole and its part cannot be added or identified
+        quantities = exact + bare
+    if not quantities:
+        return None
+    selected = set(quantities)
+    # Explicit subsets use one local measure key. Unconstrained whole-item
+    # folds retain their part keys so a whole never gets added to its parts.
+    def project(q):
+        return replace(q, measure=measure) if wanted or not state else q
+    evidence = FactStore(
+        facts=[project(f) if isinstance(f, Quantity) and f in selected else f
+               for f in scoped.facts if not isinstance(f, Relation)
+               and not (isinstance(f, Quantity) and f.entity == reference.head
+                        and f.measure.split("[", 1)[0] == measure
+                        and (state or f.verb == verb) and f not in selected)],
+        references=scoped.references,
+    )
+    return evidence, [project(q) for q in quantities], measure
+
+
 def _verb_total(
     store: FactStore, entity: str, measure: str, verb: str, log: ArithmeticLog
 ) -> float | None:
@@ -60,6 +183,10 @@ def _verb_total(
     ("how many did X sell"). Derived relation facts carry the verb too, so
     they participate; the by-verb resolution block prevents an event and
     its own re-derivation from both existing."""
+    store, entity = scope_entity_store(store, entity)
+    if store is None:
+        return None
+
     if any(
         p.dobj_unquantified and p.polarity
         and p.subject == entity and p.verb == verb
@@ -174,6 +301,10 @@ def _purchase_total(
     otherwise the ambiguity would silently vanish and this would commit
     the pre-discount total as though it were final, exactly the
     confident-wrong the whole USE-gating discipline exists to prevent."""
+    store, entity = scope_entity_store(store, entity)
+    if store is None:
+        return None
+
     buys = [
         q for q in store.by_kind(Quantity)
         if q.entity == entity
@@ -291,6 +422,10 @@ def _revenue_total(
     live for this 'make'/'earn' verb — that's a genuine ambiguity between
     two different sources of money for the same person, so this declines
     rather than silently picking the sale-revenue interpretation."""
+    store, entity = scope_entity_store(store, entity)
+    if store is None:
+        return None
+
     sales = [
         q for q in store.by_kind(Quantity)
         if q.entity == entity and reg.word_in_category(q.verb, "sell")
@@ -370,6 +505,10 @@ def _entity_total(
     (quarantined) — checked here exactly like Discount's own compounding
     guard, so an unmodeled same-sentence pair declines rather than
     silently picking one."""
+    store, entity = scope_entity_store(store, entity)
+    if store is None:
+        return None
+
     if not _qualified_relations_resolved(store, entity, measure):
         return None
     if any(
@@ -625,6 +764,10 @@ def _entity_total_convertible(
     keeps calling the bare `_entity_total` exactly as before (the shared-
     function blast-radius invariant: this fold is felt by nobody who
     didn't ask for it)."""
+    store, entity = scope_entity_store(store, entity)
+    if store is None:
+        return None
+
     state = [q for q in store.by_kind(Quantity) if q.entity == entity and q.is_state]
     if not state:
         return None
@@ -684,6 +827,10 @@ def _superordinate_total(
     `_entity_total`, event asks reuse `_verb_total`, so an ambiguous
     subtype (mixed times, unsigned event) declines the WHOLE total,
     definitive-or-decline exactly like `_purchase_total`/`_revenue_total`."""
+    store, entity = scope_entity_store(store, entity)
+    if store is None:
+        return None
+
     closed_superordinate = measure in reg.superordinate_categories
     coordinated_superordinate = (
         measure in reg.coordinated_superordinate_categories
@@ -758,6 +905,10 @@ def _qualified_variant_total(
     risk double-counting against it, so this declines instead. A total
     explicitly scoped to another entity is not compatible and cannot block
     this entity's roll-up."""
+    store, entity = scope_entity_store(store, entity)
+    if store is None:
+        return None
+
     if not _qualified_relations_resolved(store, entity, measure):
         return None
     if any(

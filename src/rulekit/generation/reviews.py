@@ -670,6 +670,103 @@ def _fact_contract(facts: list[dict[str, Any]]) -> list[dict[str, Any]]:
     )
 
 
+def _reviewed_facts_match(current: list[dict], expected: list[dict]) -> bool:
+    """Replay the captured contract, allowing only typed reference enrichment.
+
+    This is not human approval of newly exposed identity data. Every recorded
+    field, including any recorded identity, remains exact. A one-to-one match
+    preserves duplicate facts and ignores serialization ordering only.
+    """
+    from dataclasses import MISSING, fields
+    from typing import get_args, get_type_hints
+    from ..kernel.patterns import _FACT_CLASSES
+    from ..kernel.reference_identity import ReferenceIdentity
+    from ..kernel.model import Provenance
+
+    classes = {cls.__name__: cls for cls in _FACT_CLASSES.values()}
+    nullable_required: dict[type, dict[str, None]] = {}
+
+    def preserves_flat_constraints(old, new) -> bool:
+        # Older rows have flat descriptor projections, not a complete identity.
+        # Added nested ownership or local anchors may refine them but cannot
+        # contradict a descriptor the reviewer already saw. Display equality
+        # is checked directly, never parsed back into structural identity.
+        return bool(
+            old.head in (new.head, new.display())
+            and (old.label is None or old.label == new.label)
+            and set(old.qualifiers).issubset(new.qualifiers)
+            and (old.owner is None or (new.owner is not None
+                 and preserves_flat_constraints(old.owner, new.owner)))
+        )
+
+    def compatible(actual: dict, recorded: dict) -> bool:
+        if any(actual[key] != recorded[key] for key in ("type", "source", "sentence")):
+            return False
+        now, before = actual["fields"], recorded["fields"]
+        if any(key not in now or now[key] != value for key, value in before.items()):
+            return False
+        cls = classes.get(actual["type"])
+        declared = {field.name: field.metadata["reference_for"] for field in fields(cls)
+                    if "reference_for" in field.metadata} if cls else {}
+        for key in now.keys() - before.keys():
+            role = declared.get(key)
+            if role is None:
+                return False
+            try:
+                ref = ReferenceIdentity.from_dict(now[key])
+            except (TypeError, ValueError, KeyError):
+                return False
+            if (not ref.resolved or ref.to_dict() != now[key]
+                    or now.get(role) not in (ref.head, ref.display())):
+                return False
+            try:
+                # Reuse the fact type's own legacy adapter. In particular,
+                # Relation's item qualifiers are not participant qualifiers.
+                # FactEvidence omits null fields, including required nullable
+                # ones such as an elided relation measure. Restore only those
+                # explicitly nullable constructor fields, never missing data.
+                if cls not in nullable_required:
+                    hints = get_type_hints(cls)
+                    nullable_required[cls] = {
+                        item.name: None for item in fields(cls)
+                        if item.default is MISSING and item.default_factory is MISSING
+                        and type(None) in get_args(hints.get(item.name))
+                    }
+                flat_fact = cls(
+                    provenance=Provenance(actual["source"], actual["sentence"]),
+                    **(nullable_required[cls] | {
+                        name: value for name, value in now.items() if name not in declared
+                    }),
+                )
+                flat = getattr(flat_fact, key)
+            except (TypeError, ValueError, KeyError):
+                return False
+            if not preserves_flat_constraints(flat, ref):
+                return False
+        return True
+
+    actual, recorded = _fact_contract(current), _fact_contract(expected)
+    if len(actual) != len(recorded):
+        return False
+    # Augmenting-path matching handles older rows with fewer identity fields
+    # beside newer rows, without a greedy order-dependent assignment.
+    edges = [[i for i, candidate in enumerate(actual) if compatible(candidate, row)]
+             for row in recorded]
+    assigned: dict[int, int] = {}
+
+    def assign(row: int, seen: set[int]) -> bool:
+        for candidate in edges[row]:
+            if candidate in seen:
+                continue
+            seen.add(candidate)
+            if candidate not in assigned or assign(assigned[candidate], seen):
+                assigned[candidate] = row
+                return True
+        return False
+
+    return all(assign(row, set()) for row in range(len(recorded)))
+
+
 def replay_premise_review(
     project: Project,
     review: dict,
@@ -724,7 +821,7 @@ def replay_premise_review(
             ("target status", actual["target_status"], evidence.get("target_status")),
             ("target bindings", actual["target_bindings"], evidence.get("target_bindings")),
             ("co-firing rules", actual["actual_rule_ids"], evidence.get("actual_rule_ids")),
-            ("facts", _fact_contract(actual["facts"]), _fact_contract(evidence.get("facts") or [])),
+            ("facts", _reviewed_facts_match(actual["facts"], evidence.get("facts") or []), True),
             ("collisions", list(actual["collisions"]), evidence.get("collisions") or []),
         ]
         for label, current, expected in comparisons:

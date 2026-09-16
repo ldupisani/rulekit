@@ -7,8 +7,9 @@ didn't bind yields nothing (definitive-or-decline, localized).
 """
 
 from __future__ import annotations
-
 from dataclasses import replace
+
+from .reference_identity import reference_from_unit
 
 from ..data.registry import Registry
 from .model import (
@@ -1834,6 +1835,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                         Quantity(
                             provenance=prov,
                             entity=_lemma(subject),
+                            entity_ref=reference_from_unit(subject),
                             owner=_owner(subject),
                             qualifier=_qualifier(subject),
                             label=_label(subject),
@@ -1910,6 +1912,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                     Quantity(
                         provenance=prov,
                         entity=_lemma(subject),
+                        entity_ref=reference_from_unit(subject),
                         owner=_owner(subject),
                         qualifier=_qualifier(subject),
                         label=_label(subject),
@@ -1986,6 +1989,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                             Quantity(
                                 provenance=prov,
                                 entity=_lemma(subject),
+                                entity_ref=reference_from_unit(subject),
                                 owner=_owner(subject),
                                 qualifier=_qualifier(subject),
                                 label=_label(subject),
@@ -2035,6 +2039,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                                 Quantity(
                                     provenance=prov,
                                     entity=_lemma(subject),
+                                    entity_ref=reference_from_unit(subject),
                                     owner=_owner(subject),
                                     qualifier=_qualifier(subject),
                                     label=_label(subject),
@@ -2062,6 +2067,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                     Quantity(
                         provenance=prov,
                         entity=_lemma(subject),
+                        entity_ref=reference_from_unit(subject),
                         owner=_owner(subject),
                         qualifier=_qualifier(subject),
                         label=_label(subject),
@@ -2099,6 +2105,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                         Quantity(
                             provenance=prov,
                             entity=_lemma(subject),
+                            entity_ref=reference_from_unit(subject),
                             owner=_owner(subject),
                             qualifier=_qualifier(subject),
                             label=_label(subject),
@@ -2131,6 +2138,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                     Quantity(
                         provenance=prov,
                         entity=_lemma(subject),
+                        entity_ref=reference_from_unit(subject),
                         owner=_owner(subject),
                         qualifier=_qualifier(subject),
                         label=_label(subject),
@@ -2248,6 +2256,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                 Predication(
                     provenance=prov,
                     subject=_lemma(subject),
+                    subject_ref=reference_from_unit(subject),
                     verb=verb_lemma,
                     dobj=_lemma(dobj),
                     polarity=polarity,
@@ -2259,6 +2268,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                 Predication(
                     provenance=prov,
                     subject=_lemma(subject),
+                    subject_ref=reference_from_unit(subject),
                     verb=verb_lemma,
                     polarity=polarity,
                 )

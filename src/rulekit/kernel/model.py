@@ -13,6 +13,7 @@ from __future__ import annotations
 import copy
 from dataclasses import dataclass, field
 from typing import Any, Iterator
+from .reference_identity import ReferenceIdentity, flat_reference
 
 # Sentinel target: an obligation discharged by a pattern rule rather than by
 # binding to another unit (difg's _PATTERN_UNIT).
@@ -120,6 +121,8 @@ class Decision:
 
 def _jsonable(value: Any) -> Any:
     """Best-effort JSON projection for trace serialization."""
+    if isinstance(value, (ReferenceIdentity, ItemClassReference)):
+        return value.to_dict()
     if isinstance(value, dict):
         return {k: _jsonable(v) for k, v in value.items()}
     if isinstance(value, (list, tuple)):
@@ -208,9 +211,15 @@ class Predication(Fact):
     # is evidence ABOUT the same predication, not a different fact — two
     # mints differing only here must still dedupe, never quarantine.
     dobj_unquantified: bool = False
+    subject_ref: ReferenceIdentity | None = field(default=None, metadata={"reference_for": "subject"})
+
+    def __post_init__(self):
+        if self.subject_ref is None:
+            object.__setattr__(self, "subject_ref", flat_reference(self.subject))
 
     def key(self) -> tuple:
-        return ("predication", self.subject, self.verb, self.dobj)
+        key = ("predication", self.subject, self.verb, self.dobj)
+        return key + ((self.subject_ref.key(),) if self.subject_ref.described else ())
 
     def value_part(self) -> Any:
         return self.polarity
@@ -1385,6 +1394,22 @@ class BoundedActivityInquiry(Fact):
 
 
 @dataclass(frozen=True)
+class ItemClassReference:
+    """A forward discourse link; the quantity's literal fields stay intact."""
+
+    item: ReferenceIdentity
+    participant: ReferenceIdentity
+    predicate: str
+    target: Provenance
+    antecedents: tuple[Provenance, ...]
+
+    def to_dict(self):
+        return {"item": self.item.to_dict(), "participant": self.participant.to_dict(),
+                "predicate": self.predicate, "target": dict(vars(self.target)),
+                "antecedents": [dict(vars(source)) for source in self.antecedents]}
+
+
+@dataclass(frozen=True)
 class Quantity(Fact):
     entity: str
     measure: str  # what is counted/measured (noun lemma)
@@ -1395,50 +1420,13 @@ class Quantity(Fact):
     # conflict); the sentence index for an EVENT (each occurrence is its own
     # fact: "finds 3 … finds 5" accumulates, never collides)
     occurrence: int | None = None
-    # the possessive owner of `entity`, from either merged "OWNER's NOUN"
-    # or a governed possessive determiner ("her child"). The bare entity
-    # lemma remains the compatibility identity until distinct owners coexist;
-    # FactStore then re-keys every sibling to entity[owner], even when their
-    # values agree. Owner-aware relations and asks query the exact owner index
-    # and never borrow another owner's same-headed noun.
+    # Legacy flat descriptor projections. Full participant identity lives in
+    # entity_ref, independently of the display key or numerical value.
     owner: str | None = None
-    # the attributive modifier of `entity`, when the subject noun was
-    # merged from ADJECTIVE+NOUN or NOUN+NOUN (condense.py merge-attribute
-    # / merge-compound: "coconut trees" / "mango trees") — the second,
-    # independent qualifier field beside `owner` (increment 25's mirror).
-    # NOT part of key() or value_part(): identity stays the bare entity
-    # lemma everywhere it already worked (bare-noun folding is untouched,
-    # e.g. "the tree ... it ..." keeps folding into one entity). Read
-    # ONLY by FactStore.admit's collision handling, to split a genuine
-    # same-key VALUE conflict ("coconut tree" vs "mango tree", both
-    # bare-folding to entity='tree') into two entities — never to change
-    # identity absent a real conflict.
     qualifier: str | None = None
-    # the attributive modifier of `measure` (NOT `entity`) — "12 WHITE
-    # marbles" merges to measure='marble' with the adjective folded into
-    # this field by condense.py's merge-attribute, the exact mirror of
-    # `qualifier` above but scoped to the MEASURE noun instead of the
-    # entity/holder noun (mining candidate qualified-measure-keys). NOT
-    # part of key() or value_part(): identity stays the bare measure lemma
-    # everywhere it already worked. Read ONLY by FactStore.admit's
-    # collision handling, to split a genuine same-key VALUE conflict ("12
-    # white marbles" vs "6 blue marbles", both bare-folding to
-    # measure='marble') into two measures — never to change identity
-    # absent a real conflict. A null-vs-non-null pairing (a collection
-    # total vs. one named subset) is a genuine part/whole relation, not a
-    # naming collision, and must keep declining.
+    # Item/subtype qualification is separate from participant identity. The
+    # store preserves its existing part/whole and subtype-key discipline.
     measure_qualifier: str | None = None
-    # the trailing index LABEL of `entity`, when the subject noun was
-    # merged from NOUN + single-capital-letter INDEX (condense.py
-    # merge-label: "Jar A", "Class B") — a fourth, independent
-    # entity-identity qualifier alongside `owner`/`qualifier` (mining
-    # candidate labeled-entity-identity, one label kind further; same
-    # scope as `qualifier` — the HOLDER noun, not the measure). NOT part
-    # of key() or value_part(): identity stays the bare entity lemma
-    # everywhere it already worked. Read ONLY by FactStore.admit's
-    # collision handling, to split a genuine same-key VALUE conflict
-    # ("Jar A" vs "Jar B", both bare-folding to entity='jar') into two
-    # entities — never to change identity absent a real conflict.
     label: str | None = None
     # a within-sentence CONJUNCT index (mining candidate
     # conjoined-event-conjuncts): "sold 3 boxes to her aunt and 4 boxes to
@@ -1464,13 +1452,21 @@ class Quantity(Fact):
     # disagreement there is a genuine holding conflict, not a list of
     # distinct events, and must keep quarantining exactly as before.
     segment: int | None = None
+    entity_ref: ReferenceIdentity | None = field(default=None, metadata={"reference_for": "entity"})
+    item_reference: ItemClassReference | None = field(default=None, repr=False)
+
+    def __post_init__(self):
+        if self.entity_ref is None:
+            object.__setattr__(self, "entity_ref", flat_reference(
+                self.entity, self.owner, self.label, self.qualifier))
 
     @property
     def is_state(self) -> bool:
         return self.occurrence is None
 
     def key(self) -> tuple:
-        return ("quantity", self.entity, self.measure, self.verb, self.time, self.occurrence)
+        key = ("quantity", self.entity, self.measure, self.verb, self.time, self.occurrence)
+        return key + ((self.entity_ref.key(),) if self.entity_ref.described else ())
 
     def value_part(self) -> Any:
         return self.value
@@ -1505,9 +1501,10 @@ class Relation(Fact):
     # against the SPECIFIC labeled Quantity FactStore.admit's existing
     # label-collision re-key (facts.py) produces, instead of an arbitrary
     # same-lemma quantity, and (b) tag a derived subject Quantity with its
-    # own label so a later same-lemma sibling can be told apart from it by
-    # that same collision-time re-key. Included in `key()` (unlike
-    # Quantity.label, which deliberately stays OUT of Quantity.key()):
+    # own label so a later same-lemma sibling can be told apart from it.
+    # These flat projections remain in key() alongside the complete role
+    # references; Quantity now also keys described participant identities.
+    # Historically,
     # Relation.key() has no separate identity-collision-splitting path the
     # way Quantity/facts.py does, so two DIFFERENT labeled relations that
     # happen to share the same bare subject/standard/measure/verb (e.g. a
@@ -1546,11 +1543,10 @@ class Relation(Fact):
     # `standard_label`: two DIFFERENT qualified relations sharing a bare
     # subject/standard/measure/verb ("12 more green apples than red
     # apples" + "5 fewer blue apples than red apples") must not quarantine
-    # each other as a same-key value disagreement. Every existing relation
-    # rule that never emits these two fields keeps both None — a byte-
-    # identical key() tuple for every relation shipped before this field
-    # existed.
-    measure_qualifier: str | None = None
+    # each other as a same-key value disagreement. A direct measure-slot
+    # emission retains its modifier when this field is omitted or null.
+    # Explicit non-null YAML values, including empty strings, remain exact.
+    measure_qualifier: str | None = field(default=None, metadata={"qualifier_for": "measure"})
     standard_qualifier: str | None = None
     # mining candidate temporal-offset-age-recut: "In N years, A will be K
     # times as old as B" states the ratio at a FUTURE (or past) point in
@@ -1583,6 +1579,16 @@ class Relation(Fact):
     # antecedent domains could silently deduplicate.
     anaphor_measure_category: str | None = None
     anaphor_verb_category: str | None = None
+    subject_ref: ReferenceIdentity | None = field(default=None, metadata={"reference_for": "subject"})
+    standard_ref: ReferenceIdentity | None = field(default=None, metadata={"reference_for": "standard"})
+
+    def __post_init__(self):
+        if self.subject_ref is None:
+            object.__setattr__(self, "subject_ref", flat_reference(
+                self.subject, self.subject_owner, self.subject_label))
+        if self.standard_ref is None:
+            object.__setattr__(self, "standard_ref", flat_reference(
+                self.standard, self.standard_owner, self.standard_label))
 
     def key(self) -> tuple:
         return (
@@ -1591,6 +1597,7 @@ class Relation(Fact):
             self.measure_qualifier, self.standard_qualifier, self.verb,
             self.subject_offset, self.standard_offset,
             self.anaphor_measure_category, self.anaphor_verb_category,
+            self.subject_ref.key(), self.standard_ref.key(),
         )
 
     def value_part(self) -> Any:

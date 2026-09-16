@@ -8,7 +8,7 @@ tune a guard but cannot reference rules; that entanglement class is banned.
 from __future__ import annotations
 
 from collections import Counter
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from ..data.registry import Registry
 from .answer import _ACCOUNTED_VALUE_KINDS, Answer
@@ -126,6 +126,17 @@ def _fact_values_by_sentence(store: FactStore) -> dict[int, "Counter[float]"]:
             v = getattr(fact, field_name, None)
             if isinstance(v, (int, float)):
                 values[float(v)] += 1
+    # Agreement preserves the provenance of repeated assertions, not a second
+    # quantity. Only an exact surviving Quantity with that semantic key/value
+    # can account for the duplicate statement; quarantined facts cannot.
+    from .model import Quantity
+    for agreement in store.agreement_ambiguities:
+        survivor = next((fact for fact in store.by_kind(Quantity)
+                         if fact.key() == agreement.key
+                         and fact.value_part() == agreement.value
+                         and fact.provenance == agreement.retained), None)
+        if survivor is not None and survivor.entity_ref.resolved:
+            out.setdefault(agreement.deduped.sentence, Counter())[float(survivor.value)] += 1
     return out
 
 
@@ -486,6 +497,12 @@ def _check_number(
         matched = match_ask(question, reg)
         if matched is not None:
             _ask, query, _m = matched
+            accounting_store = store
+            if query.get("evidence_entity_reference") is not None:
+                from .reference_identity import scope_query_store
+                accounting_store = scope_query_store(store, query)
+                if accounting_store is None:
+                    return GuardVeto("answer-accounting", "participant identity is ambiguous")
             explicit_periods = None
             if query.get("consumer") in _EXPLICIT_PERIOD_LIST_CONSUMERS:
                 raw_periods = query.get("periods")
@@ -540,7 +557,7 @@ def _check_number(
                 )
                 asked_verb = query.get("verb")
                 unused: list[str] = []
-                for fact in store.by_kind(Quantity):
+                for fact in accounting_store.by_kind(Quantity):
                     # An explicit period-list consumer asks for a bounded event
                     # set (for example, March AND April). Facts from June are
                     # not ignored operands; they are outside the question. The
@@ -596,52 +613,118 @@ def _check_number(
                     )
 
     if _enabled(reg, "contradicted-relation") and store is not None:
-        # AN OVER-DETERMINED DOCUMENT THAT DOES NOT ADD UP IS NOT READ.
-        #
-        # A Relation whose subject AND standard BOTH already hold a stated state
-        # is redundant — the document says the same thing twice. saturate.py
-        # DROPS it silently ("only an existing STATE for the subject blocks
-        # resolution"), which is right for a CONSISTENT restatement and hides a
-        # contradiction: "London is 11 and Blair is 16. SEVERAL YEARS AGO, Blair
-        # was twice as old as London" committed London's current 11, because
-        # 16 != 2*11 was never checked against anything.
-        #
-        # The contradiction is real but its CAUSE is temporal — the relation
-        # holds at some other time, and 'several years ago' states an offset the
-        # rule cannot capture (it is not a number). With no time model the engine
-        # cannot tell "inconsistent document" from "relation at another time",
-        # and both mean the same thing here: it has not read what the question
-        # turns on. Decline.
-        #
-        # TWO CONDITIONS, and dropping either one breaks correct items —
-        # MEASURED across all five word-problem corpora:
-        #   * SAME TIME ONLY. `subject_offset`/`standard_offset` carry the stated
-        #     temporal shift ("in 5 years, Raven will be 4 times as old as
-        #     Phoebe"). Those relations are VIOLATED at t=0 by design and are
-        #     answered correctly today — 12 of them across gsm8k dev, 4 known
-        #     correct. Ignoring the offsets flags every one.
-        #   * LABEL-KEYED. "Jar A has 28 marbles. Jar B has 12 more than jar A.
-        #     Jar C has twice as many as jar B" bare-folds every holder to lemma
-        #     'jar'; comparing on bare lemma reads three jars as one and flags 2
-        #     more correct items. The label lives in a separate feature — the
-        #     same trap `distinct: [who, std]` documents.
-        # With both conditions the class is EXACTLY ONE item in five corpora, and
-        # it is the confident-wrong this exists for. Anything else it ever fires
-        # on is a document that genuinely does not add up.
+        # Saturation avoids deriving a duplicate when both sides are known.
+        # Validate that restatement rather than silently ignoring its equation.
+        # State snapshots and activity totals have different evidence contracts;
+        # both require exact participant identity and compatible time scope.
         from .model import Quantity as _Q
         from .model import Relation as _Rel
 
-        stated: dict[tuple, float] = {}
-        for q in store.by_kind(_Q):
-            if q.is_state:
-                stated.setdefault((q.entity, q.label, q.measure), q.value)
+        from .reference_identity import scope_reference_store
+        from .temporal import normalize_perspective
+        from .totals import _entity_total, _relation_item_evidence, _resolve_relation, _verb_total
         for rel in store.by_kind(_Rel):
+            if not any(reg.word_in_category(rel.verb, category)
+                       for category in ("state", "non_event_verb")):
+                # A comparison restates the COMPLETE activity amounts, not
+                # each independently asserted occurrence. Saturation avoids
+                # deriving a duplicate event when both amounts already exist;
+                # that suppression is not proof that the equation agrees.
+                sides = []
+                for reference in (rel.subject_ref, rel.standard_ref):
+                    scoped = scope_reference_store(store, reference)
+                    quantities = [] if scoped is None else [
+                        q for q in scoped.by_kind(_Q)
+                        if q.entity == reference.head and q.verb == rel.verb
+                    ]
+                    sides.append((scoped, quantities))
+                if not all(quantities for _, quantities in sides):
+                    continue  # not two known activity totals
+                if rel.measure is None:
+                    recovered = _resolve_relation(store, rel, replace(log, entries=[], journal=None))
+                    if recovered is None:
+                        return GuardVeto(
+                            "contradicted-relation",
+                            "the activity comparison has no unique compatible standard measure",
+                        )
+                    rel = recovered
+                sides = [(scoped, [q for q in quantities if q.measure.split("[", 1)[0] == rel.measure])
+                         for scoped, quantities in sides]
+                if not all(quantities for _, quantities in sides):
+                    continue
+                totals = []
+                perspective = normalize_perspective(rel.provenance.temporal_perspective, reg)
+                for reference in (rel.subject_ref, rel.standard_ref):
+                    projection = _relation_item_evidence(
+                        store, rel, reference, rel.measure, reg, replace(log, entries=[], journal=None))
+                    if projection is None:
+                        totals.append(None)
+                        continue
+                    scoped, quantities, measure = projection
+                    # Relation has no event-period field. Do not equate a
+                    # dated subtotal or an offset with an unscoped total, or
+                    # silently select one qualifier/tense among several.
+                    if ((rel.subject_offset or 0) or (rel.standard_offset or 0)
+                            or any(q.time is not None
+                                   or normalize_perspective(q.provenance.temporal_perspective, reg)
+                                      != perspective for q in quantities)):
+                        totals.append(None)
+                        continue
+                    # Preserve the total fold's unknown-event and cross-verb
+                    # temporal checks. A private log validates evidence without
+                    # marking unrelated operands as used by the answer.
+                    totals.append(_verb_total(
+                        scoped, reference.head, measure, rel.verb, replace(log, entries=[])
+                    ))
+                subj, std = totals
+                if subj is None or std is None:
+                    return GuardVeto(
+                        "contradicted-relation",
+                        "the activity comparison has no complete, compatible totals "
+                        "at one time; its stated amounts cannot validate the relation",
+                    )
+                if abs(subj - (rel.factor * std + rel.offset)) > 1e-6:
+                    return GuardVeto(
+                        "contradicted-relation",
+                        f"the complete {rel.verb!r} total of {rel.subject!r} ({subj}) "
+                        f"contradicts the relation to {rel.standard!r} ({std}): "
+                        f"{rel.factor}x + {rel.offset}",
+                    )
+                continue
             if (rel.subject_offset or 0) or (rel.standard_offset or 0):
                 continue  # asserted at ANOTHER time — not a contradiction at t=0
-            subj = stated.get((rel.subject, rel.subject_label, rel.measure))
-            std = stated.get((rel.standard, rel.standard_label, rel.measure))
+            # State equations validate snapshots, not current balances after
+            # later events. They share item/identity resolution with anchors,
+            # but deliberately do not borrow the activity accumulation fold.
+            sides = []
+            for reference in (rel.subject_ref, rel.standard_ref):
+                scoped = scope_reference_store(store, reference)
+                sides.append([] if scoped is None else [q for q in scoped.by_kind(_Q)
+                             if q.entity == reference.head and q.is_state and q.time is None])
+            if not all(sides):
+                continue
+            recovered = _resolve_relation(store, rel, replace(log, entries=[], journal=None))
+            if recovered is None:
+                return GuardVeto("contradicted-relation", "the state comparison has no unique standard measure")
+            rel = recovered
+            measure = rel.measure
+            if not all(any(q.measure.split("[", 1)[0] == measure for q in side) for side in sides):
+                continue
+            totals = []
+            for reference in (rel.subject_ref, rel.standard_ref):
+                projection = _relation_item_evidence(
+                    store, rel, reference, measure, reg, replace(log, entries=[], journal=None))
+                if projection is None:
+                    totals.append(None)
+                    continue
+                scoped, quantities, resolved_measure = projection
+                snapshots = [q for q in quantities if q.is_state and q.time is None]
+                evidence = FactStore(facts=snapshots, references=scoped.references)
+                totals.append(_entity_total(evidence, reg, reference.head, resolved_measure,
+                                            replace(log, entries=[], journal=None)))
+            subj, std = totals
             if subj is None or std is None:
-                continue  # not over-determined — saturate DERIVES this one
+                return GuardVeto("contradicted-relation", "the state comparison has no compatible item snapshots")
             if abs(subj - (rel.factor * std + rel.offset)) > 1e-6:
                 return GuardVeto(
                     "contradicted-relation",

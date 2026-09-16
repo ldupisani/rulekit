@@ -58,6 +58,12 @@ def registries():
 
 # (registry, question, expected consumer, kind, value, reason prefix)
 GOLDEN = [
+    ('curated', 'Aven has 8 cards. How many red cards does Aven have?',
+     'single-entity', 'decline', None,
+     'qualified item needs compatible subset evidence'),
+    ('curated', 'Aven sees 8 red cards. How many red cards does Aven have?',
+     'single-entity', 'decline', None,
+     'qualified item has no complete compatible total'),
     ('curated',
      'Mira has a budget of $90. Mira spent $15 on a book. '
      'Mira bought a hat. Mira has $20 left from her budget. '

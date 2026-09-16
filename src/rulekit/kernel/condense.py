@@ -9,6 +9,7 @@ values to the completed nominals.
 """
 
 from __future__ import annotations
+from .reference_identity import reference_from_unit
 
 import datetime
 import re
@@ -191,7 +192,8 @@ def _nominal_pass(reading: Reading, reg: Registry) -> bool:
                 # both read this feature to build the qualified key).
                 # `attributes` is separate pre-existing bookkeeping, unread
                 # elsewhere today — left untouched.
-                {"attributes": attrs, "owner": owner},
+                {"attributes": attrs, "owner": owner,
+                 "owner_reference": reference_from_unit(a).to_dict()},
                 f"{a.surface!r} owns {c.surface!r} — one owner-attributed noun",
             )
             return True
@@ -301,7 +303,9 @@ def _nominal_pass(reading: Reading, reg: Registry) -> bool:
             )
             _merge(reading, i, b, "merge-attribute",
                    f"adjective {a.surface!r} restricts {b.surface!r}",
-                   {"attributes": attrs, "qualifier": qualifier})
+                   {"attributes": attrs, "qualifier": qualifier,
+                    "reference_qualifiers": tuple(sorted(set(
+                        reference_from_unit(b).qualifiers + (qualifier,))))})
             return True
         # adjective + elided measure-noun anaphor -> a qualified but
         # UNRESOLVED anaphoric noun ("12 yellow ONES", "twice as many
@@ -396,6 +400,8 @@ def _nominal_pass(reading: Reading, reg: Registry) -> bool:
                    {
                        "attributes": attrs,
                        "qualifier": qualifier,
+                       "reference_qualifiers": tuple(sorted(set(
+                           reference_from_unit(b).qualifiers + (qualifier,)))),
                        # A source hyphen immediately before the nominal
                        # modifier is retained through this merge.  If a count
                        # sits to the left, the count pass can then represent

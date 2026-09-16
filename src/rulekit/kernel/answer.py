@@ -339,6 +339,15 @@ def answer(
 
     consumer = query.get("consumer")
 
+    if query.get("evidence_entity_reference") is not None:
+        from .reference_identity import scope_query_store
+        scoped = scope_query_store(store, query)
+        if scoped is None:
+            return Answer("decline", None,
+                          f"no quantity known for {query.get('entity')!r}: "
+                          "participant reference is unresolved or ambiguous")
+        store = scoped
+
     store = _temporal_evidence_store(query, store, reg)
 
     def finish(result: Answer) -> Answer:

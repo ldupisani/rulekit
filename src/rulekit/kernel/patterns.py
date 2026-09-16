@@ -12,7 +12,8 @@ matter:
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass, field, fields, replace
+from .reference_identity import reference_from_unit
 from collections.abc import Iterable, Mapping
 from typing import Any
 
@@ -783,6 +784,10 @@ def _category_roles_overlap(left: Unit, right: Unit, reg: Registry) -> bool:
 
     if left.sense() != "noun" or right.sense() != "noun":
         return False
+    left_ref, right_ref = reference_from_unit(left), reference_from_unit(right)
+    if (left_ref.head == right_ref.head and left_ref.described
+            and right_ref.described and left_ref != right_ref):
+        return False
     left_label = left.features.get("label")
     right_label = right.features.get("label")
     if left_label and right_label and left_label != right_label:
@@ -1028,7 +1033,7 @@ def _try_match_at(
             name = token.slot
             if name in slots and (
                 isinstance(slots[name], tuple)  # a span slot never re-binds
-                or _lemma_of(slots[name]) != _lemma_of(unit)
+                or reference_from_unit(slots[name]) != reference_from_unit(unit)
             ):
                 return None  # repeated slot must bind the same lemma
             slots[name] = unit
@@ -1555,24 +1560,16 @@ def _check_where(
             if len(values) > 1:
                 return False
         if pred.distinct is not None:
-            # (lemma, label) pairs, not bare lemma alone — mining candidate
-            # labeled-entity-relations: "Jar B has 12 more marbles than jar
-            # A" bare-folds who/std to the SAME lemma 'jar' (the label
-            # lives in a separate feature, condense.py merge-label), so a
-            # bare-lemma-only distinct check wrongly read this as the
-            # self-referential "X compares to itself" case every `distinct:
-            # [who, std]` guard exists to block, and silently declined
-            # every labeled relation. Two unlabeled units (label=None on
-            # both sides, the overwhelming common case) compare exactly as
-            # before — (lemma, None) == (lemma, None) still collides, so
-            # every existing distinct check's behavior is unchanged; this
-            # only additionally distinguishes a pair that share a lemma AND
-            # carry two DIFFERENT non-null labels.
+            # Full role descriptions can distinguish two labelled/owned
+            # participants. Missing constraints cannot establish inequality:
+            # a bare holder and its possessed description may be the same.
+            from itertools import combinations
+            from .reference_identity import distinct_references
             values = [
-                (_lemma_of(slots[s]), slots[s].features.get("label"))
+                reference_from_unit(slots[s])
                 for s in pred.distinct if s in slots
             ]
-            if len(values) != len(set(values)):
+            if any(not distinct_references(a, b) for a, b in combinations(values, 2)):
                 return False
         if pred.distinct_owner is not None:
             owners = [
@@ -2261,6 +2258,21 @@ _NUMERIC_FIELDS = {
 }
 
 
+def _template_reference(raw, slots):
+    if not isinstance(raw, str):
+        return None
+    matched = _TEMPLATE.fullmatch(raw)
+    if matched is None:
+        return None
+    unit = slots.get(matched.group(1))
+    if not isinstance(unit, Unit):
+        return None
+    reference = reference_from_unit(unit)
+    if matched.group(2) == "owner":
+        return reference.owner
+    return reference if matched.group(2) is None else None
+
+
 def _build_fact(
     emit_fields: dict, fact_kind: str, slots: dict[str, Unit], reg: Registry,
     provenance: Provenance, log: ArithmeticLog | None, rule_id: str,
@@ -2277,6 +2289,18 @@ def _build_fact(
     kwargs = {}
     for key, raw in emit_fields.items():
         kwargs[key] = _resolve_field(raw, slots, reg, key in _NUMERIC_FIELDS, log, rule_id)
+    for item in fields(cls):
+        role = item.metadata.get("reference_for")
+        reference = _template_reference(emit_fields.get(role), slots) if role else None
+        if reference is not None:
+            kwargs[item.name] = reference
+        qualifier_role = item.metadata.get("qualifier_for")
+        if qualifier_role and emit_fields.get(item.name) is None:
+            raw = emit_fields.get(qualifier_role)
+            binding = _TEMPLATE.fullmatch(raw) if isinstance(raw, str) else None
+            unit = slots.get(binding.group(1)) if binding and binding.group(2) is None else None
+            if isinstance(unit, Unit) and unit.features.get("qualifier") is not None:
+                kwargs[item.name] = unit.features["qualifier"]
     _indef_field = {Atom: "pred", VerbalRelation: "obj"}.get(cls)
     if _indef_field is not None and "indef_obj" not in kwargs:
         # composition-design.md Phase 0: record whether the pred/obj span
@@ -2544,6 +2568,10 @@ def match_ask(
                 # ("verb: {verb}" with the opt-group absent) — omit the key
                 # and let the consumer's default apply
                 continue
+        if resolved_fields.get("consumer") in ("single-entity", "single-entity-elided-measure"):
+            reference = _template_reference(fields.get("entity"), match.slots)
+            if reference is not None:
+                resolved_fields["evidence_entity_reference"] = reference.to_dict()
         return resolved_fields
 
     best: tuple[AskRule, dict[str, Any], Match] | None = None

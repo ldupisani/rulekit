@@ -13,6 +13,7 @@ from dataclasses import dataclass, field, replace
 from ..data.registry import Registry
 from .model import Fact, Predication, Price, Provenance, Quantity
 from .patterns import RuleMatchResult, subsumes
+from .reference_identity import ReferenceIdentity
 
 
 @dataclass
@@ -67,6 +68,24 @@ class FactStore:
     collisions: list[Collision] = field(default_factory=list)
     quarantined: list[Fact] = field(default_factory=list)
     agreement_ambiguities: list[AgreementAmbiguity] = field(default_factory=list)
+    references: tuple[ReferenceIdentity, ...] = ()
+    # Recomputed from actual reader bindings before item-class resolution.
+    # A recorded link alone cannot certify that its clauses were eligible.
+    item_reference_clauses: frozenset[Provenance] = frozenset()
+
+    def _compatibility_rekey(self, fact: Fact, **changes) -> Fact:
+        """Carry exact surviving agreement attribution through display rekeys."""
+        updated = replace(fact, **changes)
+        if isinstance(fact, Quantity) and set(changes) <= {"entity", "measure"}:
+            self.agreement_ambiguities = [
+                replace(agreement, key=updated.key())
+                if (agreement.key == fact.key()
+                    and agreement.value == fact.value_part()
+                    and agreement.retained == fact.provenance)
+                else agreement
+                for agreement in self.agreement_ambiguities
+            ]
+        return updated
 
     def _record_agreement(self, existing: Fact, fact: Fact) -> None:
         """Keep one event per provenance pair, even across saturation rounds."""
@@ -185,6 +204,33 @@ class FactStore:
         # Ownership has the same odd-sibling problem but no part/whole
         # exception: once two owners coexist, every later owned sibling must
         # enter the owner-qualified entity keyspace directly.
+        if isinstance(fact, Quantity) and fact.provenance.source.startswith("synth/"):
+            # A legacy synthesizer may forward a stored compatibility key.
+            # Recover the exact input reference only from one actual input
+            # Quantity, never by parsing that projection or choosing a rival.
+            aliases = {other.entity_ref for other in self.by_kind(Quantity)
+                       if other.entity == fact.entity
+                       and other.entity != other.entity_ref.head}
+            if len(aliases) == 1 and fact.entity_ref.head == fact.entity:
+                fact = self._compatibility_rekey(fact, entity_ref=next(iter(aliases)))
+            elif len(aliases) > 1 and fact.entity_ref.head == fact.entity:
+                heads = {ref.head for ref in aliases}
+                fact = self._compatibility_rekey(
+                    fact, entity_ref=ReferenceIdentity(
+                        next(iter(heads)) if len(heads) == 1 else fact.entity,
+                        resolved=False))
+        if isinstance(fact, Quantity) and fact.entity_ref.described:
+            siblings = [other for other in self.facts if isinstance(other, Quantity)
+                        and other.entity_ref.head == fact.entity_ref.head
+                        and other.entity_ref.described]
+            if any(other.entity_ref != fact.entity_ref for other in siblings):
+                # Actor identity precedes agreement, across all values, measures
+                # and event predicates. Retain the old flat projection only for
+                # display/legacy folds; the typed reference survives every copy.
+                for other in siblings:
+                    self.facts[self.facts.index(other)] = self._compatibility_rekey(
+                        other, entity=other.entity_ref.display())
+                fact = self._compatibility_rekey(fact, entity=fact.entity_ref.display())
         if (
             isinstance(fact, Quantity)
             and fact.owner
@@ -196,7 +242,7 @@ class FactStore:
                 for other in self.facts
             )
         ):
-            fact = replace(fact, entity=f"{fact.entity}[{fact.owner}]")
+            fact = self._compatibility_rekey(fact, entity=f"{fact.entity}[{fact.owner}]")
         # Measure qualifiers use the order-independent cure described above,
         # including their separate unqualified-total guard.
         if (
@@ -217,7 +263,7 @@ class FactStore:
                 for other in self.facts
             )
         ):
-            fact = replace(fact, measure=f"{fact.measure}[{fact.measure_qualifier}]")
+            fact = self._compatibility_rekey(fact, measure=f"{fact.measure}[{fact.measure_qualifier}]")
         for existing in self.facts:
             if existing.key() == fact.key():
                 # A conjunct-segment split (mirror #5 below) must win even
@@ -273,7 +319,7 @@ class FactStore:
                     ):
                         # Agreement about the predicate cannot erase newly
                         # stated uncertainty about its object's amount.
-                        self.facts[self.facts.index(existing)] = replace(
+                        self.facts[self.facts.index(existing)] = self._compatibility_rekey(
                             existing, dobj_unquantified=True
                         )
                     return True  # agreement: dedupe
@@ -286,9 +332,9 @@ class FactStore:
                 ):
                     self.facts.remove(existing)
                     self.facts.append(
-                        replace(existing, entity=f"{existing.entity}[{existing.owner}]")
+                        self._compatibility_rekey(existing, entity=f"{existing.entity}[{existing.owner}]")
                     )
-                    self.facts.append(replace(fact, entity=f"{fact.entity}[{fact.owner}]"))
+                    self.facts.append(self._compatibility_rekey(fact, entity=f"{fact.entity}[{fact.owner}]"))
                     return True
                 if (
                     isinstance(existing, Quantity)
@@ -299,22 +345,22 @@ class FactStore:
                 ):
                     self.facts.remove(existing)
                     self.facts.append(
-                        replace(existing, entity=f"{existing.entity}[{existing.qualifier}]")
+                        self._compatibility_rekey(existing, entity=f"{existing.entity}[{existing.qualifier}]")
                     )
                     self.facts.append(
-                        replace(fact, entity=f"{fact.entity}[{fact.qualifier}]")
+                        self._compatibility_rekey(fact, entity=f"{fact.entity}[{fact.qualifier}]")
                     )
                     return True
                 if measure_split:
                     self.facts.remove(existing)
                     self.facts.append(
-                        replace(
+                        self._compatibility_rekey(
                             existing,
                             measure=f"{existing.measure}[{existing.measure_qualifier}]",
                         )
                     )
                     self.facts.append(
-                        replace(fact, measure=f"{fact.measure}[{fact.measure_qualifier}]")
+                        self._compatibility_rekey(fact, measure=f"{fact.measure}[{fact.measure_qualifier}]")
                     )
                     return True
                 if (
@@ -326,9 +372,9 @@ class FactStore:
                 ):
                     self.facts.remove(existing)
                     self.facts.append(
-                        replace(existing, entity=f"{existing.entity}[{existing.label}]")
+                        self._compatibility_rekey(existing, entity=f"{existing.entity}[{existing.label}]")
                     )
-                    self.facts.append(replace(fact, entity=f"{fact.entity}[{fact.label}]"))
+                    self.facts.append(self._compatibility_rekey(fact, entity=f"{fact.entity}[{fact.label}]"))
                     return True
                 if (
                     isinstance(existing, Quantity)
@@ -387,10 +433,10 @@ class FactStore:
                 ):
                     self.facts.remove(existing)
                     self.facts.append(
-                        replace(existing, item=f"{existing.item}[{existing.qualifier}]")
+                        self._compatibility_rekey(existing, item=f"{existing.item}[{existing.qualifier}]")
                     )
                     self.facts.append(
-                        replace(fact, item=f"{fact.item}[{fact.qualifier}]")
+                        self._compatibility_rekey(fact, item=f"{fact.item}[{fact.qualifier}]")
                     )
                     return True
                 self.collisions.append(

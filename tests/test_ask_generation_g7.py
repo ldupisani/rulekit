@@ -393,6 +393,10 @@ def test_ask_surface_is_exact_and_deterministic(curated) -> None:
         "entity": "cato",
         "evidence_measure_category": "age_measure",
         "evidence_temporal_perspective": "is",
+        "evidence_entity_reference": {
+            "head": "cato", "owner": None, "label": None,
+            "qualifiers": [], "resolved": True,
+        },
         "measure": "year",
         "verb": "be",
     }

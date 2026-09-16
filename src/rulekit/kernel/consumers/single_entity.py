@@ -172,7 +172,7 @@ def single_entity(ctx: ConsumerContext):
         gt for gt in ctx.store.by_kind(GroupTotal)
         if gt.measure == singular and (gt.scope is None or gt.scope == entity)
     ]
-    if matching_totals:
+    if matching_totals and not measure_qualifier:
         # the held Quantity must genuinely STATE a per-container rate
         # (saturate's `_distributive_rate_source`, the same gate the two
         # container synths use): 'The second chapter is 36 pages long'
@@ -220,22 +220,28 @@ def single_entity(ctx: ConsumerContext):
             q for q in ctx.store.by_kind(Quantity)
             if q.qualifier is None or q.qualifier == qualifier
         ])
-    # mining candidate qualified-measure-keys: scopes the generic
-    # bare-measure fallback to compatible siblings only, exactly like
-    # `qualifier_store` above but keyed on `measure_qualifier` instead
-    # of `qualifier` — a bare 'apple' fact tagged 'red' must NEVER
-    # answer a question asking specifically about GREEN apples just
-    # because a same-key collision never happened to force the split.
-    measure_qualifier_store = ctx.store
-    if measure_qualifier:
-        measure_qualifier_store = FactStore(facts=[
-            q for q in ctx.store.by_kind(Quantity)
-            if q.measure != singular
-            or q.measure_qualifier is None
-            or q.measure_qualifier == measure_qualifier
-        ])
     is_state_ask = ask_verb in ("have", "be") or ctx.reg.word_in_category(ask_verb, "state")
+    def qualified_total(*, invert_events=False):
+        # An explicit ask modifier is a constraint, never its own evidence.
+        # Share the comparison projection, including bare-extra-event safety.
+        from ..reference_identity import ReferenceIdentity
+        from ..totals import _item_evidence
+        raw = ctx.query.get("evidence_entity_reference")
+        reference = ReferenceIdentity.from_dict(raw) if raw else ReferenceIdentity(entity)
+        projected = _item_evidence(ctx.store, reference, singular, ask_verb,
+                                   measure_qualifier, (reference,), ctx.reg, ctx.log)
+        if projected is None:
+            return Answer("decline", None, "qualified item needs compatible subset evidence")
+        evidence, _, selected_measure = projected
+        total = (_entity_total(evidence, ctx.reg, reference.head, selected_measure, ctx.log,
+                               invert_events=invert_events) if is_state_ask else
+                 _verb_total(evidence, reference.head, selected_measure, ask_verb, ctx.log))
+        return Answer("number", total, "total from identified item subset") if total is not None else Answer(
+            "decline", None, "qualified item has no complete compatible total")
+
     if not is_state_ask:
+        if measure_qualifier:
+            return qualified_total()
         # An EVENT ask ("how many apples did Mary EAT?") sums only that
         # verb's own event quantities — a holdings fold answering an
         # eat-question with a buy-total is a category error (the
@@ -246,13 +252,11 @@ def single_entity(ctx: ConsumerContext):
         )
         if total is None and qualifier:
             total = _verb_total(ctx.store, f"{entity}[{qualifier}]", singular, ask_verb, ctx.log)
-        if total is None and measure_qualifier:
-            total = _verb_total(ctx.store, entity, f"{singular}[{measure_qualifier}]", ask_verb, ctx.log)
         if total is None:
             scoped = (
                 owner_store if owner
                 else qualifier_store if qualifier
-                else measure_qualifier_store
+                else ctx.store
             )
             total = _verb_total(scoped, entity, singular, ask_verb, ctx.log)
         if total is not None:
@@ -330,23 +334,19 @@ def single_entity(ctx: ConsumerContext):
                 "qualified start state has differently qualified events; "
                 "modifier scope is ambiguous",
             )
+    if measure_qualifier:
+        return qualified_total(invert_events=invert)
     total = (
         _entity_total(ctx.store, ctx.reg, f"{entity}[{owner}]", singular, ctx.log, invert_events=invert)
         if owner else None
     )
     if total is None and qualifier:
         total = _entity_total(ctx.store, ctx.reg, f"{entity}[{qualifier}]", singular, ctx.log, invert_events=invert)
-    if total is None and measure_qualifier:
-        # mining candidate qualified-measure-keys: the exact qualified
-        # key first (the conflict-split case) — mirrors the owner/
-        # entity_qualifier two-lookup shape above, keyed on the
-        # MEASURE's own qualifier instead of the entity's.
-        total = _entity_total(ctx.store, ctx.reg, entity, f"{singular}[{measure_qualifier}]", ctx.log, invert_events=invert)
     if total is None:
         scoped = (
             owner_store if owner
             else qualifier_store if qualifier
-            else measure_qualifier_store
+            else ctx.store
         )
         total = _entity_total(scoped, ctx.reg, entity, singular, ctx.log, invert_events=invert)
     if total is None and ctx.query.get("sum_measure_variants") and not measure_qualifier:

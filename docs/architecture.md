@@ -998,6 +998,7 @@ state and fact use; they do not special-case rule ids.
 | `Obligation` | a typed grammatical need and its binding |
 | `Decision` | reversible mutation record used by tracing and the designer |
 | `Fact` | immutable typed commitment with `Provenance` |
+| `ReferenceIdentity` | nominal head, recursive owner, label, qualifiers, and resolution state |
 | `FactStore` | admission, agreement, collision quarantine, and fact lookup |
 | `Document` | premise readings, store, arithmetic/deictic log, consumed units, rounds, and gaps |
 | `Answer` | number, labelled numeric series, witness statuses, verdict, or decline, optionally with proof or clarification |
@@ -1021,6 +1022,120 @@ changes and constraints, dated ages, and explicit
 `SemanticGraphNode`/`SemanticGraphEdge` facts. Specialized fact classes keep
 their own identity keys and value parts; the store does not flatten all
 meaning into generic triples.
+
+### Shared participant identity
+
+`kernel/reference_identity.py` is the shared contract for existing
+single-participant quantities and comparisons. `Quantity.entity_ref`,
+`Predication.subject_ref`, and both `Relation` role references preserve the
+complete nominal structure from condensation and discourse binding. Ask rules
+for single-entity quantities carry the same structure in
+`evidence_entity_reference`. Ownership traversal is bounded; unresolved owners
+remain unresolved rather than becoming bare evidence. An isolated possessive
+may retain one unnamed owner through an explicit document-local first-mention
+anchor. Repeating that same possessor can query the same owned object without
+inventing a named antecedent. Different possessors, competing antecedents and
+explicit named owners cannot borrow that evidence. Only the governed noun is
+anchored: the pronoun itself remains unbound for ordinary entity slots.
+
+Explicit owner, label, and qualifier constraints intersect. A bare reference
+may select one uniquely compatible observed identity, but cannot choose among
+rivals. Resolution considers ordinary participant mentions before filtering
+amounts, measures, or predicates: a rival with a different item or no stated
+count still matters. Compatible descriptions are not automatically merged.
+Different adjective constraints do not prove two role bindings distinct;
+comparison rules still require explicit distinguishing identity evidence.
+Actor qualifiers remain separate from item/subtype qualifiers, and identity
+does not replace verb, time, occurrence, or provenance checks.
+
+Answer dispatch, numeric-use accounting, forward/inverse relation anchors,
+and existing quantity-total helpers use this resolver. Legacy consumers receive
+nonmutating scoped views; original facts retain their references and other
+heads retain their amount-free reference inventories. Existing
+counted-container and explicitly declared owned-location fallbacks still need
+their own evidence. Untyped numeric evidence cannot bypass a genuinely
+ambiguous participant head.
+Same-holder item-subtype classification also uses typed owners and labels;
+an owned or labelled comparison participant cannot become an item merely
+because its legacy flat descriptor was omitted.
+
+Flat entity fields and bracketed keys remain compatibility/display projections,
+not parsable identity proofs. Described references use structural deictic keys.
+When display keys change, exact retained agreement provenance follows the
+surviving quantity; a conflict, quarantine, or mismatched value cannot account
+for a discarded repeated premise. New event occurrences remain additive, while
+identical state restatements remain idempotent.
+
+When both participants already have quantities under an activity comparison's
+predicate, the contradiction guard checks their complete event totals using
+the existing verb-total fold. It does not compare individual occurrences or
+derive the same total again. A matching subtotal is insufficient when another
+positive event leaves its amount unstated, with or without an explicit
+quantifier. Explicit item qualifiers select their own variants. Only a legacy
+derived quantity's missing modifier may alias uniquely observed qualified
+evidence; a requested qualifier alone is not evidence. A directly stated bare
+event amount cannot establish a qualified amount or be ignored beside counted
+events of the requested variant.
+An unconstrained item retains the ordinary whole-measure total. Comparisons
+without a modeled event period cannot equate dated
+subtotals or shifted times; incompatible temporal evidence declines. State
+comparisons keep their existing snapshot and temporal-offset contract.
+For omitted measures, saturation and validation share one resolver over the
+complete standard identity's inventory. A unique measure may be recovered;
+multiple plausible measures cannot be selected merely to fit the equation.
+When the item itself is omitted, that shared resolution also retains a unique
+observed standard-side modifier on the effective relation and its derived
+quantity. The original relation still records the omission. Competing modifiers
+do not select a subset, and an explicitly bare item never inherits a modifier
+through this elision path. Derivation and contradiction validation use the same
+effective item identity.
+State and event anchors also share one item-evidence projection. An explicit
+item modifier applies on both participant sides and remains on the derived
+quantity. A directly stated bare whole does not establish a qualified part;
+a legacy derived bare projection cannot replace directly stated qualified
+evidence. State validation compares snapshots, not later activity balances.
+For `Relation.measure_qualifier`, dataclass `qualifier_for` metadata retains the
+modifier of a directly bound measure slot when the emitted field is absent or
+literal null. Non-null YAML values and templates, including an empty string,
+remain authoritative; no modifier is inferred from composite text or constants.
+
+This migration covers `Quantity`, `Relation`, their `Predication` safety
+evidence, and the existing single-entity ask/total paths. It does not migrate
+every specialized fact family or add account/text features from rejected
+candidate branches. Those adapters must adopt the same contract separately.
+Saved premise reviews may replay when only dataclass-declared reference metadata
+is added, the added references have nonblank heads and are resolved (including
+every recursively nested owner), and all
+captured facts/fields remain exact, including multiplicity and any previously
+recorded identity. That reconfirms the old captured contract;
+it is not human approval of newly exposed identity information.
+New item qualifiers are semantic changes, not reference-only review enrichment.
+
+Comparison-connected item-class anaphora is a separate forward-only contract.
+An earlier actual comparison can establish a qualified item class for its two
+fully identified participants and predicate. A later bare counted direct
+object with the same head may refer to that class only when the earlier
+compatible inventory is unique. All candidate classes are considered with a
+constant deictic distance; neither numerical fit nor the nearest mention breaks
+a tie. Unrelated participants, predicates and item roles cannot establish the
+link. An earlier bare amount is never upgraded by a later modifier or an ask.
+Explicit qualifiers remain authoritative. The initial class excludes explicit
+whole/total markers, modal or conditional clauses and explicit temporal scope;
+it is not universal noun coreference.
+
+`Quantity.item_reference` records the selected structured item identity,
+participant, predicate, target provenance and establishing provenances. The
+literal measure, qualifier, value and provenance remain unchanged. The reader
+also rebuilds a transient eligible-clause index in `FactStore`. Scoped arithmetic
+views project a modifier only after checking this index and the current typed
+antecedent/rival inventory. Missing, stale or malformed links fail closed.
+State restatements and event accumulation still use their existing arithmetic
+contracts. This item-scope change is not eligible for saved-review's
+reference-only enrichment exception; a newly linked premise needs review.
+Typed qualified single-entity asks use the same item-evidence projection as
+comparisons, so an ask-only adjective cannot turn a whole amount into a subset.
+Start-state ambiguity checks still inspect the original evidence before that
+projection; aggregate totals cannot bypass an explicit item constraint.
 
 Same-holder subtype comparisons retain `Relation.measure_qualifier` and
 `standard_qualifier`, including a fractional factor plus a signed offset. The

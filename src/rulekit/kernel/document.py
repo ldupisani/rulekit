@@ -37,6 +37,7 @@ from .model import (
 )
 from .patterns import RuleMatchResult, is_referential_entity, run_rules
 from .saturate import saturate
+from .reference_identity import ReferenceIdentity, reference_from_unit
 
 MAX_ROUNDS = 6
 
@@ -116,26 +117,26 @@ def collect_gaps(readings: list[Reading]) -> list[Gap]:
 
 def _discourse_candidates(
     readings: list[Reading], upto: int
-) -> dict[str, tuple[int, Unit]]:
-    """Name units introduced in sentences before `upto`, keyed by lemma.
+) -> dict[ReferenceIdentity, tuple[int, Unit]]:
+    """Name units introduced before `upto`, keyed by full identity.
 
     Carries each candidate's sentence index alongside the unit: a Unit knows its span
     but not which sentence it is in, and the PERSON axis needs both to be locatable.
     """
-    out: dict[str, tuple[int, Unit]] = {}
+    out: dict[ReferenceIdentity, tuple[int, Unit]] = {}
     for reading in readings:
         if reading.sentence_index >= upto:
             continue
         for unit in reading.units:
             if unit.sense() == "name":
                 lemma = unit.features.get("lemma", unit.features["fold"])
-                out[lemma] = (reading.sentence_index, unit)
+                out[reference_from_unit(unit)] = (reading.sentence_index, unit)
     return out
 
 
 def _animate_candidates(
     readings: list[Reading], upto: int, reg: Registry
-) -> dict[str, tuple[int, Unit]]:
+) -> dict[ReferenceIdentity, tuple[int, Unit]]:
     """`animate`-category common nouns before `upto` — the FALLBACK
     candidate set, consulted only when there is no name at all.
 
@@ -144,7 +145,7 @@ def _animate_candidates(
     declined — while the same story with 'Ana' reads, because an unknown
     word defaults to NAME. That asymmetry is an artifact of the lexicon, not
     of the English. Category membership is the ONLY admission test."""
-    out: dict[str, tuple[int, Unit]] = {}
+    out: dict[ReferenceIdentity, tuple[int, Unit]] = {}
     for reading in readings:
         if reading.sentence_index >= upto:
             continue
@@ -153,7 +154,7 @@ def _animate_candidates(
                 continue
             lemma = unit.features.get("lemma", unit.features["fold"])
             if reg.word_in_category(lemma, "animate"):
-                out[lemma] = (reading.sentence_index, unit)
+                out[reference_from_unit(unit)] = (reading.sentence_index, unit)
     return out
 
 
@@ -209,7 +210,7 @@ def _prior_location_anaphor_candidates(
 
 def _local_possessive_subject_candidates(
     reading: Reading, determiner: Unit, reg: Registry
-) -> dict[str, tuple[int, Unit]]:
+) -> dict[ReferenceIdentity, tuple[int, Unit]]:
     """The unique preceding subject available to a possessive determiner.
 
     A governed determiner has a strong clause-local reading in forms such as
@@ -230,7 +231,7 @@ def _local_possessive_subject_candidates(
         for unit in reading.units
     ):
         return {}
-    candidates: dict[str, tuple[int, Unit]] = {}
+    candidates: dict[ReferenceIdentity, tuple[int, Unit]] = {}
     for predicate in reading.units:
         if predicate.sense() != "verb":
             continue
@@ -263,13 +264,13 @@ def _local_possessive_subject_candidates(
             lemma = target.features.get(
                 "lemma", target.features.get("fold", "")
             )
-            candidates[lemma] = (reading.sentence_index, target)
+            candidates[reference_from_unit(target)] = (reading.sentence_index, target)
     return candidates if len(candidates) == 1 else {}
 
 
 def _prior_possessive_owner_candidates(
     readings: list[Reading], reading: Reading, determiner: Unit
-) -> dict[str, tuple[int, Unit]]:
+) -> dict[ReferenceIdentity, tuple[int, Unit]]:
     """Continue the nearest already-resolved owner of the same noun head."""
 
     owned_heads = {
@@ -304,16 +305,15 @@ def _prior_possessive_owner_candidates(
         or not prior_owned.features.get("owner_resolved")
     ):
         return {}
-    owner = prior_owned.features.get("owner")
-    if not owner:
+    owner = reference_from_unit(prior_owned).owner
+    if owner is None or not owner.resolved:
         return {}
     targets = [
         (candidate_reading.sentence_index, unit)
         for candidate_reading in readings
         if candidate_reading.sentence_index < reading.sentence_index
         for unit in candidate_reading.units
-        if unit.features.get("lemma", unit.features.get("fold", ""))
-        == owner
+        if reference_from_unit(unit) == owner
     ]
     if not targets:
         return {}
@@ -408,6 +408,45 @@ def _subject_group(
     return None
 
 
+def _anchor_unnamed_possessor(readings, reading, determiner) -> bool:
+    """Retain a consistent local possessor when no antecedent is available.
+
+    This licenses only the governed noun's identity, never a standalone
+    pronoun slot or an invented named owner. Callers must first exclude actual
+    discourse candidates (or establish external speech deixis).
+    """
+    owned_units = [unit for unit in reading.units
+                   if unit.features.get("owner_ref_uid") == determiner.uid]
+    if not owned_units:
+        return False
+    lemma = determiner.features.get("lemma", determiner.features.get("fold", ""))
+    prior = {
+        reference.owner
+        for earlier in readings if earlier.sentence_index <= reading.sentence_index
+        for unit in earlier.units
+        if (earlier.sentence_index < reading.sentence_index or unit.span < determiner.span)
+        for reference in [reference_from_unit(unit)]
+        if reference.owner is not None and reference.owner.head == lemma
+        and reference.owner.utterance_anchor is not None
+    }
+    if len(prior) > 1:
+        return False
+    owner = next(iter(prior)) if prior else ReferenceIdentity(
+        lemma, utterance_anchor=(reading.sentence_index, determiner.uid))
+    changed = False
+    for owned in owned_units:
+        if owned.features.get("owner_reference") == owner.to_dict():
+            continue
+        reading.record(
+            "anchor-unnamed-possessor", owned,
+            {"owner_reference": owner.to_dict(), "owner_resolved": True},
+            f"{owned.surface!r} retains a document-local unnamed possessor; "
+            "no named antecedent is asserted",
+        )
+        changed = True
+    return changed
+
+
 def _bind_discourse(
     readings: list[Reading],
     journal: deixis.Journal | None = None,
@@ -474,6 +513,8 @@ def _bind_discourse(
                         {"obligations": updated},
                         f"{unit.surface!r} is anchored by the speech situation",
                     )
+                    changed.add(reading.sentence_index)
+                if _anchor_unnamed_possessor(readings, reading, unit):
                     changed.add(reading.sentence_index)
                 continue
             group_reference = reg is not None and (
@@ -595,12 +636,16 @@ def _bind_discourse(
                     candidates = {
                         lemma: candidate
                         for lemma, candidate in candidates.items()
-                        if lemma not in owned_heads
+                        if reference_from_unit(candidate[1]).head not in owned_heads
                     }
+                if (owned_heads and not candidates and reg is not None
+                        and reg.word_in_category(lemma, "possessive_determiner")):
+                    if _anchor_unnamed_possessor(readings, reading, unit):
+                        changed.add(reading.sentence_index)
                 referents = [
                     deixis.Referent(
                         dimension=dimension,
-                        key=lemma,
+                        key=reference_from_unit(target).binding_key(),
                         payload=target,
                         sentence=sentence,
                         span=target.span,
@@ -644,12 +689,16 @@ def _bind_discourse(
                     for owned in reading.units:
                         if owned.features.get("owner_ref_uid") != unit.uid:
                             continue
-                        if owned.features.get("owner") == lemma:
+                        if (owned.features.get("owner") == lemma
+                                and owned.features.get("owner_resolved")
+                                and owned.features.get("owner_reference")
+                                == reference_from_unit(target).to_dict()):
                             continue
                         reading.record(
                             "bind-possessive-owner",
                             owned,
-                            {"owner": lemma, "owner_resolved": True},
+                            {"owner": lemma, "owner_resolved": True,
+                             "owner_reference": reference_from_unit(target).to_dict()},
                             f"owner of {owned.surface!r} resolves through "
                             f"{unit.surface!r} to {lemma!r}",
                         )
@@ -762,7 +811,13 @@ def run_document(
                 )
 
     def rebuild_store() -> FactStore:
-        store = FactStore()
+        store = FactStore(references=tuple({
+            reference_from_unit(unit)
+            for reading in premises for unit in reading.units
+            if unit.sense() in ("name", "noun")
+            and is_referential_entity(reading, unit, reg,
+                                      bare_reference_category="bare_entity_reference")
+        }))
         for reading in premises:
             store.admit_rule_results(doc.rule_results.get(reading.sentence_index, []), reg)
             for fact in learn(reading, reg):
@@ -810,6 +865,8 @@ def run_document(
                         transition=event.effect,
                     )
                 )
+        from .item_references import bind_item_classes
+        bind_item_classes(store, premises, reg, log)
         saturate(store, reg, log)
         return store
 

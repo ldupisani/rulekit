@@ -106,3 +106,26 @@ DEV diffs are neutral. Curated remains 71/71, lint reports zero errors and
 warnings, FOLIO makes zero numeric commitments, all four canonical specimens
 replay exactly, and the content-blind protected digest is unchanged. No
 protected TEST/generalization look was spent.
+
+## Increment 134 (2026-09-16) — Shared participant and item-reference identity
+
+The exact human-approved and machine-passed product candidate
+`shared-reference-identity`
+(`dc086bde3fbb4d6ce410d6445ce1259a59ab0cf9`) preserves recursive ownership,
+labels, and intersecting qualifiers across quantities, comparisons, asks, and
+totals. Explicit comparison-backed forward item references retain their
+participant, activity, and provenance scope. Ambiguous identities, rival
+classes, incomplete amounts, and unsupported subtype inferences decline.
+This product increment claims no benchmark yield or vocabulary admission.
+
+The DEV-only integration passes 7,798 tests, with seven existing optional
+corpus-data skips under the same isolated setup as its fresh baseline. The
+exact DEV corpus-prose guard passes separately. All thirteen standing DEV
+diffs are neutral, including unchanged correct answers and projected graphs;
+curated remains 71/71 and FOLIO makes zero numeric commitments. Both lints
+have zero errors, with the existing GSM8K trig-alternation warning unchanged.
+All 32 frozen canonical specimens and both saved review traces replay exactly;
+both positive review contracts are machine-reconfirmed without changing the
+review ledger. Runtime files remain byte-identical to the reviewed candidate,
+and protected-file digests are unchanged. The reading tests are retained as
+`tests/test_mining_increment_134.py`.
