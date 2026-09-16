@@ -129,3 +129,13 @@ both positive review contracts are machine-reconfirmed without changing the
 review ledger. Runtime files remain byte-identical to the reviewed candidate,
 and protected-file digests are unchanged. The reading tests are retained as
 `tests/test_mining_increment_134.py`.
+
+After explicit user authorization, protected GSM8K TEST look 136 on integration
+commit `0e7aa40299f6fc4a601816f4580eb9103fcaccf6` reports 12 correct, zero wrong,
+1,307 declined, and zero errors across 1,319 items. Precision improves from
+13/14 (92.86%) at the previous protected checkpoint to 12/12 (100%), satisfying
+the precision-hold promotion gate, while correct coverage falls by one. Fully
+read items increase from 390 to 403. These are aggregate checkpoint deltas,
+not per-item attribution to this increment. Exactly one ledger entry was
+appended; all prior entries and other protected bytes remained unchanged. No
+protected examples or additional protected slices were inspected.
