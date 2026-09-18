@@ -30,6 +30,8 @@ from .model import (
     Alias,
     Before,
     ClassRefinement,
+    CollectionAttribute,
+    QuantityEventContext,
     CollectionContext,
     VerbalRelation,
     Conditional,
@@ -160,6 +162,8 @@ _FACT_CLASSES = {
     "partition_quantity": PartitionQuantity,
     "partition_aggregate_share": PartitionAggregateShare,
     "collection_context": CollectionContext,
+    "collection_attribute": CollectionAttribute,
+    "quantity_event_context": QuantityEventContext,
     "sequential_partition": SequentialPartition,
     "sequential_partition_initial_share": SequentialPartitionInitialShare,
     "sequential_partition_prefix": SequentialPartitionPrefix,
@@ -329,6 +333,10 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
         unit.features.get("fold") or "",
         _lemma_of(unit),
     ):
+        return False
+    if token.class_only and (unit.sense() != "noun" or any(
+        unit.features.get(key) is not None for key in ("owner", "label")
+    )):
         return False
     if token.bare and not is_bare_referent(unit):
         # OPT-IN (schemas.MatchToken.bare, default False — every pre-existing

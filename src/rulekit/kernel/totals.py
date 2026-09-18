@@ -98,6 +98,50 @@ def _relation_item_evidence(store, relation, reference, measure, reg, log):
                           (relation.subject_ref, relation.standard_ref), reg, log)
 
 
+def _subtype_quantity(store, reg, relation, measure, qualifier, log):
+    """One holder's exact item class, for synthesis and equation checking.
+
+    Select the qualifier before normalizing compatibility keys. An activity
+    comparison uses that class's complete activity total, never the running
+    total across other classes. Unclassified counted events cannot be assigned
+    to a class, and mixed-time anchors remain unresolved.
+    """
+    scoped = scope_reference_store(store, relation.subject_ref)
+    if scoped is None:
+        return None
+    entity = relation.subject_ref.head
+
+    def state(verb):
+        return any(reg.word_in_category(verb, cat) for cat in ("state", "non_event_verb"))
+
+    state_relation = state(relation.verb)
+    candidates = [q for q in scoped.by_kind(Quantity)
+                  if q.entity == entity and q.measure.split("[", 1)[0] == measure
+                  and (not qualifier or q.measure_qualifier == qualifier)
+                  and (state(q.verb) if state_relation else q.verb == relation.verb)]
+    if len({(q.measure_qualifier, q.time) for q in candidates}) != 1:
+        return None
+    if qualifier and any(
+        q.entity == entity and q.measure.split("[", 1)[0] == measure
+        and not q.measure_qualifier and not state(q.verb)
+        and (state_relation or q.verb == relation.verb)
+        for q in scoped.by_kind(Quantity)
+    ):
+        return None
+    scoped = FactStore(facts=[
+        replace(f, measure=measure)
+        if isinstance(f, Quantity) and f.entity == entity
+        and f.measure.split("[", 1)[0] == measure else f
+        for f in scoped.facts if not isinstance(f, Relation)
+        and not (isinstance(f, Quantity) and f.entity == entity
+                 and f.measure.split("[", 1)[0] == measure
+                 and qualifier and f.measure_qualifier != qualifier)
+    ], references=scoped.references)
+    value = (_entity_total(scoped, reg, entity, measure, log) if state_relation else
+             _verb_total(scoped, entity, measure, relation.verb, log))
+    return replace(candidates[0], value=value) if value is not None else None
+
+
 def _item_evidence(store, reference, measure, verb, qualifier, peers, reg, log):
     """Project one role onto its item, independently of its actor.
 
@@ -187,6 +231,20 @@ def _verb_total(
     if store is None:
         return None
 
+    from .model import QuantityEventContext
+    contexts = [c for c in store.by_kind(QuantityEventContext)
+                if c.entity == entity and c.measure == measure.split("[", 1)[0]
+                and c.verb == verb]
+    if contexts:
+        stated = [q for q in store.by_kind(Quantity)
+                  if q.entity == entity and q.verb == verb
+                  and q.measure.split("[", 1)[0] == measure.split("[", 1)[0]]
+        if (len(contexts) != 1 or contexts[0].provenance.sentence != 0
+                or not stated or any(q.provenance.sentence <= 0 or q.time is not None for q in stated)):
+            return None
+
+    if not _qualified_relations_resolved(store, entity, measure, verb=verb):
+        return None
     if any(
         p.dobj_unquantified and p.polarity
         and p.subject == entity and p.verb == verb
@@ -199,7 +257,9 @@ def _verb_total(
         return None
     scoped = [
         q for q in store.by_kind(Quantity)
-        if q.entity == entity and q.measure == measure
+        if q.entity == entity and (
+            q.measure == measure or ("[" not in measure and q.measure.split("[", 1)[0] == measure)
+        )
         and (
             q.verb == verb
             or (
@@ -444,16 +504,20 @@ def _revenue_total(
     return evaluate(" + ".join(parts), {}, log, source="revenue-total")
 
 
-def _qualified_relations_resolved(store: FactStore, entity: str, measure: str) -> bool:
+def _qualified_relations_resolved(
+    store: FactStore, entity: str, measure: str, *, verb: str | None = None,
+) -> bool:
     """A whole-item total cannot omit an unresolved attribute comparison."""
     qualifiers = {
         q.measure_qualifier for q in store.by_kind(Quantity)
         if q.entity == entity and q.measure.split("[", 1)[0] == measure
+        and (verb is None or q.verb == verb)
     }
     return all(
         {relation.measure_qualifier, relation.standard_qualifier} <= qualifiers
         for relation in store.by_kind(Relation)
         if relation.subject == entity
+        and (verb is None or relation.verb == verb)
         and relation.measure == measure
         and relation.standard == measure
         and relation.measure_qualifier

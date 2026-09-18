@@ -820,10 +820,10 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
         root = attribute
         while root in category_parents:
             root = category_parents[root]
-        if root not in {"adjective", "comparative", "preposition"}:
+        if root not in {"adjective", "comparative", "preposition", "noun"}:
             raise CompileError(
                 f"attribute compatibility key {attribute!r} is not "
-                "descriptor-rooted (adjective/comparative/preposition)"
+                "descriptor-rooted (adjective/comparative/preposition/noun)"
             )
         for noun in nouns:
             if noun not in category_parents:
@@ -1462,6 +1462,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                     "adjective",
                     "comparative",
                     "preposition",
+                    "noun",
                 }:
                     raise CompileError(
                         f"rule {rule.id!r} compatibility attribute slot "
@@ -1969,6 +1970,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                     "adjective",
                     "comparative",
                     "preposition",
+                    "noun",
                 }:
                     raise CompileError(
                         f"ask {ask.id!r} compatibility attribute slot "

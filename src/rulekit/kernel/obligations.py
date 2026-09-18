@@ -408,7 +408,7 @@ def _relative_marker_licenses_finite_verb(reading: Reading, unit: Unit) -> bool:
 
 
 def _article_licenses_noun(reading: Reading, unit: Unit, reg: Registry | None = None) -> bool:
-    """An article immediately to the left (crossing only adjectives) DETERMINES
+    """An article to the left, across licensed modifiers, DETERMINES
     this unit: 'A can…'/'the can…' is a nominal, never an auxiliary or modal.
     Pure grammatical skeleton — articles introduce noun phrases; no auxiliary
     or modal can head one."""
@@ -416,13 +416,21 @@ def _article_licenses_noun(reading: Reading, unit: Unit, reg: Registry | None = 
     crossed_modifier = False
     for prev in reversed(reading.units[:idx]):
         sense = prev.sense()
+        nominal_modifier = (
+            reg is not None and "noun" in prev.senses()
+            and prev.features.get("number") != "plural"
+            and reg.attribute_applies_to(
+                reg.plural_to_singular.get(prev.features.get("fold", ""), prev.features.get("fold", "")),
+                reg.plural_to_singular.get(unit.features.get("fold", ""), unit.features.get("fold", "")),
+            )
+        )
         if sense == "adjective" or (
             reg is not None and "adjective" in prev.senses()
             and reg.attribute_applies_to(
                 prev.features.get("lemma", prev.features.get("fold", "")),
                 unit.features.get("lemma", unit.features.get("fold", "")),
             )
-        ):
+        ) or nominal_modifier:
             crossed_modifier = True
             continue
         # A bare quantifier can itself be a subject ("toys that each cost
@@ -432,6 +440,28 @@ def _article_licenses_noun(reading: Reading, unit: Unit, reg: Registry | None = 
             reg is not None and sense == "quantifier" and crossed_modifier
         )
     return False
+
+
+def _counted_compound_licenses_noun(reading: Reading, unit: Unit, reg: Registry) -> bool:
+    """A counted nominal compound cannot use its modifier as a finite verb.
+
+    Select only an existing noun sense, with an unambiguous following noun
+    and an explicit count or comparison boundary on the left. This does not
+    change ordinary subject/verb sequences or invent lexical senses.
+    """
+    index = reading.units.index(unit)
+    if index == 0 or index + 1 >= len(reading.units):
+        return False
+    if reading.units[index + 1].senses() != ["noun"]:
+        return False
+    previous = reading.units[index - 1]
+    if previous.sense() == "value":
+        return True
+    word = previous.features.get("fold", "")
+    if reg.word_in_category(word, "relational_marker"):
+        return True
+    return (reg.word_in_category(word, "quantity_delta") and index >= 2
+            and reading.units[index - 2].sense() == "value")
 
 
 def _nominal_role_licenses_noun(reading: Reading, unit: Unit, reg: Registry) -> bool:
@@ -683,22 +713,64 @@ def _copular_progressive_licenses_verb(
     return False
 
 
+def _nominal_description_list(reading: Reading, reg: Registry) -> set[int]:
+    """Declared noun modifiers coordinated before one shared attribute head.
+
+    A finite possession predicate and two or more compatible, separated
+    descriptors license noun senses throughout the list. Ordinary verbal
+    uses of the same surfaces receive no new license.
+    """
+    licensed = set()
+    units = reading.units
+    for end, head in enumerate(units):
+        noun = reg.plural_to_singular.get(head.features.get("fold", ""),
+                                         head.features.get("fold", ""))
+        if "noun" not in head.senses() or not reg.word_in_category(noun, "nominal_attribute_noun"):
+            continue
+        members = []
+        need_member = True
+        index = end - 1
+        while index >= 0:
+            unit = units[index]
+            word = reg.plural_to_singular.get(unit.features.get("fold", ""),
+                                             unit.features.get("fold", ""))
+            if "noun" in unit.senses() and reg.attribute_applies_to(word, noun) and need_member:
+                members.append(unit.uid)
+                need_member = False
+            elif ((unit.sense() == "punct" and unit.surface == ",")
+                  or reg.word_in_category(word, "holder_list_conjunction")):
+                need_member = True
+            else:
+                break
+            index -= 1
+        if (len(members) >= 2 and not need_member and index >= 0
+                and reg.word_in_category(units[index].features.get("lemma", ""), "plain_have_state")):
+            licensed.update(members)
+            licensed.add(head.uid)
+            by_uid = {u.uid: u for u in units}
+            reading.record("nominal-description-list", head, {
+                "nominal_description_qualifiers": tuple(
+                    reg.plural_to_singular.get(by_uid[uid].features.get("fold", ""),
+                                               by_uid[uid].features.get("fold", ""))
+                    for uid in reversed(members)
+                ),
+            }, "coordinated descriptors retain every named attribute")
+    return licensed
+
+
 def disambiguate(reading: Reading, reg: Registry) -> Reading:
     """Commit one sense per multi-sense unit: the assignment with the best
     obligation coverage wins, and only a unique winner commits."""
+    nominal_list = _nominal_description_list(reading, reg)
     ambiguous = [u for u in reading.units if len(u.senses()) > 1]
     if not ambiguous:
-        return reading
-    if len(ambiguous) > MAX_AMBIGUOUS_UNITS:
-        for u in ambiguous:
-            reading.record(
-                "ambiguity-overflow", u, {"ambiguous": True},
-                f"{len(ambiguous)} ambiguous units exceeds trial cap",
-            )
         return reading
     options = []
     for u in ambiguous:
         senses = u.senses()
+        if u.uid in nominal_list:
+            options.append(["noun"])
+            continue
         if "adverb" in senses and reg.word_in_category(
             u.features.get("lemma", u.features.get("fold", "")),
             "narration_sequence_adverb",
@@ -751,19 +823,20 @@ def disambiguate(reading: Reading, reg: Registry) -> Reading:
         if "noun" in senses and "verb" in senses and _infinitive_licenses_count_homograph(reading, u, reg):
             options.append(["verb"])
             continue
+        if "verb" in senses and _copular_progressive_licenses_verb(
+            reading, u, reg
+        ):
+            options.append(["verb"])
+            continue
         if "noun" in senses and "verb" in senses and (
             _finite_verb_licenses_nonbare_noun_object(reading, u)
             or _article_licenses_noun(reading, u, reg)
+            or _counted_compound_licenses_noun(reading, u, reg)
         ):
             options.append(["noun"])
             continue
         if "modal" in senses and _nominal_subject_licenses_modal(reading, u):
             options.append(["modal"])
-            continue
-        if "verb" in senses and _copular_progressive_licenses_verb(
-            reading, u, reg
-        ):
-            options.append(["verb"])
             continue
         if "adjective" in senses and _compatible_head_licenses_adjective(
             reading, u, reg
@@ -796,10 +869,27 @@ def disambiguate(reading: Reading, reg: Registry) -> Reading:
             or senses
         )
     scored: list[tuple[tuple[int, int], tuple[str, ...]]] = []
+    def selected_features(unit, sense):
+        features = {"senses": [sense]}
+        if sense == "noun" and "verb" in unit.senses():
+            # A verbal inflection is not the noun's lexical identity.
+            # Recover the declared noun head after choosing that sense.
+            fold = unit.features.get("fold", "")
+            features["lemma"] = reg.plural_to_singular.get(fold, fold)
+        return features
+
+    unresolved = sum(len(choices) > 1 for choices in options)
+    if unresolved > MAX_AMBIGUOUS_UNITS:
+        for u in ambiguous:
+            reading.record(
+                "ambiguity-overflow", u, {"ambiguous": True},
+                f"{unresolved} unresolved ambiguous units exceeds trial cap",
+            )
+        return reading
     for assignment in itertools.product(*options):
         trial = copy.deepcopy(reading)
         for u, sense in zip(ambiguous, assignment):
-            trial.unit(u.uid).features["senses"] = [sense]
+            trial.unit(u.uid).features.update(selected_features(u, sense))
         scored.append((_coverage_score(trial, reg), assignment))
     scored.sort(key=lambda pair: (pair[0], pair[1]))
 
@@ -809,7 +899,7 @@ def disambiguate(reading: Reading, reg: Registry) -> Reading:
         for u, sense in zip(ambiguous, best_assignment):
             reading.record(
                 "assign-sense", u,
-                {"senses": [sense]},
+                selected_features(u, sense),
                 f"coverage arbitration: {sense!r} leaves {best_score[0]} unmet",
             )
     else:

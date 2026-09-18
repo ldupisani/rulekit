@@ -1642,6 +1642,50 @@ class RestQuantity(Fact):
 
 
 @dataclass(frozen=True)
+class QuantityEventContext(Fact):
+    """An uncounted activity introduction with an explicit location.
+
+    This preserves context, not an amount or a second counted occurrence.
+    Only a leading introduction followed by compatible counts can be used
+    as an elaborated summary; explicit unknown quantities remain unknown.
+    """
+
+    entity: str
+    measure: str
+    verb: str
+    place: str
+    entity_ref: ReferenceIdentity | None = field(default=None, metadata={"reference_for": "entity"})
+
+    def __post_init__(self):
+        if self.entity_ref is None:
+            object.__setattr__(self, "entity_ref", flat_reference(self.entity))
+
+    def key(self) -> tuple:
+        return ("quantity_event_context", self.entity_ref.key(), self.measure,
+                self.verb, self.place, self.provenance.sentence)
+
+
+@dataclass(frozen=True)
+class CollectionAttribute(Fact):
+    """An uncounted subset described by a nominal attribute.
+
+    A statement that some cards have a flower design names a subset, not
+    a number of cards or designs. Keep the attribute and its modifier
+    separate; a later total must not silently omit a described subset.
+    This does not assert a global class rule or an exhaustive partition.
+    """
+
+    collection: str
+    attribute: str
+    qualifier: str
+    quantifier: str
+
+    def key(self) -> tuple:
+        return ("collection_attribute", self.provenance.sentence,
+                self.collection, self.attribute, self.qualifier, self.quantifier)
+
+
+@dataclass(frozen=True)
 class CollectionContext(Fact):
     """An explicitly introduced, but not yet counted, collection.
 

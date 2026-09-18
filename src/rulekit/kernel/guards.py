@@ -528,6 +528,34 @@ def _check_number(
                 query.get("require_entity_owner_evidence") == "true"
             )
             qualifier = query.get("measure_qualifier")
+            from .model import CollectionAttribute
+            descriptions = [f for f in store.by_kind(CollectionAttribute)
+                            if f.collection == asked and not qualifier]
+            if not qualifier:
+                for reading in premises:
+                    if not any(u.features.get("lemma") == asked for u in reading.units):
+                        continue
+                    retained = {f.qualifier for f in descriptions
+                                if f.provenance.sentence == reading.sentence_index}
+                    for unit in reading.units:
+                        named = unit.features.get("nominal_description_qualifiers", ())
+                        if not set(named) <= retained:
+                            return GuardVeto("answer-accounting", "a nominal description list was not completely retained")
+            if descriptions:
+                # Nominal descriptions name existing subsets, not counts or
+                # an exhaustive partition. A whole-item answer must not drop
+                # a described but uncounted subset or mix different facets.
+                # Unscoped multi-holder descriptions need a separate binding
+                # contract before they can participate in combined answers.
+                if not holder or len({f.attribute for f in descriptions}) != 1:
+                    return GuardVeto("answer-accounting", "collection descriptions have no single compatible scope")
+                quantities = [q for q in accounting_store.by_kind(Quantity)
+                              if q.entity == holder and q.measure.split("[", 1)[0] == asked
+                              and q.verb == query.get("verb")
+                              and (reference_time is None or q.time in (None, reference_time))]
+                known = {q.measure_qualifier for q in quantities if q.value > 0}
+                if not {f.qualifier for f in descriptions} <= known:
+                    return GuardVeto("answer-accounting", "a described collection subset has no compatible positive count")
             # ONLY a BARE (unqualified) ask can be partially read.
             #
             # "How many cups of FLOUR are in the kitchen?" — the kitchen also holds
@@ -624,6 +652,17 @@ def _check_number(
         from .temporal import normalize_perspective
         from .totals import _entity_total, _relation_item_evidence, _resolve_relation, _verb_total
         for rel in store.by_kind(_Rel):
+            if (rel.measure == rel.standard and rel.measure_qualifier
+                    and rel.standard_qualifier):
+                from .totals import _subtype_quantity
+                private_log = replace(log, entries=[], journal=None)
+                subj = _subtype_quantity(store, reg, rel, rel.measure, rel.measure_qualifier, private_log)
+                std = _subtype_quantity(store, reg, rel, rel.standard, rel.standard_qualifier, private_log)
+                if subj is None or std is None:
+                    return GuardVeto("contradicted-relation", "the item-class comparison has no complete compatible amounts")
+                if abs(subj.value - (rel.factor * std.value + rel.offset)) > 1e-6:
+                    return GuardVeto("contradicted-relation", "the item-class amounts contradict their stated comparison")
+                continue
             if not any(reg.word_in_category(rel.verb, category)
                        for category in ("state", "non_event_verb")):
                 # A comparison restates the COMPLETE activity amounts, not

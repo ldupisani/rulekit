@@ -1,10 +1,12 @@
 # rulekit handoff
 
-**Updated:** 2026-09-09
-**Runtime checkpoint:** five supplied structural classes implemented and verified
-**Active campaign:** GSM8K Mining v2, M7 example-led vertical mining
-**Immediate state:** all four published Mining v2 candidates are landed; no
-candidate is awaiting human or machine review
+**Updated:** 2026-09-18
+**Runtime checkpoint:** direct qualified-item comparisons and paraphrase support
+on main; shared-reference identity (increment 134) is the last TEST checkpoint
+**Default workflow:** direct implementation for user-supplied questions;
+Mining v2 only on explicit request
+**Immediate state:** direct implementation validated. Existing approval, gate,
+and landing records for increment 134 are preserved alongside the implementation.
 
 This is the operational entry point. It records current state, durable
 boundaries, and the next safe action. Completed increment narratives belong in
@@ -17,8 +19,8 @@ plans and architecture document.
 1. [`../CLAUDE.md`](../CLAUDE.md) — constitution and standing gates.
 2. [`architecture.md`](architecture.md) — current runtime and authoring
    architecture.
-3. [`gsm8k-mining-v2-plan.md`](gsm8k-mining-v2-plan.md) — active campaign and
-   promotion contract.
+3. [`gsm8k-mining-v2-plan.md`](gsm8k-mining-v2-plan.md) — promotion contract
+   when mining is explicitly requested.
 4. [`methodology.md`](methodology.md) — DEV/TEST firewall and precision policy.
 5. [`generation-and-annotation-plan.md`](generation-and-annotation-plan.md) —
    implemented Designer product contract and milestone record.
@@ -31,7 +33,11 @@ fact, inference, and consumer machinery but contains no corpus vocabulary and
 no per-question solvers. Generated examples and human reviews are authoring
 evidence only and never enter the runtime registry.
 
-The active mining method is M7:
+For a supplied question, follow **Direct question implementation** in
+[`../CLAUDE.md`](../CLAUDE.md). The user selected this lighter workflow on
+2026-09-17 to avoid Mining v2's orchestration and repeated validation overhead.
+
+When mining is explicitly requested, its method remains M7:
 
 1. select one currently declining GSM8K `dev-train` item;
 2. record only its stable id and structural class, never its prose;
@@ -50,6 +56,39 @@ temporal event totals (130), task-completion duration gaps (131), and
 anaphoric distance chains with exact combined totals (132).
 
 ### Latest implementation checkpoint
+
+Direct question implementation now supports two signed, same-holder item-class
+comparisons sharing one predicate. Ordinary `Relation` synthesis chains their
+results; a shared exact-subtype lookup prevents one comparison from borrowing
+the running total of other classes. Activity totals include all qualified keys
+and refuse unresolved comparisons. `CollectionAttribute` retains uncounted
+nominal descriptions without asserting amounts or an exhaustive partition;
+missing described counts and overlapping attribute facets decline. Core English
+owns the added nominal vocabulary, including the moved `stamp` entry. The
+changes also preserve noun lemmas in noun/verb homographs and ownership through
+nominal compounds. This is direct product work, not a new mining increment.
+The paraphrase follow-up fixes named total scope and singular-pronoun total
+routing, supports repeated actor/verb comparison clauses and an initial count
+in the same comparison sentence, and projects declared nominal-description PPs
+onto item identity. Shared-head description lists retain their members; an
+uncounted member or unsupported longer list cannot vanish from a whole total.
+`QuantityEventContext` preserves a leading located activity introduction while
+keeping later/repeated uncounted events unresolved. The six additional premise
+rules generate and round-trip. Curated now exposes 231 supported premise rules
+out of 240 (the existing nine exclusions remain), with 555 reachable lexical
+identities. Its ask inventory is 145, of which 127 support standalone generation.
+
+Validation covers 7,902 synthetic tests: the final parallel run passed 7,896;
+its sole failure was an incidental corpus-sentence collision in an invented
+fixture. Rephrasing that fixture passed the 42-test paraphrase/corpus-guard
+recheck, with no runtime changes after the full run. The five nested benchmark
+worker tests passed separately (avoiding nested parallelism in the full run).
+Curated is 71/71. GSM8K DEV-train stays 115 correct/0 wrong and DEV-holdout
+stays 57/0, with no broken answers or new wrongs in either snapshot comparison.
+ASDiv DEV improves from 50 to 55 correct, still zero wrong, with no regressions.
+Both lints have zero errors; GSM8K retains its existing trig-sine advisory.
+No protected benchmark look or server restart was performed for this direct
+implementation. Commit and push were separately authorized on 2026-09-18.
 
 Five user-supplied structural examples are now supported in curated. A bounded
 production-profit account separates one fixed setup cost, one unit production cost,
@@ -817,16 +856,21 @@ not directory names.
   copies require a construction-level reason.
 - **Reviews are append-only.** Editing, resolving, and tombstoning append new
   rows; they do not rewrite evidence.
-- **Precision precedes coverage.** Every increment must retain zero new wrong
-  answers and zero incorrect projected graphs across the standing gates.
+- **Precision precedes coverage.** Validation must reject newly wrong answers
+  and incorrect projected graphs. Select checks using the workflow in
+  `CLAUDE.md`; explicit mining retains the complete standing gates.
 
 ## Next safe action
 
 A normal operator restart is needed to load the changed Python code; do not
 interrupt the live reviewer automatically.
 
-For another capability increment, run the M7 mining workflow on one new
-inspectable GSM8K `dev-train` decline. Before publishing a candidate:
+For a supplied question, use the direct implementation workflow in
+[`../CLAUDE.md`](../CLAUDE.md), not a mining candidate. Do not infer mining
+authorization from the question's dataset origin.
+
+If the user explicitly requests another mining candidate, use M7 on one new
+inspectable GSM8K `dev-train` decline. Before publishing that candidate:
 
 1. fold any new non-tombstoned Designer reviews that touch the intended class;
 2. prefer an existing category relationship or generic mechanism over a new

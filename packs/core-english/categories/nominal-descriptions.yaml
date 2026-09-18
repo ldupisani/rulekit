@@ -1,0 +1,28 @@
+format: rulekit/categories@1
+categories:
+  nominal_attribute_noun:
+    parent: noun
+    notes: "An attribute expressed by a qualified noun, without an item count."
+  nominal_attribute_preposition:
+    parent: preposition
+    notes: "Introduces a declared nominal description attached to an item."
+  indefinite_subset_quantifier:
+    parent: quantifier
+    notes: "Introduces an existing but uncounted, non-exhaustive subset."
+  depictable_noun:
+    parent: noun
+    notes: "A concrete subject that can be depicted on another object."
+  depiction_bearing_noun:
+    parent: noun
+    notes: "A representation or surface that can carry a depicted subject."
+members:
+  nominal_attribute_noun: [design, pattern]
+  nominal_attribute_preposition: [with]
+  indefinite_subset_quantifier: [some]
+  depictable_noun: [flower, rose, tree, truck, snowflake]
+  depiction_bearing_noun: [design, pattern, card, stamp]
+  droppable_quantity_object: [stamp]
+  quantity_location: [post office]
+  quantity_site_location: [post office]
+attribute_compatibility:
+  depictable_noun: [depiction_bearing_noun]

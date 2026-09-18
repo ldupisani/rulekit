@@ -76,14 +76,14 @@ def test_that_clause_variant(full_registry):
     assert r.answer.value == 19
 
 
-def test_single_holder_declines(full_registry):
-    # decline-safety: a combined ask needs at least TWO holders of the
-    # measure — one holder must never silently answer as if plural.
+def test_single_holder_uses_explicit_single_entity_route(full_registry):
+    # A resolved singular pronoun now has its own holder-bound total shape;
+    # it is not a plural combined ask requiring two holders.
     r = solve(
         "Priya has 12 marbles. What is the total number of marbles she has?",
         full_registry,
     )
-    assert r.answer.kind == "decline"
+    assert r.answer.value == 12
 
 
 def test_the_two_subject_does_not_commit_wrong(full_registry):

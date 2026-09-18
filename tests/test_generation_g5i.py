@@ -75,7 +75,7 @@ def test_g5i_profiles_the_complete_recursive_optional_class() -> None:
     # origin, event preposition, motive, and construction background groups.
     # The shared comparison family adds four item-layout variants and nine
     # additive-discourse positions; it does not add nesting depth.
-    assert _optional_profile(project) == (94, 187, 38, 3)
+    assert _optional_profile(project) == (96, 192, 38, 3)
 
 
 def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
@@ -84,8 +84,8 @@ def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
         for item in list_rule_availability(load_project(CURATED))
     }
 
-    assert len(availability) == 230
-    assert sum(item.supported for item in availability.values()) == 221
+    assert len(availability) == 240
+    assert sum(item.supported for item in availability.values()) == 231
     assert sum(not item.supported for item in availability.values()) == 9
     assert all(availability[rule_id].supported for rule_id in NEWLY_SUPPORTED)
     assert all(

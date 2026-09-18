@@ -67,6 +67,9 @@ rules:
             - {slot: appos_role, cat: animate}
         - {slot: std, type: entity, referential: true, bare_reference_category: bare_entity_reference}
         - opt:
+            - {slot: standard_tail_verb, type: verb, finite_form: true}
+            - {slot: standard_tail_item, type: noun}
+        - opt:
             # Negative lookahead for the fuller same-clause anchor shape.
             # A bare coordinated next clause ("..., and Karen has ...") is
             # independent and must not suppress this relation.
@@ -112,7 +115,7 @@ rules:
       - distinct_measure: [item, std]
       # a TIME PERIOD is not a holder — see slot_not_category in schemas.py
       - slot_not_category: {slot: std, cat: timeperiod}
-      - unbound: [conjunction_seen]
+      - unbound: [conjunction_seen, standard_tail_verb]
     satisfies:
       n: [quantifies]
     consumes: [n]
@@ -6837,7 +6840,7 @@ asks:
         - opt:
             # Accept ordinary and will/would forms, but not capacity modals.
             - {slot: aux, type: future_modal}
-            - {slot: who, type: pronoun}
+            - {slot: who, type: pronoun, number: plural}
             - {slot: verb, type: verb, bare_form: true}
         - opt:
             - {slot: p, cat: group_total_preposition}
@@ -6905,7 +6908,7 @@ asks:
         - {slot: item, type: plural}
         - opt:
             - {slot: aux, type: future_modal}
-            - {slot: who, type: pronoun}
+            - {slot: who, type: pronoun, number: plural}
             - {slot: verb, type: verb, bare_form: true}
         - {lit: in}
         - {lit: all}
@@ -9713,6 +9716,7 @@ asks:
                 - {lit: that}
             - {slot: who, cat: discourse_subject_group_pronoun}
             - {slot: verb, cat: possession_state}
+        - {lit: '?', consume_skipped: true}
     where:
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - number_compatible: [who, verb]
@@ -9739,6 +9743,7 @@ asks:
                 - {lit: that}
             - {slot: who, cat: discourse_subject_group_pronoun}
             - {slot: verb, cat: possession_state}
+        - {lit: '?', consume_skipped: true}
     where:
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - number_compatible: [who, verb]

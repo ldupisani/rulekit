@@ -469,24 +469,8 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
                 if resolve_reference(q.entity_ref, pool) == identity]
 
     def qualified_lookup(entity, measure, measure_qualifier):
-        candidates = [q for q in participant_quantities(rel.subject_ref)
-                      if q.measure.split("[", 1)[0] == measure
-                      and (not measure_qualifier or q.measure_qualifier == measure_qualifier)
-                      and verb_key(q.verb) == verb_key(rel.verb)]
-        identities = {(q.measure_qualifier, q.time) for q in candidates}
-        if len(identities) != 1:
-            return None
-        scoped = scope_reference_store(store, rel.subject_ref)
-        if scoped is None:
-            return None
-        scoped = FactStore(facts=[f for f in scoped.facts if not isinstance(f, Relation)],
-                           references=scoped.references)
-        quantity = candidates[0]
-        from .totals import _verb_total
-        value = (_entity_total(scoped, reg, rel.subject_ref.head, quantity.measure, log)
-                 if verb_key(rel.verb) == "have" else
-                 _verb_total(scoped, rel.subject_ref.head, quantity.measure, rel.verb, log))
-        return replace(quantity, value=value) if value is not None else None
+        from .totals import _subtype_quantity
+        return _subtype_quantity(store, reg, rel, measure, measure_qualifier, log)
 
     def anchor_measure(entity, measure, label=None, owner=None, *, reference):
         from .totals import _relation_item_evidence
@@ -893,26 +877,11 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
             and compatible_anchor(rel, subtype_known)
             and not already_derived
         ):
-            # THE ANCHOR IS THE STANDARD'S FULL TOTAL, NOT ITS STATE FACT.
-            # `qualified_lookup` returns a single raw Quantity, so reading its
-            # `.value` silently uses only the STATE and ignores any later EVENT on
-            # the same (subject, standard): "Sam has 2 dogs. Sam buys 4 dogs. Sam
-            # has three times as many cats as dogs." anchored on 2 and committed 6
-            # — a CONFIDENT WRONG, where the truth is 3 × (2+4) = 18. Route through
-            # `_entity_total`, the exact same fold the single-entity ASK consumer
-            # already uses, so a relation's notion of "how much X has" agrees with
-            # the engine's everywhere else.
-            #
-            # Strictly more conservative than the raw peek: `_entity_total` returns
-            # None on any ambiguity it cannot safely resolve (mixed times, unknown
-            # verb polarity), and we then DECLINE rather than commit a stale anchor.
-            # A pure-state anchor with no events returns the identical value it
-            # always did.
-            #
-            # QUALIFIED standards keep the raw lookup untouched: `_entity_total`
-            # folds the BARE (entity, measure) key, which would mix a 'red apple'
-            # sibling into a 'green apple' anchor. Increment 97's qualified path is
-            # byte-identical.
+            # The shared lookup has already folded this exact standard:
+            # state plus signed events for holdings, or all matching events
+            # for an activity. It selects the item qualifier before folding,
+            # so another class cannot inflate this anchor. Mixed-time or
+            # unclassified evidence leaves the lookup unresolved.
             anchor_value = subtype_known.value
             value = evaluate(
                 f"{rel.factor} * {anchor_value} + {rel.offset}", {}, log,

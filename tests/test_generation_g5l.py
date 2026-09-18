@@ -23,7 +23,8 @@ CURATED = ROOT / "projects" / "curated"
 
 EXPECTED_PATHS = {
     "arithmetic/anchored-relation": {
-        (9,): ("conjunction_seen",),
+        (9,): ("standard_tail_verb",),
+        (10,): ("conjunction_seen",),
     },
     "arithmetic/anchored-relation-fully-elided": {
         (4,): ("item_seen",),
@@ -166,6 +167,7 @@ def test_g5l_profiles_the_complete_unbound_branch_class() -> None:
 
     assert set(rules) == set(EXPECTED_PATHS)
     assert sentinels == {
+        "standard_tail_verb": 1,
         "conjunction_seen": 1,
         "direct_std_seen": 4,
         "item_seen": 1,
@@ -189,8 +191,8 @@ def test_g5l_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 230
-    assert sum(item.supported for item in availability.values()) == 221
+    assert len(availability) == 240
+    assert sum(item.supported for item in availability.values()) == 231
     assert sum(not item.supported for item in availability.values()) == 9
     assert all(
         availability[rule_id].supported for rule_id in EXPECTED_PATHS
@@ -200,7 +202,7 @@ def test_g5l_unlocks_exactly_the_preregistered_frontier() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 550
+    assert len(exploration_status(project)["fillers"]) == 555
 
 
 @pytest.mark.parametrize("rule_id", sorted(EXPECTED_PATHS))

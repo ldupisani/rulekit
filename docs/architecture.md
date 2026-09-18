@@ -1150,6 +1150,57 @@ instance labels; they cannot disappear merely because a pronoun was used.
 The purchase ledger likewise refuses to calculate across buyer identities
 that its bare participant key cannot distinguish.
 
+A coordinated pair can share its holder and activity while naming a separate
+signed comparison in each half: “Cato bought 6 more truck cards than flower
+cards, and 8 fewer rose cards than truck cards.” It emits two ordinary
+`Relation` facts, not a special solver. The shared subtype lookup selects the
+exact item modifier before folding events; the second comparison cannot use
+the sum of earlier classes as its anchor. Synthesis and contradiction checks
+use that same lookup. Bare activity totals include all qualified item keys,
+but require every same-activity comparison to resolve first.
+The pair template also accepts an initial counted item in the same sentence.
+An expanded standard clause may repeat the actor and activity; repeated slots
+must retain their exact reference and predicate. An incomplete comparison
+cannot fall back to treating that clause's actor as a different standard.
+
+`CollectionAttribute` preserves uncounted nominal descriptions such as “some
+of the cards had a flower design.” Local templates cover one, two, or three
+coordinated descriptions. The facts retain collection, attribute, modifier,
+quantifier, and provenance; they neither invent counts nor assert an exhaustive
+partition. Whole-item answers decline if a described subset lacks a compatible
+positive count, or if competing attribute facets could overlap. Multi-holder
+description binding remains unsupported. A `class_only` slot permits item
+modifiers but rejects owners and instance labels which these class facts
+cannot preserve. Compound condensation retains an owner's identity, and a
+noun/verb homograph selected as a nominal modifier retains its noun lemma.
+Shared-head lists such as “flower, truck, and rose designs” retain each
+descriptor. Two-to-four-member lists have explicit template variants; longer
+recognized lists remain visible to the accounting guard and decline instead
+of disappearing. Sense arbitration applies its ambiguity cap after structural
+licenses, so repeated unambiguous nominal roles do not create a false overflow.
+Declared nominal-attribute PPs also condense onto the host item: “cards with a
+flower design” retains the same item qualifier as “flower cards.” The
+preposition and both modifier/host compatibility checks are pack-owned;
+the host's count and ownership survive the merge.
+
+`QuantityEventContext` records a located, uncounted activity introduction,
+not an amount. Activity totals may elaborate one document-leading context
+from later compatible undated counts. A later or repeated context cannot be
+silently absorbed, nor can an explicitly unknown additional event. Qualified
+asks keep the ordinary exact-item evidence projection.
+
+Single-holder “total number” asks bind their actor and activity explicitly.
+The collective siblings require a complete question, so a named trailing
+clause cannot be ignored. Collective-pronoun surface rules require plural
+pronouns without outranking the existing exact-group rule; singular pronouns
+continue through resolved single-entity asks even with a total marker.
+
+Nominal modifier compatibility uses the existing many-to-many
+`attribute_compatibility` table. For example, `depictable_noun` can modify a
+`depiction_bearing_noun`; the same declarations supply generator fillers and
+help the reader recognize a noun phrase across an article and its modifier.
+No pictured subject or object vocabulary is embedded in a rule or the kernel.
+
 Qualified package contents stay inside the ordinary quantity model. A generic
 class statement such as “a large crate has 40 beads” emits a size-qualified
 `Quantity` whose provenance explicitly marks it distributive; a definite

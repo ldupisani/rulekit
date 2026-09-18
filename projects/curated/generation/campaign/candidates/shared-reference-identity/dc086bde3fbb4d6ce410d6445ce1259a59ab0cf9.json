@@ -1,0 +1,3788 @@
+{
+  "branch": "mining/cand-shared-reference-identity-final-r8",
+  "candidate_id": "shared-reference-identity",
+  "class_evidence": {
+    "ask_mechanism": "Existing single-entity quantity asks bind the full reference and use the same identity resolver as premise facts and relation anchors. Explicit constraints intersect. An unqualified reference may use a uniquely justified participant but must not merge or choose among differently owned, labelled or qualified participants.",
+    "expected_solved": 0,
+    "mode": "product",
+    "pool_frequency": 0,
+    "premise_mechanism": "Preserve complete reference structure during ordinary nominal condensation/reference binding and expose a shared typed identity contract. Existing Quantity and Relation evidence must preserve the participant identity, independently of item subtype, verb, occurrence, time and provenance. Retain legacy flat display fields where necessary but do not use their head-only reductions as proof of identity.",
+    "product_rationale": "The user explicitly approved a shared identity fix after independent review showed that purchases, credit and text definitions could collapse different owned, labelled or qualified participants. After r6 preserved whole/subset safety but exposed a missing forward item-reference capability, the user explicitly approved adding that generic capability with ordering and ambiguity checks. This is a product-led precision and reusable-identity increment, not a corpus-yield claim.",
+    "structural_summary": [
+      "Immediate vertical class on main: direct state/event quantities, affine comparisons, and explicit single-participant asks for named, labelled, qualified or owned holders. This must deliver real end-to-end precision improvements, not only an unused helper.",
+      "Invented matrix: two boxes/teachers with different labels, attributes or owners, equal and unequal values, reordered evidence, same actor repeated events, explicit exact asks and ambiguous bare asks. Use words already available in each tested runtime; a decline caused by unknown vocabulary is not identity evidence.",
+      "Examples to parameterize with asserted premise and ask activation: the box A has 8 cards; box B has 3 cards; ask box A must use only its 8 and bare box with two identities must decline. The same distinctions apply to quantity events and forward/inverse relation anchors.",
+      "Nested ownership needs a lossless, bounded representation: Aven's teacher and Bira's teacher remain distinct when they own a box or another property. Preserve legitimate simple and composite positive neighbors; unresolved or unsupported chains decline explicitly rather than being flattened.",
+      "Identity is not inferred inequality between arbitrary descriptions and is not permission to merge compatible descriptions. Missing identity constraints and ambiguous aliases must not be guessed. Preserve existing explicit discourse resolution, proper names and complete group semantics.",
+      "Account and text fact families are only on rejected branches. Keep those branches unchanged. Design the shared API so their later adapters can use the same contract, but do not merge the failed features or claim their source examples work on this foundation. The three prior review verdicts are risk input, not baseline runtime capability.",
+      "Both curated and GSM8K synthetic cases must prove target fact/ask activation and inspect distinguishing identity fields, even for declines. Parameterize both registries; no fixture can pass only because the intended noun or ask is unknown.",
+      "Preserve ordinary quantity accounting, same-verb/time/occurrence boundaries, equal-valued distinct identity, unrelated actor/measure invariance, and collision behavior. No word-specific Python, blanket disabling of common nouns, or ad hoc serialized head-string parsing.",
+      "Provide canonical strict-positive, boundary, answerable and decline specimens from the exact committed runtime; every declared specimen target must appear in its trace unless absence is explicitly the tested negative boundary.",
+      "User-approved extension: resolve a later bare counted item mention to a uniquely established earlier qualified item class within a compatible discourse context. The link must be explicit and inspectable, respect source order, actor/reference and predicate scope, reject rival classes and explicit conflicting qualifiers, and never convert a bare-first quantity into a later-introduced subset. Reuse shared reference/deictic infrastructure rather than a benchmark-, rule-id-, or word-specific shortcut. Whole/total scope, hypotheticals, time and provenance remain authoritative; do not promote a requested ask qualifier into prior evidence."
+    ],
+    "vocabulary": [],
+    "walked_item_ids": []
+  },
+  "class_name": "Identity-preserving single-participant quantities and comparisons",
+  "commit": "dc086bde3fbb4d6ce410d6445ce1259a59ab0cf9",
+  "constitution_review": {
+    "notes": "Reviewed the complete candidate diff at dc086bde3fbb4d6ce410d6445ce1259a59ab0cf9 against sole parent 45ed3c93dc213baaf4af23e45c8a906d039b061b. Candidate and main remained clean and pinned.\nIndependently replayed all 32 canonical traces exactly, validating every declared target, indexed source link, manifest trace and runtime fingerprint. The owned-answer specimen retains exactly two legitimate red-card quantities.\nIndependent focused suite: 976 passed. Additional probes confirmed 72 activated comparison cases and 16 item-reference scope cases. Owned-event ask forms outside the unchanged grammar declined and were not counted as identity evidence.\nVerified all 13 authoritative standing specifications are neutral/pass, both lints have zero errors, saved full suite passed 7805 tests, integrity records are stable, and all 752 frozen source hashes match current files.\nBoth explicit saved reviews replayed exactly and machine-reconfirmed their positive contracts; the ordinary review ledger remained unchanged. Reconfirmation is not human approval.\nNo word-specific Python, benchmark-shaped parsing, vocabulary admission, undisclosed scope, committed orchestration evidence or rejected feature integration found. Earlier contradiction, qualifier-retention, nested-reference and subtype-classification findings are covered by passing synthetic boundaries.\nNo files edited, benchmarks rerun, protected items inspected, server actions taken, publication performed or integration authorized. Human review and the exact Designer machine gate remain required.",
+    "verdict": "pass",
+    "violations": []
+  },
+  "format": "rulekit/campaign-review@2",
+  "generation_contract": {
+    "ask_rules": [
+      "ask/how-many-entity",
+      "ask/how-many-entity-common-noun",
+      "ask/how-many-entity-qualified",
+      "ask/how-many-entity-possessed",
+      "ask/how-many-container-content-state",
+      "ask/how-many-in-owned-place"
+    ],
+    "premise_rules": [
+      "arithmetic/anchored-relation",
+      "arithmetic/times-as-many",
+      "arithmetic/stated-possessed-location-content"
+    ],
+    "required_specimen_kinds": [
+      "strict_positive",
+      "boundary_probe",
+      "answerable",
+      "decline"
+    ]
+  },
+  "implementation_contract": {
+    "class_justification": "The same reference-identity operation must govern facts, questions, comparisons and aggregation rather than independent owner-only or label-only patches. Prove a complete existing quantity-to-answer class immediately while keeping a reusable typed boundary for later account/text adapters. Product mode claims zero benchmark pool/yield. New necessary files must be disclosed before editing.",
+    "files_expected": [
+      "src/rulekit/kernel/reference_identity.py",
+      "src/rulekit/kernel/item_references.py",
+      "src/rulekit/kernel/model.py",
+      "src/rulekit/kernel/condense.py",
+      "src/rulekit/kernel/learn.py",
+      "src/rulekit/kernel/patterns.py",
+      "src/rulekit/kernel/references.py",
+      "src/rulekit/kernel/document.py",
+      "src/rulekit/kernel/facts.py",
+      "src/rulekit/kernel/guards.py",
+      "src/rulekit/kernel/totals.py",
+      "src/rulekit/kernel/saturate.py",
+      "src/rulekit/kernel/consumers/single_entity.py",
+      "src/rulekit/kernel/answer.py",
+      "src/rulekit/data/schemas.py",
+      "src/rulekit/generation/sample.py",
+      "src/rulekit/generation/reviews.py",
+      "packs/arithmetic/rules/core.yaml",
+      "packs/arithmetic/rules/as-many.yaml",
+      "tests/test_reference_identity.py",
+      "tests/test_item_references.py",
+      "tests/test_reference_identity_reading.py",
+      "tests/test_reference_identity_generation.py",
+      "tests/test_reference_identity_reviews.py",
+      "tests/test_ask_generation_g7.py",
+      "tests/test_consumer_golden_master.py",
+      "tests/test_budget_item_cost.py",
+      "docs/architecture.md"
+    ],
+    "synthetic_tests": [
+      "tests/test_reference_identity.py",
+      "tests/test_item_references.py",
+      "tests/test_reference_identity_reading.py",
+      "tests/test_reference_identity_generation.py",
+      "tests/test_reference_identity_reviews.py",
+      "tests/test_consumer_golden_master.py",
+      "tests/test_budget_item_cost.py"
+    ]
+  },
+  "mechanism": "One reusable reference identity preserves a nominal head, ownership, labels and qualifiers through reading, fact emission, asks, relation anchors and totals. Extend it with user-approved forward discourse item-class binding: a later compatible bare item mention may refer to one earlier established qualified class, with explicit provenance and ambiguity controls. Preserve exact-match versus unique-reference resolution and whole/subset safety. Do not combine or promote the rejected feature branches.",
+  "project": "curated",
+  "published_at": "2026-09-15T13:47:17.779393+00:00",
+  "registry_fingerprint": "95c84adc2e5b8a40f0150ca92f3257a245e19776d38a1ffdb70318809a14ae8e",
+  "review_ids": [
+    "rev-616275994ae245f6",
+    "rev-37c7e86886a54176"
+  ],
+  "risks": [
+    "Reference identity must distinguish actor descriptors from measure qualifiers, predicate/time scope and numerical source evidence.",
+    "Do not change identity solely on a value collision; equal-valued different participants are still different.",
+    "Do not replace general discourse/coreference with a nearest-mention guess or introduce universal identity facts.",
+    "The old rejected branches include separate useful features and repairs but remain unapproved and must not be merged.",
+    "No TEST/generalization, corpus prose, main writes, server intervention, automatic promotion or push.",
+    "Generation and adversarial evidence must run in both curated and the declared GSM8K runtime; unknown vocabulary cannot stand in for a semantic decline.",
+    "Legacy review replay may accept only newly added dataclass-declared reference metadata while preserving exact prior fact multiplicity, type, source, sentence and recorded fields. Recorded identity remains exact; arbitrary or malformed additions fail closed. This reconfirms the old captured contract, not human approval of the newly added identity detail.",
+    "A consistent unnamed possessor is anchored only within the current document; no named antecedent or standalone pronoun binding is invented.",
+    "Qualifier differences constrain selection but do not independently establish distinctness. Explicit labels/owners still distinguish comparison roles.",
+    "Event comparisons require complete per-predicate totals; additional unquantified events and unsupported event-period or offset scopes decline. Only legacy derived missing modifiers may alias actually observed uniquely qualified evidence. A direct bare event amount cannot establish a qualified subset or be ignored alongside qualified events.",
+    "New review reference metadata must be resolved and coherent with the captured legacy descriptors; machine reconfirmation does not approve newly exposed identity information.",
+    "State comparisons resolve omitted measures and explicit item modifiers in both directions. A stated bare whole cannot establish a qualified subset, and a derived bare projection cannot replace directly stated qualified evidence.",
+    "Dataclass-declared qualifier-for emission inherits a direct measure slot modifier only for absent or literal-null fields; explicit non-null YAML remains authoritative. Newly preserved item qualifiers require fresh human review, not reference-only replay enrichment.",
+    "All decoded reference heads, including recursive owners, must be nonblank; malformed metadata cannot reconfirm saved reviews.",
+    "The new item-class capability is forward-only comparison-connected anaphora, not universal coreference: an actual earlier comparison, matching full participant/predicate/item, unique prior class inventory, and no explicit whole, modal or time scope are required. Earlier bare amounts remain bare.",
+    "ItemClassReference preserves literal quantity fields and records exact target/antecedent provenances. Arithmetic projections revalidate the typed source/rival inventory and reader eligibility index. Forged, stale or malformed links fail closed; item-scope enrichment is not reference-only saved-review compatibility.",
+    "Typed qualified single-entity asks reuse the same subset evidence projection as comparisons. An adjective appearing only in the ask cannot establish a subset, and start-state ambiguity checks still inspect the original evidence.",
+    "Native strict generation covers the existing atomic plural filler. A deterministic qualified boundary variant is separately authored and round-tripped; it is not represented as native composed-filler generation.",
+    "Genuinely omitted comparison items retain a uniquely observed standard item modifier through shared effective relation resolution, while the original relation remains unchanged. Explicit bare item scope never inherits a subset, and a bare whole is a rival scope during modifier uniqueness. Subtype discrimination checks full typed owner and label evidence rather than legacy flat descriptors."
+  ],
+  "runtime_project": "gsm8k",
+  "specimens": [
+    {
+      "actual_rule_ids": [
+        "arithmetic/anchored-relation",
+        "arithmetic/stated-count-holding"
+      ],
+      "answer": {
+        "clarification": null,
+        "committed": false,
+        "kind": "decline",
+        "reason": "no question found",
+        "shape": "decline",
+        "value": null
+      },
+      "deficiencies": [],
+      "expectation": "Complete premise target must match and preserve typed reference evidence; no question is present.",
+      "facts": [
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "aven",
+            "entity_ref": {
+              "head": "aven",
+              "label": null,
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "measure": "card",
+            "value": 8.0,
+            "verb": "have"
+          },
+          "sentence": 0,
+          "source": "arithmetic/stated-count-holding",
+          "source_ref": null,
+          "type": "Quantity"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "factor": 1.0,
+            "measure": "card",
+            "measure_qualifier": "",
+            "offset": 3.0,
+            "standard": "aven",
+            "standard_label": "",
+            "standard_offset": 0.0,
+            "standard_owner": "",
+            "standard_qualifier": "",
+            "standard_ref": {
+              "head": "aven",
+              "label": null,
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "subject": "bira",
+            "subject_label": "",
+            "subject_offset": 0.0,
+            "subject_owner": "",
+            "subject_ref": {
+              "head": "bira",
+              "label": null,
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "verb": "have"
+          },
+          "sentence": 1,
+          "source": "arithmetic/anchored-relation",
+          "source_ref": null,
+          "type": "Relation"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "bira",
+            "entity_ref": {
+              "head": "bira",
+              "label": null,
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "measure": "card",
+            "value": 11.0,
+            "verb": "have"
+          },
+          "sentence": 1,
+          "source": "synth/relation",
+          "source_ref": null,
+          "type": "Quantity"
+        }
+      ],
+      "id": "strict-positive-relation",
+      "interpretation": null,
+      "kind": "strict_positive",
+      "reference_year": null,
+      "retest": null,
+      "sentence": "Aven has 8 cards. Bira has 3 more cards than Aven.",
+      "source_ref": {
+        "column": 5,
+        "kind": "rule",
+        "label": "arithmetic/anchored-relation",
+        "line": 22,
+        "path": "/Users/louis/Development/rulekit/.rulekit-cache/mining-2026-09-15/shared-reference-identity/packs/arithmetic/rules/core.yaml"
+      },
+      "target_rule": "arithmetic/anchored-relation",
+      "title": "Strict positive relation",
+      "trace": {
+        "answer": {
+          "clarification": null,
+          "committed": false,
+          "kind": "decline",
+          "reason": "no question found",
+          "shape": "decline",
+          "value": null
+        },
+        "ask": null,
+        "collisions": [],
+        "deficiencies": [],
+        "facts": [
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "aven",
+              "entity_ref": {
+                "head": "aven",
+                "label": null,
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "measure": "card",
+              "value": 8.0,
+              "verb": "have"
+            },
+            "sentence": 0,
+            "source": "arithmetic/stated-count-holding",
+            "source_ref": null,
+            "type": "Quantity"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "factor": 1.0,
+              "measure": "card",
+              "measure_qualifier": "",
+              "offset": 3.0,
+              "standard": "aven",
+              "standard_label": "",
+              "standard_offset": 0.0,
+              "standard_owner": "",
+              "standard_qualifier": "",
+              "standard_ref": {
+                "head": "aven",
+                "label": null,
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "subject": "bira",
+              "subject_label": "",
+              "subject_offset": 0.0,
+              "subject_owner": "",
+              "subject_ref": {
+                "head": "bira",
+                "label": null,
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "verb": "have"
+            },
+            "sentence": 1,
+            "source": "arithmetic/anchored-relation",
+            "source_ref": null,
+            "type": "Relation"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "bira",
+              "entity_ref": {
+                "head": "bira",
+                "label": null,
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "measure": "card",
+              "value": 11.0,
+              "verb": "have"
+            },
+            "sentence": 1,
+            "source": "synth/relation",
+            "source_ref": null,
+            "type": "Quantity"
+          }
+        ],
+        "matches": [
+          {
+            "bindings": {
+              "amount": "8 cards",
+              "verb": "has",
+              "who": "Aven"
+            },
+            "consumed": [
+              0,
+              1,
+              5,
+              4
+            ],
+            "rule_id": "arithmetic/stated-count-holding",
+            "sentence": 0,
+            "shadowed": false
+          },
+          {
+            "bindings": {
+              "dir": "more",
+              "item": "cards",
+              "n": "3",
+              "std": "Aven",
+              "verb": "has",
+              "who": "Bira"
+            },
+            "consumed": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6
+            ],
+            "rule_id": "arithmetic/anchored-relation",
+            "sentence": 1,
+            "shadowed": false
+          }
+        ],
+        "proof": null
+      }
+    },
+    {
+      "actual_rule_ids": [
+        "arithmetic/stated-possessed-location-content"
+      ],
+      "answer": {
+        "clarification": null,
+        "committed": false,
+        "kind": "decline",
+        "reason": "no question found",
+        "shape": "decline",
+        "value": null
+      },
+      "deficiencies": [],
+      "expectation": "Complete premise target must match and preserve typed reference evidence; no question is present.",
+      "facts": [
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "box",
+            "entity_ref": {
+              "head": "box",
+              "label": null,
+              "owner": {
+                "head": "teacher",
+                "label": null,
+                "owner": {
+                  "head": "aven",
+                  "label": null,
+                  "owner": null,
+                  "qualifiers": [],
+                  "resolved": true
+                },
+                "qualifiers": [],
+                "resolved": true
+              },
+              "qualifiers": [],
+              "resolved": true
+            },
+            "measure": "card",
+            "owner": "teacher",
+            "qualifier": "",
+            "value": 8.0,
+            "verb": "have"
+          },
+          "sentence": 0,
+          "source": "arithmetic/stated-possessed-location-content",
+          "source_ref": null,
+          "type": "Quantity"
+        }
+      ],
+      "id": "strict-positive-owned",
+      "interpretation": null,
+      "kind": "strict_positive",
+      "reference_year": null,
+      "retest": null,
+      "sentence": "Aven's teacher's box has 8 cards.",
+      "source_ref": {
+        "column": 5,
+        "kind": "rule",
+        "label": "arithmetic/stated-possessed-location-content",
+        "line": 5132,
+        "path": "/Users/louis/Development/rulekit/.rulekit-cache/mining-2026-09-15/shared-reference-identity/packs/arithmetic/rules/core.yaml"
+      },
+      "target_rule": "arithmetic/stated-possessed-location-content",
+      "title": "Strict positive owned",
+      "trace": {
+        "answer": {
+          "clarification": null,
+          "committed": false,
+          "kind": "decline",
+          "reason": "no question found",
+          "shape": "decline",
+          "value": null
+        },
+        "ask": null,
+        "collisions": [],
+        "deficiencies": [],
+        "facts": [
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "box",
+              "entity_ref": {
+                "head": "box",
+                "label": null,
+                "owner": {
+                  "head": "teacher",
+                  "label": null,
+                  "owner": {
+                    "head": "aven",
+                    "label": null,
+                    "owner": null,
+                    "qualifiers": [],
+                    "resolved": true
+                  },
+                  "qualifiers": [],
+                  "resolved": true
+                },
+                "qualifiers": [],
+                "resolved": true
+              },
+              "measure": "card",
+              "owner": "teacher",
+              "qualifier": "",
+              "value": 8.0,
+              "verb": "have"
+            },
+            "sentence": 0,
+            "source": "arithmetic/stated-possessed-location-content",
+            "source_ref": null,
+            "type": "Quantity"
+          }
+        ],
+        "matches": [
+          {
+            "bindings": {
+              "item": "8 cards",
+              "place": "Aven 's teacher 's box",
+              "verb": "has"
+            },
+            "consumed": [
+              10,
+              5,
+              11,
+              8
+            ],
+            "rule_id": "arithmetic/stated-possessed-location-content",
+            "sentence": 0,
+            "shadowed": false
+          }
+        ],
+        "proof": null
+      }
+    },
+    {
+      "actual_rule_ids": [
+        "arithmetic/anchored-relation",
+        "ask/how-many-entity"
+      ],
+      "answer": {
+        "clarification": null,
+        "committed": true,
+        "kind": "number",
+        "reason": "total from identified item subset",
+        "shape": "number",
+        "value": 11.0
+      },
+      "deficiencies": [],
+      "expectation": "The complete ask must return exactly 11 using only the identified participant's compatible quantities.",
+      "facts": [
+        {
+          "derivation": null,
+          "fields": {
+            "factor": 1.0,
+            "measure": "card",
+            "measure_qualifier": "red",
+            "offset": 3.0,
+            "standard": "aven",
+            "standard_label": "",
+            "standard_offset": 0.0,
+            "standard_owner": "",
+            "standard_qualifier": "",
+            "standard_ref": {
+              "head": "aven",
+              "label": null,
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "subject": "bira",
+            "subject_label": "",
+            "subject_offset": 0.0,
+            "subject_owner": "",
+            "subject_ref": {
+              "head": "bira",
+              "label": null,
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "verb": "sell"
+          },
+          "sentence": 0,
+          "source": "arithmetic/anchored-relation",
+          "source_ref": null,
+          "type": "Relation"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "aven",
+            "entity_ref": {
+              "head": "aven",
+              "label": null,
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "item_reference": {
+              "antecedents": [
+                {
+                  "assumption": false,
+                  "container_count": false,
+                  "decision_seq": null,
+                  "distributive": false,
+                  "sentence": 0,
+                  "source": "arithmetic/anchored-relation",
+                  "temporal_perspective": null
+                }
+              ],
+              "item": {
+                "head": "card",
+                "label": null,
+                "owner": null,
+                "qualifiers": [
+                  "red"
+                ],
+                "resolved": true
+              },
+              "participant": {
+                "head": "aven",
+                "label": null,
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "predicate": "sell",
+              "target": {
+                "assumption": false,
+                "container_count": false,
+                "decision_seq": null,
+                "distributive": false,
+                "sentence": 1,
+                "source": "fold",
+                "temporal_perspective": null
+              }
+            },
+            "measure": "card",
+            "occurrence": 1,
+            "value": 8.0,
+            "verb": "sell"
+          },
+          "sentence": 1,
+          "source": "fold",
+          "source_ref": null,
+          "type": "Quantity"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "bira",
+            "entity_ref": {
+              "head": "bira",
+              "label": null,
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "measure": "card",
+            "measure_qualifier": "red",
+            "value": 11.0,
+            "verb": "sell"
+          },
+          "sentence": 0,
+          "source": "synth/relation",
+          "source_ref": null,
+          "type": "Quantity"
+        }
+      ],
+      "id": "forward-item-class-answer",
+      "interpretation": null,
+      "kind": "answerable",
+      "reference_year": null,
+      "retest": null,
+      "sentence": "Bira sold 3 more red cards than Aven. Aven sold 8 cards. How many red cards did Bira sell?",
+      "source_ref": {
+        "column": 5,
+        "kind": "ask",
+        "label": "ask/how-many-entity",
+        "line": 7394,
+        "path": "/Users/louis/Development/rulekit/.rulekit-cache/mining-2026-09-15/shared-reference-identity/packs/arithmetic/rules/core.yaml"
+      },
+      "target_rule": "ask/how-many-entity",
+      "title": "Forward item class answer",
+      "trace": {
+        "answer": {
+          "clarification": null,
+          "committed": true,
+          "kind": "number",
+          "reason": "total from identified item subset",
+          "shape": "number",
+          "value": 11.0
+        },
+        "ask": {
+          "id": "ask/how-many-entity",
+          "query": {
+            "consumer": "single-entity",
+            "entity": "bira",
+            "evidence_entity_reference": {
+              "head": "bira",
+              "label": null,
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "measure": "card",
+            "measure_qualifier": "red",
+            "sum_measure_variants": "true",
+            "verb": "sell"
+          }
+        },
+        "collisions": [],
+        "deficiencies": [],
+        "facts": [
+          {
+            "derivation": null,
+            "fields": {
+              "factor": 1.0,
+              "measure": "card",
+              "measure_qualifier": "red",
+              "offset": 3.0,
+              "standard": "aven",
+              "standard_label": "",
+              "standard_offset": 0.0,
+              "standard_owner": "",
+              "standard_qualifier": "",
+              "standard_ref": {
+                "head": "aven",
+                "label": null,
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "subject": "bira",
+              "subject_label": "",
+              "subject_offset": 0.0,
+              "subject_owner": "",
+              "subject_ref": {
+                "head": "bira",
+                "label": null,
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "verb": "sell"
+            },
+            "sentence": 0,
+            "source": "arithmetic/anchored-relation",
+            "source_ref": null,
+            "type": "Relation"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "aven",
+              "entity_ref": {
+                "head": "aven",
+                "label": null,
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "item_reference": {
+                "antecedents": [
+                  {
+                    "assumption": false,
+                    "container_count": false,
+                    "decision_seq": null,
+                    "distributive": false,
+                    "sentence": 0,
+                    "source": "arithmetic/anchored-relation",
+                    "temporal_perspective": null
+                  }
+                ],
+                "item": {
+                  "head": "card",
+                  "label": null,
+                  "owner": null,
+                  "qualifiers": [
+                    "red"
+                  ],
+                  "resolved": true
+                },
+                "participant": {
+                  "head": "aven",
+                  "label": null,
+                  "owner": null,
+                  "qualifiers": [],
+                  "resolved": true
+                },
+                "predicate": "sell",
+                "target": {
+                  "assumption": false,
+                  "container_count": false,
+                  "decision_seq": null,
+                  "distributive": false,
+                  "sentence": 1,
+                  "source": "fold",
+                  "temporal_perspective": null
+                }
+              },
+              "measure": "card",
+              "occurrence": 1,
+              "value": 8.0,
+              "verb": "sell"
+            },
+            "sentence": 1,
+            "source": "fold",
+            "source_ref": null,
+            "type": "Quantity"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "bira",
+              "entity_ref": {
+                "head": "bira",
+                "label": null,
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "measure": "card",
+              "measure_qualifier": "red",
+              "value": 11.0,
+              "verb": "sell"
+            },
+            "sentence": 0,
+            "source": "synth/relation",
+            "source_ref": null,
+            "type": "Quantity"
+          }
+        ],
+        "matches": [
+          {
+            "bindings": {
+              "dir": "more",
+              "item": "red cards",
+              "n": "3",
+              "std": "Aven",
+              "verb": "sold",
+              "who": "Bira"
+            },
+            "consumed": [
+              0,
+              1,
+              2,
+              3,
+              9,
+              6,
+              7
+            ],
+            "rule_id": "arithmetic/anchored-relation",
+            "sentence": 0,
+            "shadowed": false
+          }
+        ],
+        "proof": null
+      }
+    },
+    {
+      "actual_rule_ids": [
+        "ask/how-many-entity-common-noun"
+      ],
+      "answer": {
+        "clarification": null,
+        "committed": true,
+        "kind": "number",
+        "reason": "\u03a3 'buy' events of 'teacher'/'card'",
+        "shape": "number",
+        "value": 8.0
+      },
+      "deficiencies": [],
+      "expectation": "The complete ask must return exactly 8 using only the identified participant's compatible quantities.",
+      "facts": [
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "teacher[A]",
+            "entity_ref": {
+              "head": "teacher",
+              "label": "A",
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "label": "A",
+            "measure": "card",
+            "occurrence": 0,
+            "value": 8.0,
+            "verb": "buy"
+          },
+          "sentence": 0,
+          "source": "fold",
+          "source_ref": null,
+          "type": "Quantity"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "teacher[B]",
+            "entity_ref": {
+              "head": "teacher",
+              "label": "B",
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "label": "B",
+            "measure": "card",
+            "occurrence": 1,
+            "value": 3.0,
+            "verb": "buy"
+          },
+          "sentence": 1,
+          "source": "fold",
+          "source_ref": null,
+          "type": "Quantity"
+        }
+      ],
+      "id": "labeled-answer",
+      "interpretation": null,
+      "kind": "answerable",
+      "reference_year": null,
+      "retest": null,
+      "sentence": "The teacher A bought 8 cards. The teacher B bought 3 cards. How many cards did the teacher A buy?",
+      "source_ref": {
+        "column": 5,
+        "kind": "ask",
+        "label": "ask/how-many-entity-common-noun",
+        "line": 7594,
+        "path": "/Users/louis/Development/rulekit/.rulekit-cache/mining-2026-09-15/shared-reference-identity/packs/arithmetic/rules/core.yaml"
+      },
+      "target_rule": "ask/how-many-entity-common-noun",
+      "title": "Labeled answer",
+      "trace": {
+        "answer": {
+          "clarification": null,
+          "committed": true,
+          "kind": "number",
+          "reason": "\u03a3 'buy' events of 'teacher'/'card'",
+          "shape": "number",
+          "value": 8.0
+        },
+        "ask": {
+          "id": "ask/how-many-entity-common-noun",
+          "query": {
+            "consumer": "single-entity",
+            "entity": "teacher",
+            "evidence_entity_reference": {
+              "head": "teacher",
+              "label": "A",
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "measure": "card",
+            "measure_qualifier": "",
+            "sum_measure_variants": "true",
+            "verb": "buy"
+          }
+        },
+        "collisions": [],
+        "deficiencies": [],
+        "facts": [
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "teacher[A]",
+              "entity_ref": {
+                "head": "teacher",
+                "label": "A",
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "label": "A",
+              "measure": "card",
+              "occurrence": 0,
+              "value": 8.0,
+              "verb": "buy"
+            },
+            "sentence": 0,
+            "source": "fold",
+            "source_ref": null,
+            "type": "Quantity"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "teacher[B]",
+              "entity_ref": {
+                "head": "teacher",
+                "label": "B",
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "label": "B",
+              "measure": "card",
+              "occurrence": 1,
+              "value": 3.0,
+              "verb": "buy"
+            },
+            "sentence": 1,
+            "source": "fold",
+            "source_ref": null,
+            "type": "Quantity"
+          }
+        ],
+        "matches": [],
+        "proof": null
+      }
+    },
+    {
+      "actual_rule_ids": [
+        "ask/how-many-entity-qualified"
+      ],
+      "answer": {
+        "clarification": null,
+        "committed": true,
+        "kind": "number",
+        "reason": "fold over 'teacher'/'card'",
+        "shape": "number",
+        "value": 8.0
+      },
+      "deficiencies": [],
+      "expectation": "The complete ask must return exactly 8 using only the identified participant's compatible quantities.",
+      "facts": [
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "teacher[tall]",
+            "entity_ref": {
+              "head": "teacher",
+              "label": null,
+              "owner": null,
+              "qualifiers": [
+                "tall"
+              ],
+              "resolved": true
+            },
+            "measure": "card",
+            "qualifier": "tall",
+            "value": 8.0,
+            "verb": "have"
+          },
+          "sentence": 0,
+          "source": "fold",
+          "source_ref": null,
+          "type": "Quantity"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "teacher[small]",
+            "entity_ref": {
+              "head": "teacher",
+              "label": null,
+              "owner": null,
+              "qualifiers": [
+                "small"
+              ],
+              "resolved": true
+            },
+            "measure": "card",
+            "qualifier": "small",
+            "value": 3.0,
+            "verb": "have"
+          },
+          "sentence": 1,
+          "source": "fold",
+          "source_ref": null,
+          "type": "Quantity"
+        }
+      ],
+      "id": "qualified-answer",
+      "interpretation": null,
+      "kind": "answerable",
+      "reference_year": null,
+      "retest": null,
+      "sentence": "The tall teacher has 8 cards. The small teacher has 3 cards. How many cards does the tall teacher have?",
+      "source_ref": {
+        "column": 5,
+        "kind": "ask",
+        "label": "ask/how-many-entity-qualified",
+        "line": 7571,
+        "path": "/Users/louis/Development/rulekit/.rulekit-cache/mining-2026-09-15/shared-reference-identity/packs/arithmetic/rules/core.yaml"
+      },
+      "target_rule": "ask/how-many-entity-qualified",
+      "title": "Qualified answer",
+      "trace": {
+        "answer": {
+          "clarification": null,
+          "committed": true,
+          "kind": "number",
+          "reason": "fold over 'teacher'/'card'",
+          "shape": "number",
+          "value": 8.0
+        },
+        "ask": {
+          "id": "ask/how-many-entity-qualified",
+          "query": {
+            "consumer": "single-entity",
+            "entity": "teacher",
+            "entity_qualifier": "tall",
+            "evidence_entity_reference": {
+              "head": "teacher",
+              "label": null,
+              "owner": null,
+              "qualifiers": [
+                "tall"
+              ],
+              "resolved": true
+            },
+            "measure": "card",
+            "verb": "have"
+          }
+        },
+        "collisions": [],
+        "deficiencies": [],
+        "facts": [
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "teacher[tall]",
+              "entity_ref": {
+                "head": "teacher",
+                "label": null,
+                "owner": null,
+                "qualifiers": [
+                  "tall"
+                ],
+                "resolved": true
+              },
+              "measure": "card",
+              "qualifier": "tall",
+              "value": 8.0,
+              "verb": "have"
+            },
+            "sentence": 0,
+            "source": "fold",
+            "source_ref": null,
+            "type": "Quantity"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "teacher[small]",
+              "entity_ref": {
+                "head": "teacher",
+                "label": null,
+                "owner": null,
+                "qualifiers": [
+                  "small"
+                ],
+                "resolved": true
+              },
+              "measure": "card",
+              "qualifier": "small",
+              "value": 3.0,
+              "verb": "have"
+            },
+            "sentence": 1,
+            "source": "fold",
+            "source_ref": null,
+            "type": "Quantity"
+          }
+        ],
+        "matches": [],
+        "proof": null
+      }
+    },
+    {
+      "actual_rule_ids": [
+        "arithmetic/anchored-relation-elided",
+        "ask/how-many-entity-possessed"
+      ],
+      "answer": {
+        "clarification": null,
+        "committed": true,
+        "kind": "number",
+        "reason": "fold over 'teacher'/'card'",
+        "shape": "number",
+        "value": 11.0
+      },
+      "deficiencies": [
+        "'3' (value) needs a quantifies and none was found."
+      ],
+      "expectation": "The complete ask must return exactly 11 using only the identified participant's compatible quantities.",
+      "facts": [
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "teacher[aven]",
+            "entity_ref": {
+              "head": "teacher",
+              "label": null,
+              "owner": {
+                "head": "aven",
+                "label": null,
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "qualifiers": [],
+              "resolved": true
+            },
+            "measure": "card",
+            "measure_qualifier": "red",
+            "owner": "aven",
+            "value": 8.0,
+            "verb": "have"
+          },
+          "sentence": 0,
+          "source": "fold",
+          "source_ref": null,
+          "type": "Quantity"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "factor": 1.0,
+            "offset": 3.0,
+            "standard": "teacher",
+            "standard_label": "",
+            "standard_offset": 0.0,
+            "standard_ref": {
+              "head": "teacher",
+              "label": null,
+              "owner": {
+                "head": "aven",
+                "label": null,
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "qualifiers": [],
+              "resolved": true
+            },
+            "subject": "teacher",
+            "subject_label": "",
+            "subject_offset": 0.0,
+            "subject_ref": {
+              "head": "teacher",
+              "label": null,
+              "owner": {
+                "head": "bira",
+                "label": null,
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "qualifiers": [],
+              "resolved": true
+            },
+            "verb": "have"
+          },
+          "sentence": 1,
+          "source": "arithmetic/anchored-relation-elided",
+          "source_ref": null,
+          "type": "Relation"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "teacher[bira]",
+            "entity_ref": {
+              "head": "teacher",
+              "label": null,
+              "owner": {
+                "head": "bira",
+                "label": null,
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "qualifiers": [],
+              "resolved": true
+            },
+            "measure": "card",
+            "measure_qualifier": "red",
+            "value": 11.0,
+            "verb": "have"
+          },
+          "sentence": 1,
+          "source": "synth/relation",
+          "source_ref": null,
+          "type": "Quantity"
+        }
+      ],
+      "id": "owned-answer",
+      "interpretation": null,
+      "kind": "answerable",
+      "reference_year": null,
+      "retest": null,
+      "sentence": "Aven's teacher has 8 red cards. Bira's teacher has 3 more than Aven's teacher. How many cards does Bira's teacher have?",
+      "source_ref": {
+        "column": 5,
+        "kind": "ask",
+        "label": "ask/how-many-entity-possessed",
+        "line": 7525,
+        "path": "/Users/louis/Development/rulekit/.rulekit-cache/mining-2026-09-15/shared-reference-identity/packs/arithmetic/rules/core.yaml"
+      },
+      "target_rule": "ask/how-many-entity-possessed",
+      "title": "Owned answer",
+      "trace": {
+        "answer": {
+          "clarification": null,
+          "committed": true,
+          "kind": "number",
+          "reason": "fold over 'teacher'/'card'",
+          "shape": "number",
+          "value": 11.0
+        },
+        "ask": {
+          "id": "ask/how-many-entity-possessed",
+          "query": {
+            "consumer": "single-entity",
+            "entity": "teacher",
+            "entity_owner": "bira",
+            "evidence_entity_reference": {
+              "head": "teacher",
+              "label": null,
+              "owner": {
+                "head": "bira",
+                "label": null,
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "qualifiers": [],
+              "resolved": true
+            },
+            "measure": "card",
+            "verb": "have"
+          }
+        },
+        "collisions": [],
+        "deficiencies": [
+          "'3' (value) needs a quantifies and none was found."
+        ],
+        "facts": [
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "teacher[aven]",
+              "entity_ref": {
+                "head": "teacher",
+                "label": null,
+                "owner": {
+                  "head": "aven",
+                  "label": null,
+                  "owner": null,
+                  "qualifiers": [],
+                  "resolved": true
+                },
+                "qualifiers": [],
+                "resolved": true
+              },
+              "measure": "card",
+              "measure_qualifier": "red",
+              "owner": "aven",
+              "value": 8.0,
+              "verb": "have"
+            },
+            "sentence": 0,
+            "source": "fold",
+            "source_ref": null,
+            "type": "Quantity"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "factor": 1.0,
+              "offset": 3.0,
+              "standard": "teacher",
+              "standard_label": "",
+              "standard_offset": 0.0,
+              "standard_ref": {
+                "head": "teacher",
+                "label": null,
+                "owner": {
+                  "head": "aven",
+                  "label": null,
+                  "owner": null,
+                  "qualifiers": [],
+                  "resolved": true
+                },
+                "qualifiers": [],
+                "resolved": true
+              },
+              "subject": "teacher",
+              "subject_label": "",
+              "subject_offset": 0.0,
+              "subject_ref": {
+                "head": "teacher",
+                "label": null,
+                "owner": {
+                  "head": "bira",
+                  "label": null,
+                  "owner": null,
+                  "qualifiers": [],
+                  "resolved": true
+                },
+                "qualifiers": [],
+                "resolved": true
+              },
+              "verb": "have"
+            },
+            "sentence": 1,
+            "source": "arithmetic/anchored-relation-elided",
+            "source_ref": null,
+            "type": "Relation"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "teacher[bira]",
+              "entity_ref": {
+                "head": "teacher",
+                "label": null,
+                "owner": {
+                  "head": "bira",
+                  "label": null,
+                  "owner": null,
+                  "qualifiers": [],
+                  "resolved": true
+                },
+                "qualifiers": [],
+                "resolved": true
+              },
+              "measure": "card",
+              "measure_qualifier": "red",
+              "value": 11.0,
+              "verb": "have"
+            },
+            "sentence": 1,
+            "source": "synth/relation",
+            "source_ref": null,
+            "type": "Quantity"
+          }
+        ],
+        "matches": [
+          {
+            "bindings": {
+              "dir": "more",
+              "n": "3",
+              "std": "Aven 's teacher",
+              "verb": "has",
+              "who": "Bira 's teacher"
+            },
+            "consumed": [
+              11,
+              3,
+              4,
+              5,
+              6,
+              12
+            ],
+            "rule_id": "arithmetic/anchored-relation-elided",
+            "sentence": 1,
+            "shadowed": false
+          }
+        ],
+        "proof": null
+      }
+    },
+    {
+      "actual_rule_ids": [
+        "arithmetic/stated-possessed-location-content",
+        "ask/how-many-in-owned-place"
+      ],
+      "answer": {
+        "clarification": null,
+        "committed": true,
+        "kind": "number",
+        "reason": "fold over 'box'/'card'",
+        "shape": "number",
+        "value": 8.0
+      },
+      "deficiencies": [],
+      "expectation": "The complete ask must return exactly 8 using only the identified participant's compatible quantities.",
+      "facts": [
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "box[teacher[aven]]",
+            "entity_ref": {
+              "head": "box",
+              "label": null,
+              "owner": {
+                "head": "teacher",
+                "label": null,
+                "owner": {
+                  "head": "aven",
+                  "label": null,
+                  "owner": null,
+                  "qualifiers": [],
+                  "resolved": true
+                },
+                "qualifiers": [],
+                "resolved": true
+              },
+              "qualifiers": [],
+              "resolved": true
+            },
+            "measure": "card",
+            "owner": "teacher",
+            "qualifier": "",
+            "value": 8.0,
+            "verb": "have"
+          },
+          "sentence": 0,
+          "source": "arithmetic/stated-possessed-location-content",
+          "source_ref": null,
+          "type": "Quantity"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "box[teacher[bira]]",
+            "entity_ref": {
+              "head": "box",
+              "label": null,
+              "owner": {
+                "head": "teacher",
+                "label": null,
+                "owner": {
+                  "head": "bira",
+                  "label": null,
+                  "owner": null,
+                  "qualifiers": [],
+                  "resolved": true
+                },
+                "qualifiers": [],
+                "resolved": true
+              },
+              "qualifiers": [],
+              "resolved": true
+            },
+            "measure": "card",
+            "owner": "teacher",
+            "qualifier": "",
+            "value": 3.0,
+            "verb": "have"
+          },
+          "sentence": 1,
+          "source": "arithmetic/stated-possessed-location-content",
+          "source_ref": null,
+          "type": "Quantity"
+        }
+      ],
+      "id": "nested-place-answer",
+      "interpretation": null,
+      "kind": "answerable",
+      "reference_year": null,
+      "retest": null,
+      "sentence": "Aven's teacher's box has 8 cards. Bira's teacher's box has 3 cards. How many cards are in Aven's teacher's box?",
+      "source_ref": {
+        "column": 5,
+        "kind": "ask",
+        "label": "ask/how-many-in-owned-place",
+        "line": 6696,
+        "path": "/Users/louis/Development/rulekit/.rulekit-cache/mining-2026-09-15/shared-reference-identity/packs/arithmetic/rules/core.yaml"
+      },
+      "target_rule": "ask/how-many-in-owned-place",
+      "title": "Nested place answer",
+      "trace": {
+        "answer": {
+          "clarification": null,
+          "committed": true,
+          "kind": "number",
+          "reason": "fold over 'box'/'card'",
+          "shape": "number",
+          "value": 8.0
+        },
+        "ask": {
+          "id": "ask/how-many-in-owned-place",
+          "query": {
+            "consumer": "single-entity",
+            "entity": "box",
+            "entity_owner": "teacher",
+            "entity_qualifier": "",
+            "evidence_entity_reference": {
+              "head": "box",
+              "label": null,
+              "owner": {
+                "head": "teacher",
+                "label": null,
+                "owner": {
+                  "head": "aven",
+                  "label": null,
+                  "owner": null,
+                  "qualifiers": [],
+                  "resolved": true
+                },
+                "qualifiers": [],
+                "resolved": true
+              },
+              "qualifiers": [],
+              "resolved": true
+            },
+            "evidence_reference_time_required": "true",
+            "measure": "card",
+            "measure_qualifier": "",
+            "require_entity_owner_evidence": "true",
+            "sum_measure_variants": "true",
+            "verb": "have"
+          }
+        },
+        "collisions": [],
+        "deficiencies": [],
+        "facts": [
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "box[teacher[aven]]",
+              "entity_ref": {
+                "head": "box",
+                "label": null,
+                "owner": {
+                  "head": "teacher",
+                  "label": null,
+                  "owner": {
+                    "head": "aven",
+                    "label": null,
+                    "owner": null,
+                    "qualifiers": [],
+                    "resolved": true
+                  },
+                  "qualifiers": [],
+                  "resolved": true
+                },
+                "qualifiers": [],
+                "resolved": true
+              },
+              "measure": "card",
+              "owner": "teacher",
+              "qualifier": "",
+              "value": 8.0,
+              "verb": "have"
+            },
+            "sentence": 0,
+            "source": "arithmetic/stated-possessed-location-content",
+            "source_ref": null,
+            "type": "Quantity"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "box[teacher[bira]]",
+              "entity_ref": {
+                "head": "box",
+                "label": null,
+                "owner": {
+                  "head": "teacher",
+                  "label": null,
+                  "owner": {
+                    "head": "bira",
+                    "label": null,
+                    "owner": null,
+                    "qualifiers": [],
+                    "resolved": true
+                  },
+                  "qualifiers": [],
+                  "resolved": true
+                },
+                "qualifiers": [],
+                "resolved": true
+              },
+              "measure": "card",
+              "owner": "teacher",
+              "qualifier": "",
+              "value": 3.0,
+              "verb": "have"
+            },
+            "sentence": 1,
+            "source": "arithmetic/stated-possessed-location-content",
+            "source_ref": null,
+            "type": "Quantity"
+          }
+        ],
+        "matches": [
+          {
+            "bindings": {
+              "item": "8 cards",
+              "place": "Aven 's teacher 's box",
+              "verb": "has"
+            },
+            "consumed": [
+              10,
+              5,
+              11,
+              8
+            ],
+            "rule_id": "arithmetic/stated-possessed-location-content",
+            "sentence": 0,
+            "shadowed": false
+          },
+          {
+            "bindings": {
+              "item": "3 cards",
+              "place": "Bira 's teacher 's box",
+              "verb": "has"
+            },
+            "consumed": [
+              10,
+              5,
+              11,
+              8
+            ],
+            "rule_id": "arithmetic/stated-possessed-location-content",
+            "sentence": 1,
+            "shadowed": false
+          }
+        ],
+        "proof": null
+      }
+    },
+    {
+      "actual_rule_ids": [
+        "ask/how-many-container-content-state"
+      ],
+      "answer": {
+        "clarification": null,
+        "committed": true,
+        "kind": "number",
+        "reason": "fold over 'box'/'card'",
+        "shape": "number",
+        "value": 8.0
+      },
+      "deficiencies": [],
+      "expectation": "The complete ask must return exactly 8 using only the identified participant's compatible quantities.",
+      "facts": [
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "box[A]",
+            "entity_ref": {
+              "head": "box",
+              "label": "A",
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "label": "A",
+            "measure": "card",
+            "value": 8.0,
+            "verb": "have"
+          },
+          "sentence": 0,
+          "source": "fold",
+          "source_ref": null,
+          "type": "Quantity"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "box[B]",
+            "entity_ref": {
+              "head": "box",
+              "label": "B",
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "label": "B",
+            "measure": "card",
+            "value": 3.0,
+            "verb": "have"
+          },
+          "sentence": 1,
+          "source": "fold",
+          "source_ref": null,
+          "type": "Quantity"
+        }
+      ],
+      "id": "container-answer",
+      "interpretation": null,
+      "kind": "answerable",
+      "reference_year": null,
+      "retest": null,
+      "sentence": "The box A has 8 cards. The box B has 3 cards. How many cards does the box A contain?",
+      "source_ref": {
+        "column": 5,
+        "kind": "ask",
+        "label": "ask/how-many-container-content-state",
+        "line": 6619,
+        "path": "/Users/louis/Development/rulekit/.rulekit-cache/mining-2026-09-15/shared-reference-identity/packs/arithmetic/rules/core.yaml"
+      },
+      "target_rule": "ask/how-many-container-content-state",
+      "title": "Container answer",
+      "trace": {
+        "answer": {
+          "clarification": null,
+          "committed": true,
+          "kind": "number",
+          "reason": "fold over 'box'/'card'",
+          "shape": "number",
+          "value": 8.0
+        },
+        "ask": {
+          "id": "ask/how-many-container-content-state",
+          "query": {
+            "consumer": "single-entity",
+            "entity": "box",
+            "evidence_entity_reference": {
+              "head": "box",
+              "label": "A",
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "evidence_reference_time_required": "true",
+            "measure": "card",
+            "measure_qualifier": "",
+            "sum_measure_variants": "true",
+            "verb": "contain"
+          }
+        },
+        "collisions": [],
+        "deficiencies": [],
+        "facts": [
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "box[A]",
+              "entity_ref": {
+                "head": "box",
+                "label": "A",
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "label": "A",
+              "measure": "card",
+              "value": 8.0,
+              "verb": "have"
+            },
+            "sentence": 0,
+            "source": "fold",
+            "source_ref": null,
+            "type": "Quantity"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "box[B]",
+              "entity_ref": {
+                "head": "box",
+                "label": "B",
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "label": "B",
+              "measure": "card",
+              "value": 3.0,
+              "verb": "have"
+            },
+            "sentence": 1,
+            "source": "fold",
+            "source_ref": null,
+            "type": "Quantity"
+          }
+        ],
+        "matches": [],
+        "proof": null
+      }
+    },
+    {
+      "actual_rule_ids": [
+        "arithmetic/anchored-relation",
+        "ask/how-many-entity-common-noun"
+      ],
+      "answer": {
+        "clarification": null,
+        "committed": false,
+        "kind": "decline",
+        "reason": "qualified item needs compatible subset evidence",
+        "shape": "decline",
+        "value": null
+      },
+      "deficiencies": [],
+      "expectation": "The complete ask must match but decline without selecting an ambiguous, missing or conflicting participant.",
+      "facts": [
+        {
+          "derivation": null,
+          "fields": {
+            "factor": 1.0,
+            "measure": "card",
+            "measure_qualifier": "red",
+            "offset": 3.0,
+            "standard": "teacher",
+            "standard_label": "A",
+            "standard_offset": 0.0,
+            "standard_owner": "",
+            "standard_qualifier": "",
+            "standard_ref": {
+              "head": "teacher",
+              "label": "A",
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "subject": "teacher",
+            "subject_label": "B",
+            "subject_offset": 0.0,
+            "subject_owner": "",
+            "subject_ref": {
+              "head": "teacher",
+              "label": "B",
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "verb": "sell"
+          },
+          "sentence": 0,
+          "source": "arithmetic/anchored-relation",
+          "source_ref": null,
+          "type": "Relation"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "factor": 1.0,
+            "measure": "card",
+            "measure_qualifier": "blue",
+            "offset": 2.0,
+            "standard": "teacher",
+            "standard_label": "A",
+            "standard_offset": 0.0,
+            "standard_owner": "",
+            "standard_qualifier": "",
+            "standard_ref": {
+              "head": "teacher",
+              "label": "A",
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "subject": "teacher",
+            "subject_label": "C",
+            "subject_offset": 0.0,
+            "subject_owner": "",
+            "subject_ref": {
+              "head": "teacher",
+              "label": "C",
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "verb": "sell"
+          },
+          "sentence": 1,
+          "source": "arithmetic/anchored-relation",
+          "source_ref": null,
+          "type": "Relation"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "teacher",
+            "entity_ref": {
+              "head": "teacher",
+              "label": "A",
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "label": "A",
+            "measure": "card",
+            "occurrence": 2,
+            "value": 8.0,
+            "verb": "sell"
+          },
+          "sentence": 2,
+          "source": "fold",
+          "source_ref": null,
+          "type": "Quantity"
+        }
+      ],
+      "id": "rival-item-class-ambiguity",
+      "interpretation": null,
+      "kind": "decline",
+      "reference_year": null,
+      "retest": null,
+      "sentence": "The teacher B sold 3 more red cards than the teacher A. The teacher C sold 2 more blue cards than the teacher A. The teacher A sold 8 cards. How many red cards did the teacher B sell?",
+      "source_ref": {
+        "column": 5,
+        "kind": "ask",
+        "label": "ask/how-many-entity-common-noun",
+        "line": 7594,
+        "path": "/Users/louis/Development/rulekit/.rulekit-cache/mining-2026-09-15/shared-reference-identity/packs/arithmetic/rules/core.yaml"
+      },
+      "target_rule": "ask/how-many-entity-common-noun",
+      "title": "Rival item class ambiguity",
+      "trace": {
+        "answer": {
+          "clarification": null,
+          "committed": false,
+          "kind": "decline",
+          "reason": "qualified item needs compatible subset evidence",
+          "shape": "decline",
+          "value": null
+        },
+        "ask": {
+          "id": "ask/how-many-entity-common-noun",
+          "query": {
+            "consumer": "single-entity",
+            "entity": "teacher",
+            "evidence_entity_reference": {
+              "head": "teacher",
+              "label": "B",
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "measure": "card",
+            "measure_qualifier": "red",
+            "sum_measure_variants": "true",
+            "verb": "sell"
+          }
+        },
+        "collisions": [],
+        "deficiencies": [],
+        "facts": [
+          {
+            "derivation": null,
+            "fields": {
+              "factor": 1.0,
+              "measure": "card",
+              "measure_qualifier": "red",
+              "offset": 3.0,
+              "standard": "teacher",
+              "standard_label": "A",
+              "standard_offset": 0.0,
+              "standard_owner": "",
+              "standard_qualifier": "",
+              "standard_ref": {
+                "head": "teacher",
+                "label": "A",
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "subject": "teacher",
+              "subject_label": "B",
+              "subject_offset": 0.0,
+              "subject_owner": "",
+              "subject_ref": {
+                "head": "teacher",
+                "label": "B",
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "verb": "sell"
+            },
+            "sentence": 0,
+            "source": "arithmetic/anchored-relation",
+            "source_ref": null,
+            "type": "Relation"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "factor": 1.0,
+              "measure": "card",
+              "measure_qualifier": "blue",
+              "offset": 2.0,
+              "standard": "teacher",
+              "standard_label": "A",
+              "standard_offset": 0.0,
+              "standard_owner": "",
+              "standard_qualifier": "",
+              "standard_ref": {
+                "head": "teacher",
+                "label": "A",
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "subject": "teacher",
+              "subject_label": "C",
+              "subject_offset": 0.0,
+              "subject_owner": "",
+              "subject_ref": {
+                "head": "teacher",
+                "label": "C",
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "verb": "sell"
+            },
+            "sentence": 1,
+            "source": "arithmetic/anchored-relation",
+            "source_ref": null,
+            "type": "Relation"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "teacher",
+              "entity_ref": {
+                "head": "teacher",
+                "label": "A",
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "label": "A",
+              "measure": "card",
+              "occurrence": 2,
+              "value": 8.0,
+              "verb": "sell"
+            },
+            "sentence": 2,
+            "source": "fold",
+            "source_ref": null,
+            "type": "Quantity"
+          }
+        ],
+        "matches": [
+          {
+            "bindings": {
+              "dir": "more",
+              "item": "red cards",
+              "n": "3",
+              "std": "teacher A",
+              "verb": "sold",
+              "who": "teacher B"
+            },
+            "consumed": [
+              13,
+              3,
+              4,
+              5,
+              15,
+              8,
+              14
+            ],
+            "rule_id": "arithmetic/anchored-relation",
+            "sentence": 0,
+            "shadowed": false
+          },
+          {
+            "bindings": {
+              "dir": "more",
+              "item": "blue cards",
+              "n": "2",
+              "std": "teacher A",
+              "verb": "sold",
+              "who": "teacher C"
+            },
+            "consumed": [
+              13,
+              3,
+              4,
+              5,
+              15,
+              8,
+              14
+            ],
+            "rule_id": "arithmetic/anchored-relation",
+            "sentence": 1,
+            "shadowed": false
+          }
+        ],
+        "proof": null
+      }
+    },
+    {
+      "actual_rule_ids": [
+        "arithmetic/anchored-relation",
+        "ask/how-many-entity"
+      ],
+      "answer": {
+        "clarification": null,
+        "committed": false,
+        "kind": "decline",
+        "reason": "qualified item needs compatible subset evidence",
+        "shape": "decline",
+        "value": null
+      },
+      "deficiencies": [],
+      "expectation": "The complete ask must match but decline without selecting an ambiguous, missing or conflicting participant.",
+      "facts": [
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "aven",
+            "entity_ref": {
+              "head": "aven",
+              "label": null,
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "measure": "card",
+            "occurrence": 0,
+            "value": 8.0,
+            "verb": "sell"
+          },
+          "sentence": 0,
+          "source": "fold",
+          "source_ref": null,
+          "type": "Quantity"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "factor": 1.0,
+            "measure": "card",
+            "measure_qualifier": "red",
+            "offset": 3.0,
+            "standard": "aven",
+            "standard_label": "",
+            "standard_offset": 0.0,
+            "standard_owner": "",
+            "standard_qualifier": "",
+            "standard_ref": {
+              "head": "aven",
+              "label": null,
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "subject": "bira",
+            "subject_label": "",
+            "subject_offset": 0.0,
+            "subject_owner": "",
+            "subject_ref": {
+              "head": "bira",
+              "label": null,
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "verb": "sell"
+          },
+          "sentence": 1,
+          "source": "arithmetic/anchored-relation",
+          "source_ref": null,
+          "type": "Relation"
+        }
+      ],
+      "id": "bare-event-is-not-qualified-subset",
+      "interpretation": null,
+      "kind": "decline",
+      "reference_year": null,
+      "retest": null,
+      "sentence": "Aven sold 8 cards. Bira sold 3 more red cards than Aven. How many red cards did Bira sell?",
+      "source_ref": {
+        "column": 5,
+        "kind": "ask",
+        "label": "ask/how-many-entity",
+        "line": 7394,
+        "path": "/Users/louis/Development/rulekit/.rulekit-cache/mining-2026-09-15/shared-reference-identity/packs/arithmetic/rules/core.yaml"
+      },
+      "target_rule": "ask/how-many-entity",
+      "title": "Bare event is not qualified subset",
+      "trace": {
+        "answer": {
+          "clarification": null,
+          "committed": false,
+          "kind": "decline",
+          "reason": "qualified item needs compatible subset evidence",
+          "shape": "decline",
+          "value": null
+        },
+        "ask": {
+          "id": "ask/how-many-entity",
+          "query": {
+            "consumer": "single-entity",
+            "entity": "bira",
+            "evidence_entity_reference": {
+              "head": "bira",
+              "label": null,
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "measure": "card",
+            "measure_qualifier": "red",
+            "sum_measure_variants": "true",
+            "verb": "sell"
+          }
+        },
+        "collisions": [],
+        "deficiencies": [],
+        "facts": [
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "aven",
+              "entity_ref": {
+                "head": "aven",
+                "label": null,
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "measure": "card",
+              "occurrence": 0,
+              "value": 8.0,
+              "verb": "sell"
+            },
+            "sentence": 0,
+            "source": "fold",
+            "source_ref": null,
+            "type": "Quantity"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "factor": 1.0,
+              "measure": "card",
+              "measure_qualifier": "red",
+              "offset": 3.0,
+              "standard": "aven",
+              "standard_label": "",
+              "standard_offset": 0.0,
+              "standard_owner": "",
+              "standard_qualifier": "",
+              "standard_ref": {
+                "head": "aven",
+                "label": null,
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "subject": "bira",
+              "subject_label": "",
+              "subject_offset": 0.0,
+              "subject_owner": "",
+              "subject_ref": {
+                "head": "bira",
+                "label": null,
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "verb": "sell"
+            },
+            "sentence": 1,
+            "source": "arithmetic/anchored-relation",
+            "source_ref": null,
+            "type": "Relation"
+          }
+        ],
+        "matches": [
+          {
+            "bindings": {
+              "dir": "more",
+              "item": "red cards",
+              "n": "3",
+              "std": "Aven",
+              "verb": "sold",
+              "who": "Bira"
+            },
+            "consumed": [
+              0,
+              1,
+              2,
+              3,
+              9,
+              6,
+              7
+            ],
+            "rule_id": "arithmetic/anchored-relation",
+            "sentence": 1,
+            "shadowed": false
+          }
+        ],
+        "proof": null
+      }
+    },
+    {
+      "actual_rule_ids": [
+        "arithmetic/anchored-relation-elided",
+        "ask/how-many-entity-common-noun"
+      ],
+      "answer": {
+        "clarification": null,
+        "committed": false,
+        "kind": "decline",
+        "reason": "[contradicted-relation] the stated 'card' of 'teacher' (8.0) contradicts the relation to 'teacher' (3.0): 1.0x + 3.0 \u2014 the document is over-determined and does not add up at one time",
+        "shape": "decline",
+        "value": null
+      },
+      "deficiencies": [
+        "'3' (value) needs a quantifies and none was found.",
+        "[contradicted-relation] the stated 'card' of 'teacher' (8.0) contradicts the relation to 'teacher' (3.0): 1.0x + 3.0 \u2014 the document is over-determined and does not add up at one time"
+      ],
+      "expectation": "The complete ask must match but decline without selecting an ambiguous, missing or conflicting participant.",
+      "facts": [
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "teacher[A]",
+            "entity_ref": {
+              "head": "teacher",
+              "label": "A",
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "label": "A",
+            "measure": "card",
+            "value": 8.0,
+            "verb": "have"
+          },
+          "sentence": 0,
+          "source": "fold",
+          "source_ref": null,
+          "type": "Quantity"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "teacher[B]",
+            "entity_ref": {
+              "head": "teacher",
+              "label": "B",
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "label": "B",
+            "measure": "card",
+            "value": 3.0,
+            "verb": "have"
+          },
+          "sentence": 1,
+          "source": "fold",
+          "source_ref": null,
+          "type": "Quantity"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "factor": 1.0,
+            "offset": 3.0,
+            "standard": "teacher",
+            "standard_label": "B",
+            "standard_offset": 0.0,
+            "standard_ref": {
+              "head": "teacher",
+              "label": "B",
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "subject": "teacher",
+            "subject_label": "A",
+            "subject_offset": 0.0,
+            "subject_ref": {
+              "head": "teacher",
+              "label": "A",
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "verb": "have"
+          },
+          "sentence": 2,
+          "source": "arithmetic/anchored-relation-elided",
+          "source_ref": null,
+          "type": "Relation"
+        }
+      ],
+      "id": "inconsistent-state-comparison",
+      "interpretation": null,
+      "kind": "decline",
+      "reference_year": null,
+      "retest": null,
+      "sentence": "The teacher A has 8 cards. The teacher B has 3 cards. The teacher A has 3 more than the teacher B. How many cards does the teacher A have?",
+      "source_ref": {
+        "column": 5,
+        "kind": "ask",
+        "label": "ask/how-many-entity-common-noun",
+        "line": 7594,
+        "path": "/Users/louis/Development/rulekit/.rulekit-cache/mining-2026-09-15/shared-reference-identity/packs/arithmetic/rules/core.yaml"
+      },
+      "target_rule": "ask/how-many-entity-common-noun",
+      "title": "Inconsistent state comparison",
+      "trace": {
+        "answer": {
+          "clarification": null,
+          "committed": false,
+          "kind": "decline",
+          "reason": "[contradicted-relation] the stated 'card' of 'teacher' (8.0) contradicts the relation to 'teacher' (3.0): 1.0x + 3.0 \u2014 the document is over-determined and does not add up at one time",
+          "shape": "decline",
+          "value": null
+        },
+        "ask": {
+          "id": "ask/how-many-entity-common-noun",
+          "query": {
+            "consumer": "single-entity",
+            "entity": "teacher",
+            "evidence_entity_reference": {
+              "head": "teacher",
+              "label": "A",
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "measure": "card",
+            "measure_qualifier": "",
+            "sum_measure_variants": "true",
+            "verb": "have"
+          }
+        },
+        "collisions": [],
+        "deficiencies": [
+          "'3' (value) needs a quantifies and none was found.",
+          "[contradicted-relation] the stated 'card' of 'teacher' (8.0) contradicts the relation to 'teacher' (3.0): 1.0x + 3.0 \u2014 the document is over-determined and does not add up at one time"
+        ],
+        "facts": [
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "teacher[A]",
+              "entity_ref": {
+                "head": "teacher",
+                "label": "A",
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "label": "A",
+              "measure": "card",
+              "value": 8.0,
+              "verb": "have"
+            },
+            "sentence": 0,
+            "source": "fold",
+            "source_ref": null,
+            "type": "Quantity"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "teacher[B]",
+              "entity_ref": {
+                "head": "teacher",
+                "label": "B",
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "label": "B",
+              "measure": "card",
+              "value": 3.0,
+              "verb": "have"
+            },
+            "sentence": 1,
+            "source": "fold",
+            "source_ref": null,
+            "type": "Quantity"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "factor": 1.0,
+              "offset": 3.0,
+              "standard": "teacher",
+              "standard_label": "B",
+              "standard_offset": 0.0,
+              "standard_ref": {
+                "head": "teacher",
+                "label": "B",
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "subject": "teacher",
+              "subject_label": "A",
+              "subject_offset": 0.0,
+              "subject_ref": {
+                "head": "teacher",
+                "label": "A",
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "verb": "have"
+            },
+            "sentence": 2,
+            "source": "arithmetic/anchored-relation-elided",
+            "source_ref": null,
+            "type": "Relation"
+          }
+        ],
+        "matches": [
+          {
+            "bindings": {
+              "dir": "more",
+              "n": "3",
+              "std": "teacher B",
+              "verb": "has",
+              "who": "teacher A"
+            },
+            "consumed": [
+              11,
+              3,
+              4,
+              5,
+              6,
+              12
+            ],
+            "rule_id": "arithmetic/anchored-relation-elided",
+            "sentence": 2,
+            "shadowed": false
+          }
+        ],
+        "proof": null
+      }
+    },
+    {
+      "actual_rule_ids": [
+        "arithmetic/anchored-relation-elided",
+        "ask/how-many-entity-common-noun"
+      ],
+      "answer": {
+        "clarification": null,
+        "committed": false,
+        "kind": "decline",
+        "reason": "[contradicted-relation] the complete 'sell' total of 'teacher' (8.0) contradicts the relation to 'teacher' (3.0): 1.0x + 3.0",
+        "shape": "decline",
+        "value": null
+      },
+      "deficiencies": [
+        "'3' (value) needs a quantifies and none was found.",
+        "[contradicted-relation] the complete 'sell' total of 'teacher' (8.0) contradicts the relation to 'teacher' (3.0): 1.0x + 3.0"
+      ],
+      "expectation": "The complete ask must match but decline without selecting an ambiguous, missing or conflicting participant.",
+      "facts": [
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "teacher[A]",
+            "entity_ref": {
+              "head": "teacher",
+              "label": "A",
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "label": "A",
+            "measure": "card",
+            "occurrence": 0,
+            "value": 8.0,
+            "verb": "sell"
+          },
+          "sentence": 0,
+          "source": "fold",
+          "source_ref": null,
+          "type": "Quantity"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "teacher[B]",
+            "entity_ref": {
+              "head": "teacher",
+              "label": "B",
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "label": "B",
+            "measure": "card",
+            "occurrence": 1,
+            "value": 3.0,
+            "verb": "sell"
+          },
+          "sentence": 1,
+          "source": "fold",
+          "source_ref": null,
+          "type": "Quantity"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "factor": 1.0,
+            "offset": 3.0,
+            "standard": "teacher",
+            "standard_label": "B",
+            "standard_offset": 0.0,
+            "standard_ref": {
+              "head": "teacher",
+              "label": "B",
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "subject": "teacher",
+            "subject_label": "A",
+            "subject_offset": 0.0,
+            "subject_ref": {
+              "head": "teacher",
+              "label": "A",
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "verb": "sell"
+          },
+          "sentence": 2,
+          "source": "arithmetic/anchored-relation-elided",
+          "source_ref": null,
+          "type": "Relation"
+        }
+      ],
+      "id": "inconsistent-comparison",
+      "interpretation": null,
+      "kind": "boundary_probe",
+      "reference_year": null,
+      "retest": null,
+      "sentence": "The teacher A sold 8 cards. The teacher B sold 3 cards. The teacher A sold 3 more than the teacher B. How many cards did the teacher A sell?",
+      "source_ref": {
+        "column": 5,
+        "kind": "ask",
+        "label": "ask/how-many-entity-common-noun",
+        "line": 7594,
+        "path": "/Users/louis/Development/rulekit/.rulekit-cache/mining-2026-09-15/shared-reference-identity/packs/arithmetic/rules/core.yaml"
+      },
+      "target_rule": "ask/how-many-entity-common-noun",
+      "title": "Inconsistent comparison",
+      "trace": {
+        "answer": {
+          "clarification": null,
+          "committed": false,
+          "kind": "decline",
+          "reason": "[contradicted-relation] the complete 'sell' total of 'teacher' (8.0) contradicts the relation to 'teacher' (3.0): 1.0x + 3.0",
+          "shape": "decline",
+          "value": null
+        },
+        "ask": {
+          "id": "ask/how-many-entity-common-noun",
+          "query": {
+            "consumer": "single-entity",
+            "entity": "teacher",
+            "evidence_entity_reference": {
+              "head": "teacher",
+              "label": "A",
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "measure": "card",
+            "measure_qualifier": "",
+            "sum_measure_variants": "true",
+            "verb": "sell"
+          }
+        },
+        "collisions": [],
+        "deficiencies": [
+          "'3' (value) needs a quantifies and none was found.",
+          "[contradicted-relation] the complete 'sell' total of 'teacher' (8.0) contradicts the relation to 'teacher' (3.0): 1.0x + 3.0"
+        ],
+        "facts": [
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "teacher[A]",
+              "entity_ref": {
+                "head": "teacher",
+                "label": "A",
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "label": "A",
+              "measure": "card",
+              "occurrence": 0,
+              "value": 8.0,
+              "verb": "sell"
+            },
+            "sentence": 0,
+            "source": "fold",
+            "source_ref": null,
+            "type": "Quantity"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "teacher[B]",
+              "entity_ref": {
+                "head": "teacher",
+                "label": "B",
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "label": "B",
+              "measure": "card",
+              "occurrence": 1,
+              "value": 3.0,
+              "verb": "sell"
+            },
+            "sentence": 1,
+            "source": "fold",
+            "source_ref": null,
+            "type": "Quantity"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "factor": 1.0,
+              "offset": 3.0,
+              "standard": "teacher",
+              "standard_label": "B",
+              "standard_offset": 0.0,
+              "standard_ref": {
+                "head": "teacher",
+                "label": "B",
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "subject": "teacher",
+              "subject_label": "A",
+              "subject_offset": 0.0,
+              "subject_ref": {
+                "head": "teacher",
+                "label": "A",
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "verb": "sell"
+            },
+            "sentence": 2,
+            "source": "arithmetic/anchored-relation-elided",
+            "source_ref": null,
+            "type": "Relation"
+          }
+        ],
+        "matches": [
+          {
+            "bindings": {
+              "dir": "more",
+              "n": "3",
+              "std": "teacher B",
+              "verb": "sold",
+              "who": "teacher A"
+            },
+            "consumed": [
+              11,
+              3,
+              4,
+              5,
+              6,
+              12
+            ],
+            "rule_id": "arithmetic/anchored-relation-elided",
+            "sentence": 2,
+            "shadowed": false
+          }
+        ],
+        "proof": null
+      }
+    },
+    {
+      "actual_rule_ids": [
+        "arithmetic/stated-possessed-location-content",
+        "ask/how-many-entity-possessed"
+      ],
+      "answer": {
+        "clarification": null,
+        "committed": true,
+        "kind": "number",
+        "reason": "fold over 'box'/'card'",
+        "shape": "number",
+        "value": 8.0
+      },
+      "deficiencies": [],
+      "expectation": "The complete ask must return exactly 8 using only the identified participant's compatible quantities.",
+      "facts": [
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "box[aven][red][A]",
+            "entity_ref": {
+              "head": "box",
+              "label": "A",
+              "owner": {
+                "head": "aven",
+                "label": null,
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "qualifiers": [
+                "red"
+              ],
+              "resolved": true
+            },
+            "measure": "card",
+            "owner": "aven",
+            "qualifier": "red",
+            "value": 8.0,
+            "verb": "have"
+          },
+          "sentence": 0,
+          "source": "arithmetic/stated-possessed-location-content",
+          "source_ref": null,
+          "type": "Quantity"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "box[aven][blue][A]",
+            "entity_ref": {
+              "head": "box",
+              "label": "A",
+              "owner": {
+                "head": "aven",
+                "label": null,
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "qualifiers": [
+                "blue"
+              ],
+              "resolved": true
+            },
+            "measure": "card",
+            "owner": "aven",
+            "qualifier": "blue",
+            "value": 3.0,
+            "verb": "have"
+          },
+          "sentence": 1,
+          "source": "arithmetic/stated-possessed-location-content",
+          "source_ref": null,
+          "type": "Quantity"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "box[bira][red][A]",
+            "entity_ref": {
+              "head": "box",
+              "label": "A",
+              "owner": {
+                "head": "bira",
+                "label": null,
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "qualifiers": [
+                "red"
+              ],
+              "resolved": true
+            },
+            "measure": "card",
+            "owner": "bira",
+            "qualifier": "red",
+            "value": 5.0,
+            "verb": "have"
+          },
+          "sentence": 2,
+          "source": "arithmetic/stated-possessed-location-content",
+          "source_ref": null,
+          "type": "Quantity"
+        }
+      ],
+      "id": "intersected-reference",
+      "interpretation": null,
+      "kind": "boundary_probe",
+      "reference_year": null,
+      "retest": null,
+      "sentence": "Aven's red box A has 8 cards. Aven's blue box A has 3 cards. Bira's red box A has 5 cards. How many cards does Aven's red box A have?",
+      "source_ref": {
+        "column": 5,
+        "kind": "ask",
+        "label": "ask/how-many-entity-possessed",
+        "line": 7525,
+        "path": "/Users/louis/Development/rulekit/.rulekit-cache/mining-2026-09-15/shared-reference-identity/packs/arithmetic/rules/core.yaml"
+      },
+      "target_rule": "ask/how-many-entity-possessed",
+      "title": "Intersected reference",
+      "trace": {
+        "answer": {
+          "clarification": null,
+          "committed": true,
+          "kind": "number",
+          "reason": "fold over 'box'/'card'",
+          "shape": "number",
+          "value": 8.0
+        },
+        "ask": {
+          "id": "ask/how-many-entity-possessed",
+          "query": {
+            "consumer": "single-entity",
+            "entity": "box",
+            "entity_owner": "aven",
+            "evidence_entity_reference": {
+              "head": "box",
+              "label": "A",
+              "owner": {
+                "head": "aven",
+                "label": null,
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "qualifiers": [
+                "red"
+              ],
+              "resolved": true
+            },
+            "measure": "card",
+            "verb": "have"
+          }
+        },
+        "collisions": [],
+        "deficiencies": [],
+        "facts": [
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "box[aven][red][A]",
+              "entity_ref": {
+                "head": "box",
+                "label": "A",
+                "owner": {
+                  "head": "aven",
+                  "label": null,
+                  "owner": null,
+                  "qualifiers": [],
+                  "resolved": true
+                },
+                "qualifiers": [
+                  "red"
+                ],
+                "resolved": true
+              },
+              "measure": "card",
+              "owner": "aven",
+              "qualifier": "red",
+              "value": 8.0,
+              "verb": "have"
+            },
+            "sentence": 0,
+            "source": "arithmetic/stated-possessed-location-content",
+            "source_ref": null,
+            "type": "Quantity"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "box[aven][blue][A]",
+              "entity_ref": {
+                "head": "box",
+                "label": "A",
+                "owner": {
+                  "head": "aven",
+                  "label": null,
+                  "owner": null,
+                  "qualifiers": [],
+                  "resolved": true
+                },
+                "qualifiers": [
+                  "blue"
+                ],
+                "resolved": true
+              },
+              "measure": "card",
+              "owner": "aven",
+              "qualifier": "blue",
+              "value": 3.0,
+              "verb": "have"
+            },
+            "sentence": 1,
+            "source": "arithmetic/stated-possessed-location-content",
+            "source_ref": null,
+            "type": "Quantity"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "box[bira][red][A]",
+              "entity_ref": {
+                "head": "box",
+                "label": "A",
+                "owner": {
+                  "head": "bira",
+                  "label": null,
+                  "owner": null,
+                  "qualifiers": [],
+                  "resolved": true
+                },
+                "qualifiers": [
+                  "red"
+                ],
+                "resolved": true
+              },
+              "measure": "card",
+              "owner": "bira",
+              "qualifier": "red",
+              "value": 5.0,
+              "verb": "have"
+            },
+            "sentence": 2,
+            "source": "arithmetic/stated-possessed-location-content",
+            "source_ref": null,
+            "type": "Quantity"
+          }
+        ],
+        "matches": [
+          {
+            "bindings": {
+              "item": "8 cards",
+              "place": "Aven 's red box A",
+              "verb": "has"
+            },
+            "consumed": [
+              11,
+              5,
+              12,
+              8
+            ],
+            "rule_id": "arithmetic/stated-possessed-location-content",
+            "sentence": 0,
+            "shadowed": false
+          },
+          {
+            "bindings": {
+              "item": "3 cards",
+              "place": "Aven 's blue box A",
+              "verb": "has"
+            },
+            "consumed": [
+              11,
+              5,
+              12,
+              8
+            ],
+            "rule_id": "arithmetic/stated-possessed-location-content",
+            "sentence": 1,
+            "shadowed": false
+          },
+          {
+            "bindings": {
+              "item": "5 cards",
+              "place": "Bira 's red box A",
+              "verb": "has"
+            },
+            "consumed": [
+              11,
+              5,
+              12,
+              8
+            ],
+            "rule_id": "arithmetic/stated-possessed-location-content",
+            "sentence": 2,
+            "shadowed": false
+          }
+        ],
+        "proof": null
+      }
+    },
+    {
+      "actual_rule_ids": [
+        "arithmetic/times-as-many"
+      ],
+      "answer": {
+        "clarification": null,
+        "committed": false,
+        "kind": "decline",
+        "reason": "no question found",
+        "shape": "decline",
+        "value": null
+      },
+      "deficiencies": [],
+      "expectation": "Complete premise target must match and preserve typed reference evidence; no question is present.",
+      "facts": [
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "aven",
+            "entity_ref": {
+              "head": "aven",
+              "label": null,
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "measure": "card",
+            "measure_qualifier": "red",
+            "value": 8.0,
+            "verb": "have"
+          },
+          "sentence": 0,
+          "source": "fold",
+          "source_ref": null,
+          "type": "Quantity"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "factor": 2.0,
+            "measure": "card",
+            "measure_qualifier": "red",
+            "offset": 0.0,
+            "standard": "aven",
+            "standard_label": "",
+            "standard_offset": 0.0,
+            "standard_ref": {
+              "head": "aven",
+              "label": null,
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "subject": "bira",
+            "subject_label": "",
+            "subject_offset": 0.0,
+            "subject_ref": {
+              "head": "bira",
+              "label": null,
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "verb": "have"
+          },
+          "sentence": 1,
+          "source": "arithmetic/times-as-many",
+          "source_ref": null,
+          "type": "Relation"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "bira",
+            "entity_ref": {
+              "head": "bira",
+              "label": null,
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "measure": "card",
+            "measure_qualifier": "red",
+            "value": 16.0,
+            "verb": "have"
+          },
+          "sentence": 1,
+          "source": "synth/relation",
+          "source_ref": null,
+          "type": "Quantity"
+        }
+      ],
+      "id": "strict-positive-qualified-multiplier",
+      "interpretation": null,
+      "kind": "strict_positive",
+      "reference_year": null,
+      "retest": null,
+      "sentence": "Aven has 8 red cards. Bira has twice as many red cards as Aven.",
+      "source_ref": {
+        "column": 5,
+        "kind": "rule",
+        "label": "arithmetic/times-as-many",
+        "line": 116,
+        "path": "/Users/louis/Development/rulekit/.rulekit-cache/mining-2026-09-15/shared-reference-identity/packs/arithmetic/rules/as-many.yaml"
+      },
+      "target_rule": "arithmetic/times-as-many",
+      "title": "Strict positive qualified multiplier",
+      "trace": {
+        "answer": {
+          "clarification": null,
+          "committed": false,
+          "kind": "decline",
+          "reason": "no question found",
+          "shape": "decline",
+          "value": null
+        },
+        "ask": null,
+        "collisions": [],
+        "deficiencies": [],
+        "facts": [
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "aven",
+              "entity_ref": {
+                "head": "aven",
+                "label": null,
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "measure": "card",
+              "measure_qualifier": "red",
+              "value": 8.0,
+              "verb": "have"
+            },
+            "sentence": 0,
+            "source": "fold",
+            "source_ref": null,
+            "type": "Quantity"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "factor": 2.0,
+              "measure": "card",
+              "measure_qualifier": "red",
+              "offset": 0.0,
+              "standard": "aven",
+              "standard_label": "",
+              "standard_offset": 0.0,
+              "standard_ref": {
+                "head": "aven",
+                "label": null,
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "subject": "bira",
+              "subject_label": "",
+              "subject_offset": 0.0,
+              "subject_ref": {
+                "head": "bira",
+                "label": null,
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "verb": "have"
+            },
+            "sentence": 1,
+            "source": "arithmetic/times-as-many",
+            "source_ref": null,
+            "type": "Relation"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "bira",
+              "entity_ref": {
+                "head": "bira",
+                "label": null,
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "measure": "card",
+              "measure_qualifier": "red",
+              "value": 16.0,
+              "verb": "have"
+            },
+            "sentence": 1,
+            "source": "synth/relation",
+            "source_ref": null,
+            "type": "Quantity"
+          }
+        ],
+        "matches": [
+          {
+            "bindings": {
+              "item": "red cards",
+              "k": "twice",
+              "std": "Aven",
+              "verb": "has",
+              "who": "Bira"
+            },
+            "consumed": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              10,
+              7,
+              8
+            ],
+            "rule_id": "arithmetic/times-as-many",
+            "sentence": 1,
+            "shadowed": false
+          }
+        ],
+        "proof": null
+      }
+    },
+    {
+      "actual_rule_ids": [
+        "arithmetic/anchored-relation",
+        "ask/how-many-entity-common-noun"
+      ],
+      "answer": {
+        "clarification": null,
+        "committed": false,
+        "kind": "decline",
+        "reason": "qualified item needs compatible subset evidence",
+        "shape": "decline",
+        "value": null
+      },
+      "deficiencies": [],
+      "expectation": "The complete ask must match but decline without selecting an ambiguous, missing or conflicting participant.",
+      "facts": [
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "teacher",
+            "entity_ref": {
+              "head": "teacher",
+              "label": "A",
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "label": "A",
+            "measure": "card",
+            "measure_qualifier": "blue",
+            "value": 8.0,
+            "verb": "have"
+          },
+          "sentence": 0,
+          "source": "fold",
+          "source_ref": null,
+          "type": "Quantity"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "factor": 1.0,
+            "measure": "card",
+            "measure_qualifier": "red",
+            "offset": 3.0,
+            "standard": "teacher",
+            "standard_label": "A",
+            "standard_offset": 0.0,
+            "standard_owner": "",
+            "standard_qualifier": "",
+            "standard_ref": {
+              "head": "teacher",
+              "label": "A",
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "subject": "teacher",
+            "subject_label": "B",
+            "subject_offset": 0.0,
+            "subject_owner": "",
+            "subject_ref": {
+              "head": "teacher",
+              "label": "B",
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "verb": "have"
+          },
+          "sentence": 1,
+          "source": "arithmetic/anchored-relation",
+          "source_ref": null,
+          "type": "Relation"
+        }
+      ],
+      "id": "mismatched-state-item",
+      "interpretation": null,
+      "kind": "decline",
+      "reference_year": null,
+      "retest": null,
+      "sentence": "The teacher A has 8 blue cards. The teacher B has 3 more red cards than the teacher A. How many red cards does the teacher B have?",
+      "source_ref": {
+        "column": 5,
+        "kind": "ask",
+        "label": "ask/how-many-entity-common-noun",
+        "line": 7594,
+        "path": "/Users/louis/Development/rulekit/.rulekit-cache/mining-2026-09-15/shared-reference-identity/packs/arithmetic/rules/core.yaml"
+      },
+      "target_rule": "ask/how-many-entity-common-noun",
+      "title": "Mismatched state item",
+      "trace": {
+        "answer": {
+          "clarification": null,
+          "committed": false,
+          "kind": "decline",
+          "reason": "qualified item needs compatible subset evidence",
+          "shape": "decline",
+          "value": null
+        },
+        "ask": {
+          "id": "ask/how-many-entity-common-noun",
+          "query": {
+            "consumer": "single-entity",
+            "entity": "teacher",
+            "evidence_entity_reference": {
+              "head": "teacher",
+              "label": "B",
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "measure": "card",
+            "measure_qualifier": "red",
+            "sum_measure_variants": "true",
+            "verb": "have"
+          }
+        },
+        "collisions": [],
+        "deficiencies": [],
+        "facts": [
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "teacher",
+              "entity_ref": {
+                "head": "teacher",
+                "label": "A",
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "label": "A",
+              "measure": "card",
+              "measure_qualifier": "blue",
+              "value": 8.0,
+              "verb": "have"
+            },
+            "sentence": 0,
+            "source": "fold",
+            "source_ref": null,
+            "type": "Quantity"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "factor": 1.0,
+              "measure": "card",
+              "measure_qualifier": "red",
+              "offset": 3.0,
+              "standard": "teacher",
+              "standard_label": "A",
+              "standard_offset": 0.0,
+              "standard_owner": "",
+              "standard_qualifier": "",
+              "standard_ref": {
+                "head": "teacher",
+                "label": "A",
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "subject": "teacher",
+              "subject_label": "B",
+              "subject_offset": 0.0,
+              "subject_owner": "",
+              "subject_ref": {
+                "head": "teacher",
+                "label": "B",
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "verb": "have"
+            },
+            "sentence": 1,
+            "source": "arithmetic/anchored-relation",
+            "source_ref": null,
+            "type": "Relation"
+          }
+        ],
+        "matches": [
+          {
+            "bindings": {
+              "dir": "more",
+              "item": "red cards",
+              "n": "3",
+              "std": "teacher A",
+              "verb": "has",
+              "who": "teacher B"
+            },
+            "consumed": [
+              13,
+              3,
+              4,
+              5,
+              15,
+              8,
+              14
+            ],
+            "rule_id": "arithmetic/anchored-relation",
+            "sentence": 1,
+            "shadowed": false
+          }
+        ],
+        "proof": null
+      }
+    },
+    {
+      "actual_rule_ids": [
+        "ask/how-many-entity-common-noun"
+      ],
+      "answer": {
+        "clarification": null,
+        "committed": false,
+        "kind": "decline",
+        "reason": "no quantity known for 'teacher': participant reference is unresolved or ambiguous",
+        "shape": "decline",
+        "value": null
+      },
+      "deficiencies": [],
+      "expectation": "The complete ask must match but decline without selecting an ambiguous, missing or conflicting participant.",
+      "facts": [
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "teacher",
+            "entity_ref": {
+              "head": "teacher",
+              "label": "A",
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "label": "A",
+            "measure": "card",
+            "occurrence": 0,
+            "value": 8.0,
+            "verb": "buy"
+          },
+          "sentence": 0,
+          "source": "fold",
+          "source_ref": null,
+          "type": "Quantity"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "account": "",
+            "account_owner": "",
+            "account_qualifier": "",
+            "account_span": "",
+            "basis": "purchase",
+            "channel": "",
+            "complete": false,
+            "cost_factor_position": -1,
+            "cost_reference": "",
+            "cost_reference_qualifier": "",
+            "entity": "teacher",
+            "event": 3,
+            "item": "card",
+            "lot_measure": "",
+            "lot_position": -1,
+            "position": 4,
+            "qualifier": "",
+            "quantity_position": -1,
+            "supplier": "",
+            "supplier_qualifier": "",
+            "verb": "buy"
+          },
+          "sentence": 1,
+          "source": "fold:purchase-target",
+          "source_ref": null,
+          "type": "Expenditure"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "dobj": "card",
+            "dobj_unquantified": false,
+            "polarity": true,
+            "subject": "teacher",
+            "subject_ref": {
+              "head": "teacher",
+              "label": "B",
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "verb": "buy"
+          },
+          "sentence": 1,
+          "source": "fold",
+          "source_ref": null,
+          "type": "Predication"
+        }
+      ],
+      "id": "amount-free-rival",
+      "interpretation": null,
+      "kind": "boundary_probe",
+      "reference_year": null,
+      "retest": null,
+      "sentence": "The teacher A bought 8 cards. The teacher B bought cards. How many cards did the teacher buy?",
+      "source_ref": {
+        "column": 5,
+        "kind": "ask",
+        "label": "ask/how-many-entity-common-noun",
+        "line": 7594,
+        "path": "/Users/louis/Development/rulekit/.rulekit-cache/mining-2026-09-15/shared-reference-identity/packs/arithmetic/rules/core.yaml"
+      },
+      "target_rule": "ask/how-many-entity-common-noun",
+      "title": "Amount free rival",
+      "trace": {
+        "answer": {
+          "clarification": null,
+          "committed": false,
+          "kind": "decline",
+          "reason": "no quantity known for 'teacher': participant reference is unresolved or ambiguous",
+          "shape": "decline",
+          "value": null
+        },
+        "ask": {
+          "id": "ask/how-many-entity-common-noun",
+          "query": {
+            "consumer": "single-entity",
+            "entity": "teacher",
+            "evidence_entity_reference": {
+              "head": "teacher",
+              "label": null,
+              "owner": null,
+              "qualifiers": [],
+              "resolved": true
+            },
+            "measure": "card",
+            "measure_qualifier": "",
+            "sum_measure_variants": "true",
+            "verb": "buy"
+          }
+        },
+        "collisions": [],
+        "deficiencies": [],
+        "facts": [
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "teacher",
+              "entity_ref": {
+                "head": "teacher",
+                "label": "A",
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "label": "A",
+              "measure": "card",
+              "occurrence": 0,
+              "value": 8.0,
+              "verb": "buy"
+            },
+            "sentence": 0,
+            "source": "fold",
+            "source_ref": null,
+            "type": "Quantity"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "account": "",
+              "account_owner": "",
+              "account_qualifier": "",
+              "account_span": "",
+              "basis": "purchase",
+              "channel": "",
+              "complete": false,
+              "cost_factor_position": -1,
+              "cost_reference": "",
+              "cost_reference_qualifier": "",
+              "entity": "teacher",
+              "event": 3,
+              "item": "card",
+              "lot_measure": "",
+              "lot_position": -1,
+              "position": 4,
+              "qualifier": "",
+              "quantity_position": -1,
+              "supplier": "",
+              "supplier_qualifier": "",
+              "verb": "buy"
+            },
+            "sentence": 1,
+            "source": "fold:purchase-target",
+            "source_ref": null,
+            "type": "Expenditure"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "dobj": "card",
+              "dobj_unquantified": false,
+              "polarity": true,
+              "subject": "teacher",
+              "subject_ref": {
+                "head": "teacher",
+                "label": "B",
+                "owner": null,
+                "qualifiers": [],
+                "resolved": true
+              },
+              "verb": "buy"
+            },
+            "sentence": 1,
+            "source": "fold",
+            "source_ref": null,
+            "type": "Predication"
+          }
+        ],
+        "matches": [],
+        "proof": null
+      }
+    }
+  ]
+}

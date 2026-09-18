@@ -228,8 +228,9 @@ class CategoriesDoc(StrictModel):
     members: dict[str, list[str]] = Field(default_factory=dict)
     # Descriptor category -> one or more noun categories it can describe or
     # govern.  The original adjective use remains the common case; comparative
-    # and preposition categories let rules declare dimension/unit and
-    # adjunct/object compatibility without putting vocabulary in Python.
+    # and preposition categories declare dimension/unit and adjunct/object
+    # compatibility; noun categories license nominal compounds. Vocabulary
+    # remains in packs.
     # This is deliberately many-to-many: words may belong to several
     # categories on either side, and pack extensions may add another target
     # category without redefining either lexeme.
@@ -597,6 +598,10 @@ class MatchToken(StrictModel):
     # category. Use it when a construction cannot preserve the distinction.
     # The restriction follows resolved pronouns and excludes instance labels.
     bare: bool = False
+    # A class-level noun may carry an attribute modifier, but no owner or
+    # instance label. Use when emitted facts preserve the class rather than
+    # the identity of one possessed/labeled object.
+    class_only: bool = False
     # The noun names an item but states no numeric count or measured extent.
     uncounted: bool = False
     # OPT-IN phrase capture: this slot binds a RUN of units (greedy-longest,
@@ -876,6 +881,8 @@ class MatchToken(StrictModel):
             raise ValueError("`span_blocks` only qualifies a span slot")
         if self.bare and self.slot is None:
             raise ValueError("`bare` only qualifies a slot")
+        if self.class_only and (self.slot is None or self.possessed or self.type == "possessed"):
+            raise ValueError("`class_only` requires a non-possessed slot")
         if self.finite_form and self.slot is None:
             raise ValueError("`finite_form` only qualifies a slot")
         if self.finite_form and self.bare_form:
@@ -1410,7 +1417,7 @@ class WherePredicate(StrictModel):
     distinct_from_owner: DistinctFromOwnerPredicate | None = None
     # The descriptor slot must be licensed for the noun slot by at least one
     # pack-declared descriptor-category -> noun-category compatibility pair.
-    # Descriptors may be adjectives, comparatives, or prepositions.
+    # Descriptors may be adjectives, comparatives, prepositions, or nominal modifiers.
     # Both words may belong to multiple categories; this is existential over
     # the cross-product, never a single hardwired category.
     attribute_compatible: AttributeCompatibilityPredicate | None = None
@@ -1514,7 +1521,7 @@ class FactEmit(StrictModel):
         "resource_allocation", "resource_balance", "expenditure", "activity_duration", "bounded_activity_inquiry", "age_at_year",
         "task_completion_duration",
         "rate_scope", "quantity", "relation", "contribution",
-        "membership", "subset", "predication", "collection_context",
+        "membership", "subset", "predication", "collection_context", "collection_attribute", "quantity_event_context",
         "before", "fraction_quantity", "rest_quantity", "partition_quantity",
         "partition_aggregate_share",
         "sequential_partition", "sequential_partition_prefix",

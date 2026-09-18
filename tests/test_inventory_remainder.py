@@ -62,6 +62,13 @@ def test_repeated_same_actor_reference_is_not_guessed(registry):
     assert not solve(text, registry).answer.committed
 
 
+def test_same_subtype_removals_expose_their_collision(registry):
+    text = story().replace("twice as many blue balls", "twice as many red balls")
+    result = solve(text, registry)
+    assert not result.answer.committed
+    assert result.store.collisions
+
+
 def test_consequent_marker_is_not_a_general_question_cue(registry):
     text = "If Mira removes 4 red balls, then Cato removes 2 blue balls."
     r = solve(text, registry)
@@ -78,4 +85,8 @@ def test_inventory_premises_generate(project, rule):
     from rulekit.generation import generate_candidate
     c = generate_candidate(load_project("projects/" + project), rule_id="arithmetic/" + rule, seed=11)
     assert c.target_status == "matched"
-    assert c.facts
+    target = next(m for m in c.actual_matches if m.rule_id == c.target_rule and not m.shadowed)
+    assert target.emitted_facts
+    # A seed may select the same subtype for both removals. Generation must
+    # expose the resulting conflict for review, not hide that allowed shape.
+    assert c.facts or c.collisions

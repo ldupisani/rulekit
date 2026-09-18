@@ -92,9 +92,9 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
         },
         "arithmetic/affine-fraction-qualified-measures": ((1, 0), "addition", ((1,),)),
         "arithmetic/anchored-relation": (
-            (9, 1, 0),
+            (10, 1, 0),
             "conjunction_adv",
-            ((9,), (9, 1)),
+            ((10,), (10, 1)),
         ),
         "arithmetic/container-remainder-after-fill-observation": (
             (2,),
@@ -239,8 +239,8 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
     project = load_project(CURATED)
     availability = list_rule_availability(project)
 
-    assert len(availability) == 230
-    assert sum(item.supported for item in availability) == 221
+    assert len(availability) == 240
+    assert sum(item.supported for item in availability) == 231
     assert sum(not item.supported for item in availability) == 9
     assert all(
         not item.blockers
@@ -258,7 +258,7 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
             }
         for item in availability
     )
-    assert len(exploration_status(project)["fillers"]) == 550
+    assert len(exploration_status(project)["fillers"]) == 555
 
 
 def test_currently_generates_a_matcher_confirmed_anchor() -> None:

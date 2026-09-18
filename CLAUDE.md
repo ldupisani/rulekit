@@ -20,14 +20,42 @@ packs, no LLM at runtime. Architecture: `docs/architecture.md`. Measurement disc
    gates (minimum-structure: literals are grammatical skeleton only), synthesizers, and the
    generic consumers in `answer.py`. A rule must be justified by a CLASS of problems, named at
    ship time.
-3. **Every increment goes through the gate**: baseline snapshot → change → `rulekit diff`
-   (0 BROKE, 0 DECL→WRONG) → dev-holdout delta (0 new wrongs) → synthetic unit test (never a
-   GSM8K string in `tests/`). TEST looks are spent deliberately and rarely; a TEST precision
-   drop reverts the change no matter how good DEV looked.
+3. **Every behavior change needs regression evidence.** Direct question implementation uses
+   the proportionate checks below; explicit mining uses baseline snapshot → change →
+   `rulekit diff` (0 BROKE, 0 DECL→WRONG) → dev-holdout delta (0 new wrongs), alongside
+   synthetic unit tests. Never put a GSM8K string in `tests/`. TEST looks require explicit
+   authorization; a TEST precision drop reverts the change no matter how good DEV looked.
 4. **Precision before coverage.** A confident-wrong is worse than a decline. New capability may
    only move an item declined → {correct | declined}, never → wrong.
 
-## Batch mining (`/mine`)
+## Direct question implementation — default for supplied questions
+
+When the user asks to implement a specific question or a supplied list of
+questions, work directly in the current checkout, preserving unrelated changes.
+This is ordinary product development, **not Mining v2**, even if the question
+comes from GSM8K. Do not automatically create a mining batch, candidate
+worktrees, manifests, agent review stages, Designer promotion decisions, or
+sequential integration gates.
+
+1. Trace the supplied question end to end and identify the missing general
+   capability. Reuse existing grammar, category relationships, facts, and
+   consumers; the constitution still forbids question-specific solvers.
+2. Implement the reusable change and add invented analogues, paraphrases, and
+   relevant ambiguity/decline boundaries. Keep benchmark prose out of tests.
+3. Run focused affected tests, the curated suite, and relevant lint. Expand
+   validation according to the change's reach: shared kernel changes warrant
+   the full synthetic suite and relevant DEV regression comparisons. Do not
+   automatically run the entire mining matrix or repeat unchanged gates.
+4. Check the supplied question locally and report the result, limitations, and
+   checks performed. Do not claim independent benchmark generalization from it.
+
+Protected TEST/generalization looks, committing, and pushing remain separate
+user-authorized actions. Do not stop or restart the running Designer server.
+
+## Batch mining (`/mine`) — explicit requests only
+
+Use this workflow only when the user explicitly asks for mining or a mining
+campaign. A request to support a particular question is not such a request.
 
 `/mine [count]` runs example-led Mining v2 as a multi-agent batch
 (`.claude/skills/mine/SKILL.md`): a GSM8K DEV scout selects one declining

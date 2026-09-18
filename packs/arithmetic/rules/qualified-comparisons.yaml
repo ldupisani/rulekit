@@ -1,0 +1,275 @@
+format: rulekit/rules@1
+rules:
+  - id: arithmetic/qualified-item-comparison-clause
+    phase: read
+    description: >
+      An item-class comparison repeats its participant and predicate in the
+      standard clause. Both must identify the same actor and activity;
+      another actor or predicate needs a different comparison contract.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true, bare_reference_category: bare_entity_reference, bare: true}
+        - {slot: verb, cat: quantity_comparison_verb, finite_form: true}
+        - {slot: n, type: number, value_min: 0}
+        - {slot: direction, cat: count_quantity_delta}
+        - {slot: item, type: qualified, number: plural, uncounted: true, class_only: true}
+        - {lit: than}
+        - {slot: who, type: entity, referential: true, bare_reference_category: bare_entity_reference, bare: true}
+        - {slot: verb, cat: quantity_comparison_verb, finite_form: true}
+        - {slot: standard, type: qualified, number: plural, uncounted: true, class_only: true}
+        - {lit: '.', consume_skipped: true}
+    where:
+      - number_compatible: [who, verb]
+      - same_lemma: [item, standard]
+      - distinct_measure: [item, standard]
+      - slot_not_category: {slot: verb, cat: goal_predicate}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - verb_roles_compatible:
+          verb: verb
+          roles: {actor: [who], theme: [item, standard]}
+          allow_proper_name: [who]
+      - measure_holder_compatible: {measure: item, holders: [who], allow_proper_name: true, when_declared: true}
+    satisfies: {n: [quantifies]}
+    consumes: [n]
+    emits:
+      - {fact: relation, subject: '{who}', standard: '{standard}', measure: '{item}', measure_qualifier: '{item.qualifier}', standard_qualifier: '{standard.qualifier}', verb: '{verb}', factor: 1.0, offset: 'n * sign(direction)'}
+
+  - id: arithmetic/located-quantity-event-context
+    phase: read
+    description: >
+      An uncounted activity at a stated place preserves introductory context.
+      It states no amount. Only a document-leading introduction followed by
+      compatible counts can serve as their summary; a later event or an
+      explicitly unknown amount cannot be discarded.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: quantity_event_participant, referential: true, bare_reference_category: bare_entity_reference, bare: true, at_start: true}
+        - {slot: verb, cat: quantity_event_verb, finite_form: true}
+        - {slot: item, type: plural, bare: true, uncounted: true}
+        - {slot: prep, cat: spatial_location_preposition}
+        - {slot: place, cat: quantity_site_location, referential: true, class_only: true}
+        - {lit: '.', consume_skipped: true}
+    where:
+      - number_compatible: [who, verb]
+      - attribute_compatible: {attribute: prep, noun: place}
+      - verb_roles_compatible:
+          verb: verb
+          roles: {actor: [who], theme: [item]}
+          allow_proper_name: [who]
+    emits:
+      - {fact: quantity_event_context, entity: '{who}', measure: '{item}', verb: '{verb}', place: '{place}'}
+
+asks:
+  - id: ask/what-total-single-holder
+    match:
+      question:
+        - {lit: what, at_start: true}
+        - {slot: be, cat: singular_copula}
+        - {lit: the, consume_skipped: true}
+        - {lit: total}
+        - {slot: frame, cat: count_aggregate_noun}
+        - {lit: of}
+        - {slot: item, type: plural, class_only: true}
+        - opt:
+            - {lit: that}
+        - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true, bare_reference_category: bare_entity_reference, bare: true}
+        - {slot: verb, cat: quantity_ask_verb, finite_form: true}
+        - {lit: '?', consume_skipped: true}
+    where:
+      - number_compatible: [who, verb]
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - verb_roles_compatible:
+          verb: verb
+          roles: {actor: [who], theme: [item]}
+          allow_proper_name: [who]
+    resolves:
+      consumer: single-entity
+      entity: '{who}'
+      measure: '{item}'
+      measure_qualifier: '{item.qualifier}'
+      verb: '{verb}'
+      sum_measure_variants: 'true'
+
+templates:
+  signed-item-comparison-pair:
+    parameters:
+      opening: []
+      extra_guards: []
+      extra_consumes: []
+      extra_emits: []
+    rule:
+      phase: read
+      description: >
+        Two signed comparisons share one participant and predicate. Each
+        comparison keeps its own item modifier and standard, including when
+        the second standard is the first comparison's result. Ordinary
+        Relation synthesis supplies the amounts; this rule does no arithmetic.
+      match:
+        sentence:
+          - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true, bare_reference_category: bare_entity_reference, bare: true}
+          - {slot: verb, cat: quantity_comparison_verb, finite_form: true}
+          - {parameter: opening}
+          - {slot: n, type: number, value_min: 0}
+          - {slot: direction, cat: count_quantity_delta}
+          - {slot: item, type: qualified, number: plural, uncounted: true, class_only: true}
+          - {lit: than}
+          - opt:
+              - {slot: who, type: entity, referential: true, bare_reference_category: bare_entity_reference, bare: true}
+              - {slot: verb, cat: quantity_comparison_verb, finite_form: true}
+          - {slot: standard, type: qualified, number: plural, uncounted: true, class_only: true}
+          - {lit: and}
+          - {slot: n2, type: number, value_min: 0}
+          - {slot: direction2, cat: count_quantity_delta}
+          - {slot: item2, type: qualified, number: plural, uncounted: true, class_only: true}
+          - {lit: than}
+          - opt:
+              - {slot: who, type: entity, referential: true, bare_reference_category: bare_entity_reference, bare: true}
+              - {slot: verb, cat: quantity_comparison_verb, finite_form: true}
+          - {slot: standard2, type: qualified, number: plural, uncounted: true, class_only: true}
+          - {lit: '.', consume_skipped: true}
+      where:
+        - {parameter: extra_guards}
+        - number_compatible: [who, verb]
+        - same_lemma: [item, standard, item2, standard2]
+        - distinct_measure: [item, standard]
+        - distinct_measure: [item2, standard2]
+        - slot_not_category: {slot: verb, cat: goal_predicate}
+        - slot_not_category: {slot: item, cat: many_incompatible_noun}
+        - verb_roles_compatible:
+            verb: verb
+            roles: {actor: [who], theme: [item, standard, item2, standard2]}
+            allow_proper_name: [who]
+        - measure_holder_compatible: {measure: item, holders: [who], allow_proper_name: true, when_declared: true}
+      satisfies: {n: [quantifies], n2: [quantifies]}
+      consumes: [n, n2, {parameter: extra_consumes}]
+      emits:
+        - {parameter: extra_emits}
+        - {fact: relation, subject: '{who}', standard: '{standard}', measure: '{item}', measure_qualifier: '{item.qualifier}', standard_qualifier: '{standard.qualifier}', verb: '{verb}', factor: 1.0, offset: 'n * sign(direction)'}
+        - {fact: relation, subject: '{who}', standard: '{standard2}', measure: '{item2}', measure_qualifier: '{item2.qualifier}', standard_qualifier: '{standard2.qualifier}', verb: '{verb}', factor: 1.0, offset: 'n2 * sign(direction2)'}
+
+  nominal-description-list:
+    parameters:
+      middle: []
+      extra_guards: []
+      extra_emits: []
+    rule:
+      phase: read
+      description: >
+        Several nominal descriptors share one attribute head. Each named
+        description is retained, even without a count; this is not evidence
+        that the list is exhaustive or that its members cannot overlap.
+      match:
+        sentence:
+          - {slot: collection, cat: depiction_bearing_noun, number: plural, bare: true, uncounted: true, at_start: true}
+          - {slot: verb, cat: plain_have_state, finite_form: true}
+          - {slot: first, cat: depictable_noun, number: singular, bare: true, uncounted: true}
+          - {parameter: middle}
+          - {lit: and}
+          - {slot: last, cat: nominal_attribute_noun, qualified: true, number: plural, class_only: true, uncounted: true}
+          - {lit: '.', consume_skipped: true}
+      where:
+        - number_compatible: [collection, verb]
+        - attribute_compatible: {attribute: first, noun: collection}
+        - {parameter: extra_guards}
+      emits:
+        - {fact: collection_attribute, collection: '{collection}', attribute: '{last}', qualifier: '{first}', quantifier: ''}
+        - {parameter: extra_emits}
+        - {fact: collection_attribute, collection: '{collection}', attribute: '{last}', qualifier: '{last.qualifier}', quantifier: ''}
+
+  collection-nominal-attributes:
+    parameters:
+      tail: []
+      extra_emits: []
+    rule:
+      phase: read
+      description: >
+        An indefinite subset bears a nominal attribute, such as a flower
+        design. Coordinated subsets can omit the repeated collection noun.
+        Keep every description without inventing counts or exhaustiveness.
+      match:
+        sentence:
+          - {slot: subset, cat: indefinite_subset_quantifier, at_start: true}
+          - {lit: of}
+          - {slot: collection, type: plural, referential: true, uncounted: true, bare: true}
+          - {slot: verb, cat: plain_have_state, finite_form: true}
+          - {slot: attribute, cat: nominal_attribute_noun, qualified: true, number: singular, referential: true, uncounted: true, class_only: true}
+          - {parameter: tail}
+          - {lit: '.', consume_skipped: true}
+      where:
+        - number_compatible: [collection, verb]
+      satisfies:
+        subset: [collection]
+        verb: [subject, object]
+      emits:
+        - {fact: collection_attribute, collection: '{collection}', attribute: '{attribute}', qualifier: '{attribute.qualifier}', quantifier: '{subset}'}
+        - {parameter: extra_emits}
+
+variants:
+  - id: arithmetic/qualified-item-comparison-pair
+    template: signed-item-comparison-pair
+  - id: arithmetic/anchored-qualified-item-comparison-pair
+    template: signed-item-comparison-pair
+    arguments:
+      opening:
+        - {slot: anchor, cat: noun, qualified: true, number: plural, counted: true, class_only: true}
+        - {lit: ',', consume_skipped: true}
+      extra_guards:
+        - same_lemma: [anchor, item]
+        - verb_roles_compatible:
+            verb: verb
+            roles: {theme: [anchor]}
+      extra_consumes: [anchor]
+      extra_emits:
+        - {fact: quantity, entity: '{who}', measure: '{anchor}', measure_qualifier: '{anchor.qualifier}', value: anchor, verb: '{verb}'}
+  - id: arithmetic/collection-two-shared-attributes
+    template: nominal-description-list
+  - id: arithmetic/collection-three-shared-attributes
+    template: nominal-description-list
+    arguments:
+      middle:
+        - {lit: ',', consume_skipped: true}
+        - {slot: second, cat: depictable_noun, number: singular, bare: true, uncounted: true}
+      extra_guards:
+        - attribute_compatible: {attribute: second, noun: collection}
+      extra_emits:
+        - {fact: collection_attribute, collection: '{collection}', attribute: '{last}', qualifier: '{second}', quantifier: ''}
+  - id: arithmetic/collection-four-shared-attributes
+    template: nominal-description-list
+    arguments:
+      middle:
+        - {lit: ',', consume_skipped: true}
+        - {slot: second, cat: depictable_noun, number: singular, bare: true, uncounted: true}
+        - {lit: ',', consume_skipped: true}
+        - {slot: third, cat: depictable_noun, number: singular, bare: true, uncounted: true}
+      extra_guards:
+        - attribute_compatible: {attribute: second, noun: collection}
+        - attribute_compatible: {attribute: third, noun: collection}
+      extra_emits:
+        - {fact: collection_attribute, collection: '{collection}', attribute: '{last}', qualifier: '{second}', quantifier: ''}
+        - {fact: collection_attribute, collection: '{collection}', attribute: '{last}', qualifier: '{third}', quantifier: ''}
+  - id: arithmetic/collection-nominal-attribute
+    template: collection-nominal-attributes
+  - id: arithmetic/collection-two-nominal-attributes
+    template: collection-nominal-attributes
+    arguments:
+      tail:
+        - {lit: and}
+        - {slot: subset2, cat: indefinite_subset_quantifier}
+        - {slot: verb, cat: plain_have_state, finite_form: true}
+        - {slot: attribute2, cat: nominal_attribute_noun, qualified: true, number: singular, referential: true, uncounted: true, class_only: true}
+      extra_emits:
+        - {fact: collection_attribute, collection: '{collection}', attribute: '{attribute2}', qualifier: '{attribute2.qualifier}', quantifier: '{subset2}'}
+  - id: arithmetic/collection-three-nominal-attributes
+    template: collection-nominal-attributes
+    arguments:
+      tail:
+        - {slot: subset2, cat: indefinite_subset_quantifier}
+        - {slot: verb, cat: plain_have_state, finite_form: true}
+        - {slot: attribute2, cat: nominal_attribute_noun, qualified: true, number: singular, referential: true, uncounted: true, class_only: true}
+        - {lit: and}
+        - {slot: subset3, cat: indefinite_subset_quantifier}
+        - {slot: verb, cat: plain_have_state, finite_form: true}
+        - {slot: attribute3, cat: nominal_attribute_noun, qualified: true, number: singular, referential: true, uncounted: true, class_only: true}
+      extra_emits:
+        - {fact: collection_attribute, collection: '{collection}', attribute: '{attribute2}', qualifier: '{attribute2.qualifier}', quantifier: '{subset2}'}
+        - {fact: collection_attribute, collection: '{collection}', attribute: '{attribute3}', qualifier: '{attribute3.qualifier}', quantifier: '{subset3}'}

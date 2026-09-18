@@ -20,12 +20,7 @@ entries:
     love: {senses: [verb]}
     loved: {senses: [verb], verb: {lemma: love}}
     published: {senses: [verb], verb: {lemma: publish}}
-    # S2 buyer vocabulary (the Oxford Circus passive-agent item): admitted
-    # HERE because this pack is loaded by no benchmark project — zero
-    # blast radius, the sanctioned route for experiment vocabulary
-    design: {senses: [verb], verb: {lemma: design}}
-    designs: {senses: [verb], verb: {lemma: design}}
-    designed: {senses: [verb], verb: {lemma: design}}
+    # The design verb family now has one owner in core-english alongside its
+    # nominal sense. The remaining experimental role vocabulary stays local.
     architect: {senses: [noun], plural: architects}
-
 

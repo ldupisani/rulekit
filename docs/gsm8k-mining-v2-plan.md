@@ -1,10 +1,14 @@
 # GSM8K Mining v2 — generated evidence and human promotion review
 
-**Status:** active
+**Status:** available for explicitly requested mining only
 **Started:** 2026-08-08
 **Baseline commit:** `1dd2159`
-**Current checkpoint:** increments 129–132 are landed; the campaign queue has
-no open revision; runtime checkpoint `de6d74e`
+**Current checkpoint:** increments 129–134 are landed; runtime checkpoint
+`d6add05`
+
+As of 2026-09-17, requests to implement specific supplied questions use the
+direct workflow in [`../CLAUDE.md`](../CLAUDE.md), not this plan. A question's
+GSM8K origin does not by itself authorize a mining campaign.
 
 ## Objective
 
@@ -37,8 +41,9 @@ evidence, not training labels and not benchmark gold.
 7. The existing Designer server stays available. Candidate code will execute
    in an isolated on-demand runner rather than being imported into that
    process.
-8. A user may explicitly select a product-led manual class below the automatic
-   yield threshold. Its manifest must say `mode: product`, claim no corpus
+8. Within an explicitly requested mining campaign, a user may select a
+   product-led manual class below the automatic yield threshold. Its manifest
+   must say `mode: product`, claim no corpus
    pool or solved items, and state the product rationale. It receives every
    ordinary evidence and promotion gate; product selection never disguises a
    zero-yield automatic candidate.

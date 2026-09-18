@@ -127,6 +127,47 @@ def _is_relative_period(unit: Unit, reg: Registry) -> bool:
     )
 
 
+def _nominal_attribute_postmodifier(reading: Reading, reg: Registry) -> bool:
+    """Project a declared nominal-attribute PP onto its host's item identity.
+
+    The pack supplies the preposition, attribute heads and compatibility.
+    Counts and owners remain on the host; the attribute is not a new item.
+    """
+    units = reading.units
+    for i, host in enumerate(units[:-2]):
+        if host.sense() != "noun" or host.features.get("qualifier"):
+            continue
+        prep = units[i + 1]
+        if not reg.word_in_category(prep.features.get("fold", ""), "nominal_attribute_preposition"):
+            continue
+        j = i + 2
+        while j < len(units) and units[j].sense() == "article":
+            j += 1
+        if j == len(units):
+            continue
+        attribute = units[j]
+        qualifier = attribute.features.get("qualifier")
+        head = attribute.features.get("lemma", "")
+        if (attribute.sense() != "noun" or not qualifier
+                or not reg.word_in_category(head, "nominal_attribute_noun")
+                or any(attribute.features.get(k) is not None for k in ("owner", "label", "value"))
+                or not reg.attribute_applies_to(qualifier, head)
+                or not reg.attribute_applies_to(qualifier, host.features.get("lemma", ""))):
+            continue
+        span = units[i:j + 1]
+        merged = reading.new_unit(tuple(w for u in span for w in u.words), dict(host.features))
+        units[i:j + 1] = [merged]
+        reading.record("merge-nominal-attribute-pp", merged, {
+            "fold": " ".join(u.features["fold"] for u in span),
+            "qualifier": qualifier,
+            "nominal_attribute": head,
+            "attributes": list(host.features.get("attributes", [])) + [qualifier],
+            "reference_qualifiers": tuple(sorted(set(reference_from_unit(host).qualifiers + (qualifier,)))),
+        }, "declared nominal attribute restricts the host item")
+        return True
+    return False
+
+
 def _nominal_pass(reading: Reading, reg: Registry) -> bool:
     units = reading.units
     # perfect tense: have-lemma verb + verb -> ONE verb ("has read 32 books"
@@ -376,6 +417,8 @@ def _nominal_pass(reading: Reading, reg: Registry) -> bool:
         if (
             a.sense() == "noun" and b.sense() == "noun"
             and "value" not in a.features
+            and a.features.get("label") is None
+            and not (a.features.get("owner") and b.features.get("owner"))
             # A qualified relative period is a temporal adjunct, not the
             # lexical head of the preceding object: ``toy cars last month``
             # must remain [toy cars] [last month], never one quantity of
@@ -398,6 +441,12 @@ def _nominal_pass(reading: Reading, reg: Registry) -> bool:
             _merge(reading, i, b, "merge-compound",
                    f"compound noun: {a.surface!r} modifies head {b.surface!r}",
                    {
+                       # A possessive may have merged with the modifier
+                       # first. Its scope is the complete compound; do not
+                       # erase that identity when adopting the right head.
+                       **{key: a.features[key] for key in
+                          ("owner", "owner_reference", "owner_ref_uid")
+                          if key in a.features},
                        "attributes": attrs,
                        "qualifier": qualifier,
                        "reference_qualifiers": tuple(sorted(set(
@@ -526,7 +575,7 @@ def _nominal_pass(reading: Reading, reg: Registry) -> bool:
                 "the noun retains an explicit possessor",
             )
             return True
-    return False
+    return _nominal_attribute_postmodifier(reading, reg)
 
 
 def _count_pass(reading: Reading, reg: Registry) -> bool:
