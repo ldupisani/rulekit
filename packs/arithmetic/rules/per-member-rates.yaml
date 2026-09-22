@@ -1,0 +1,524 @@
+format: rulekit/rules@1
+rules:
+  - id: arithmetic/passive-per-member-period-rate
+    phase: read
+    description: >
+      A counted passive object with an explicit distributive agent records
+      the same per-member rate as the active voice. It does not assert a
+      population count or permit an unbounded anonymous agent.
+    match:
+      sentence:
+        - {slot: item, type: counted, bare: true, value_min: 0, at_start: true}
+        - {slot: be, cat: copula}
+        - {slot: verb, cat: quantity_event_verb, past_participle: true}
+        - {lit: by}
+        - {slot: each, cat: distributive_quantifier}
+        - {slot: actor, type: noun, number: singular, bare: true, uncounted: true}
+        - {lit: [per, each, every, a, an], consume_skipped: true}
+        - {slot: period, cat: duration_measure, number: singular, bare: true, uncounted: true}
+        - {lit: '.', consume_skipped: true}
+    where:
+      - number_compatible: [item, be]
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - verb_roles_compatible: {verb: verb, roles: {actor: [actor], theme: [item]}, require_declared_frame: true}
+    consumes: [item]
+    emits:
+      - {fact: rate, entity: '{actor}', measure: '{item}', per: '{period}', value: item, verb: '{verb}', distributive: true}
+  - id: arithmetic/located-class-population
+    phase: read
+    question_assumption: true
+    description: >
+      A complete located population statement, including a question-local
+      assumption. This is an ordinary holding, not a rate or an inferred
+      population at another level of a dependency chain.
+    match:
+      sentence:
+        - {lit: there, consume_skipped: true, at_start: true}
+        - {slot: be, cat: copula}
+        - {slot: members, cat: quantity_event_participant, counted: true, bare: true, value_min: 0}
+        - {slot: prep, cat: contained_population_preposition}
+        - {slot: place, cat: quantity_site_location, referential: true, bare: true}
+        - {lit: '.', consume_skipped: true}
+    where:
+      - number_compatible: [members, be]
+      - attribute_compatible: {attribute: prep, noun: place}
+    satisfies: {be: [subject]}
+    consumes: [members]
+    emits:
+      - {fact: quantity, entity: '{place}', measure: '{members}', value: members, verb: have}
+
+templates:
+  located-population:
+    parameters:
+      sentence: []
+      agreement: []
+    rule:
+      phase: read
+      question_assumption: true
+      description: >
+        A complete population assertion retains its location as the holder.
+        Containment and residence are normalized only in this counted,
+        participant-in-location construction, not as global possession synonyms.
+      match:
+        sentence: {parameter: sentence}
+      where: {parameter: agreement}
+      consumes: [members]
+      emits:
+        - {fact: quantity, entity: '{place}', measure: '{members}', value: members, verb: have}
+  per-member-period-rates:
+    parameters:
+      actor_type: noun
+      actor_number: singular
+      post_quantifier: []
+      prefix: []
+      opening: [{slot: each, cat: distributive_quantifier, at_start: true}]
+      timing:
+        - {lit: [per, each, every, a, an], consume_skipped: true}
+        - {slot: period, cat: duration_measure, number: singular, bare: true, uncounted: true}
+      rate_period: '{period}'
+      tail: []
+      extra_where: []
+      extra_consumes: []
+      extra_emits: []
+    rule:
+      phase: read
+      description: >
+        Explicit per-member activity rates over a named period. Each clause
+        states its own participant, activity and object; verb-role contracts
+        own vocabulary compatibility. A rate is not a holding. Coordinated
+        variants retain every clause and do not supply missing populations.
+      match:
+        sentence:
+          - {parameter: prefix}
+          - {parameter: opening}
+          - {slot: actor, type: {parameter: actor_type}, number: {parameter: actor_number}, bare: true, uncounted: true}
+          - {parameter: post_quantifier}
+          - {slot: verb, cat: quantity_event_verb, finite_form: true}
+          - {slot: item, type: counted, bare: true, value_min: 0}
+          - {parameter: timing}
+          - {parameter: tail}
+          - {lit: '.', consume_skipped: true}
+      where:
+        - number_compatible: [actor, verb]
+        - slot_not_category: {slot: item, cat: many_incompatible_noun}
+        - verb_roles_compatible: {verb: verb, roles: {actor: [actor], theme: [item]}, require_declared_frame: true}
+        - {parameter: extra_where}
+      consumes: [item, {parameter: extra_consumes}]
+      emits:
+        - {fact: rate, entity: '{actor}', measure: '{item}', per: {parameter: rate_period}, value: item, verb: '{verb}', distributive: true}
+        - {parameter: extra_emits}
+
+  per-member-ask:
+    parameters:
+      generation: {}
+      prefix: []
+      head: [{lit: how, at_start: true}, {lit: many}]
+      voice:
+        - {slot: be, cat: copula}
+      voice_guards: [{number_compatible: [item, be]}]
+      roles: {theme: [item]}
+      verb: {slot: verb, cat: quantity_event_verb, past_participle: true}
+      entity: ''
+      subject_number: ''
+      timing:
+        - {lit: [each, every, per, a, an], consume_skipped: true}
+        - {slot: period, cat: duration_measure, number: singular, uncounted: true, bare: true}
+      period: '{period}'
+      span_unit: '{span}'
+      span_value: '{span.value}'
+    rule:
+      generation: {parameter: generation}
+      match:
+        question:
+          - {parameter: prefix}
+          - {parameter: head}
+          - {slot: item, type: plural, bare: true, uncounted: true}
+          - {parameter: voice}
+          - {parameter: verb}
+          - opt: &ask_totality
+              - opt:
+                  - {slot: total_prep, cat: group_total_preposition}
+              - {slot: totality, cat: group_total_marker}
+          - opt: &ask_location
+              - {slot: loc_prep, cat: contained_population_preposition}
+              - {slot: place, cat: quantity_site_location, referential: true, bare: true}
+          - {parameter: timing}
+          - opt:
+              - opt:
+                  - {slot: total_prep2, cat: group_total_preposition}
+              - {slot: totality2, cat: group_total_marker}
+          - opt:
+              - {slot: loc_prep2, cat: contained_population_preposition}
+              - {slot: place2, cat: quantity_site_location, referential: true, bare: true}
+          - {lit: '?', consume_skipped: true}
+      where:
+        - {parameter: voice_guards}
+        - bound_requires_category: {bound: total_prep, slot: totality, cat: prepositional_group_total_marker}
+        - bound_requires_category: {bound: total_prep2, slot: totality2, cat: prepositional_group_total_marker}
+        - slot_not_category: {slot: item, cat: many_incompatible_noun}
+        - verb_roles_compatible: {verb: verb, roles: {parameter: roles}, require_declared_frame: true}
+      resolves:
+        consumer: per-member-rate-chain
+        measure: '{item}'
+        verb: '{verb}'
+        location: '{place}'
+        location2: '{place2}'
+        period: {parameter: period}
+        span_unit: {parameter: span_unit}
+        span_value: {parameter: span_value}
+        entity: {parameter: entity}
+        subject_number: {parameter: subject_number}
+        entity_owner: '{who.owner}'
+        entity_qualifier: '{who.qualifier}'
+
+variants:
+  - id: arithmetic/fronted-located-class-population
+    template: located-population
+    arguments:
+      sentence:
+        - {slot: prep, cat: contained_population_preposition, at_start: true}
+        - {slot: place, cat: quantity_site_location, referential: true, bare: true}
+        - {lit: there, consume_skipped: true}
+        - {slot: be, cat: copula}
+        - {slot: members, cat: quantity_event_participant, counted: true, bare: true, value_min: 0}
+        - {lit: '.', consume_skipped: true}
+      agreement:
+        - number_compatible: [members, be]
+        - attribute_compatible: {attribute: prep, noun: place}
+  - id: arithmetic/location-contains-population
+    template: located-population
+    arguments:
+      sentence:
+        - {slot: place, cat: quantity_site_location, bare: true, uncounted: true, at_start: true}
+        - {slot: verb, cat: container_content_state_verb, finite_form: true}
+        - {slot: members, cat: quantity_event_participant, counted: true, bare: true, value_min: 0}
+        - {lit: '.', consume_skipped: true}
+      agreement:
+        - number_compatible: [place, verb]
+  - id: arithmetic/resident-class-population
+    template: located-population
+    arguments:
+      sentence:
+        - {slot: members, cat: quantity_event_participant, counted: true, bare: true, value_min: 0, at_start: true}
+        - {slot: verb, cat: residence_state_verb, finite_form: true}
+        - {slot: prep, cat: contained_population_preposition}
+        - {slot: place, cat: quantity_site_location, referential: true, bare: true}
+        - {lit: '.', consume_skipped: true}
+      agreement:
+        - number_compatible: [members, verb]
+        - attribute_compatible: {attribute: prep, noun: place}
+  - id: arithmetic/per-member-period-rate
+    template: per-member-period-rates
+  - id: arithmetic/two-per-member-period-rates
+    template: per-member-period-rates
+    arguments:
+      tail:
+        - {lit: [and, ';'], consume_skipped: true}
+        - &each2 {slot: each2, cat: distributive_quantifier}
+        - &actor2 {slot: actor2, type: noun, number: singular, bare: true, uncounted: true}
+        - &verb2 {slot: verb2, cat: quantity_event_verb, finite_form: true}
+        - &item2 {slot: item2, type: counted, bare: true, value_min: 0}
+        - &per2 {lit: [per, each, every, a, an], consume_skipped: true}
+        - &period2 {slot: period2, cat: duration_measure, number: singular, bare: true, uncounted: true}
+      extra_where:
+        - &agreement2 {number_compatible: [actor2, verb2]}
+        - &countable2 {slot_not_category: {slot: item2, cat: many_incompatible_noun}}
+        - &roles2 {verb_roles_compatible: {verb: verb2, roles: {actor: [actor2], theme: [item2]}, require_declared_frame: true}}
+      extra_consumes: [item2]
+      extra_emits:
+        - &rate2 {fact: rate, entity: '{actor2}', measure: '{item2}', per: '{period2}', value: item2, verb: '{verb2}', distributive: true}
+  - id: arithmetic/three-per-member-period-rates
+    template: per-member-period-rates
+    arguments:
+      tail:
+        - {lit: [',', ';', and], consume_skipped: true}
+        - *each2
+        - *actor2
+        - *verb2
+        - *item2
+        - *per2
+        - *period2
+        - {lit: [and, ';'], consume_skipped: true}
+        - {slot: each3, cat: distributive_quantifier}
+        - {slot: actor3, type: noun, number: singular, bare: true, uncounted: true}
+        - {slot: verb3, cat: quantity_event_verb, finite_form: true}
+        - {slot: item3, type: counted, bare: true, value_min: 0}
+        - {lit: [per, each, every, a, an], consume_skipped: true}
+        - {slot: period3, cat: duration_measure, number: singular, bare: true, uncounted: true}
+      extra_where:
+        - *agreement2
+        - *countable2
+        - *roles2
+        - number_compatible: [actor3, verb3]
+        - slot_not_category: {slot: item3, cat: many_incompatible_noun}
+        - verb_roles_compatible: {verb: verb3, roles: {actor: [actor3], theme: [item3]}, require_declared_frame: true}
+      extra_consumes: [item2, item3]
+      extra_emits:
+        - *rate2
+        - {fact: rate, entity: '{actor3}', measure: '{item3}', per: '{period3}', value: item3, verb: '{verb3}', distributive: true}
+
+  - id: arithmetic/per-member-daily-rates
+    template: per-member-period-rates
+    arguments:
+      timing: [{slot: frequency, cat: daily_frequency_adverb}]
+      rate_period: day
+
+  - id: arithmetic/two-per-member-daily-rates
+    template: per-member-period-rates
+    arguments:
+      timing: [{slot: frequency, cat: daily_frequency_adverb}]
+      rate_period: day
+      tail:
+        - {lit: [and, ';'], consume_skipped: true}
+        - {slot: each2, cat: distributive_quantifier}
+        - {slot: actor2, type: noun, number: singular, bare: true, uncounted: true}
+        - {slot: verb2, cat: quantity_event_verb, finite_form: true}
+        - {slot: item2, type: counted, bare: true, value_min: 0}
+        - {slot: frequency2, cat: daily_frequency_adverb}
+      extra_where:
+        - number_compatible: [actor2, verb2]
+        - slot_not_category: {slot: item2, cat: many_incompatible_noun}
+        - verb_roles_compatible: {verb: verb2, roles: {actor: [actor2], theme: [item2]}, require_declared_frame: true}
+      extra_consumes: [item2]
+      extra_emits:
+        - {fact: rate, entity: '{actor2}', measure: '{item2}', per: day, value: item2, verb: '{verb2}', distributive: true}
+
+  - id: arithmetic/three-per-member-daily-rates
+    template: per-member-period-rates
+    arguments:
+      timing: [{slot: frequency, cat: daily_frequency_adverb}]
+      rate_period: day
+      tail:
+        - {lit: [',', ';', and], consume_skipped: true}
+        - {slot: each2, cat: distributive_quantifier}
+        - {slot: actor2, type: noun, number: singular, bare: true, uncounted: true}
+        - {slot: verb2, cat: quantity_event_verb, finite_form: true}
+        - {slot: item2, type: counted, bare: true, value_min: 0}
+        - {slot: frequency2, cat: daily_frequency_adverb}
+        - {lit: [and, ';'], consume_skipped: true}
+        - {slot: each3, cat: distributive_quantifier}
+        - {slot: actor3, type: noun, number: singular, bare: true, uncounted: true}
+        - {slot: verb3, cat: quantity_event_verb, finite_form: true}
+        - {slot: item3, type: counted, bare: true, value_min: 0}
+        - {slot: frequency3, cat: daily_frequency_adverb}
+      extra_where:
+        - number_compatible: [actor2, verb2]
+        - slot_not_category: {slot: item2, cat: many_incompatible_noun}
+        - verb_roles_compatible: {verb: verb2, roles: {actor: [actor2], theme: [item2]}, require_declared_frame: true}
+        - number_compatible: [actor3, verb3]
+        - slot_not_category: {slot: item3, cat: many_incompatible_noun}
+        - verb_roles_compatible: {verb: verb3, roles: {actor: [actor3], theme: [item3]}, require_declared_frame: true}
+      extra_consumes: [item2, item3]
+      extra_emits:
+        - {fact: rate, entity: '{actor2}', measure: '{item2}', per: day, value: item2, verb: '{verb2}', distributive: true}
+        - {fact: rate, entity: '{actor3}', measure: '{item3}', per: day, value: item3, verb: '{verb3}', distributive: true}
+
+  - id: arithmetic/two-per-member-shared-period-rates
+    template: per-member-period-rates
+    arguments:
+      timing: []
+      tail:
+        - {lit: [and, ';'], consume_skipped: true}
+        - {slot: each2, cat: distributive_quantifier}
+        - {slot: actor2, type: noun, number: singular, bare: true, uncounted: true}
+        - {slot: verb2, cat: quantity_event_verb, finite_form: true}
+        - {slot: item2, type: counted, bare: true, value_min: 0}
+        - {lit: [per, each, every, a, an], consume_skipped: true}
+        - {slot: period, cat: duration_measure, number: singular, bare: true, uncounted: true}
+      extra_where:
+        - number_compatible: [actor2, verb2]
+        - slot_not_category: {slot: item2, cat: many_incompatible_noun}
+        - verb_roles_compatible: {verb: verb2, roles: {actor: [actor2], theme: [item2]}, require_declared_frame: true}
+      extra_consumes: [item2]
+      extra_emits:
+        - {fact: rate, entity: '{actor2}', measure: '{item2}', per: '{period}', value: item2, verb: '{verb2}', distributive: true}
+
+  - id: arithmetic/three-per-member-shared-period-rates
+    template: per-member-period-rates
+    arguments:
+      timing: []
+      tail:
+        - {lit: [',', ';', and], consume_skipped: true}
+        - {slot: each2, cat: distributive_quantifier}
+        - {slot: actor2, type: noun, number: singular, bare: true, uncounted: true}
+        - {slot: verb2, cat: quantity_event_verb, finite_form: true}
+        - {slot: item2, type: counted, bare: true, value_min: 0}
+        - {lit: [and, ';'], consume_skipped: true}
+        - {slot: each3, cat: distributive_quantifier}
+        - {slot: actor3, type: noun, number: singular, bare: true, uncounted: true}
+        - {slot: verb3, cat: quantity_event_verb, finite_form: true}
+        - {slot: item3, type: counted, bare: true, value_min: 0}
+        - {lit: [per, each, every, a, an], consume_skipped: true}
+        - {slot: period, cat: duration_measure, number: singular, bare: true, uncounted: true}
+      extra_where:
+        - number_compatible: [actor2, verb2]
+        - slot_not_category: {slot: item2, cat: many_incompatible_noun}
+        - verb_roles_compatible: {verb: verb2, roles: {actor: [actor2], theme: [item2]}, require_declared_frame: true}
+        - number_compatible: [actor3, verb3]
+        - slot_not_category: {slot: item3, cat: many_incompatible_noun}
+        - verb_roles_compatible: {verb: verb3, roles: {actor: [actor3], theme: [item3]}, require_declared_frame: true}
+      extra_consumes: [item2, item3]
+      extra_emits:
+        - {fact: rate, entity: '{actor2}', measure: '{item2}', per: '{period}', value: item2, verb: '{verb2}', distributive: true}
+        - {fact: rate, entity: '{actor3}', measure: '{item3}', per: '{period}', value: item3, verb: '{verb3}', distributive: true}
+
+  - id: arithmetic/per-member-fronted-period-rates
+    template: per-member-period-rates
+    arguments:
+      prefix:
+        - {lit: [each, every, per], at_start: true}
+        - {slot: period, cat: duration_measure, number: singular, bare: true, uncounted: true}
+      opening: [{slot: each, cat: distributive_quantifier}]
+      timing: []
+
+  - id: arithmetic/two-per-member-fronted-period-rates
+    template: per-member-period-rates
+    arguments:
+      prefix:
+        - {lit: [each, every, per], at_start: true}
+        - {slot: period, cat: duration_measure, number: singular, bare: true, uncounted: true}
+      opening: [{slot: each, cat: distributive_quantifier}]
+      timing: []
+      tail:
+        - {lit: [and, ';'], consume_skipped: true}
+        - {slot: each2, cat: distributive_quantifier}
+        - {slot: actor2, type: noun, number: singular, bare: true, uncounted: true}
+        - {slot: verb2, cat: quantity_event_verb, finite_form: true}
+        - {slot: item2, type: counted, bare: true, value_min: 0}
+      extra_where:
+        - number_compatible: [actor2, verb2]
+        - slot_not_category: {slot: item2, cat: many_incompatible_noun}
+        - verb_roles_compatible: {verb: verb2, roles: {actor: [actor2], theme: [item2]}, require_declared_frame: true}
+      extra_consumes: [item2]
+      extra_emits:
+        - {fact: rate, entity: '{actor2}', measure: '{item2}', per: '{period}', value: item2, verb: '{verb2}', distributive: true}
+
+  - id: arithmetic/three-per-member-fronted-period-rates
+    template: per-member-period-rates
+    arguments:
+      prefix:
+        - {lit: [each, every, per], at_start: true}
+        - {slot: period, cat: duration_measure, number: singular, bare: true, uncounted: true}
+      opening: [{slot: each, cat: distributive_quantifier}]
+      timing: []
+      tail:
+        - {lit: [',', ';', and], consume_skipped: true}
+        - {slot: each2, cat: distributive_quantifier}
+        - {slot: actor2, type: noun, number: singular, bare: true, uncounted: true}
+        - {slot: verb2, cat: quantity_event_verb, finite_form: true}
+        - {slot: item2, type: counted, bare: true, value_min: 0}
+        - {lit: [and, ';'], consume_skipped: true}
+        - {slot: each3, cat: distributive_quantifier}
+        - {slot: actor3, type: noun, number: singular, bare: true, uncounted: true}
+        - {slot: verb3, cat: quantity_event_verb, finite_form: true}
+        - {slot: item3, type: counted, bare: true, value_min: 0}
+      extra_where:
+        - number_compatible: [actor2, verb2]
+        - slot_not_category: {slot: item2, cat: many_incompatible_noun}
+        - verb_roles_compatible: {verb: verb2, roles: {actor: [actor2], theme: [item2]}, require_declared_frame: true}
+        - number_compatible: [actor3, verb3]
+        - slot_not_category: {slot: item3, cat: many_incompatible_noun}
+        - verb_roles_compatible: {verb: verb3, roles: {actor: [actor3], theme: [item3]}, require_declared_frame: true}
+      extra_consumes: [item2, item3]
+      extra_emits:
+        - {fact: rate, entity: '{actor2}', measure: '{item2}', per: '{period}', value: item2, verb: '{verb2}', distributive: true}
+        - {fact: rate, entity: '{actor3}', measure: '{item3}', per: '{period}', value: item3, verb: '{verb3}', distributive: true}
+
+  - id: arithmetic/indefinite-member-period-rate
+    template: per-member-period-rates
+    arguments:
+      opening: [{lit: [a, an], consume_skipped: true, at_start: true}]
+
+  - id: arithmetic/postposed-member-period-rate
+    template: per-member-period-rates
+    arguments:
+      opening: []
+      actor_type: plural
+      actor_number: plural
+      post_quantifier: [{slot: each, cat: postpositive_distributive_quantifier}]
+
+ask_variants:
+  - id: ask/how-many-passive-per-period
+    template: per-member-ask
+  - id: ask/how-many-passive-period-span
+    template: per-member-ask
+    arguments:
+      timing: &ask_span
+        - {lit: in}
+        - {slot: span, cat: duration_measure, counted: true, bare: true, value_min: 0}
+  - id: ask/how-many-passive-daily
+    template: per-member-ask
+    arguments:
+      timing: [{slot: frequency, cat: daily_frequency_adverb}]
+      period: day
+  - id: ask/how-many-passive-one-period-span
+    template: per-member-ask
+    arguments:
+      timing: &ask_one_span
+        - {lit: in}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: span, cat: duration_measure, number: singular, uncounted: true, bare: true}
+      span_value: '1'
+  - id: ask/how-many-active-per-period
+    template: per-member-ask
+    arguments:
+      generation: &active_generation
+        slot_categories: {who: [quantity_event_participant]}
+      voice: &active_voice
+        - {slot: aux, type: auxiliary}
+        - opt:
+            - {slot: all_members, cat: group_total_quantifier}
+        - opt:
+            - {slot: poss, cat: possessive_determiner}
+        - {slot: who, type: noun, uncounted: true}
+      voice_guards: &active_guards
+        - bound_requires_type: {bound: all_members, slot: who, type: plural}
+        - bound_requires_type: {bound: poss, slot: who, type: possessed}
+        - number_compatible: [who, aux]
+      roles: &active_roles {actor: [who], theme: [item]}
+      verb: &active_verb {slot: verb, cat: quantity_event_verb, bare_form: true}
+      entity: '{who}'
+      subject_number: '{who.number}'
+  - id: ask/how-many-active-daily
+    template: per-member-ask
+    arguments:
+      generation: *active_generation
+      voice: *active_voice
+      voice_guards: *active_guards
+      roles: *active_roles
+      verb: *active_verb
+      entity: '{who}'
+      subject_number: '{who.number}'
+      timing: [{slot: frequency, cat: daily_frequency_adverb}]
+      period: day
+  - id: ask/how-many-active-one-period-span
+    template: per-member-ask
+    arguments:
+      generation: *active_generation
+      voice: *active_voice
+      voice_guards: *active_guards
+      roles: *active_roles
+      verb: *active_verb
+      entity: '{who}'
+      subject_number: '{who.number}'
+      timing: *ask_one_span
+      span_value: '1'
+  - id: ask/how-many-future-passive-per-period
+    template: per-member-ask
+    arguments:
+      voice: [{lit: will}, {lit: be}]
+      voice_guards: []
+  - id: ask/how-many-fronted-per-period
+    template: per-member-ask
+    arguments:
+      prefix:
+        - {lit: [each, every, per], at_start: true}
+        - {slot: period, cat: duration_measure, number: singular, uncounted: true, bare: true}
+      head: [{lit: how}, {lit: many}]
+      timing: []
+  - id: ask/total-number-passive-per-period
+    template: per-member-ask
+    arguments:
+      head: [{lit: what, at_start: true}, {lit: is}, {lit: the, consume_skipped: true}, {lit: total}, {lit: number}, {lit: of}]
+      voice: []
+      voice_guards: []

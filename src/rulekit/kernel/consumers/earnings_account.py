@@ -12,6 +12,7 @@ from ..answer import Answer, AnswerProof, ProofStep, SemanticNode
 from ..evaluate import evaluate
 from ..model import (AccumulationWindow, EarningRate, ServiceScope, PurchaseEndpoint,
                      EARNINGS_ACCOUNT_KINDS, Quantity)
+from ..source_coverage import uncovered_document_units
 from ..numeric_evidence import audit_numeric_mentions
 from ..rate_calculation import apply_rate, convert_duration
 from ..resource_equations import resource_residual
@@ -61,11 +62,8 @@ def earnings_account(ctx):
     # Full source coverage rejects unpriced changes and qualifiers even when
     # they introduce no number. Conditional work counts are explicitly local
     # to this question; quoted prices and endpoint facts cannot be conditional.
-    for reading in (*ctx.premises, ctx.question):
-        covered = ctx.match.consumed if reading is ctx.question else frozenset()
-        if any(u.uid not in covered and not u.features.get("pattern_consumed")
-               and u.sense() not in {"article", "punct"} for u in reading.units):
-            return decline("the earnings account has an unread event, condition or qualifier")
+    if uncovered_document_units(ctx.premises, ctx.question, ctx.match.consumed):
+        return decline("the earnings account has an unread event, condition or qualifier")
     if any(not isfinite(f.value) or f.value < 0 for f in [*endpoints, *rates, *quantities]):
         return decline("earnings operands must be finite and nonnegative")
     if any(r.numerator is not None or r.denominator is not None for r in rates):

@@ -1565,10 +1565,9 @@ class FactEmit(StrictModel):
     # ``{verb.surface}``; it belongs to Provenance rather than the emitted
     # Fact's semantic fields and therefore never changes fact identity.
     temporal_perspective: str | None = None
-    # Optional evidence-shape metadata for a stated per-member quantity.
-    # This is deliberately provenance rather than a Quantity field: the
-    # amount remains an ordinary quantity, while container composition can
-    # distinguish a generic/distributive rate from one specific instance.
+    # Optional evidence-shape metadata for a stated per-member quantity or
+    # temporal rate. This distinguishes a class quota from a specific
+    # instance without inventing additional holding facts.
     distributive: bool = False
     # Optional evidence-shape marker for a rule-emitted count of packages.
     # It is provenance rather than quantity identity, like `distributive`.
@@ -1578,8 +1577,8 @@ class FactEmit(StrictModel):
 
     @model_validator(mode="after")
     def _collect_extra(self) -> "FactEmit":
-        if self.distributive and self.fact != "quantity":
-            raise ValueError("distributive provenance is valid only for quantity facts")
+        if self.distributive and self.fact not in {"quantity", "rate"}:
+            raise ValueError("distributive provenance is valid only for quantity or rate facts")
         if self.container_count and self.fact != "quantity":
             raise ValueError("container_count provenance is valid only for quantity facts")
         if self.model_extra:

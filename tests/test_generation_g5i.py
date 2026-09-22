@@ -84,8 +84,8 @@ def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
         for item in list_rule_availability(load_project(CURATED))
     }
 
-    assert len(availability) == 240
-    assert sum(item.supported for item in availability.values()) == 231
+    assert len(availability) == 258
+    assert sum(item.supported for item in availability.values()) == 249
     assert sum(not item.supported for item in availability.values()) == 9
     assert all(availability[rule_id].supported for rule_id in NEWLY_SUPPORTED)
     assert all(
@@ -167,10 +167,21 @@ def test_included_and_omitted_branches_are_both_inspectable() -> None:
 
 
 def test_nested_omission_is_distinct_from_an_inactive_child_group() -> None:
+    from rulekit.generation.sample import _token_nodes
+
+    project = load_project(CURATED)
+    rule = next(rule for rule in project.registry.rules
+                if rule.id == "arithmetic/times-as-many")
+    parent = next(index for index, (_, token, _) in enumerate(
+        _token_nodes(rule.match["sentence"])
+    ) if token.opt and any(child.opt is not None for child in token.opt))
     candidate = generate_candidate(
-        load_project(CURATED),
+        project,
         rule_id="arithmetic/times-as-many",
         seed=1,
+        # Pin the structural outcome under test rather than depending on
+        # vocabulary-dependent random draws selecting this optional branch.
+        structural_target=f"optional:{parent}:omitted",
     )
     choices = [
         row.binding

@@ -1,0 +1,20 @@
+format: rulekit/categories@1
+categories:
+  contained_population_preposition: {parent: spatial_location_preposition}
+  residence_state_verb: {parent: state}
+  daily_frequency_adverb: {parent: adverb}
+members:
+  contained_population_preposition: [in, inside, within]
+  residence_state_verb: [live, lives, lived]
+  daily_frequency_adverb: [daily]
+  animal: [beetle, jaguar, snake]
+  quantity_event_participant: [beetle, jaguar, snake]
+  edible_quantity_object: [beetle, snake]
+  quantity_location: [forest]
+  quantity_site_location: [forest]
+  quantity_interior_location: [forest]
+  consumption_quantity_verb: [consume, consumes, consumed]
+context_synonyms:
+  edible_consumption:
+    gate: edible_quantity_object
+    forms: [eat, consume]

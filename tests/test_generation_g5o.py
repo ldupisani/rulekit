@@ -30,6 +30,19 @@ EXPECTED_OCCURRENCES = {
     "arithmetic/group-total-trailing": ((1, 0), "q"),
     "arithmetic/periodic-output-per-unit": ((4,), "freq"),
     "arithmetic/periodic-rate-every-span": ((4,), "freq"),
+    "arithmetic/per-member-period-rate": ((0,), "each"),
+    "arithmetic/two-per-member-period-rates": ((7,), "each2"),
+    "arithmetic/three-per-member-period-rates": ((14,), "each3"),
+    "arithmetic/passive-per-member-period-rate": ((4,), "each"),
+    "arithmetic/per-member-daily-rates": ((0,), "each"),
+    "arithmetic/per-member-fronted-period-rates": ((2,), "each"),
+    "arithmetic/postposed-member-period-rate": ((1,), "each"),
+    "arithmetic/three-per-member-daily-rates": ((12,), "each3"),
+    "arithmetic/three-per-member-fronted-period-rates": ((12,), "each3"),
+    "arithmetic/three-per-member-shared-period-rates": ((10,), "each3"),
+    "arithmetic/two-per-member-daily-rates": ((6,), "each2"),
+    "arithmetic/two-per-member-fronted-period-rates": ((7,), "each2"),
+    "arithmetic/two-per-member-shared-period-rates": ((5,), "each2"),
 }
 EXPECTED_FILLERS = {
     "all",
@@ -122,8 +135,8 @@ def test_g5o_unlocks_only_the_preregistered_rule() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 240
-    assert sum(item.supported for item in availability.values()) == 231
+    assert len(availability) == 258
+    assert sum(item.supported for item in availability.values()) == 249
     assert sum(not item.supported for item in availability.values()) == 9
     assert availability[
         "arithmetic/existential-premise-distributive"
@@ -134,7 +147,7 @@ def test_g5o_unlocks_only_the_preregistered_rule() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 555
+    assert len(exploration_status(project)["fillers"]) == 561
 
 
 @pytest.mark.parametrize("quantifier", sorted(EXPECTED_DISTRIBUTIVE_FILLERS))

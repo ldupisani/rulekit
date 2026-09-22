@@ -1,12 +1,13 @@
 # rulekit handoff
 
-**Updated:** 2026-09-18
-**Runtime checkpoint:** direct qualified-item comparisons and paraphrase support
-on main; shared-reference identity (increment 134) is the last TEST checkpoint
+**Updated:** 2026-09-22
+**Runtime checkpoint:** direct comparison support pushed as `1334602`;
+per-member chains, paraphrases and shared-rate consolidation local (uncommitted).
+Increment 134 is the last TEST checkpoint
 **Default workflow:** direct implementation for user-supplied questions;
 Mining v2 only on explicit request
-**Immediate state:** direct implementation validated. Existing approval, gate,
-and landing records for increment 134 are preserved alongside the implementation.
+**Immediate state:** shared-rate consolidation implemented and fully validated.
+Existing approval, gate, and landing records for increment 134 remain untouched.
 
 This is the operational entry point. It records current state, durable
 boundaries, and the next safe action. Completed increment narratives belong in
@@ -57,6 +58,110 @@ anaphoric distance chains with exact combined totals (132).
 
 ### Latest implementation checkpoint
 
+The reuse follow-up consolidates forward/modal and inverse-duration asks into
+local templates with stable IDs, preserving their match guards and generation
+settings. All legacy rate asks retain grammatical number, nominal restrictions
+and activity evidence. Shared query selection fixes singular modal asks taking
+a whole dependency-chain total and inverse asks borrowing a different activity's
+rate. Explicit collective rates cannot supply individual quotas or be multiplied
+again by a population; unresolved plural inverse asks decline. Currency-gated
+`earn`/`make` compatibility preserves ordinary wage paraphrases without global
+verb synonymy.
+
+Ask generation now reuses the premise generator's cached role-frame validator,
+including number and plural-pronoun permissions and surface-first lookup.
+Population and active-period bridge arithmetic reuse `apply_rate`, preserving
+the raw operands of compound rates. Closed-source consumers share inspectable
+language coverage checks while retaining their separate fact and interpretation
+policies. Chains, sequences and ordinary rates share predicate-concept lookup;
+sequence uniqueness and pairwise compatibility remain distinct policies.
+
+Curated remains 71/71; GSM8K DEV-train is 115/0, DEV-holdout 58/0, and ASDiv
+DEV 55/0. All three final snapshot comparisons are neutral, with zero broken
+answers and zero new wrongs. Lints have zero errors and only the existing GSM8K
+trig-sine advisory. The final full parallel synthetic run passes 8,249 tests;
+five nested benchmark-worker tests pass separately (8,254 total). This includes
+saved-review replay, generation, individual/collective scope, activity mismatch,
+compound-rate operand accounting and shared-helper safety boundaries. A compiled
+contract comparison confirms that all ten legacy rate asks retain identical
+match shapes, where predicates and generation settings. Evidence is under
+`.rulekit-cache/rate-reuse-2026-09-22.9dcvn5/`.
+No protected look, review-ledger change, commit, push or Designer restart was
+performed. The running Designer needs a user-timed restart to load Python changes.
+
+### Previous paraphrase checkpoint
+
+The paraphrase follow-up preserves individual/group scope in rate-span asks,
+including exact owned-group matching against a stated population holder. A
+plural group can no longer fall back to one member's rate. Active and passive
+asks reuse the same chain calculation; a longer duration scales the completed
+per-period total once. Intermediate asks validate the full connected chain and
+record excluded downstream rates in their proof. Disconnected, competing,
+cyclic, fractional-period, and unresolved group cases still decline.
+
+Template variants admit daily wording, indefinite and postpositive per-member
+subjects, passive premises, shared/fronted periods, alternative coordination,
+and existential/containment/residence populations. Declared object-category
+synonyms support compatible predicate paraphrases without global rewriting.
+Location restrictions are retained; nearby populations cannot answer inside
+asks. All new premise shapes remain generatable. Curated now exposes 249 of
+258 premise rules, 561 reachable lexical identities, and 137 standalone asks
+out of 155. Core English owns the moved daily/residence vocabulary and the
+week-to-day conversion.
+
+One existing validated premise (`rev-bffaf53e4a534b7f`) deliberately remains
+flagged for human reconfirmation: its context population now has explicit-rule
+provenance rather than `fold`. A regression test verifies that this is the only
+fact-contract change; target, bindings, values, co-firing rules, collisions and
+deficiencies remain unchanged. The review ledger was not edited or tombstoned.
+
+Validation: the final full parallel synthetic run passes 8,181 tests, and the
+five nested benchmark-worker checks pass separately. This includes premise and
+ask generation in curated/GSM8K, owned-group scope, partial-chain proofs,
+single duration scaling, collective rate preservation, safety neighbours and
+saved-review replay. The generator now prunes verbs missing a required role
+frame before selecting them. Two historical population fixtures now use plural
+asks; singular asks correctly retain an individual quota instead of a flock
+total. Curated is 71/71; GSM8K DEV-train is 115/0, DEV-holdout 58/0, and ASDiv
+DEV 55/0. All snapshot comparisons have zero broken answers and zero new wrongs.
+Both lints have zero errors and no new warnings (only the existing GSM8K
+trig-sine advisory). Evidence is under
+`.rulekit-cache/per-member-paraphrases-2026-09-19.ecsIQh/`.
+No protected look, commit, push or server restart was performed. The existing
+Designer process remains running; its Python modules require a restart when
+the user is ready to activate the kernel changes in that instance.
+
+### Initial chain checkpoint
+
+Per-member period chains reuse ordinary `Rate` and `Quantity` facts, category-owned
+verb roles, source-local numeric accounting, and shared rate arithmetic. One
+template reads one, two, or three coordinated class rates; separate sentences can
+form longer paths. A passive per-period ask walks one unique acyclic path from
+one population to the requested item. The answer proof reports its closed-chain
+interpretation: each required member contributes its full period quota at the
+next level. Intermediate requirements do not become inferred population facts.
+Incomplete, cyclic, branching, mixed-period/activity, extra-evidence, and
+fractional-count cases decline. Core English owns the added ordinary animal,
+place and participle vocabulary; the rules contain no animal-specific gates.
+At that checkpoint, curated exposed 235 supported premise rules out of 244,
+with 559 reachable lexical identities; 128 of its 146 asks supported standalone
+generation.
+
+Validation: the full parallel run passed 7,982 tests. Three inventory expectations
+and one vocabulary-sensitive optional-branch fixture were corrected; all four
+passed their exact recheck without changing the runtime. The fixture now pins
+the intended structural branch instead of relying on random lexical draws.
+Five nested benchmark-worker tests passed separately. The 95 new chain, boundary,
+schema and generation checks pass across the full run and focused rechecks,
+including longer chains and a non-consumption activity. The corpus-prose guard
+also passes. Curated remains 71/71; GSM8K DEV-train remains 115/0 and DEV-holdout
+is 58/0 (one gain); ASDiv DEV remains 55/0. All three snapshot diffs have zero
+broken answers and zero new wrongs. Both lints have zero errors, with only the
+existing GSM8K trig-sine advisory. No protected look, server restart, commit or
+push was performed for this implementation.
+
+### Previous comparison checkpoint
+
 Direct question implementation now supports two signed, same-holder item-class
 comparisons sharing one predicate. Ordinary `Relation` synthesis chains their
 results; a shared exact-subtype lookup prevents one comparison from borrowing
@@ -74,9 +179,9 @@ onto item identity. Shared-head description lists retain their members; an
 uncounted member or unsupported longer list cannot vanish from a whole total.
 `QuantityEventContext` preserves a leading located activity introduction while
 keeping later/repeated uncounted events unresolved. The six additional premise
-rules generate and round-trip. Curated now exposes 231 supported premise rules
-out of 240 (the existing nine exclusions remain), with 555 reachable lexical
-identities. Its ask inventory is 145, of which 127 support standalone generation.
+rules generate and round-trip. At that checkpoint, curated exposed 231 supported
+premise rules out of 240 (nine exclusions), with 555 reachable lexical identities.
+Its ask inventory was 145, of which 127 supported standalone generation.
 
 Validation covers 7,902 synthetic tests: the final parallel run passed 7,896;
 its sole failure was an incidental corpus-sentence collision in an invented

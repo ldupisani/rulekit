@@ -117,6 +117,7 @@ from . import (  # noqa: E402,F401  (import registers each handler)
     event_period_total as _event_period_total,
     ordered_sequence as _ordered_sequence,
     rate_span as _rate_span,
+    per_member_rate_chain as _per_member_rate_chain,
     rate_span_inverse as _rate_span_inverse,
     capacity as _capacity,
     container_capacity_observation as _container_capacity_observation,

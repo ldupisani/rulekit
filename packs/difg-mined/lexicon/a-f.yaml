@@ -1634,9 +1634,6 @@ entries:
   dad:
     senses:
     - noun
-  daily:
-    senses:
-    - adjective
   dairy:
     senses:
     - adjective
@@ -2048,11 +2045,6 @@ entries:
   east:
     senses:
     - noun
-  eaten:
-    senses:
-    - verb
-    verb:
-      lemma: eat
   eating:
     senses:
     - verb
@@ -2499,10 +2491,6 @@ entries:
   foreign:
     senses:
     - adjective
-  forest:
-    senses:
-    - noun
-    plural: forests
   forever:
     senses:
     - adverb

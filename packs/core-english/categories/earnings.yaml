@@ -57,3 +57,9 @@ members:
   accumulation_period_descriptor: [past]
   cash_remainder_noun: [change]
   duration_measure: [month]
+context_synonyms:
+  wage_earnings:
+    gate: currency
+    # Earning/making a monetary amount are equivalent only in this resource
+    # context. Producing a non-currency object is not an earning event.
+    forms: [earn, make]

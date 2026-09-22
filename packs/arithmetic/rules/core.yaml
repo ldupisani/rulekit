@@ -8529,46 +8529,6 @@ asks:
       evidence_temporal_perspective: "{aux.surface}"
       evidence_measure_category: age_measure
 
-  - id: ask/how-many-rate-span
-    match:
-      question:
-        - {lit: how}
-        - {lit: many}
-        - {slot: item, type: plural}
-        - {slot: aux, type: auxiliary}
-        - {slot: who, type: entity, referential: true, bare_reference_category: bare_entity_reference}
-        - {slot: verb, type: verb, bare_form: true}
-        - {lit: in}
-        - {slot: span, type: counted, value_min: 1}
-    where:
-      - number_compatible: [who, aux]
-      - slot_not_category: {slot: item, cat: many_incompatible_noun}
-      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
-      - verb_roles_compatible:
-          verb: verb
-          roles: {actor: [who], theme: [item]}
-          allow_proper_name: [who]
-    resolves:
-      consumer: rate-span
-      entity: "{who}"
-      measure: "{item}"
-      verb: "{verb}"
-      span_unit: "{span}"
-      span_value: "{span.value}"
-    generation:
-      slot_categories:
-        who: [quantity_event_participant]
-        span: [duration_measure]
-        verb:
-          [purchase, eating_quantity_verb, earning_quantity_verb,
-           enrollment_quantity_verb, find_quantity_verb,
-           task_completion_verb, production_quantity_verb,
-           teaching_quantity_verb, initiation_quantity_verb, transfer_out]
-      validated_slot_bindings:
-        span: {identity_field: per, value_field: denominator}
-      validated_source_bindings:
-        aux: aux
-
   - id: ask/how-many-output-rate-span-one
     # Project a measured production cadence across one named duration unit.
     # The governing verb and output measure must satisfy the same declared
@@ -8599,6 +8559,12 @@ asks:
     resolves:
       consumer: rate-span
       entity: "{who}"
+      evidence_subject_number: "{who.number}"
+      evidence_entity_qualifier: "{who.qualifier}"
+      evidence_entity_owner: "{who.owner}"
+      evidence_measure_qualifier: "{item.qualifier}"
+      evidence_measure_owner: "{item.owner}"
+      evidence_verb: "{verb}"
       measure: "{item}"
       verb: "{verb}"
       span_unit: "{span}"
@@ -8800,61 +8766,15 @@ asks:
     resolves:
       consumer: rate-span
       entity: "{who}"
+      evidence_subject_number: "{who.number}"
+      evidence_entity_qualifier: "{who.qualifier}"
+      evidence_entity_owner: "{who.owner}"
+      evidence_verb: "{verb}"
       measure: currency
       verb: "{verb}"
       span_unit: "{span}"
       span_value: "{span.value}"
     generation:
-      validated_slot_bindings:
-        span: {identity_field: per, value_field: denominator}
-      validated_source_bindings:
-        aux: aux
-
-  - id: ask/how-many-rate-span-modal
-    # Modal rate question: "how many apples can he eat in 2 hours?"
-    # `capacity_modal` covers capacity or hypothetical modals, but excludes
-    # future "will/would" questions because stated future exceptions may make
-    # simple rate projection unsafe. The required "in SPAN" tail keeps this
-    # separate from budget-based purchase-capacity questions.
-    match:
-      question:
-        - {lit: how}
-        - {lit: many}
-        - {slot: item, type: plural}
-        - {slot: aux, cat: capacity_modal}
-        - {slot: who, type: entity, common_noun_cat: quantity_event_participant, referential: true, bare_reference_category: bare_entity_reference}
-        - {slot: verb, type: verb, bare_form: true}
-        - {lit: in}
-        - {slot: span, type: counted, value_min: 1}
-    where:
-      - slot_not_category: {slot: item, cat: many_incompatible_noun}
-      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: purchase, role_cat: animate}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: enrollment_quantity_verb, role_cat: initiation_quantity_participant}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: transfer_out, role_cat: animate}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: purchase, role_cat: transferable_quantity_object}
-      - verb_roles_compatible:
-          verb: verb
-          roles: {actor: [who], theme: [item]}
-          allow_proper_name: [who]
-    resolves:
-      consumer: rate-span
-      entity: "{who}"
-      measure: "{item}"
-      verb: "{verb}"
-      span_unit: "{span}"
-      span_value: "{span.value}"
-    generation:
-      slot_categories:
-        who: [quantity_event_participant]
-        span: [duration_measure]
-        verb:
-          [purchase, eating_quantity_verb, earning_quantity_verb,
-           enrollment_quantity_verb, find_quantity_verb,
-           task_completion_verb, production_quantity_verb,
-           teaching_quantity_verb, initiation_quantity_verb, transfer_out]
       validated_slot_bindings:
         span: {identity_field: per, value_field: denominator}
       validated_source_bindings:
@@ -8875,6 +8795,10 @@ asks:
     resolves:
       consumer: rate-span
       entity: "{who}"
+      evidence_subject_number: "{who.number}"
+      evidence_entity_qualifier: "{who.qualifier}"
+      evidence_entity_owner: "{who.owner}"
+      evidence_verb: "{verb}"
       measure: currency
       verb: "{verb}"
       span_unit: "{span}"
@@ -8906,182 +8830,13 @@ asks:
     resolves:
       consumer: rate-span
       entity: "{who}"
+      evidence_subject_number: "{who.number}"
+      evidence_entity_qualifier: "{who.qualifier}"
+      evidence_entity_owner: "{who.owner}"
+      evidence_verb: "{verb}"
       measure: currency
       span_unit: "{span}"
       span_value: "{span.value}"
-
-  - id: ask/how-long-take-span
-    # Inverse rate question: "how long will it take Ana to paint 8 doors?"
-    # The consumer divides the requested amount by a known rate. `future_modal`
-    # accepts ordinary and future forms but excludes capacity modals. "for"
-    # before the person is optional.
-    match:
-      question:
-        - {lit: how}
-        - {lit: long}
-        - {slot: aux, type: future_modal}
-        - {lit: it}
-        - {lit: take}
-        - opt:
-            - {lit: for}
-        - {slot: who, type: entity, common_noun_cat: quantity_event_participant, referential: true, bare_reference_category: bare_entity_reference}
-        - {lit: to}
-        - {slot: verb, type: verb, bare_form: true}
-        - {slot: item, type: counted}
-    where:
-      - slot_not_category: {slot: aux, cat: plural_present_auxiliary}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: purchase, role_cat: animate}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: enrollment_quantity_verb, role_cat: initiation_quantity_participant}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: transfer_out, role_cat: animate}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: purchase, role_cat: transferable_quantity_object}
-      - verb_roles_compatible:
-          verb: verb
-          roles: {actor: [who], theme: [item]}
-          allow_proper_name: [who]
-    resolves:
-      consumer: rate-span-inverse
-      entity: "{who}"
-      item: "{item}"
-      item_value: "{item.value}"
-    generation:
-      slot_categories:
-        verb:
-          [purchase, eating_quantity_verb, earning_quantity_verb,
-           enrollment_quantity_verb, find_quantity_verb,
-           task_completion_verb, production_quantity_verb,
-           teaching_quantity_verb, initiation_quantity_verb, transfer_out]
-
-  - id: ask/how-long-take-span-totality-item
-    # Totality form of the inverse rate question: "how long will it take Ana
-    # to paint all of the doors?" The item count comes from one unambiguous
-    # quantity in the premises. The required "all" marker keeps this form
-    # separate from the rule that expects a stated numeral.
-    match:
-      question:
-        - {lit: how}
-        - {lit: long}
-        - {slot: aux, type: future_modal}
-        - {lit: it}
-        - {lit: take}
-        - opt:
-            - {lit: for}
-        - {slot: who, type: entity, common_noun_cat: quantity_event_participant, referential: true, bare_reference_category: bare_entity_reference}
-        - {lit: to}
-        - {slot: verb, type: verb, bare_form: true}
-        - {lit: all}
-        - opt:
-            - opt:
-                - {lit: of}
-            - {lit: the, consume_skipped: true}
-        - {slot: item, type: plural, referential: true, generation_bare_reference: true}
-    where:
-      - slot_not_category: {slot: aux, cat: plural_present_auxiliary}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: purchase, role_cat: animate}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: enrollment_quantity_verb, role_cat: initiation_quantity_participant}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: transfer_out, role_cat: animate}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: purchase, role_cat: transferable_quantity_object}
-      - verb_roles_compatible:
-          verb: verb
-          roles: {actor: [who], theme: [item]}
-          allow_proper_name: [who]
-    resolves:
-      consumer: rate-span-inverse
-      entity: "{who}"
-      item: "{item}"
-    generation:
-      slot_categories:
-        verb:
-          [purchase, eating_quantity_verb, earning_quantity_verb,
-           enrollment_quantity_verb, find_quantity_verb,
-           task_completion_verb, production_quantity_verb,
-           teaching_quantity_verb, initiation_quantity_verb, transfer_out]
-
-  - id: ask/how-many-timeunit-take-span
-    # Inverse rate question with an explicit time unit: "how many hours will
-    # it take Ana to paint 8 doors?" The requested unit must match the rate's
-    # unit. The required "it take ... to" frame keeps this distinct from a
-    # general purchase-capacity question. "for" before the person is optional.
-    match:
-      question:
-        - {lit: how}
-        - {lit: many}
-        - {slot: span_unit, cat: duration_measure, number: plural}
-        - {slot: aux, type: future_modal}
-        - {lit: it}
-        - {lit: take}
-        - opt:
-            - {lit: for}
-        - {slot: who, type: entity, referential: true, bare_reference_category: bare_entity_reference}
-        - {lit: to}
-        - {slot: verb, type: verb, bare_form: true}
-        - {slot: item, type: counted}
-    where:
-      - slot_not_category: {slot: aux, cat: plural_present_auxiliary}
-      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: purchase, role_cat: animate}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: enrollment_quantity_verb, role_cat: initiation_quantity_participant}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: transfer_out, role_cat: animate}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: purchase, role_cat: transferable_quantity_object}
-      - verb_roles_compatible:
-          verb: verb
-          roles: {actor: [who], theme: [item]}
-          allow_proper_name: [who]
-    resolves:
-      consumer: rate-span-inverse
-      entity: "{who}"
-      item: "{item}"
-      item_value: "{item.value}"
-      span_unit: "{span_unit}"
-    generation:
-      slot_categories:
-        who: [quantity_event_participant]
-        verb:
-          [purchase, eating_quantity_verb, earning_quantity_verb,
-           enrollment_quantity_verb, find_quantity_verb,
-           task_completion_verb, production_quantity_verb,
-           teaching_quantity_verb, initiation_quantity_verb, transfer_out]
-
-  - id: ask/how-many-timeunit-take-span-totality-item
-    # Explicit-time-unit form for "all of the ITEM". The required totality
-    # marker separates it from the version that expects a stated count.
-    match:
-      question:
-        - {lit: how}
-        - {lit: many}
-        - {slot: span_unit, cat: duration_measure, number: plural}
-        - {slot: aux, type: future_modal}
-        - {lit: it}
-        - {lit: take}
-        - opt:
-            - {lit: for}
-        - {slot: who, type: entity, common_noun_cat: quantity_event_participant, referential: true, bare_reference_category: bare_entity_reference}
-        - {lit: to}
-        - {slot: verb, type: verb, bare_form: true}
-        - {lit: all}
-        - opt:
-            - opt:
-                - {lit: of}
-            - {lit: the, consume_skipped: true}
-        - {slot: item, type: plural, referential: true, generation_bare_reference: true}
-    where:
-      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
-      - verb_roles_compatible:
-          verb: verb
-          roles: {actor: [who], theme: [item]}
-          allow_proper_name: [who]
-    resolves:
-      consumer: rate-span-inverse
-      entity: "{who}"
-      item: "{item}"
-      span_unit: "{span_unit}"
 
   - id: ask/how-old-is
     match:

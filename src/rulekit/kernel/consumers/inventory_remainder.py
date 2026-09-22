@@ -6,6 +6,7 @@ from math import isfinite
 from . import consumer
 from ..model import InventoryScope, InventoryWithdrawal, Quantity
 from ..evaluate import evaluate
+from ..source_coverage import uncovered_document_units
 from ..numeric_evidence import audit_numeric_mentions
 from ..resource_equations import resource_residual
 
@@ -45,11 +46,8 @@ def consume(ctx):
                 if all(ctx.reg.word_in_category(qualifier, cat) for _, qualifier in opening)]
     if len(families) != 1:
         return decline("inventory subtypes need one shared declared attribute family")
-    for reading in (*ctx.premises, ctx.question):
-        covered = ctx.match.consumed if reading is ctx.question else frozenset()
-        if any(u.uid not in covered and not u.features.get("pattern_consumed")
-               and u.sense() not in {"article", "punct"} for u in reading.units):
-            return decline("the inventory has an unread event, condition, or location")
+    if uncovered_document_units(ctx.premises, ctx.question, ctx.match.consumed):
+        return decline("the inventory has an unread event, condition, or location")
     removed = defaultdict(list)
     for event in withdrawals:
         bucket = (event.item, event.qualifier)

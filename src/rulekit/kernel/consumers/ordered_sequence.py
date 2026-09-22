@@ -11,18 +11,13 @@ from . import ConsumerContext, consumer
 from ..answer import Answer, AnswerProof, ProofStep, SemanticNode
 from ..evaluate import evaluate, EvaluationError
 from ..model import ORDERED_SEQUENCE_KINDS as SEQUENCE_KINDS
+from ..source_coverage import uncovered_document_units
 from ..numeric_evidence import audit_numeric_mentions
 from ..rate_calculation import convert_duration
+from ..predicate_compatibility import predicate_concepts
 
 
 MAX_TERMS = 1000
-
-
-def event_concepts(verb, series, reg):
-    """Reuse category-gated synonyms without globally rewriting predicates."""
-    concepts = {concept for concept, (gate, forms) in reg.context_synonyms.items()
-                if verb in forms and reg.word_in_category(series, gate)}
-    return concepts or {verb}
 
 
 def affine_terms_from_total(total, count, factor, offset, log):
@@ -83,8 +78,8 @@ def ordered_sequence(ctx: ConsumerContext):
     )):
         return decline("the qualified participant does not match the cadence actor")
     verbs = (cadence.verb, total.verb, ctx.query.get("verb", cadence.verb))
-    concepts = [event_concepts(verb, series, ctx.reg) for verb in verbs]
-    if len(set.intersection(*concepts)) != 1:
+    concepts = [predicate_concepts(verb, series, ctx.reg, fallback_to_verb=True) for verb in verbs]
+    if len(frozenset.intersection(*concepts)) != 1:
         return decline("the cadence, total and asked event must have one compatible meaning")
     if cadence.value != 1:
         return decline("indexing an interval requires exactly one carrier event per interval")
@@ -139,11 +134,8 @@ def ordered_sequence(ctx: ConsumerContext):
     if audit_numeric_mentions((*ctx.premises, ctx.question), expected,
                               missing="missing", duplicate="duplicate"):
         return decline("the sequence must account for every source-local numeric mention")
-    for reading in (*ctx.premises, ctx.question):
-        covered = ctx.match.consumed if reading is ctx.question else frozenset()
-        if any(u.uid not in covered and not u.features.get("pattern_consumed")
-               and u.sense() not in {"article", "punct"} for u in reading.units):
-            return decline("the sequence has an unread condition, event or complement")
+    if uncovered_document_units(ctx.premises, ctx.question, ctx.match.consumed):
+        return decline("the sequence has an unread condition, event or complement")
     if any(not isinstance(f, SEQUENCE_KINDS) for f in ctx.store.facts):
         return decline("additional facts are not explained by the bounded sequence")
     terms = affine_terms_from_total(total.value, int(count), step.factor, step.offset, ctx.log)

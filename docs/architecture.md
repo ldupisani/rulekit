@@ -2294,6 +2294,14 @@ its declared lemma. This matters when a category deliberately owns only
 finite forms such as `drops`/`dropped`; reducing the bound unit to the bare
 lemma before lookup would silently make that category contract disappear.
 
+Ask and premise filler pruning share `_selectional_assignment_compatible`,
+including role-number requirements, proper-name/plural-pronoun permissions,
+complete sibling frames, and `require_declared_frame`. Its bounded cache is
+keyed by registry fingerprint, verb surface and frame-category restriction;
+project edits cannot reuse stale frame data. Unknown role assignments remain
+undecided until another filler is chosen; the ordinary reader still performs
+the final round trip.
+
 A construction that is genuinely complete only with lexical role evidence may
 set `require_declared_frame: true` on `verb_roles_compatible`. Zero applicable
 frames then reject instead of taking the historical open path. Optional
@@ -2401,6 +2409,75 @@ extends the construction through category data, while books and uncounted
 audiences remain outside it. The annual output ask permits an optional
 structural `in` before its single duration span; both surfaces resolve through
 the same `rate-span` consumer.
+
+Explicit per-member period rates use ordinary `Rate` facts with distributive
+provenance. Local templates cover single and two/three coordinated clauses,
+including shared trailing or fronted periods, daily adverbs, and explicit
+per-member indefinite or postpositive forms. A passive premise retains the
+distributive agent. Separated statements can form longer chains. Bare plural
+subjects alone do not establish distributivity. Verb-category role frames own
+actor/object compatibility, so no animal or activity vocabulary is embedded in
+the grammar or consumer. Complete existential, containment and residence
+population statements emit an ordinary `Quantity`, including question-local
+assumptions. Located populations and asks use containment prepositions; mere
+proximity does not establish an inside count.
+
+Active and passive per-period asks use `per-member-rate-chain`: one population
+anchors a unique acyclic path of explicitly per-member rates. Each link must
+have the same rate period and a compatible activity. Predicate synonyms apply
+only through a declared object-category gate, never global normalization.
+The complete connected chain is validated before selecting the requested prefix;
+downstream rates outside an intermediate ask are explicitly accounted for in
+the proof. Disconnected rates, branches, cycles and competing roots still decline.
+The ordinary `rate-span` ask preserves grammatical subject number and participant
+restrictions. With explicit dependency chains it delegates to this same chain
+consumer: a singular subject requests one member's quota, while a plural subject
+requires a stated or chain-derived group requirement. Neither path silently
+defaults an unresolved plural group to one. Location and modifier restrictions
+cannot disappear from the calculation.
+An ordinary rate stated for an explicitly plural subject retains its collective
+reading; it does not require an invented per-member population. Simple rates
+can still sum explicit same-class holdings across holders, while an owned ask
+selects only its matching holder. Ask generation enforces required verb frames
+before selecting a filler, matching the reader's category contract.
+
+Legacy forward/modal and inverse-duration asks are authored through the local
+`rate-asks.yaml` template families, retaining public IDs and generation settings.
+The remaining wage/output asks carry the same structural evidence fields.
+`rate_query.py` normalizes those fields without mutating saved review queries,
+and shares activity/measure selection, nominal restriction checks and collective
+subject evidence between forward and inverse consumers. An individual cannot
+borrow a collective rate, an unresolved group cannot default to one member, and
+a collective rate cannot be multiplied by a population as if it were per-member.
+Inverse asks retain their requested activity rather than borrowing an arbitrary
+same-item rate. Missing owner or modifier evidence still declines.
+
+`predicate_compatibility.py` owns object-category-gated predicate lookup for
+rate selection, dependency chains and ordered sequences. Pairwise compatibility
+requires exact identity or a shared declared group; it does not take a transitive
+closure. Sequences retain their stronger requirement of exactly one shared
+meaning. Monetary `earn`/`make` compatibility is declared in the English pack,
+not a global production/earning synonym. Rate-span population and active-period
+bridge calculations use `apply_rate`, retaining compound numerator/denominator
+operands for the same numeric accounting as ordinary forward/inverse rates.
+
+The consumer reuses logged rate arithmetic and source-local numeric auditing,
+requires complete language coverage, and rejects multiple populations, missing
+links, qualified or dated populations, and fractional discrete counts. The proof explicitly
+states the closed-chain interpretation: each required member contributes its
+full period quota at the next level. These intermediate requirements never
+become population holdings, and this is not dimensional cancellation of
+multiple time-denominated rates. A longer requested duration is converted using
+the shared duration tables and scales the complete per-period result **once**,
+not each edge. Only complete periods are supported; mixed-period links, partial
+period extrapolation and branched demand networks remain outside the contract.
+
+Closed-source consumers share `source_coverage.py`: unread units remain
+inspectable, and question coverage cannot cover a premise's sentence-local unit
+IDs. Chains, sequences, journeys and accounts use the document check; allocation
+receipts and repeated-rate policies retain their explicit fold footprints through
+the per-reading check. This does not merge their permitted fact kinds, assumption
+policies, numeric audits or mathematical interpretations.
 
 Activity-scoped wages preserve one more boundary than an ordinary rate.
 `arithmetic/activity-scoped-wage-rate` emits the numeric `Rate` and a separate

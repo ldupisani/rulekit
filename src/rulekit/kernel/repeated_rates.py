@@ -8,6 +8,8 @@ conversion (a session does not universally equal a day).
 from collections import Counter
 from math import isfinite
 
+from .source_coverage import uncovered_units
+
 from .answer import Answer
 from .evaluate import evaluate
 from .model import Rate, RateThreshold, RatePremium, RepeatedActivityDuration, RateScope
@@ -122,8 +124,7 @@ def repeated_rate_total(ctx, rate: Rate):
             covered = frozenset()
         # A local match must not discard another condition, exception, or
         # complement in the rate, policy, schedule, or question itself.
-        if any(u.uid not in covered and not u.features.get("pattern_consumed")
-               and u.sense() not in {"article", "punct"} for u in reading.units):
+        if uncovered_units(reading, covered):
             return decline("the rate, schedule, or ask has an unread condition or complement")
 
     regular = min(duration, boundary)

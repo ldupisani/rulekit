@@ -1,0 +1,11 @@
+format: rulekit/lexicon@1
+entries:
+  live: {senses: [verb], number: plural}
+  lives: {senses: [verb], number: singular, verb: {lemma: live}}
+  lived: {senses: [verb], verb: {lemma: live}}
+  daily: {senses: [adverb]}
+  beetle: {senses: [noun], plural: beetles}
+  jaguar: {senses: [noun], plural: jaguars}
+  snake: {senses: [noun], plural: snakes}
+  forest: {senses: [noun], plural: forests}
+  eaten: {senses: [verb], verb: {lemma: eat}}

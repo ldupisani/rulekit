@@ -26,6 +26,8 @@ from rulekit.generation.reviews import (
     ask_review_evidence,
     ask_review_target_counts,
     premise_review_evidence,
+    read_review_history,
+    _reviewed_facts_match,
     validated_premise_candidates,
     validated_premise_rule_usage_counts,
 )
@@ -169,6 +171,32 @@ def test_live_curated_valid_ask_contracts_have_no_regressions(curated) -> None:
     ]
 
     assert regressions == []
+    # The location-population grammar replaces one context holding's generic
+    # fold with an explicit rule. Do not silently re-approve the human review:
+    # prove the exact semantic contract is unchanged, then leave its new
+    # provenance visible for human reconfirmation.
+    population_review = "rev-bffaf53e4a534b7f"
+    for review in read_review_history(curated, limit=10000):
+        if review["id"] != population_review:
+            continue
+        from rulekit.generation.sample import retest_candidate
+        from copy import deepcopy
+
+        candidate = retest_candidate(
+            curated, rule_id=review["target_rule"], sentence=review["sentence"],
+            seed=review["seed"], requested_bindings=review["requested_bindings"],
+            context_before=tuple(review["context_before"]),
+        ).to_json()
+        expected = deepcopy(review["premise_evidence"])
+        for fact in expected["facts"]:
+            if fact["type"] == "Quantity" and fact["sentence"] == 0:
+                assert fact["source"] == "fold"
+                fact["source"] = "arithmetic/location-contains-population"
+        assert _reviewed_facts_match(candidate["facts"], expected["facts"])
+        for field in ("target_status", "target_bindings", "actual_rule_ids"):
+            assert candidate[field] == expected[field]
+        assert set(candidate["deficiencies"]) <= set(expected["deficiencies"])
+        assert not candidate["collisions"]
     premise_regressions = [
         group
         for group in premise_review_evidence(curated)["groups"]
@@ -182,6 +210,7 @@ def test_live_curated_valid_ask_contracts_have_no_regressions(curated) -> None:
             "rev-5f3b17c81bc04dab",
             "rev-6f84911dcdef48a8",
             "rev-7b1aa68ba7a448ab",
+            population_review,
         }
     ]
     assert premise_regressions == []

@@ -19,6 +19,9 @@ conversions:
 - from: day
   to: hour
   factor: 24
+- from: week
+  to: day
+  factor: 7
 # Conventional whole-period arithmetic used by elementary word problems.
 # Calendar dates remain a separate domain; this pair says how a stated yearly
 # cadence is projected when no dates or partial weeks are supplied.

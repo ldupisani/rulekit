@@ -1,0 +1,220 @@
+# Shared rate-query scope; variants retain historical role guards and generation settings.
+# Inverse asks retain the requested activity instead of borrowing any same-item rate.
+format: rulekit/rules@1
+templates:
+  forward-rate-span:
+    parameters:
+      aux: {slot: aux, type: auxiliary}
+      prefix:
+        - opt:
+            - {slot: poss, cat: possessive_determiner}
+      who: {slot: who, type: entity, referential: true, bare_reference_category: bare_entity_reference}
+      guards:
+        - number_compatible: [who, aux]
+        - bound_requires_type: {bound: poss, slot: who, type: possessed}
+        - slot_not_category: {slot: item, cat: many_incompatible_noun}
+        - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      generation:
+        slot_categories:
+          who: [quantity_event_participant]
+          span: [duration_measure]
+          verb:
+            - purchase
+            - eating_quantity_verb
+            - earning_quantity_verb
+            - enrollment_quantity_verb
+            - find_quantity_verb
+            - task_completion_verb
+            - production_quantity_verb
+            - teaching_quantity_verb
+            - initiation_quantity_verb
+            - transfer_out
+        validated_slot_bindings:
+          span: {identity_field: per, value_field: denominator}
+        validated_source_bindings: {aux: aux}
+    rule:
+      match:
+        question:
+          - {lit: how}
+          - {lit: many}
+          - {slot: item, type: plural}
+          - {parameter: aux}
+          - {parameter: prefix}
+          - {parameter: who}
+          - {slot: verb, type: verb, bare_form: true}
+          - {lit: in}
+          - {slot: span, type: counted, value_min: 1}
+      where:
+        - {parameter: guards}
+        - verb_roles_compatible:
+            verb: verb
+            roles:
+              actor: [who]
+              theme: [item]
+            allow_proper_name: [who]
+      resolves: {consumer: rate-span, entity: '{who}', evidence_subject_number: '{who.number}',
+          evidence_entity_qualifier: '{who.qualifier}', evidence_entity_owner: '{who.owner}', measure: '{item}',
+        evidence_measure_qualifier: '{item.qualifier}', evidence_measure_owner: '{item.owner}', verb: '{verb}',
+        span_unit: '{span}', span_value: '{span.value}', evidence_verb: '{verb}'}
+      generation: {parameter: generation}
+
+  inverse-rate-span:
+    parameters: &inverse_parameters
+      head:
+        - {lit: how}
+        - {lit: long}
+      who: {slot: who, type: entity, common_noun_cat: quantity_event_participant, referential: true,
+          bare_reference_category: bare_entity_reference}
+      item:
+        - {slot: item, type: counted}
+      guards:
+        - slot_not_category: {slot: aux, cat: plural_present_auxiliary}
+        - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat:
+              quantity_event_participant}
+        - verb_role_compatible: {verb: verb, roles: [who], verb_cat: animate_subject_verb, role_cat:
+              quantity_event_participant}
+        - verb_role_compatible: {verb: verb, roles: [who], verb_cat: purchase, role_cat: animate}
+        - verb_role_compatible: {verb: verb, roles: [who], verb_cat: enrollment_quantity_verb, role_cat:
+              initiation_quantity_participant}
+        - verb_role_compatible: {verb: verb, roles: [who], verb_cat: transfer_out, role_cat: animate}
+        - verb_role_compatible: {verb: verb, roles: [item], verb_cat: purchase, role_cat:
+              transferable_quantity_object}
+      generation:
+        slot_categories:
+          verb:
+            - purchase
+            - eating_quantity_verb
+            - earning_quantity_verb
+            - enrollment_quantity_verb
+            - find_quantity_verb
+            - task_completion_verb
+            - production_quantity_verb
+            - teaching_quantity_verb
+            - initiation_quantity_verb
+            - transfer_out
+    rule: &inverse_rule
+      match:
+        question:
+          - {parameter: head}
+          - {slot: aux, type: future_modal}
+          - {lit: it}
+          - {lit: take}
+          - opt:
+              - {lit: for}
+          - {parameter: who}
+          - {lit: to}
+          - {slot: verb, type: verb, bare_form: true}
+          - {parameter: item}
+      where:
+        - {parameter: guards}
+        - verb_roles_compatible:
+            verb: verb
+            roles:
+              actor: [who]
+              theme: [item]
+            allow_proper_name: [who]
+      resolves: &inverse_query {consumer: rate-span-inverse, entity: '{who}', item: '{item}', span_unit: '{span_unit}',
+        evidence_subject_number: '{who.number}', evidence_entity_qualifier: '{who.qualifier}',
+          evidence_entity_owner: '{who.owner}', evidence_measure_qualifier: '{item.qualifier}',
+          evidence_measure_owner: '{item.owner}', evidence_verb: '{verb}'}
+      generation: {parameter: generation}
+
+  inverse-rate-span-counted:
+    parameters: *inverse_parameters
+    rule:
+      <<: *inverse_rule
+      resolves: {<<: *inverse_query, item_value: '{item.value}'}
+
+ask_variants:
+  - {id: ask/how-many-rate-span, template: forward-rate-span}
+
+  - id: ask/how-many-rate-span-modal
+    template: forward-rate-span
+    arguments:
+      aux: {slot: aux, cat: capacity_modal}
+      prefix: []
+      who: {slot: who, type: entity, common_noun_cat: quantity_event_participant, referential: true,
+          bare_reference_category: bare_entity_reference}
+      guards:
+        - slot_not_category: {slot: item, cat: many_incompatible_noun}
+        - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+        - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat:
+              quantity_event_participant}
+        - verb_role_compatible: {verb: verb, roles: [who], verb_cat: animate_subject_verb, role_cat:
+              quantity_event_participant}
+        - verb_role_compatible: {verb: verb, roles: [who], verb_cat: purchase, role_cat: animate}
+        - verb_role_compatible: {verb: verb, roles: [who], verb_cat: enrollment_quantity_verb, role_cat:
+              initiation_quantity_participant}
+        - verb_role_compatible: {verb: verb, roles: [who], verb_cat: transfer_out, role_cat: animate}
+        - verb_role_compatible: {verb: verb, roles: [item], verb_cat: purchase, role_cat:
+              transferable_quantity_object}
+  - {id: ask/how-long-take-span, template: inverse-rate-span-counted}
+
+  - id: ask/how-long-take-span-totality-item
+    template: inverse-rate-span
+    arguments:
+      item:
+        - {lit: all}
+        - opt:
+            - opt:
+                - {lit: of}
+            - {lit: the, consume_skipped: true}
+        - {slot: item, type: plural, referential: true, generation_bare_reference: true}
+
+  - id: ask/how-many-timeunit-take-span
+    template: inverse-rate-span-counted
+    arguments:
+      head:
+        - {lit: how}
+        - {lit: many}
+        - {slot: span_unit, cat: duration_measure, number: plural}
+      who: {slot: who, type: entity, referential: true, bare_reference_category: bare_entity_reference}
+      guards:
+        - slot_not_category: {slot: aux, cat: plural_present_auxiliary}
+        - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+        - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat:
+              quantity_event_participant}
+        - verb_role_compatible: {verb: verb, roles: [who], verb_cat: animate_subject_verb, role_cat:
+              quantity_event_participant}
+        - verb_role_compatible: {verb: verb, roles: [who], verb_cat: purchase, role_cat: animate}
+        - verb_role_compatible: {verb: verb, roles: [who], verb_cat: enrollment_quantity_verb, role_cat:
+              initiation_quantity_participant}
+        - verb_role_compatible: {verb: verb, roles: [who], verb_cat: transfer_out, role_cat: animate}
+        - verb_role_compatible: {verb: verb, roles: [item], verb_cat: purchase, role_cat:
+              transferable_quantity_object}
+      generation:
+        slot_categories:
+          who: [quantity_event_participant]
+          verb:
+            - purchase
+            - eating_quantity_verb
+            - earning_quantity_verb
+            - enrollment_quantity_verb
+            - find_quantity_verb
+            - task_completion_verb
+            - production_quantity_verb
+            - teaching_quantity_verb
+            - initiation_quantity_verb
+            - transfer_out
+
+  - id: ask/how-many-timeunit-take-span-totality-item
+    template: inverse-rate-span
+    arguments:
+      head:
+        - {lit: how}
+        - {lit: many}
+        - {slot: span_unit, cat: duration_measure, number: plural}
+      item:
+        - {lit: all}
+        - opt:
+            - opt:
+                - {lit: of}
+            - {lit: the, consume_skipped: true}
+        - {slot: item, type: plural, referential: true, generation_bare_reference: true}
+      guards:
+        - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+        - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat:
+              quantity_event_participant}
+        - verb_role_compatible: {verb: verb, roles: [who], verb_cat: animate_subject_verb, role_cat:
+              quantity_event_participant}
+      generation: {}

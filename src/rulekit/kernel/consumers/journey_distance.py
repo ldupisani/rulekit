@@ -5,6 +5,7 @@ from math import isfinite
 
 from . import consumer
 from ..model import JourneyLeg, JourneySchedule, JourneyExtra, JourneyPace
+from ..source_coverage import uncovered_document_units
 from ..numeric_evidence import audit_numeric_mentions
 from ..rate_calculation import apply_rate, convert_duration, convert_units
 from ..resource_equations import resource_residual
@@ -42,11 +43,8 @@ def consume(ctx):
     expected = defaultdict(Counter)
     for fact in evidence:
         expected[fact.provenance.sentence][fact.value] += 1
-    for reading in (*ctx.premises, ctx.question):
-        covered = ctx.match.consumed if reading is ctx.question else frozenset()
-        if any(u.uid not in covered and not u.features.get("pattern_consumed")
-               and u.sense() not in {"article", "punct"} for u in reading.units):
-            return decline("travel has an unread route, event, or condition")
+    if uncovered_document_units(ctx.premises, ctx.question, ctx.match.consumed):
+        return decline("travel has an unread route, event, or condition")
     error = audit_numeric_mentions((*ctx.premises, ctx.question), expected,
                                    missing="a stated amount lies outside the travel calculation",
                                    duplicate="journey evidence repeats a source amount")

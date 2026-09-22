@@ -1,7 +1,8 @@
 """`rate-span` — A total over a span at a stated rate.
 
-Moved out of `answer.py` UNCHANGED. The only edits are `query`/`reg`/`store`/
-`question`/`log`/`_match`/`ask` becoming `ctx.` lookups.
+Originally extracted unchanged from `answer.py`. Subsequent scope handling
+preserves individual/group evidence and delegates explicit dependency chains
+to their audited consumer rather than defaulting an unknown group to one.
 
 ⚠ TIME-SCOPED: this consumer lived BELOW the temporal origo, so it has
 always received the time-FILTERED store. It registers `time_scoped=True`
@@ -21,25 +22,29 @@ def rate_span(ctx: ConsumerContext):
     from ..model import ActivityDuration, Quantity, Rate, RateScope
     from ..totals import _entity_total
     from ..rate_calculation import activity_scope_matches, apply_rate, convert_duration
+    from ..rate_query import normalize_rate_query, matching_rates, unsupported_rate_scope
+    from ..rate_query import collective_rate_subject
+
+    # Structural evidence supplements the stable semantic query contract.
+    # Existing reviewed asks can replay unchanged while number and ownership
+    # are enforced from their freshly parsed surface on every execution.
+    ctx = normalize_rate_query(ctx)
 
     # Re-landing step 4 (docs/negative-results.md): conversion spans
     # and rate x population are both live. The entity slot type is
     # the one remaining parked piece.
     entity = ctx.query["entity"]
     measure = ctx.reg.plural_to_singular.get(ctx.query["measure"], ctx.query["measure"])
-    verb = ctx.query.get("verb")
-    rates = [
-        r for r in ctx.store.by_kind(Rate)
-        if r.entity == entity
-        and (verb is None or r.verb == verb)
-        and (
-            r.measure == measure
-            or (
-                measure in ctx.reg.category_parents
-                and ctx.reg.word_in_category(r.measure, measure)
-            )
-        )
-    ]
+    # Plural class asks must not silently fall back to one member's quota.
+    all_rates = ctx.store.by_kind(Rate)
+    if (any(r.provenance.distributive for r in all_rates)
+            and (len(all_rates) > 1 or len(ctx.store.by_kind(Quantity)) <= 1)):
+        from .per_member_rate_chain import per_member_rate_chain
+        return per_member_rate_chain(ctx)
+    scope_error = unsupported_rate_scope(ctx.query, allow_population_owner=True)
+    if scope_error:
+        return Answer("decline", None, scope_error)
+    rates = matching_rates(ctx, measure)
     if len(rates) != 1:
         return Answer(
             "decline", None,
@@ -47,6 +52,9 @@ def rate_span(ctx: ConsumerContext):
             "the span ask needs exactly one",
         )
     rate = rates[0]
+    collective = collective_rate_subject(ctx, rate)
+    if ctx.query.get("subject_number") == "singular" and collective:
+        return Answer("decline", None, "an individual ask cannot use a collective rate")
     from ..repeated_rates import repeated_rate_total
     repeated = repeated_rate_total(ctx, rate)
     if repeated is not None:
@@ -125,9 +133,7 @@ def rate_span(ctx: ConsumerContext):
         ]
         if len(bridges) == 1:
             bridge = bridges[0]
-            k = evaluate(
-                f"{span_value} * {bridge.value}", {}, ctx.log, source="rate-span-bridge"
-            )
+            k = apply_rate(bridge, span_value, ctx.log, source="rate-span-bridge")
         elif (span_unit, rate.per) in ctx.reg.conversions:
             k = convert_duration(span_value, span_unit, rate.per, ctx.reg, ctx.log,
                                  source="rate-span-unit", record=False)
@@ -145,7 +151,15 @@ def rate_span(ctx: ConsumerContext):
     holders = sorted(
         {q.entity for q in ctx.store.by_kind(Quantity) if q.measure == rate.entity}
     )
-    if holders:
+    if ctx.query.get("entity_owner"):
+        holders = [holder for holder in holders if holder == ctx.query["entity_owner"]]
+    if ctx.query.get("entity_owner") and (
+        not holders or ctx.query.get("subject_number") == "singular"
+    ):
+        return Answer("decline", None, "the owned rate subject needs matching scoped evidence")
+    if holders and ctx.query.get("subject_number") != "singular":
+        if collective:
+            return Answer("decline", None, "a collective rate cannot be multiplied by a population")
         pop_totals = [
             _entity_total(ctx.store, ctx.reg, h, rate.entity, ctx.log) for h in holders
         ]
@@ -158,14 +172,17 @@ def rate_span(ctx: ConsumerContext):
         population = evaluate(
             " + ".join(str(t) for t in pop_totals), {}, ctx.log, source="rate-population"
         )
-        total = evaluate(
-            f"{rate.value} * {population} * {k}", {}, ctx.log, source="rate-span"
+        member_periods = evaluate(
+            f"{population} * {k}", {}, ctx.log, source="rate-population-span"
         )
+        total = apply_rate(rate, member_periods, ctx.log, source="rate-span")
         return Answer(
             "number", total,
             f"{rate.value}/{rate.per} × {population} {rate.entity} × "
             f"{k} {rate.per}",
         )
+    if ctx.query.get("subject_number") == "plural" and not collective:
+        return Answer("decline", None, "the plural rate subject needs a resolved population")
     total = apply_rate(rate, k, ctx.log, source="rate-span")
     return Answer(
         "number", total,

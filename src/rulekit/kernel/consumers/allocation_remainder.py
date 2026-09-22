@@ -3,6 +3,8 @@
 from collections import Counter
 from math import isfinite
 
+from ..source_coverage import uncovered_units
+
 from . import consumer
 from ..model import AllocationRatio, Quantity
 from ..rate_calculation import apply_rate
@@ -47,8 +49,7 @@ def consume(ctx):
                 return decline("the share receipt has an unread condition or competing scope")
             continue
         covered = ctx.match.consumed if reading is ctx.question else frozenset()
-        if any(u.uid not in covered and not u.features.get("pattern_consumed")
-               and u.sense() not in {"article", "punct"} for u in reading.units):
+        if uncovered_units(reading, covered):
             return decline("the allocation has an unread condition or transaction")
     expected = {
         ratio.provenance.sentence: Counter([ratio.group_size, ratio.numerator, ratio.denominator]),

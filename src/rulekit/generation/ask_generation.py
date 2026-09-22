@@ -43,6 +43,7 @@ from .sample import (
     _filler_in_category,
     _leaf_tokens,
     _load_fixtures,
+    _selectional_assignment_compatible,
     _token_nodes,
     generate_candidate,
     list_rule_availability,
@@ -485,54 +486,11 @@ def _ask_filler_satisfies_known_where(
         if roles_compatibility is not None:
             verb = value(roles_compatibility.verb)
             if verb is not None:
-                frames = reg.selectional_frames(verb.identity)
-                if roles_compatibility.frame_categories:
-                    frames = tuple(
-                        (category, frame)
-                        for category, frame in frames
-                        if any(
-                            trigger in reg.cat_ancestors(category)
-                            for trigger in roles_compatibility.frame_categories
-                        )
-                    )
-                if frames:
-                    accepted = False
-                    for _category, frame in frames:
-                        if not set(roles_compatibility.roles) <= set(frame):
-                            continue
-                        frame_ok = True
-                        for semantic_role, role_names in (
-                            roles_compatibility.roles.items()
-                        ):
-                            role_category = frame[semantic_role]
-                            for role_name in role_names:
-                                role = value(role_name)
-                                if role is None:
-                                    continue
-                                if (
-                                    role_name
-                                    in roles_compatibility.allow_proper_name
-                                    and role.kind == "name"
-                                ):
-                                    continue
-                                if (
-                                    role_name
-                                    in roles_compatibility.allow_plural_class
-                                    and role.number == "plural"
-                                ):
-                                    continue
-                                if not _filler_in_category(
-                                    role, role_category, reg
-                                ):
-                                    frame_ok = False
-                                    break
-                            if not frame_ok:
-                                break
-                        if frame_ok:
-                            accepted = True
-                            break
-                    if not accepted:
-                        return False
+                assignments = {**chosen, slot: filler}
+                if not _selectional_assignment_compatible(
+                    verb, assignments, roles_compatibility, reg
+                ):
+                    return False
 
         partitive = predicate.partitive_compatible
         if partitive is not None:

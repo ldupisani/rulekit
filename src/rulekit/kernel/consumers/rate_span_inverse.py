@@ -1,7 +1,7 @@
 """`rate-span-inverse` — The span implied by a rate and a total.
 
-Moved out of `answer.py` UNCHANGED. The only edits are `query`/`reg`/`store`/
-`question`/`log`/`_match`/`ask` becoming `ctx.` lookups.
+Shares forward-rate query scope and activity selection. A duration cannot
+borrow a same-item rate for a different activity.
 
 ⚠ TIME-SCOPED: this consumer lived BELOW the temporal origo, so it has
 always received the time-FILTERED store. It registers `time_scoped=True`
@@ -17,28 +17,20 @@ from . import ConsumerContext, consumer
 @consumer("rate-span-inverse", time_scoped=True)
 def rate_span_inverse(ctx: ConsumerContext):
     from ..answer import Answer
-    from ..evaluate import evaluate
-    from ..model import Quantity, Rate
+    from ..model import Quantity
     from ..rate_calculation import apply_rate, convert_duration
+    from ..rate_query import normalize_rate_query, matching_rates, unsupported_rate_scope
+    from ..rate_query import collective_rate_subject
 
-    # the INVERSE of 'rate-span' above ('how long does it take WHO to
-    # VERB N ITEM?' / 'how many TIMEUNIT does it take...?'): an ASKED
-    # amount divided by a known Rate, rather than a known span
-    # multiplied by one. A distinct, additive branch — the forward
-    # 'rate-span' block above is untouched byte-for-byte.
+    # The inverse uses the same scoped rate candidates as a forward ask,
+    # but divides the requested amount by the rate to recover a duration.
+    ctx = normalize_rate_query(ctx)
+    scope_error = unsupported_rate_scope(ctx.query)
+    if scope_error:
+        return Answer("decline", None, scope_error)
     entity = ctx.query["entity"]
     measure = ctx.reg.plural_to_singular.get(ctx.query["item"], ctx.query["item"])
-    rates = [
-        r for r in ctx.store.by_kind(Rate)
-        if r.entity == entity
-        and (
-            r.measure == measure
-            or (
-                measure in ctx.reg.category_parents
-                and ctx.reg.word_in_category(r.measure, measure)
-            )
-        )
-    ]
+    rates = matching_rates(ctx, measure)
     if len(rates) != 1:
         return Answer(
             "decline", None,
@@ -46,6 +38,9 @@ def rate_span_inverse(ctx: ConsumerContext):
             "the inverse span ask needs exactly one",
         )
     rate = rates[0]
+    collective = collective_rate_subject(ctx, rate)
+    if ctx.query.get("subject_number") == "singular" and collective:
+        return Answer("decline", None, "an individual ask cannot use a collective rate")
     # a per-individual rate ("a bird eats 7 berries a day") entangles a
     # population the simple division below does not attempt — decline
     # rather than risk a wrong, mirroring the forward branch's own
@@ -57,6 +52,8 @@ def rate_span_inverse(ctx: ConsumerContext):
             f"the rate is per-{rate.entity} — the inverse span ask does "
             "not attempt a population division",
         )
+    if ctx.query.get("subject_number") == "plural" and not collective:
+        return Answer("decline", None, "the plural rate subject needs a resolved population")
     if "item_value" in ctx.query:
         item_value = float(ctx.query["item_value"])
     else:

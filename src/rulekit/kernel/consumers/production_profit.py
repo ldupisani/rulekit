@@ -5,6 +5,7 @@ from math import isfinite
 
 from . import consumer
 from ..model import CommercialTerm, Rate
+from ..source_coverage import uncovered_document_units
 from ..numeric_evidence import audit_numeric_mentions
 from ..rate_calculation import apply_rate, convert_duration
 from ..resource_equations import resource_residual
@@ -66,11 +67,8 @@ def consume(ctx):
     if any(f.provenance.assumption for f in rates):
         return decline("the sales schedule is not asserted")
     # This is a closed account, not a guess that unread cash flows are zero.
-    for reading in (*ctx.premises, ctx.question):
-        covered = ctx.match.consumed if reading is ctx.question else frozenset()
-        if any(u.uid not in covered and not u.features.get("pattern_consumed")
-               and u.sense() not in {"article", "punct"} for u in reading.units):
-            return decline("the production account contains an unread condition or transaction")
+    if uncovered_document_units(ctx.premises, ctx.question, ctx.match.consumed):
+        return decline("the production account contains an unread condition or transaction")
     expected = {}
     for f in (*terms, *rates):
         expected.setdefault(f.provenance.sentence, Counter()).update([f.value])

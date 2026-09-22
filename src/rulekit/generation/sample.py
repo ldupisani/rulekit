@@ -190,13 +190,16 @@ def _selectional_assignment_compatible(
     # A domain probe can test thousands of fillers against the same verb.
     # Only role assignments vary: the most-specific frames and their declared
     # category restriction are immutable for one registry fingerprint.
-    key = (reg.fingerprint, verb.identity, tuple(compatibility.frame_categories))
+    # Match the reader's surface-first frame lookup; an inflected form may
+    # declare a frame even when its bare lemma is intentionally absent.
+    word = verb.surface.casefold()
+    key = (reg.fingerprint, word, tuple(compatibility.frame_categories))
     with _CACHE_LOCK:
         frames = _SELECTIONAL_FRAME_CACHE.get(key)
         if frames is not None:
             _SELECTIONAL_FRAME_CACHE.move_to_end(key)
     if frames is None:
-        frames = reg.selectional_frames(verb.identity)
+        frames = reg.selectional_frames(word)
         if compatibility.frame_categories:
             frames = tuple(
                 (category, frame)
