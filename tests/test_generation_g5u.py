@@ -242,15 +242,16 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
     project = load_project(CURATED)
     availability = list_rule_availability(project)
 
-    assert len(availability) == 258
-    assert sum(item.supported for item in availability) == 249
-    assert sum(not item.supported for item in availability) == 9
+    assert len(availability) == 272
+    assert sum(item.supported for item in availability) == 262
+    assert sum(not item.supported for item in availability) == 10
     assert all(
         not item.blockers
         or item.id
         in {
                 "arithmetic/dangling-comparative-safety",
                 "arithmetic/measured-content-resulting-total-gapped",
+                "arithmetic/two-part-personal-name",
                 "arithmetic/capacity-progress-anaphoric-multiplier-safety",
                 "arithmetic/partition-membership-of-mass-measure-safety",
                 "arithmetic/realized-progress-anaphoric-multiplier-safety",
@@ -261,7 +262,7 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
             }
         for item in availability
     )
-    assert len(exploration_status(project)["fillers"]) == 561
+    assert len(exploration_status(project)["fillers"]) == 567
 
 
 def test_currently_generates_a_matcher_confirmed_anchor() -> None:

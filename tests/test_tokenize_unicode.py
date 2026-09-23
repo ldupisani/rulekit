@@ -13,6 +13,7 @@ import pytest
 
 from rulekit.data.project import load_project
 from rulekit.kernel.tokenize import tokenize
+from rulekit.kernel.model import Unit, Word
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -81,3 +82,24 @@ def test_ascii_tokenization_unchanged(contractions):
         "John", "'s", "3", "dogs", "ate", "1/4", "of", "the", "5th",
         "cake", ",", "quickly", "!",
     ]
+
+
+@pytest.mark.parametrize("text", [
+    "Aven’s surname is Reed-Park.",
+    "Aven's surname is Reed\u2010Park.",
+    "Aven's surname is Reed\u2011Park.",
+    "Aven's surname is Reed@Park.",
+    "Aven isn't reading a 100-page book.",
+    "Aven’s surname is Reed-.",
+    "Aven  has\t12 apples.",
+])
+def test_written_projection_keeps_source_spelling_separate_from_token_surfaces(contractions, text):
+    reading = tokenize(text, contractions=contractions)
+    words = tuple(word for unit in reading.units for word in unit.words)
+    merged = Unit(999, words)
+    assert merged.written == text
+    assert merged.surface == " ".join(word.surface for word in words)
+
+
+def test_written_projection_falls_back_for_source_free_constructed_words():
+    assert Unit(0, (Word("Aven", 0), Word("Reed", 1))).written == "Aven Reed"

@@ -93,7 +93,8 @@ def tokenize(
     )
     index = 0
     previous_end: int | None = None
-    for match in _TOKEN.finditer(sentence):
+    matches = list(_TOKEN.finditer(sentence))
+    for match_no, match in enumerate(matches):
         surface = match.group()
         # split contractions ("isn't" -> "is" + "not"); matching runs on the
         # FOLD so a curly-apostrophe surface finds its straight-quote table
@@ -106,8 +107,27 @@ def tokenize(
                 stem = surface[: -len(suffix)]
                 pieces = [stem, expansion]
                 break
+        next_start = (
+            matches[match_no + 1].start()
+            if match_no + 1 < len(matches) else len(sentence)
+        )
         for piece_no, piece in enumerate(pieces):
-            unit = reading.new_unit((Word(piece, index),))
+            before = (
+                sentence[previous_end : match.start()]
+                if piece_no == 0 and previous_end is not None else ""
+            )
+            source = piece
+            if len(pieces) > 1:
+                source = surface[:len(piece)] if piece_no == 0 else surface[len(pieces[0]):]
+            after = (
+                sentence[match.end():next_start]
+                if piece_no == len(pieces) - 1 else ""
+            )
+            # Whitespace at the outer boundary is not part of a literal.
+            # Non-tokenized punctuation must remain visible, not silently
+            # repair a malformed literal into a valid one.
+            after = after if after.strip() else ""
+            unit = reading.new_unit((Word(piece, index, source, before, after),))
             unit.features["fold"] = piece.lower().translate(_FOLD_APOSTROPHE)
             # Keep the one piece of punctuation that changes the internal
             # structure of a numeric compound.  The tokenizer still does not

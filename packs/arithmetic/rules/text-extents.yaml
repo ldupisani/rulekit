@@ -1,0 +1,322 @@
+format: rulekit/rules@1
+
+rules:
+  - id: arithmetic/owned-text-value
+    description: >
+      An explicitly named textual attribute supplies its spelling. Letter
+      counts are derived from that text, not guessed from the owner's name.
+    match:
+      sentence:
+        - {slot: attribute, cat: simple_textual_attribute, possessed: true, number: singular, at_start: true}
+        - {slot: be, cat: singular_copula}
+        - {slot: text, type: name}
+        - {lit: '.', consume_skipped: true}
+    emits:
+      - {fact: text_value, entity: '{attribute}', owner: '{attribute.owner}', text: '{text.written}', measure: letter}
+
+  - id: arithmetic/two-part-personal-name
+    generation: reader-only
+    description: >
+      A full-name definition preserves the literal text and declares the
+      capitalization convention: the first name matches the named owner,
+      capitalized middle names precede the surname, and lowercase prefixes
+      immediately before the final capitalized name belong to that surname.
+      A hyphen can join alphabetic parts within a name. Prefix letters count;
+      spaces and hyphens do not. This is an explicit convention for these
+      declarations, not a universal interpretation of personal names.
+      Generation still requires a literal-name fixture tied to its owner.
+    match:
+      sentence:
+        - {slot: attribute, cat: complete_personal_name, possessed: true, number: singular, at_start: true}
+        - {slot: be, cat: singular_copula}
+        - {slot: text, span: true}
+        - {lit: '.', consume_skipped: true}
+    where:
+      - text_prefix_split: {text: text, prefix: attribute, prefix_attr: owner, layout: capitalized-tail}
+    emits:
+      - {fact: text_value, entity: '{attribute}', owner: '{attribute.owner}', text: '{text.written}', measure: letter}
+      - {fact: text_prefix_split, whole: '{attribute}', part: last name, prefix: '{attribute.owner}', owner: '{attribute.owner}', measure: letter, layout: capitalized-tail}
+
+  - id: arithmetic/owned-text-count
+    description: An explicit letter count belongs to one owned textual attribute.
+    match:
+      sentence:
+        - {slot: attribute, cat: textual_attribute, possessed: true, number: singular, at_start: true}
+        - {slot: verb, cat: text_cardinality_state, finite_form: true}
+        - {slot: item, cat: text_letter_measure, counted: true, value_min: 0}
+        - {lit: '.', consume_skipped: true}
+    where:
+      - number_compatible: [attribute, verb]
+    consumes: [item]
+    emits:
+      - {fact: quantity, entity: '{attribute}', owner: '{attribute.owner}', measure: '{item}', value: item}
+
+variants:
+  - id: arithmetic/owned-text-count-comparison
+    template: owned-text-comparison
+    description: A signed difference compares the letter counts of two explicitly owned textual attributes.
+    arguments: &count_comparison
+      comparison:
+        - {slot: verb, cat: text_cardinality_state, finite_form: true}
+        - {slot: n, type: number, value_min: 0}
+        - {slot: direction, cat: count_quantity_delta}
+        - {slot: item, cat: text_letter_measure, uncounted: true}
+      standard:
+        - {slot: standard, cat: textual_attribute, possessed: true, number: singular}
+      standard_entity: '{standard}'
+      standard_owner: '{standard.owner}'
+      agreement: [{number_compatible: [subject, verb]}, {same_number: [n, item]}, {distinct_owner: [subject, standard]}]
+      satisfies: {n: [quantifies]}
+      consumes: [n]
+      offset: 'n * sign(direction)'
+
+  - id: arithmetic/owned-text-count-comparison-elided
+    template: owned-text-comparison
+    description: A repeated textual attribute can be omitted after an explicit owner's possessive.
+    arguments:
+      <<: *count_comparison
+      standard: &elided_standard
+        - {slot: standard_owner, type: name}
+        - {slot: possessive, cat: possessive_clitic}
+      standard_entity: '{subject.lemma}'
+      standard_owner: '{standard_owner}'
+      agreement:
+        - number_compatible: [subject, verb]
+        - same_number: [n, item]
+        - distinct_from_owner: {entity: standard_owner, possessed: subject}
+      satisfies: {n: [quantifies], possessive: [owner, owned]}
+
+  - id: arithmetic/owned-text-length-comparison
+    template: owned-text-comparison
+    description: A stated number of letters longer or shorter is an ordinary signed count difference.
+    arguments: &length_comparison
+      comparison:
+        - {slot: verb, cat: singular_copula}
+        - {slot: item, cat: text_letter_measure, counted: true, value_min: 0}
+        - {slot: direction, cat: text_length_comparative}
+      standard:
+        - {slot: standard, cat: textual_attribute, possessed: true, number: singular}
+      standard_entity: '{standard}'
+      standard_owner: '{standard.owner}'
+      agreement: [{distinct_owner: [subject, standard]}]
+      satisfies: {}
+      consumes: [item]
+      offset: 'item * sign(direction)'
+
+  - id: arithmetic/owned-text-length-comparison-elided
+    template: owned-text-comparison
+    description: The longer/shorter comparison also admits a repeated-attribute possessive ellipsis.
+    arguments:
+      <<: *length_comparison
+      standard: *elided_standard
+      standard_entity: '{subject.lemma}'
+      standard_owner: '{standard_owner}'
+      agreement: [{distinct_from_owner: {entity: standard_owner, possessed: subject}}]
+      satisfies: {possessive: [owner, owned]}
+
+  - id: arithmetic/hypothetical-text-removal-ratio-elided
+    template: hypothetical-text-removal-ratio
+    description: >
+      Removing N letters would leave K times another owner's same attribute.
+      This constrains the original length: original = K * standard + N.
+      It asserts no removal event and no actual changed spelling. The final
+      possessive may omit the attribute only because it is repeated earlier
+      in this complete conditional.
+    arguments: &elided_removal
+      standard: *elided_standard
+      standard_entity: '{result.lemma}'
+      standard_owner: '{standard_owner}'
+      satisfies: {k: [scales], possessive: [owner, owned]}
+
+  - id: arithmetic/hypothetical-text-removal-ratio-explicit
+    template: hypothetical-text-removal-ratio
+    description: >
+      The explicit-attribute sibling retains the standard's own identity.
+      Hypothetical editing relates original extents without asserting an edit.
+    arguments: &explicit_removal
+      standard:
+        - {slot: standard, cat: textual_attribute, possessed: true, number: singular}
+      standard_entity: '{standard}'
+      standard_owner: '{standard.owner}'
+      satisfies: {k: [scales]}
+
+  - id: arithmetic/hypothetical-text-remove-from-ratio-elided
+    template: hypothetical-text-removal-ratio
+    description: Removing letters from an owned text constrains its original length, without asserting an edit.
+    arguments:
+      <<: *elided_removal
+      operation: &remove_from
+        - {slot: removal, cat: inventory_withdrawal_verb, finite_form: true}
+        - {slot: item, cat: text_letter_measure, counted: true, value_min: 0}
+        - {lit: from}
+
+  - id: arithmetic/hypothetical-text-remove-from-ratio-explicit
+    template: hypothetical-text-removal-ratio
+    description: The remove-from frame retains an explicitly repeated standard attribute.
+    arguments:
+      <<: *explicit_removal
+      operation: *remove_from
+
+  - id: arithmetic/hypothetical-text-removal-as-many
+    template: hypothetical-text-removal-ratio
+    description: A hypothetical result with K times as many letters constrains the original count.
+    arguments: &as_many_removal
+      <<: *explicit_removal
+      result_phrase: &as_many_letters
+        - {slot: k, type: nonunit_multiplier}
+        - {lit: as}
+        - {lit: many}
+        - {slot: result_item, cat: text_letter_measure, number: plural, uncounted: true}
+        - {lit: as}
+      identity_guards: [{same_lemma: [item, result_item]}]
+
+  - id: arithmetic/hypothetical-text-remove-from-as-many
+    template: hypothetical-text-removal-ratio
+    description: The remove-from wording composes with the same as-many result.
+    arguments:
+      <<: *as_many_removal
+      operation: *remove_from
+
+  - id: arithmetic/hypothetical-text-removal-named-outcome
+    template: hypothetical-text-removal-ratio
+    description: An explicitly repeated participant replaces the consequent pronoun, with exact identity agreement.
+    arguments:
+      <<: *elided_removal
+      outcome: [{slot: outcome, type: proper_name}]
+      satisfies: {k: [scales], possessive: [owner, owned], verb: [subject]}
+
+templates:
+  owned-text-comparison:
+    parameters:
+      comparison: []
+      standard: []
+      standard_entity: ''
+      standard_owner: ''
+      agreement: []
+      satisfies: {}
+      consumes: []
+      offset: ''
+    rule:
+      match:
+        sentence:
+          - {slot: subject, cat: textual_attribute, possessed: true, number: singular, at_start: true}
+          - {parameter: comparison}
+          - {lit: than}
+          - {parameter: standard}
+          - {lit: '.', consume_skipped: true}
+      where: [{parameter: agreement}]
+      satisfies: {parameter: satisfies}
+      consumes: {parameter: consumes}
+      emits:
+        - fact: relation
+          subject: '{subject}'
+          subject_owner: '{subject.owner}'
+          standard: {parameter: standard_entity}
+          standard_owner: {parameter: standard_owner}
+          measure: '{item}'
+          offset: {parameter: offset}
+
+  hypothetical-text-removal-ratio:
+    parameters:
+      standard: []
+      standard_entity: ''
+      standard_owner: ''
+      satisfies: {}
+      operation:
+        - {slot: removal, cat: inventory_withdrawal_particle_head, finite_form: true}
+        - {slot: item, cat: text_letter_measure, counted: true, value_min: 0}
+        - {lit: off}
+      outcome: [{slot: outcome, cat: anaphoric_person_subject}]
+      result_phrase:
+        - {lit: a, consume_skipped: true}
+        - {slot: result, cat: textual_attribute, class_only: true, number: singular}
+        - {slot: k, type: nonunit_multiplier}
+        - {lit: the, consume_skipped: true}
+        - {slot: extent, cat: text_extent_noun}
+        - {lit: of}
+      identity_guards: [{same_lemma: [attribute, result]}]
+    rule:
+      match:
+        sentence:
+          - {lit: if, at_start: true}
+          - {slot: who, type: name}
+          - {parameter: operation}
+          - {slot: poss, cat: anaphoric_person_possessive}
+          - {slot: attribute, cat: textual_attribute, possessed: true, number: singular}
+          - {lit: ',', consume_skipped: true}
+          - {parameter: outcome}
+          - {slot: modal, cat: hypothetical_result_modal}
+          - {slot: verb, cat: plain_have_state, bare_form: true}
+          - {parameter: result_phrase}
+          - {parameter: standard}
+          - {lit: '.', consume_skipped: true}
+      where:
+        - number_compatible: [who, removal]
+        - owner_matches: {owner: who, possessed: attribute}
+        - {parameter: identity_guards}
+      references: {poss: who, outcome: who}
+      satisfies: {parameter: satisfies}
+      consumes: [item, k]
+      emits:
+        - fact: relation
+          subject: '{attribute}'
+          subject_owner: '{attribute.owner}'
+          standard: {parameter: standard_entity}
+          standard_owner: {parameter: standard_owner}
+          measure: '{item}'
+          factor: k
+          offset: item
+
+asks:
+  - id: ask/letters-in-owned-text
+    match:
+      question:
+        - {lit: how, at_start: true}
+        - {lit: many}
+        - {slot: item, cat: text_letter_measure, number: plural, uncounted: true}
+        - {slot: be, cat: plural_copula}
+        - {lit: in}
+        - {slot: attribute, cat: textual_attribute, possessed: true, number: singular}
+        - {lit: '?', consume_skipped: true}
+    resolves:
+      consumer: text-extent
+      entity: '{attribute}'
+      entity_owner: '{attribute.owner}'
+      measure: '{item}'
+
+  - id: ask/owned-text-letter-count
+    match:
+      question:
+        - {lit: how, at_start: true}
+        - {lit: many}
+        - {slot: item, cat: text_letter_measure, number: plural, uncounted: true}
+        - {slot: aux, type: future_modal}
+        - {slot: attribute, cat: textual_attribute, possessed: true, number: singular}
+        - {slot: verb, cat: text_cardinality_state, bare_form: true}
+        - {lit: '?', consume_skipped: true}
+    where:
+      - number_compatible: [attribute, aux]
+    resolves:
+      consumer: text-extent
+      entity: '{attribute}'
+      entity_owner: '{attribute.owner}'
+      measure: '{item}'
+
+  - id: ask/owned-text-length-in-letters
+    match:
+      question:
+        - {lit: what, at_start: true}
+        - {slot: be, cat: singular_copula}
+        - {lit: the, consume_skipped: true}
+        - {slot: extent, cat: text_extent_noun}
+        - {lit: of}
+        - {slot: attribute, cat: textual_attribute, possessed: true, number: singular}
+        - {lit: in}
+        - {slot: item, cat: text_letter_measure, number: plural, uncounted: true}
+        - {lit: '?', consume_skipped: true}
+    satisfies: {be: [subject]}
+    resolves:
+      consumer: text-extent
+      entity: '{attribute}'
+      entity_owner: '{attribute.owner}'
+      measure: '{item}'

@@ -26,10 +26,26 @@ class VerbInfo(StrictModel):
     lemma: str | None = None
 
 
+class AnaphoricForm(StrictModel):
+    """Pack-owned form family; referent number is not verb agreement number."""
+
+    paradigm: str = Field(min_length=1)
+    referent_numbers: list[Literal["singular", "plural"]] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _unique_numbers(self) -> "AnaphoricForm":
+        if self.paradigm != self.paradigm.strip():
+            raise ValueError("anaphoric paradigm must be trimmed")
+        if len(self.referent_numbers) != len(set(self.referent_numbers)):
+            raise ValueError("anaphoric referent numbers must be unique")
+        return self
+
+
 class LexiconEntry(StrictModel):
     senses: list[str]
     plural: str | list[str] | None = None  # noun senses: plural surface(s)
     number: Literal["singular", "plural"] | None = None  # grammatical number (pronouns)
+    anaphoric_form: AnaphoricForm | None = None
     verb: VerbInfo | None = None  # for verb senses: irregular lemma etc.
     # An explicitly indivisible multiword noun/adverb. Unlike an ordinary
     # compositional compound, this phrase owns its full lexical identity.
@@ -45,6 +61,8 @@ class LexiconEntry(StrictModel):
     def _sense_scoped(self) -> "LexiconEntry":
         if self.verb is not None and "verb" not in self.senses:
             raise ValueError("verb info on an entry without a verb sense")
+        if self.anaphoric_form is not None and "pronoun" not in self.senses:
+            raise ValueError("anaphoric form on an entry without a pronoun sense")
         if self.plural is not None and "noun" not in self.senses:
             raise ValueError("plural on an entry without a noun sense")
         if self.lexical_phrase and self.senses not in (["noun"], ["adverb"]):
@@ -1271,10 +1289,10 @@ class DistinctFromOwnerPredicate(StrictModel):
 class SameCategoryMembershipPredicate(StrictModel):
     """Require several slots to agree on membership in one category.
 
-    This expresses a semantic class boundary without requiring the two nouns
-    to share a lemma. For example, apples/oranges are both non-temporal and
-    mornings/afternoons are both temporal, while libraries/afternoons mix the
-    two classes and therefore fail.
+    Slots need not share a lemma. Apples/oranges are both
+    non-temporal and mornings/afternoons are both temporal; a mixed pair
+    fails. Shared absence is category agreement, not evidence of compatible
+    pronoun forms; those use positive anaphoric paradigm declarations.
     """
 
     slots: list[str] = Field(min_length=2)
@@ -1304,6 +1322,15 @@ class CategoryContainsPredicate(StrictModel):
         return self
 
 
+class TextPrefixSplitPredicate(StrictModel):
+    """Validate the source spelling against an explicit component layout."""
+
+    text: str
+    prefix: str
+    prefix_attr: Literal["lemma", "owner", "written"] = "lemma"
+    layout: Literal["two-part", "capitalized-tail"] = "two-part"
+
+
 class WherePredicate(StrictModel):
     """Closed set of cross-slot constraints."""
 
@@ -1314,6 +1341,7 @@ class WherePredicate(StrictModel):
     # object forms such as "her ... her" can themselves be the grammatical
     # evidence that a coordinated construction shares one participant.
     same_surface: list[str] | None = None
+    text_prefix_split: TextPrefixSplitPredicate | None = None
     # All named slots must carry the same grammatical number. Count-valued
     # units derive singular only from value 1 and plural otherwise; lexical
     # units use their pack-declared `number`. This is grammar structure, not a
@@ -1476,7 +1504,7 @@ class WherePredicate(StrictModel):
             raise ValueError("category nonoverlap repeats a slot")
         set_ = [
             v for v in (
-                self.same_lemma, self.same_surface, self.same_number,
+                self.same_lemma, self.same_surface, self.text_prefix_split, self.same_number,
                 self.same_category_membership, self.number_compatible,
                 self.bound_requires_type, self.bound_requires_category,
                 self.bound_rejects_category,
@@ -1511,6 +1539,7 @@ class WherePredicate(StrictModel):
 
 class FactEmit(StrictModel):
     fact: Literal[
+        "text_value", "text_prefix_split",
         "commercial_term",
         "allocation_ratio",
         "inventory_scope", "inventory_withdrawal",
@@ -1659,11 +1688,23 @@ class PatternRule(StrictModel):
     # false. The target becomes the model.PATTERN sentinel; only explicitly
     # named slot/need pairs are affected.
     satisfies: dict[str, list[str]] = Field(default_factory=dict)
+    # Complete constructions may explicitly bind a referring slot to another
+    # slot. Unlike `satisfies`, this retains a real Unit target. All forms
+    # sharing a target need a declared compatible anaphoric paradigm; a
+    # repeated explicit name must denote that exact target.
+    references: dict[str, str] = Field(default_factory=dict)
     emits: list[FactEmit] = Field(default_factory=list)
     overrides: dict[str, str] | None = None  # {"rule": id, "reason": ...}
 
     @model_validator(mode="after")
     def _satisfaction_contract_is_explicit(self) -> "PatternRule":
+        if self.references and (self.phase != "read" or "sentence" not in self.match):
+            raise ValueError("reference bindings require a read-phase sentence rule")
+        for source, target in self.references.items():
+            if not source or not target or source == target or target in self.references:
+                raise ValueError("reference bindings need distinct, direct target slots")
+            if "refers" in self.satisfies.get(source, []):
+                raise ValueError("reference binding cannot also satisfy refers with a sentinel")
         if self.generation == "contextual" and self.generation_context is None:
             raise ValueError("a contextual rule needs `generation_context`")
         if self.generation != "contextual" and self.generation_context is not None:

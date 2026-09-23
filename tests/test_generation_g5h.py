@@ -98,9 +98,9 @@ def test_g5h_rules_remain_exposed_after_g5j_expansion() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 258
-    assert sum(item.supported for item in availability.values()) == 249
-    assert sum(not item.supported for item in availability.values()) == 9
+    assert len(availability) == 272
+    assert sum(item.supported for item in availability.values()) == 262
+    assert sum(not item.supported for item in availability.values()) == 10
     assert all(availability[rule_id].supported for rule_id in NEWLY_SUPPORTED)
 
 

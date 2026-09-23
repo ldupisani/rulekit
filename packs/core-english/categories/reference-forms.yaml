@@ -1,0 +1,11 @@
+format: rulekit/categories@1
+categories:
+  anaphoric_person_subject:
+    parent: pronoun
+    notes: "Subject forms; a construction must separately establish their referent."
+  anaphoric_person_possessive:
+    parent: possessive_determiner
+    notes: "Third-person forms, including number-neutral ownership."
+members:
+  anaphoric_person_subject: [he, she, they]
+  anaphoric_person_possessive: [her, his, their]

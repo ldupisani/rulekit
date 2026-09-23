@@ -106,7 +106,7 @@ ROOT_SENSES = (
     "operator",
     "noun", "verb", "adjective", "quantifier", "preposition", "comparative",
     "negator", "conjunction", "modal", "particle", "adverb", "time",
-    "article", "pronoun", "auxiliary", "imperative", "aggregate",
+    "article", "pronoun", "auxiliary", "imperative", "aggregate", "possessive",
 )
 
 
@@ -472,6 +472,19 @@ class Registry:
 
 def _freeze(d: dict) -> Mapping:
     return MappingProxyType(dict(sorted(d.items())))
+
+
+def _validate_text_prefix_split(predicate, slots, rule_id: str) -> None:
+    spec = predicate.text_prefix_split
+    if spec is None:
+        return
+    for slot in (spec.text, spec.prefix):
+        if slot not in slots:
+            raise CompileError(f"rule {rule_id!r} text split names unknown slot {slot!r}")
+    if spec.text == spec.prefix:
+        raise CompileError(f"rule {rule_id!r} text split needs an independent prefix slot")
+    if spec.prefix_attr == "owner" and slots[spec.prefix].span:
+        raise CompileError(f"rule {rule_id!r} text split owner cannot come from a span")
 
 
 def compile_registry(packs: list[LoadedPack]) -> Registry:
@@ -1418,6 +1431,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                         f"{expected_root!r}-rooted"
                     )
         for predicate in (*rule.where, *rule.generation_where):
+            _validate_text_prefix_split(predicate, slots, rule.id)
             membership = predicate.same_category_membership
             if membership is not None:
                 # Like the long-standing slot_not_category predicate, this
@@ -1878,6 +1892,18 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                         f"rule {rule.id!r} slot exclusion names unknown slot "
                         f"{slot_name!r}"
                     )
+        for source, target in rule.references.items():
+            for slot_name in (source, target):
+                token = slots.get(slot_name)
+                if token is None or token.span:
+                    raise CompileError(
+                        f"rule {rule.id!r} reference binding needs a single-unit "
+                        f"slot {slot_name!r}"
+                    )
+            if _slot_root(slots[source]) not in {"pronoun", "name", "proper_name", "entity"}:
+                raise CompileError(f"rule {rule.id!r} reference source {source!r} is not referential")
+            if _slot_root(slots[target]) not in {"noun", "name", "proper_name", "entity"}:
+                raise CompileError(f"rule {rule.id!r} reference target {target!r} is not nominal")
         for slot_name in rule.satisfies:
             token = slots.get(slot_name)
             if token is None:
@@ -1913,6 +1939,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                     f"{slot_name!r} is a span, not one obligation-bearing unit"
                 )
         for predicate in ask.where:
+            _validate_text_prefix_split(predicate, ask_slots, ask.id)
             if predicate.number_compatible is not None:
                 for slot_name in predicate.number_compatible:
                     if slot_name not in ask_slots:

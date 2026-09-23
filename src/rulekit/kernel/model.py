@@ -26,6 +26,12 @@ class Word:
 
     surface: str
     index: int  # token position in the sentence
+    # Optional spelling provenance. Grammar continues to use `surface` and
+    # token indexes; literal-text projections can retain discarded separators
+    # and the original spelling of expanded contractions through any merge.
+    source: str | None = field(default=None, compare=False, repr=False)
+    before: str = field(default=" ", compare=False, repr=False)
+    after: str = field(default="", compare=False, repr=False)
 
 
 @dataclass
@@ -64,6 +70,19 @@ class Unit:
     @property
     def surface(self) -> str:
         return " ".join(w.surface for w in self.words)
+
+    @property
+    def written(self) -> str:
+        """Source spelling, separate from the historical token-space surface.
+
+        An unparsed trailing separator belongs to the source view too; otherwise
+        malformed terminal punctuation could disappear from literal evidence.
+        """
+        return "".join(
+            (word.before if index else "")
+            + (word.source if word.source is not None else word.surface)
+            for index, word in enumerate(self.words)
+        ) + (self.words[-1].after if self.words else "")
 
     @property
     def span(self) -> tuple[int, int]:
@@ -1407,6 +1426,49 @@ class ItemClassReference:
         return {"item": self.item.to_dict(), "participant": self.participant.to_dict(),
                 "predicate": self.predicate, "target": dict(vars(self.target)),
                 "antecedents": [dict(vars(source)) for source in self.antecedents]}
+
+
+@dataclass(frozen=True)
+class TextValue(Fact):
+    """Literal text belonging to an explicitly identified attribute."""
+
+    entity: str
+    text: str
+    measure: str
+    owner: str | None = None
+    entity_ref: ReferenceIdentity | None = field(default=None, metadata={"reference_for": "entity"})
+
+    def __post_init__(self):
+        if self.entity_ref is None:
+            object.__setattr__(self, "entity_ref", flat_reference(self.entity, self.owner))
+
+    def key(self) -> tuple:
+        return ("text_value", self.entity_ref.key(), self.measure)
+
+    def value_part(self):
+        return self.text
+
+
+@dataclass(frozen=True)
+class TextPrefixSplit(Fact):
+    """A declared text composition anchored by an independently known prefix.
+
+    The layout is opt-in; the default remains a bounded two-part split.
+    The grammar specifies what the resulting component represents.
+    """
+
+    whole: str
+    part: str
+    prefix: str
+    owner: str
+    measure: str
+    layout: str = "two-part"
+
+    def key(self) -> tuple:
+        return ("text_prefix_split", self.whole, self.part, self.owner, self.measure)
+
+    def value_part(self):
+        return (self.prefix, self.layout)
 
 
 @dataclass(frozen=True)

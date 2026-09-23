@@ -193,11 +193,11 @@ entries:
     "short of": {senses: [preposition]}
 
     # pronouns
-    he: {senses: [pronoun], number: singular}
-    she: {senses: [pronoun], number: singular}
-    they: {senses: [pronoun], number: plural}
+    he: {senses: [pronoun], number: singular, anaphoric_form: &masculine {paradigm: third-person-masculine, referent_numbers: [singular]}}
+    she: {senses: [pronoun], number: singular, anaphoric_form: &feminine {paradigm: third-person-feminine, referent_numbers: [singular]}}
+    they: {senses: [pronoun], number: plural, anaphoric_form: &neutral {paradigm: third-person-neutral, referent_numbers: [singular, plural]}}
     we: {senses: [pronoun], number: plural}
-    it: {senses: [pronoun], number: singular}
+    it: {senses: [pronoun], number: singular, anaphoric_form: &impersonal {paradigm: third-person-impersonal, referent_numbers: [singular]}}
     someone: {senses: [pronoun]}
     somebody: {senses: [pronoun]}
     everybody: {senses: [pronoun]}
@@ -218,18 +218,18 @@ entries:
     either: {senses: [pronoun]}
     everyone: {senses: [pronoun]}
     everything: {senses: [pronoun]}
-    her: {senses: [pronoun]}
-    herself: {senses: [pronoun]}
-    him: {senses: [pronoun]}
-    himself: {senses: [pronoun]}
-    his: {senses: [pronoun]}
-    its: {senses: [pronoun]}
+    her: {senses: [pronoun], anaphoric_form: *feminine}
+    herself: {senses: [pronoun], anaphoric_form: *feminine}
+    him: {senses: [pronoun], anaphoric_form: *masculine}
+    himself: {senses: [pronoun], anaphoric_form: *masculine}
+    his: {senses: [pronoun], anaphoric_form: *masculine}
+    its: {senses: [pronoun], anaphoric_form: *impersonal}
     my: {senses: [pronoun]}
     ones: {senses: [pronoun]}
-    their: {senses: [pronoun]}
-    theirs: {senses: [pronoun]}
-    them: {senses: [pronoun], number: plural}
-    themselves: {senses: [pronoun]}
+    their: {senses: [pronoun], anaphoric_form: *neutral}
+    theirs: {senses: [pronoun], anaphoric_form: *neutral}
+    them: {senses: [pronoun], number: plural, anaphoric_form: *neutral}
+    themselves: {senses: [pronoun], anaphoric_form: *neutral}
     # Demonstrative determiner ("those flowers") or a plural collection
     # anaphor ("ten of those"). Grammar categories decide which reading a
     # construction licenses; the dictionary does not choose one globally.

@@ -22,6 +22,7 @@ from ..data.schemas import SynthRule
 from . import deixis
 from .evaluate import ArithmeticLog, EvaluationError, evaluate
 from .facts import FactStore
+from .text_evidence import text_evidence
 from .model import (
     Alias,
     AnchorQuantity,
@@ -3444,6 +3445,9 @@ PLUGINS: dict[str, Synthesizer] = {
     "synth/totality-event": _totality_event_synth,
     "synth/distributive-container-total": _distributive_container_total_synth,
 }
+
+
+PLUGINS["synth/text-evidence"] = text_evidence
 
 
 def saturate(store: FactStore, reg: Registry, log: ArithmeticLog) -> FactStore:

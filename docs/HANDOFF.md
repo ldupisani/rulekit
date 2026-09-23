@@ -1,12 +1,14 @@
 # rulekit handoff
 
-**Updated:** 2026-09-22
-**Runtime checkpoint:** direct comparison support pushed as `1334602`;
-per-member chains, paraphrases and shared-rate consolidation local (uncommitted).
+**Updated:** 2026-09-23
+**Runtime checkpoint:** shared-rate consolidation committed as `211f317`;
+owned textual extents, generic reference links, paraphrases and full-name
+component layouts local (uncommitted).
 Increment 134 is the last TEST checkpoint
 **Default workflow:** direct implementation for user-supplied questions;
 Mining v2 only on explicit request
-**Immediate state:** shared-rate consolidation implemented and fully validated.
+**Immediate state:** full-name declarations support capitalized middle
+names and lowercase surname prefixes, alongside hyphenated names; validated.
 Existing approval, gate, and landing records for increment 134 remain untouched.
 
 This is the operational entry point. It records current state, durable
@@ -57,6 +59,71 @@ temporal event totals (130), task-completion duration gaps (131), and
 anaphoric distance chains with exact combined totals (132).
 
 ### Latest implementation checkpoint
+
+Owned text definitions now preserve literal spellings as `TextValue` facts and
+derive ordinary letter-count quantities. An explicit component layout
+establishes the surname only when its first token matches the named owner.
+Full-name declarations now opt into the user's capitalization convention:
+capitalized middle names precede lowercase surname prefixes and one final
+capitalized name. The derived surname includes the prefixes but not the middle
+names. The default two-part layout remains available to other constructions. Signed
+differences and hypothetical removal/ratio constructions emit existing owned
+`Relation` facts, so the ordinary relation engine supplies chained original
+lengths without asserting an actual edit. The new `text-extent` consumer checks
+complete language coverage, all equations, exact owners, component validity,
+and nonnegative whole-letter counts, with an inspectable proof.
+
+The literal source view now preserves original spelling and separators through
+condensation. Text rules opt into `{text.written}`; historical grammatical
+surfaces, token indexes and reference keys are unchanged. Internal ASCII,
+Unicode and nonbreaking hyphens join alphabetic components within a name.
+The letter counter excludes spaces and hyphens, but counts prefix letters.
+Invalid capitalization order, mismatched owners, clause dashes, digits and
+malformed joins cannot silently become a surname. Trailing unparsed punctuation
+remains in the literal too, preventing a terminal hyphen from being silently repaired.
+Hyphenated and space-separated text remains distinct evidence even when its
+letter counts happen to agree.
+
+The same layout validator guards rule matching, synthesis and answering.
+Accepted full-name spans become literal text in the trace: their lowercase
+prefixes need no vocabulary entries, and the parts do not introduce discourse
+entities. Ordinary unknown-word checks remain strict outside that exact span.
+The answer proof records this explicit convention; it does not claim a
+universal naming system. The existing full-name rule ID remains stable.
+
+The follow-up replaces the gender-category shortcut with core-owned anaphoric
+paradigms and a generic explicit `references` contract. Agreement is positive
+lexical evidence; reference identity comes from the declared construction, not
+from guessing a name's gender. Candidate bindings are non-mutating projections;
+accepted matches retain real antecedent targets in the trace. Conflicting,
+missing and unresolved references fail closed. Singular-reference `they` keeps
+its plural verb-agreement form. Ordinary discourse resolution is unchanged.
+
+Shared templates support has/contains, letters longer/shorter, explicit/elided
+standards, take-off/remove-from, length ratios/as-many-letter results, and an
+explicitly repeated consequent name. Self-comparisons and malformed removal-verb
+agreement are excluded. Thirteen premise shapes and three asks are generatable.
+Full-name literal generation remains reader-only until a literal-name fixture can
+be tied to its owner. Curated now has 272 premises (262 supported, 10 deliberately
+excluded), 567 lexical identities, and 158 asks (140 independently generatable).
+
+The final full parallel synthetic run passes 8,651 tests, with five nested
+benchmark-worker checks passing separately (8,656 total). The focused text,
+tokenization and reference checks pass 342 tests; generation
+round-trips are included in the full run. Curated remains 71/71; GSM8K DEV-train
+is 116/0, DEV-holdout 58/0, and ASDiv DEV 55/0. All three snapshot comparisons
+are neutral, with zero broken answers or new wrongs. Lints have zero errors
+and only the existing GSM8K trig-sine advisory. Current evidence is under
+`.rulekit-cache/name-components-2026-09-23.1c4G3T/`; earlier hyphenated-name,
+paraphrase and owned-text checkpoints remain under
+`.rulekit-cache/hyphenated-text-2026-09-23.nJcvT5/`,
+`.rulekit-cache/text-paraphrases-2026-09-22.2RoY4L/` and
+`.rulekit-cache/text-extents-2026-09-22.V2H9hw/`.
+The supplied case is calibration, not independent generalization evidence.
+No protected TEST, review-ledger change, commit, push or Designer restart was
+performed. The running Designer needs a user-timed restart to load Python changes.
+
+### Previous shared-rate checkpoint
 
 The reuse follow-up consolidates forward/modal and inverse-duration asks into
 local templates with stable IDs, preserving their match guards and generation

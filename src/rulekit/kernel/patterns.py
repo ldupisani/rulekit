@@ -14,6 +14,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field, fields, replace
 from .reference_identity import reference_from_unit
+from .reference_bindings import project_references
 from collections.abc import Iterable, Mapping
 from typing import Any
 
@@ -104,12 +105,16 @@ from .model import (
     SpatialPlacement,
     Subset,
     TaskCompletionDuration,
+    TextValue,
+    TextPrefixSplit,
     Unit,
 )
 
 SKIPPABLE_SENSES = {"article", "punct"}
 
 _FACT_CLASSES = {
+    "text_value": TextValue,
+    "text_prefix_split": TextPrefixSplit,
     "commercial_term": CommercialTerm,
     "allocation_ratio": AllocationRatio,
     "inventory_scope": InventoryScope,
@@ -1135,6 +1140,18 @@ def _check_where(
             }
             if len(surfaces) > 1:
                 return False
+        if pred.text_prefix_split is not None:
+            from .text_evidence import prefix_remainder
+
+            spec = pred.text_prefix_split
+            if spec.text not in slots or spec.prefix not in slots:
+                return False
+            if prefix_remainder(
+                _slot_value(slots[spec.text], "written"),
+                _slot_value(slots[spec.prefix], spec.prefix_attr),
+                spec.layout,
+            ) is None:
+                return False
         if pred.same_number is not None:
             numbers = []
             for name in pred.same_number:
@@ -2085,6 +2102,10 @@ def atom_variants(fact: Fact, emit_fields: dict, slots: dict, reg: Registry) -> 
 
 
 def _slot_value(unit: Unit, attr: str | None) -> str:
+    if attr == "written":
+        if isinstance(unit, tuple):
+            return Unit(-1, tuple(word for part in unit for word in part.words)).written
+        return unit.written
     if attr in ("span_start", "span_end"):
         units = unit if isinstance(unit, tuple) else (unit,)
         if not units:
@@ -2418,7 +2439,8 @@ def run_rules(
         for m in match_all(reading, seq, reg, overlapping=rule.overlapping):
             m.rule = rule
             m.specificity = specificity(m, reg)
-            if not _check_where(rule, m.slots, reading, reg):
+            effective_slots = project_references(rule.references, m.slots, reg)
+            if effective_slots is None or not _check_where(rule, effective_slots, reading, reg):
                 continue
             provenance = Provenance(
                 source=rule.id,
@@ -2451,7 +2473,7 @@ def run_rules(
                         for seg in _enumeration_segments(span)
                     )
                     count_raw = _resolve_field(
-                        e.fields.get("count", ""), m.slots, reg, False,
+                        e.fields.get("count", ""), effective_slots, reg, False,
                         log, rule.id,
                     )
                     try:
@@ -2461,7 +2483,7 @@ def run_rules(
                     if len(options) < 2 or count != len(options):
                         continue
                     cls_key = _resolve_field(
-                        e.fields["cls"], m.slots, reg, False, log, rule.id,
+                        e.fields["cls"], effective_slots, reg, False, log, rule.id,
                     )
                     facts.append(EnumeratedDisjunction(
                         provenance=emit_provenance, cls=cls_key, options=options,
@@ -2479,7 +2501,7 @@ def run_rules(
                     if not isinstance(span, tuple):
                         continue
                     for seg in _enumeration_segments(span):
-                        sub_slots = dict(m.slots)
+                        sub_slots = dict(effective_slots)
                         sub_slots["item"] = seg
                         fact = _build_fact(
                             e.fields, e.fact, sub_slots, reg, emit_provenance,
@@ -2490,7 +2512,7 @@ def run_rules(
                         facts.extend(atom_variants(fact, e.fields, sub_slots, reg))
                     continue
                 fact = _build_fact(
-                    e.fields, e.fact, m.slots, reg, emit_provenance, log, rule.id,
+                    e.fields, e.fact, effective_slots, reg, emit_provenance, log, rule.id,
                     reading=reading,
                     temporal_perspective=e.temporal_perspective,
                 )
@@ -2499,7 +2521,7 @@ def run_rules(
                 # the registry declares the opt-in category AND the emitted
                 # fact is a positive span-pred Atom — no benchmark pack does
                 # either, so every benchmark corpus is byte-identical
-                facts.extend(atom_variants(fact, e.fields, m.slots, reg))
+                facts.extend(atom_variants(fact, e.fields, effective_slots, reg))
             results.append(RuleMatchResult(match=m, facts=facts))
     return results
 

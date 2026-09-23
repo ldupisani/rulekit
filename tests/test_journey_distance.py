@@ -76,9 +76,11 @@ def test_unknown_generation_predicate_reports_a_blocker():
     from types import SimpleNamespace
     from rulekit.data.schemas import WherePredicate
     from rulekit.generation.sample import _where_blocker
-    rule = SimpleNamespace(where=[WherePredicate(owner_matches={"owner": "a", "possessed": "b"})],
+    # owner_matches now has a realizer. Whole-span same_phrase remains an
+    # intentionally unsupported premise-generation predicate.
+    rule = SimpleNamespace(where=[WherePredicate(same_phrase=["a", "b"])],
                            generation_where=[])
-    assert _where_blocker(rule) == ["where predicate 'owner_matches' has no current realizer"]
+    assert _where_blocker(rule) == ["where predicate 'same_phrase' has no current realizer"]
 
 
 def test_capability_cannot_be_used_as_an_actual_activity_rate(registry):

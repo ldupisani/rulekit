@@ -7,7 +7,7 @@ import random
 import re
 import secrets
 from collections import Counter, OrderedDict
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from functools import lru_cache
 from itertools import product
 from pathlib import Path
@@ -98,6 +98,7 @@ _SUPPORTED_CATEGORY_ROOTS = frozenset(
         "time",
         "adverb",
         "auxiliary",
+        "possessive",
     }
 )
 _PUNCTUATION = frozenset({".", ",", "!", "?", ";", ":"})
@@ -460,6 +461,7 @@ def _where_blocker(rule: PatternRule) -> list[str]:
             or pred.category_contains is not None
             or pred.distinct_owner is not None
             or pred.distinct_from_owner is not None
+            or pred.owner_matches is not None
             or pred.same_lemma is not None
             or pred.same_surface is not None
             or pred.same_number is not None
@@ -2676,6 +2678,8 @@ def _allowed_fillers(
         list[tuple[str, tuple[str, ...]]]
         | tuple[tuple[str, tuple[str, ...]], ...]
     ) = (),
+    owner_match_requirements: tuple[tuple[str, str], ...] = (),
+    reference_bindings: tuple[tuple[str, str], ...] = (),
 ) -> list[_Filler]:
     candidate_domain = domain_for or (
         lambda candidate: _domain(candidate, reg, fixtures)
@@ -2753,6 +2757,17 @@ def _allowed_fillers(
         next(reversed(chosen.values())).surface.casefold(),
         "possessive_determiner",
     )
+    # The determiner is already realized by its own slot. Preserve the
+    # required owner's identity while rendering just the owned noun head.
+    # Otherwise a matched-owner filler would produce "her Aven's noun".
+    if preceding_is_possessive and token.possessed:
+        owners = {chosen[owner].identity for owner, possessed in owner_match_requirements
+                  if possessed == token.slot and owner in chosen}
+        if owners:
+            domain = [replace(filler, surface=(
+                reg.singular_to_plural.get(filler.identity, filler.identity)
+                if filler.number == "plural" else filler.identity
+            )) for filler in domain if filler.owner in owners]
     forbidden_owners = {
         chosen[name].owner
         for group in distinct_owner_groups
@@ -2768,6 +2783,41 @@ def _allowed_fillers(
         if name != token.slot
         if (known := chosen.get(name) or locked_fillers.get(name)) is not None
     }
+
+    def owner_matches(filler):
+        if not owner_match_requirements:
+            return True
+        def value(name):
+            return filler if name == token.slot else chosen.get(name)
+        return all(
+            value(owner) is None or value(possessed) is None
+            or value(possessed).owner == value(owner).identity
+            for owner, possessed in owner_match_requirements
+        )
+
+    def references_match(filler):
+        if not reference_bindings:
+            return True
+        from ..kernel.reference_bindings import anaphoric_forms_agree
+        def value(name):
+            return filler if name == token.slot else chosen.get(name)
+        for target_name in {target for _, target in reference_bindings}:
+            target = value(target_name)
+            if target is None:
+                continue
+            forms = []
+            for source, target_slot in reference_bindings:
+                if target_slot != target_name or (known := value(source)) is None:
+                    continue
+                if known.kind == "name":
+                    if known.identity != target.identity:
+                        return False
+                else:
+                    forms.append(known.surface)
+            number = "singular" if target.kind == "name" else target.number
+            if forms and not anaphoric_forms_agree(forms, number, reg):
+                return False
+        return True
 
     def satisfies_required_type(
         filler: _Filler, required_type: str
@@ -3603,6 +3653,8 @@ def _allowed_fillers(
             )
         )
         and filler.owner not in forbidden_owners
+        and owner_matches(filler)
+        and references_match(filler)
         and _measure_key(filler) not in forbidden_measure_keys
         and all(
             satisfies_required_type(filler, required_type)
@@ -3669,6 +3721,10 @@ def _realize(
         slot_category_exclusions,
         absent_categories,
     ) = _constraint_groups(rule)
+    owner_match_requirements = tuple(
+        (p.owner_matches.owner, p.owner_matches.possessed)
+        for p in _generation_predicates(rule) if p.owner_matches is not None
+    )
     unbound_optional_paths = _unbound_optional_paths(rule, seq)
     proportional_delta_requirements = _proportional_delta_requirements(rule)
     category_membership_requirements = (
@@ -3963,6 +4019,8 @@ def _realize(
                 entity_owner_distinctions=entity_owner_distinctions,
                 domain_for=domain_for,
                 same_surface_groups=same_surface_groups,
+                owner_match_requirements=owner_match_requirements,
+                reference_bindings=tuple(rule.references.items()),
             )
             if path == structural_literal_path:
                 domain = [
@@ -4010,7 +4068,11 @@ def _realize(
                         requirement=requirement,
                         broader_domain=broader_domain,
                     )
-            surfaces.append(filler.surface)
+            entry = reg.lexicon.get(filler.surface.casefold())
+            if surfaces and entry is not None and entry.senses == ["possessive"]:
+                surfaces[-1] += filler.surface
+            else:
+                surfaces.append(filler.surface)
             realized.append((token, filler))
 
     realize_tokens(seq)
@@ -4854,6 +4916,7 @@ def _token_reason(
 
 
 _WHERE_FIELDS = (
+    "owner_matches",
     "same_lemma",
     "same_surface",
     "same_number",
@@ -4898,6 +4961,9 @@ def _where_expression(rule: PatternRule, index: int) -> tuple[str, tuple[str, ..
     if isinstance(value, list):
         names = tuple(value)
         rendered = ", ".join(value)
+    elif kind == "owner_matches":
+        names = (value.owner, value.possessed)
+        rendered = f"owner={value.owner!r}, possessed={value.possessed!r}"
     elif kind == "same_category_membership":
         names = tuple(value.slots)
         rendered = f"slots={value.slots!r}, cat={value.cat!r}"

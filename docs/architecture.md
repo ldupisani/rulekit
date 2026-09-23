@@ -212,6 +212,28 @@ timeperiod/timeperiod pairs without accepting a mixed pair. Matching,
 generation feasibility, compatible probes, explanations, and source links
 all read the same predicate.
 
+Pronoun agreement instead requires positive lexical evidence. Core English
+declares an `anaphoric_form` paradigm and allowed referent numbers on each
+licensed form. Grammatical number stays separate: singular-reference `they`
+still takes plural verb agreement. Absence from a gender category is never
+agreement evidence, and names supply no inferred gender.
+
+A read rule can declare `references: {poss: who, outcome: who}` when its
+complete construction establishes those links. Forms sharing a target must
+have a compatible declared paradigm; a repeated explicit name must have the
+same exact reference identity. Missing metadata, unresolved targets, conflicting
+prior bindings, group/sentinel targets, cycles and invalid slots fail closed.
+Matching and emission use non-mutating projections; an accepted match records
+real Unit targets and owned-noun identities in the trace. Ordinary discourse
+resolution is unchanged. This is separate from `satisfies`, which can only
+discharge a structural obligation without identifying its referent.
+
+The generator uses the same form-agreement helper and prunes explicit reference
+links. `owner_matches` also prunes premise generation in either binding
+order. When a separate determiner already introduces the owned noun, its filler
+retains the required owner but renders only the noun head. Possessive clitics
+are a declared category root and attach to their preceding generated surface.
+
 Exact written-form agreement is separate again. `same_surface` requires every
 named single-unit slot to expose the same case-insensitive surface. Unlike
 `same_lemma`, it does not follow a pronoun's resolved referent. This lets a
@@ -1912,6 +1934,64 @@ uses an exact `(entity, owner, measure)` index and will not borrow another
 owner's same-headed quantity. Owner-aware asks route the same owner field to
 the ordinary single-entity consumer. Unowned and single-owner legacy facts
 retain their bare entity key, preserving established cross-mention folding.
+
+Owned textual attributes use the same reference and affine-relation machinery.
+`TextValue` preserves a literal spelling, its owned attribute, and its declared
+counting measure. `synth/text-evidence` normalizes Unicode to NFC and derives
+ordinary `Quantity` facts by counting alphabetic characters, excluding spaces
+and hyphens. The text rules emit `{text.written}`, not the historical
+token-space `{text.surface}` projection. Immutable words retain their source
+spelling and separators through condensation; grammar surfaces, token indexes
+and reference keys remain unchanged. Unparsed trailing punctuation is preserved
+too, so a malformed terminal hyphen cannot silently disappear from a literal.
+It does not infer a spelling from a person's name or manufacture an alias.
+An explicit `TextPrefixSplit` declares a component layout, with the original
+bounded `two-part` layout retained as the default. The full-name rule opts into
+`capitalized-tail`: the first part must match the independently named owner;
+uppercase-initial middle names precede zero or more lowercase-initial prefixes
+and one final uppercase-initial surname part. Prefixes belong to the surname;
+middle names do not. Alphabetic parts may contain single ASCII, Unicode or
+nonbreaking hyphens. Spelling and internal spacing remain in the derived
+`TextValue`, and prefix letters count toward its extent. This is an explicit
+capitalization convention, not a universal personal-name parser or a list of
+known prefixes. Mismatched owners, a capitalized intervening name after a
+lowercase prefix, missing terminal names, digits and malformed joins reject.
+
+The shared `text_prefix_split` where predicate validates the literal's complete
+source spelling before a rule can bind. `{text.written}` supports spans as well
+as single units, so a literal may include lowercase components without any
+change to ordinary name condensation. Only an accepted declaration annotates
+its source units as literal text, clearing their prose obligations and unknown
+flags in an inspectable trace. They do not introduce discourse entities.
+Unknown-word checks elsewhere remain unchanged. Matching, synthesis and the
+consumer use the same layout helper, and the answer proof states the convention
+and extracted component. The existing full-name rule ID is retained for source
+and review continuity, despite now admitting more than two whitespace parts.
+
+Letter-count differences and hypothetical removal/ratio clauses emit ordinary
+owned `Relation` facts. The latter constrains the original extent as
+`original = factor * standard + removed`; it does not assert an actual edit,
+an event quantity, or a changed spelling. Shared saturation supplies chained
+lengths. The `text-extent` consumer requires complete source coverage, exact
+owned anchors, consistent equations, valid component evidence and nonnegative
+integer letter counts. Its proof exposes the literal counts, the bounded split
+interpretation and each affine step. These mechanisms also cover directly
+stated surname, first-name and nickname text or counts.
+
+Shared local templates compose letter-count differences with longer/shorter
+wording and explicit or elided owned standards. Hypothetical edits compose
+take-off/remove-from wording with length-ratio/as-many-letter results and
+pronoun or repeated-name outcomes. Consistent feminine, masculine and neutral
+pronoun paradigms are accepted by the same generic reference contract; unknown
+or conflicting references cannot supply an equation. No hypothetical edit is
+converted into an actual change event.
+
+The thirteen ordinary text-value/count/comparison/hypothetical premise shapes
+are generatable and round-trip through the reader. A full-name literal tied to its
+owner remains explicitly `reader-only`: the current generator has no fixture
+contract for constructing that linked literal. Three owned-text ask shapes
+cover letters-in, have/contain, and explicit length-in-letters wording. This is
+a declared generation limitation, not an unavailable reasoning path.
 
 An owner-plus-owned-location count ask keeps both identities. It first queries
 facts keyed to the exact owner-qualified place, so quantities from another

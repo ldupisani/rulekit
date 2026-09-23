@@ -843,6 +843,7 @@ def solve(
         _satisfy_pattern_obligations(
             question,
             RuleMatchResult(match=matched_ask[2]),
+            reg,
         )
         import re as _re
 

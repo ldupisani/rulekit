@@ -68,10 +68,49 @@ class Document:
 
 
 def _satisfy_pattern_obligations(
-    reading: Reading, result: RuleMatchResult
+    reading: Reading, result: RuleMatchResult, reg: Registry
 ) -> None:
-    """Apply only the slot/need pairs explicitly owned by a matched rule."""
+    """Apply only the reference/literal/need contracts of a matched rule."""
 
+    from .reference_bindings import project_references
+    # A validated textual composition interprets its source as literal data,
+    # not prose vocabulary. This is local to the accepted match: lowercase
+    # components elsewhere remain unknown, and invalid layouts never arrive
+    # here. Its components do not introduce discourse entities or carry prose
+    # obligations; the TextValue fact retains their exact written content.
+    for predicate in result.match.rule.where:
+        spec = predicate.text_prefix_split
+        if spec is None:
+            continue
+        literal = result.match.slots.get(spec.text)
+        units = literal if isinstance(literal, tuple) else (literal,)
+        for unit in units:
+            if not isinstance(unit, Unit) or unit.features.get("literal_text"):
+                continue
+            reading.record(
+                "pattern-literal-text", unit,
+                {"unknown": False, "ambiguous": False, "literal_text": True,
+                 "senses": ["literal"], "obligations": []},
+                f"literal text validated by complete construction {result.match.rule.id}",
+                rule_id=result.match.rule.id,
+            )
+    references = getattr(result.match.rule, "references", {})
+    if references:
+        projected = project_references(references, result.match.slots, reg)
+        if projected is None:
+            return
+        for slot, unit in result.match.slots.items():
+            replacement = projected.get(slot)
+            if not isinstance(unit, Unit) or replacement is unit:
+                continue
+            changes = {key: value for key, value in replacement.features.items()
+                       if value != unit.features.get(key)}
+            if changes:
+                reading.record(
+                    "pattern-reference", unit, changes,
+                    f"reference bound by complete construction {result.match.rule.id}",
+                    rule_id=result.match.rule.id,
+                )
     for slot_name, needs in result.match.rule.satisfies.items():
         unit = result.match.slots.get(slot_name)
         if not isinstance(unit, Unit):
@@ -800,7 +839,7 @@ def run_document(
         doc.rule_results[reading.sentence_index] = results
         consumed = doc.consumed_uids.setdefault(reading.sentence_index, set())
         for r in results:
-            _satisfy_pattern_obligations(reading, r)
+            _satisfy_pattern_obligations(reading, r, reg)
             consumed.update(r.match.consumed)
             for uid in r.match.consumed:
                 reading.record(
@@ -880,7 +919,7 @@ def run_document(
             doc.rule_results[reading.sentence_index] = results
             consumed = doc.consumed_uids.setdefault(reading.sentence_index, set())
             for r in results:
-                _satisfy_pattern_obligations(reading, r)
+                _satisfy_pattern_obligations(reading, r, reg)
                 for uid in r.match.consumed:
                     if uid in consumed:
                         continue

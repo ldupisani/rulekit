@@ -1,0 +1,30 @@
+format: rulekit/categories@1
+categories:
+  textual_attribute:
+    parent: noun
+    notes: "An owned piece of text, not a stock of correspondence."
+  complete_personal_name:
+    parent: textual_attribute
+  simple_textual_attribute:
+    parent: textual_attribute
+  text_letter_measure:
+    parent: noun
+  text_extent_noun:
+    parent: noun
+  hypothetical_result_modal:
+    parent: modal
+  possessive_clitic:
+    parent: possessive
+  text_length_comparative:
+    parent: comparative
+  text_cardinality_state:
+    parent: verb
+members:
+  simple_textual_attribute: [last name, first name, surname, nickname]
+  complete_personal_name: [full name]
+  text_letter_measure: [letter]
+  text_extent_noun: [length]
+  hypothetical_result_modal: [would]
+  possessive_clitic: ["'s"]
+  text_length_comparative: [longer, shorter]
+  text_cardinality_state: [have, has, had, contain, contains, contained]
