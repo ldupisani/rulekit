@@ -10,7 +10,39 @@ from __future__ import annotations
 from dataclasses import replace
 
 from ..data.registry import Registry
-from .model import Expenditure, Provenance, Reading
+from .model import Expenditure, Provenance, PurchaseTotal, Reading
+
+
+def learn_purchase_totals(reading, reg):
+    """A fronted currency complement scopes one actual purchase predicate.
+
+    Only the complete initial marker + amount + subject + finite predicate
+    frame licenses this total. A trailing item price or a proposed purchase
+    cannot become a transaction-wide amount.
+    """
+    from .learn import _bound, _clause_negated, _lemma
+    from .patterns import is_bare_referent, is_finite_verb_form
+
+    units = [u for u in reading.units if u.sense() not in {"article", "punct"}]
+    if len(units) < 5:
+        return []
+    prep, amount, subject, verb = units[:4]
+    if (prep.sense() != "preposition"
+            or not reg.word_in_category(_lemma(prep), "transaction_price_preposition")
+            or amount.features.get("value_kind") != "count"
+            or not reg.word_in_category(_lemma(amount), "currency_measure")
+            or verb.sense() != "verb" or not reg.word_in_category(_lemma(verb), "purchase")
+            or not is_finite_verb_form(verb.features.get("fold", ""), _lemma(verb))
+            or _bound(verb, "subject") is not subject
+            or not is_bare_referent(subject) or _clause_negated(reading, verb, reg)
+            or (subject.sense() == "pronoun" and _bound(subject, "refers") is None)
+            or subject.sense() not in {"name", "pronoun"}):
+        return []
+    return [PurchaseTotal(
+        Provenance("fold:fronted-purchase-total", reading.sentence_index,
+                   assumption=reading.assumption),
+        _lemma(subject), _lemma(amount), float(amount.features["value"]), amount.uid, verb.uid,
+    )]
 
 
 def _coordinated_finite_clause(reading, index, reg):
@@ -136,6 +168,12 @@ def _transaction_tail(reading, verb, index, reg, *, priced=False, counted=None):
                         and price == float(obj.features["value"])):
                     fields.update(unit_price=price, quantity=float(counted.features["value"]),
                                   quantity_position=counted.uid, measure=_lemma(obj), position=obj.uid)
+                    quantifier = units[j + 1]
+                    obligations = [replace(ob, target=counted) if ob.need == "collection" else ob
+                                   for ob in quantifier.obligations()]
+                    if obligations != quantifier.obligations():
+                        reading.record("bind-price-unit", quantifier, {"obligations": obligations},
+                                       "the explicit per-unit price quantifies this purchased lot")
                     j += 1
                 elif reg.word_in_category(_lemma(marker), "transaction_price_preposition"):
                     fields.update(value=float(obj.features["value"]), measure=_lemma(obj), position=obj.uid,
@@ -211,8 +249,7 @@ def learn_expenditures(reading: Reading, reg: Registry) -> list[Expenditure]:
                                lot_quantity=float(head.features["value"]) if counted else None,
                                lot_position=head.uid if counted else -1)
                 if reg.word_in_category(_lemma(target), "partitive_pair_measure"):
-                    if counted is not None:
-                        break  # a counted partitive needs its own item/unit mapping
+                    head = target
                     if j >= len(units) or not reg.word_in_category(_lemma(units[j]), "partitive"):
                         break
                     complement = _bound(units[j], "object")
@@ -220,6 +257,9 @@ def learn_expenditures(reading: Reading, reg: Registry) -> list[Expenditure]:
                         break
                     target = complement
                     j = units.index(target) + 1
+                    if counted is not None:
+                        lot = dict(lot_measure=_lemma(head), lot_quantity=float(head.features["value"]),
+                                   lot_position=head.uid)
                 relative = _relative_purchase_price(reading, j, reg)
                 if relative:
                     j, relative_fields = relative

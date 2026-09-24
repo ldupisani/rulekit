@@ -622,10 +622,6 @@ entries:
     senses:
     - noun
     plural: bonsais
-  bonus:
-    senses:
-    - noun
-    plural: bonuses
   bookstore:
     senses:
     - noun
@@ -1158,9 +1154,6 @@ entries:
   cleaning:
     senses:
     - verb
-  clearance:
-    senses:
-    - noun
   clerk:
     senses:
     - noun
@@ -1788,10 +1781,6 @@ entries:
     senses:
     - noun
     plural: dinosaurs
-  discount:
-    senses:
-    - noun
-    plural: discounts
   discovered:
     senses:
     - verb
@@ -2334,18 +2323,11 @@ entries:
   fault:
     senses:
     - noun
-  favorite:
-    senses:
-    - adjective
   fed:
     senses:
     - verb
     verb:
       lemma: feed
-  fee:
-    senses:
-    - noun
-    plural: fees
   feed:
     senses:
     - verb

@@ -169,12 +169,13 @@ def test_recipient_frequency_output_rule_is_generator_supported(project):
     assert candidate.facts[0]["fields"]["measure"] == "page"
 
 
-def test_output_projection_ask_is_generator_supported(project):
+@pytest.mark.parametrize("seed", [0, 5, 19])
+def test_output_projection_ask_is_generator_supported(project, seed):
     ask_id = "ask/how-many-output-rate-span-one"
     availability = {item.id: item for item in list_ask_availability(project)}
     assert availability[ask_id].supported
 
-    candidate = generate_ask_scenario(project, ask_id=ask_id, seed=5)
+    candidate = generate_ask_scenario(project, ask_id=ask_id, seed=seed)
     assert candidate.target_ask == ask_id
     assert candidate.target_bindings["item"] == "pages"
     assert candidate.query["verb"] == "write"

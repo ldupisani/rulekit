@@ -5,13 +5,25 @@ categories:
     notes: A measured or packaged purchase can have one price for the whole lot.
   purchase_collection_noun:
     parent: noun
-    notes: A collective ask names a declared category containing every purchased item.
+    notes: A collective ask or activity introduction covers every purchased item, by its named category or an explicit generic collection licence.
+  generic_purchase_collection_noun:
+    parent: purchase_collection_noun
+    notes: An unspecified shopping collection; every ledger item must still be an ownable object. This does not assert extra purchases or make its words global synonyms.
+  mass_purchase_collection_noun:
+    parent: purchase_collection_noun
+    notes: Collection terms usable without a determiner in singular mass form, rather than a plural count form.
+  clothes:
+    parent: noun
+    notes: Clothing and wearable accessories grouped as one shopping collection.
   ingredient:
     parent: noun
     notes: Purchased food inputs, not a license to include unrelated purchases.
 members:
   purchase_lot_measure: [pound, kilogram, gram, pack, box, bottle]
-  purchase_collection_noun: [ingredient]
+  purchase_collection_noun: [ingredient, clothes]
+  generic_purchase_collection_noun: [stuff, merchandise, thing, item, goods]
+  mass_purchase_collection_noun: [stuff, merchandise]
+  clothes: [belt, coat, hat, pants, shirt, shoe, shorts, sock, suit, top]
   ingredient: [cheese, cheddar cheese, cream cheese, cold cut, charcuterie, sugar, apple]
   edible_quantity_object: [cheese, cheddar cheese, cream cheese, cold cut, charcuterie]
   droppable_quantity_object: [cheese, cheddar cheese, cream cheese, cold cut, charcuterie, pack]

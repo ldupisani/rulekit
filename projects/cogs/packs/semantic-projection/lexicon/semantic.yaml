@@ -37,7 +37,6 @@ entries:
   loved: {senses: [verb], verb: {lemma: love}}
   noticed: {senses: [verb], verb: {lemma: notice}}
   nursed: {senses: [verb], verb: {lemma: nurse}}
-  observed: {senses: [verb], verb: {lemma: observe}}
   packed: {senses: [verb], verb: {lemma: pack}}
   pierced: {senses: [verb], verb: {lemma: pierce}}
   poked: {senses: [verb], verb: {lemma: poke}}

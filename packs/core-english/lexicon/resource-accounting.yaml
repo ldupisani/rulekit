@@ -1,6 +1,19 @@
 format: rulekit/lexicon@1
 # Ordinary shopping and resource-accounting vocabulary, shared by all projects.
 entries:
+  stuff: {senses: [noun]}
+  merchandise: {senses: [noun]}
+  thing: {senses: [noun], plural: things}
+  item: {senses: [noun], plural: items}
+  goods: {senses: [noun], number: plural}
+  favorite: {senses: [adjective]}
+  favourite: {senses: [adjective]}
+  having: {senses: [verb], verb: {lemma: have}}
+  summer: {senses: [noun]}
+  clearance: {senses: [noun]}
+  same: {senses: [adjective]}
+  shorts: {senses: [noun], number: plural}
+  top: {senses: [noun], plural: tops}
   also:
     senses:
     - adverb
@@ -27,6 +40,7 @@ entries:
   clothes:
     senses:
     - noun
+    number: plural
   coat:
     senses:
     - noun
@@ -57,6 +71,7 @@ entries:
   pay:
     senses:
     - verb
+    - noun
   paying:
     senses:
     - verb

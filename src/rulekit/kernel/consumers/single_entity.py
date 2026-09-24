@@ -35,6 +35,14 @@ def single_entity(ctx: ConsumerContext):
             and ctx.reg.word_in_category(ctx.query.get("verb", ""), "spend_verb")
             and (measure == "currency" or ctx.reg.word_in_category(measure, "currency"))):
         return relative_purchase_total(ctx)
+    if (ctx.reg.word_in_category(ctx.query.get("verb", ""), "spend_verb")
+            and (measure == "currency" or ctx.reg.word_in_category(measure, "currency"))
+            and any(u.sense() == "verb" and u.uid not in ctx.match.consumed
+                    for u in ctx.question.units)):
+        # A recognized main spending verb cannot stand in for an unread
+        # activity complement or condition. Its target may be only a subset
+        # of the purchases; summing the whole ledger would erase that scope.
+        return Answer("decline", None, "the spending ask contains an unread activity or condition")
     from ..model import AccumulationWindow
     if ctx.store.by_kind(AccumulationWindow):
         from .earnings_account import earnings_account

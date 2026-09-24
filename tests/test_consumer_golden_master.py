@@ -58,6 +58,9 @@ def registries():
 
 # (registry, question, expected consumer, kind, value, reason prefix)
 GOLDEN = [
+    ('curated', 'Aven spent $40. How much did Aven spend on buying toys?',
+     'single-entity', 'decline', None,
+     'the spending ask contains an unread activity or cond'),
     ('curated', 'Aven has 8 cards. How many red cards does Aven have?',
      'single-entity', 'decline', None,
      'qualified item needs compatible subset evidence'),
@@ -219,7 +222,7 @@ GOLDEN = [
     ('gsm8k', 'How much to fence a 10 by 20 yard at $3 per meter plus 10% tax?',
      'measure-cost', 'number', 198.0, 'measure-cost'),
     ('gsm8k', 'How much does it cost to fence a 10 by 20 yard at $3 per meter?',
-     'measure-cost', 'decline', None, "[ambiguity] 'much' stayed ambiguous (sentence 0)"),
+     'measure-cost', 'number', 180.0, 'measure-cost'),
     ('gsm8k', 'How much to fence a 0 by 20 yard at $3 per meter?',
      'measure-cost', 'decline', None, 'a measure must be positive'),
     ('gsm8k', 'Is Ana a student?',

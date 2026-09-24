@@ -2102,6 +2102,8 @@ def atom_variants(fact: Fact, emit_fields: dict, slots: dict, reg: Registry) -> 
 
 
 def _slot_value(unit: Unit, attr: str | None) -> str:
+    if attr == "uid":
+        return str(unit.uid) if isinstance(unit, Unit) else ""
     if attr == "written":
         if isinstance(unit, tuple):
             return Unit(-1, tuple(word for part in unit for word in part.words)).written
@@ -2268,6 +2270,7 @@ def _resolve_field(
 
 
 _NUMERIC_FIELDS = {
+    "lot_quantity",
     "group_size",
     "value", "year", "factor", "offset", "fraction", "numerator", "denominator",
     "elapsed",
@@ -2318,6 +2321,11 @@ def _build_fact(
     kwargs = {}
     for key, raw in emit_fields.items():
         kwargs[key] = _resolve_field(raw, slots, reg, key in _NUMERIC_FIELDS, log, rule_id)
+    if cls is Expenditure:
+        # Source positions are identifiers, not arithmetic operands.
+        for key in ("position", "event", "lot_position", "quantity_position", "cost_factor_position"):
+            if key in kwargs:
+                kwargs[key] = int(kwargs[key])
     for item in fields(cls):
         role = item.metadata.get("reference_for")
         reference = _template_reference(emit_fields.get(role), slots) if role else None

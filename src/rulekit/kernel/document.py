@@ -173,6 +173,34 @@ def _discourse_candidates(
     return out
 
 
+def _named_possessor_candidates(
+    readings: list[Reading], upto: int
+) -> dict[ReferenceIdentity, tuple[int, Unit]]:
+    """Named possessors of prior subjects, when ordinary antecedents are absent.
+
+    An owned inanimate subject may hide the only person mention during
+    condensation. Recover the real source unit, never an invented person or
+    gender. Owners buried in objects or relational complements do not establish
+    this foreground subject context. Existing antecedent paths take precedence.
+    """
+    out: dict[ReferenceIdentity, tuple[int, Unit]] = {}
+    foreground_owner = False
+    for reading in readings:
+        if reading.sentence_index >= upto:
+            continue
+        subjects = {id(ob.target) for verb in reading.units if verb.sense() == "verb"
+                    for ob in verb.obligations() if ob.need == "subject" and ob.met}
+        for unit in reading.units:
+            owner = unit.features.get("owner_antecedent")
+            if isinstance(owner, Unit) and owner.sense() == "name":
+                out[reference_from_unit(owner)] = (reading.sentence_index, owner)
+                foreground_owner |= id(unit) in subjects
+    # Foreground ownership licenses the fallback, but never erases another
+    # explicit owner (including a coordinated subject that the binder left
+    # unattached). Such a rival keeps the reference ambiguous.
+    return out if foreground_owner else {}
+
+
 def _animate_candidates(
     readings: list[Reading], upto: int, reg: Registry
 ) -> dict[ReferenceIdentity, tuple[int, Unit]]:
@@ -658,6 +686,15 @@ def _bind_discourse(
                     candidates = _animate_candidates(
                         readings, reading.sentence_index, reg
                     )
+                    # Do not preempt a construction-local link or choose
+                    # among current participants. Possessive determiners
+                    # retain their established explicit-owner path.
+                    if (not candidates
+                            and not reg.word_in_category(lemma, "possessive_determiner")
+                            and not any(u.sense() == "name" for u in reading.units)):
+                        candidates = _named_possessor_candidates(
+                            readings, reading.sentence_index
+                        )
                 # A possessive determiner cannot resolve to the head it
                 # governs: in "her child", choosing an earlier `child` as
                 # the owner would assert self-ownership and, worse, change a

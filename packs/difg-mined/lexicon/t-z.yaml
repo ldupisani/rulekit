@@ -47,10 +47,6 @@ entries:
     taste:
         senses:
             - verb
-    tax:
-        senses:
-            - noun
-        plural: taxes
     taxi:
         senses:
             - noun
@@ -250,9 +246,6 @@ entries:
         senses:
             - noun
         plural: toothpicks
-    top:
-        senses:
-            - noun
     tortilla:
         senses:
             - adjective
@@ -277,10 +270,6 @@ entries:
         senses:
             - noun
         plural: towers
-    town:
-        senses:
-            - noun
-        plural: towns
     track:
         senses:
             - noun

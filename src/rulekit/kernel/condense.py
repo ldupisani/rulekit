@@ -234,6 +234,7 @@ def _nominal_pass(reading: Reading, reg: Registry) -> bool:
                 # `attributes` is separate pre-existing bookkeeping, unread
                 # elsewhere today — left untouched.
                 {"attributes": attrs, "owner": owner,
+                 "owner_antecedent": a,
                  "owner_reference": reference_from_unit(a).to_dict()},
                 f"{a.surface!r} owns {c.surface!r} — one owner-attributed noun",
             )
@@ -445,7 +446,7 @@ def _nominal_pass(reading: Reading, reg: Registry) -> bool:
                        # first. Its scope is the complete compound; do not
                        # erase that identity when adopting the right head.
                        **{key: a.features[key] for key in
-                          ("owner", "owner_reference", "owner_ref_uid")
+                          ("owner", "owner_reference", "owner_ref_uid", "owner_antecedent")
                           if key in a.features},
                        "attributes": attrs,
                        "qualifier": qualifier,

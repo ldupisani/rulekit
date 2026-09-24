@@ -76,6 +76,7 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
     }
 
     assert occurrences == {
+        "arithmetic/uniform-price-purchase-lot": ((1, 0), "addition", ((1,),)),
         "arithmetic/per-member-daily-rates": ((4,), "frequency", ()),
         "arithmetic/two-per-member-daily-rates": ((10,), "frequency2", ()),
         "arithmetic/three-per-member-daily-rates": ((16,), "frequency3", ()),
@@ -191,7 +192,7 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
         if "adverb" in entry.senses
     ] == [
         "again", "ago", "also", "away", "back and forth", MOVED_WORD, "daily", "down", "far", "finally", "individually",
-        "just", "next", "off", "once again", "online", "only", "outside", "respectively", "safely", "still", "then", "up",
+        "just", "next", "off", "once again", "online", "only", "out", "outside", "respectively", "safely", "still", "then", "up",
     ]
 
 
@@ -242,8 +243,8 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
     project = load_project(CURATED)
     availability = list_rule_availability(project)
 
-    assert len(availability) == 272
-    assert sum(item.supported for item in availability) == 262
+    assert len(availability) == 275
+    assert sum(item.supported for item in availability) == 265
     assert sum(not item.supported for item in availability) == 10
     assert all(
         not item.blockers
@@ -262,7 +263,7 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
             }
         for item in availability
     )
-    assert len(exploration_status(project)["fillers"]) == 567
+    assert len(exploration_status(project)["fillers"]) == 588
 
 
 def test_currently_generates_a_matcher_confirmed_anchor() -> None:

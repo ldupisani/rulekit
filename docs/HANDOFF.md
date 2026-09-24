@@ -1,14 +1,15 @@
 # rulekit handoff
 
-**Updated:** 2026-09-23
-**Runtime checkpoint:** shared-rate consolidation committed as `211f317`;
-owned textual extents, generic reference links, paraphrases and full-name
-component layouts local (uncommitted).
+**Updated:** 2026-09-24
+**Runtime checkpoint:** owned textual extents, reference links and full-name
+layouts committed as `026f118`; residual equal-unit purchase pricing and
+progressive collection contexts and transaction-scoped background local (uncommitted).
 Increment 134 is the last TEST checkpoint
 **Default workflow:** direct implementation for user-supplied questions;
 Mining v2 only on explicit request
-**Immediate state:** full-name declarations support capitalized middle
-names and lowercase surname prefixes, alongside hyphenated names; validated.
+**Immediate state:** complete purchase totals can determine the common unit
+price of one explicitly equal-priced unknown lot, independently of earlier
+non-quantitative background; validated in both curated and GSM8K projects.
 Existing approval, gate, and landing records for increment 134 remain untouched.
 
 This is the operational entry point. It records current state, durable
@@ -59,6 +60,93 @@ temporal event totals (130), task-completion duration gaps (131), and
 anaphoric distance chains with exact combined totals (132).
 
 ### Latest implementation checkpoint
+
+One actual buyer's fronted purchase total is now explicit `PurchaseTotal`
+evidence, distinct from a budget or an item price. The existing unit-price
+consumer reuses the expenditure price resolver, source-local numeric audit and
+resource residual arithmetic, then divides the remaining cost by the unknown
+lot's count. The lot must explicitly state equal individual prices. Paired
+goods retain both unit and item identity, so pair prices for different goods
+cannot conflict or turn into prices for individual pieces. The new premise is
+generatable; existing unit-cost asks are reused. Additional buyers, incomplete
+purchases, extra resource evidence and incompatible currencies decline.
+
+A complete progressive introduction over a bare collection now reuses
+`QuantityEventContext`, instead of adding another unknown-price expenditure.
+One generatable template covers plural and explicitly licensed mass terms.
+Typed clothing/ingredient collections require matching item membership;
+generic stuff/merchandise/things/items/goods require ownable items. Both require
+the same buyer and a later actual purchase ledger, and neither creates global
+noun synonyms. Existing relative-price ledgers and their scoped asks reuse the
+same collection check. The price proof preserves the context. Completed extra
+purchases, counts, prices, definite or modified collections, other buyers and
+mismatched typed collections cannot disappear as background. Core English
+owns the collection vocabulary without duplicated mined entries.
+
+Ordinary introductions now use the existing discourse binder instead of
+requiring purchase-specific grammar. Earlier identity/location/predicate facts
+remain inspectable in the store and purchase proof, while balance-only gaps
+do not block a separately stated transaction cost. `ResourceAccountingIssue`
+has an explicit domain; budget interval checks are unchanged. Price adjustments,
+extra purchases, unknown words, numeric mentions and buyer ambiguity still
+block. This scope is restricted to background before an explicit purchase
+total, not arbitrary irrelevant prose anywhere in a document. The reading
+retains an unresolved observer-group gap; it does not invent who "we" denotes.
+Core owns the new ordinary vocabulary. Copular PPs no longer become class
+membership, and auxiliary-led bare predicates retain their verb sense when
+a word can also denote income. Core also declares `doing` as a verb form of
+`do`: generic progressive activities retain a `Predication`, not a false
+class membership, and need no new purchase rule.
+
+The generic-vocabulary sweep exposed a previously masked spending-scope error
+on ASDiv DEV: an unread activity complement could fall back to the sum of all
+spending events. The general spending consumer now declines such unparsed
+activities/conditions. Relative-price collective asks also retain skipped
+subset selectors instead of treating every article as harmless definiteness.
+Invented boundary tests cover both paths; no residual-spending solver was
+added for that corpus item.
+
+Possessive condensation retains the real named owner. A narrowly bounded
+discourse fallback recovers a sole owner of a prior grammatical subject only
+when ordinary names and animate heads supply no antecedent. It excludes
+possessive determiners and current-name constructions and retains all competing
+owners as ambiguity. Owners mentioned only in objects or relational complements
+do not activate it. The initial broader fallback exposed an incomplete travel
+total on DEV-holdout; the subject-context boundary restores the original decline.
+No travel arithmetic was added or tuned on that holdout item.
+
+Shared shopping vocabulary was moved into core English without duplicate pack
+ownership. The measured-output ask now restricts its common-noun subject to
+the participant class already required by its verb frame, making generation
+robust to vocabulary expansion. Current curated generation inventory is
+275 premises (265 supported, 10 deliberately excluded), 588 lexical identities,
+and the existing 158 asks.
+
+The background follow-up exercised 8,960 synthetic checks. The full run passed
+8,607 and exposed one duplicate vocabulary owner affecting 350 semantic-project
+checks, two expectations for a now-correctly-resolved auxiliary cost question,
+and one adverb inventory expectation. After removing the duplicate `observed`
+definition from the COGS pack and updating those expectations, all 548 checks
+in the affected modules pass. The compiled core/GSM8K runtime was unchanged by
+those repairs. Five nested benchmark-worker checks pass separately. Curated is 71/71.
+GSM8K DEV-train is 118/0, DEV-holdout 58/0, and ASDiv DEV 55/0;
+all three final snapshot comparisons for the background follow-up are neutral,
+with zero broken answers and zero new wrongs. The original residual-price
+implementation added two correct DEV-train answers.
+Lints have zero errors and only the existing GSM8K trig-sine advisory.
+Current validation evidence is under `.rulekit-cache/purchase-background-2026-09-24.WnVu4z/`;
+its baseline is under `.rulekit-cache/purchase-generic-context-2026-09-24.YltcQV/`;
+the typed-context baseline is under `.rulekit-cache/purchase-context-2026-09-24.sOp30R/`,
+and the original pricing checkpoint under `.rulekit-cache/purchase-residual-2026-09-23.4h6MIb/`.
+The original supplied question is local calibration only, not a committed test.
+The vocabulary-only `doing` follow-up passes 300 focused purchase checks, the
+generator inventory check, curated 71/71 and both lints (existing advisory only).
+Its three DEV comparisons are neutral; snapshots are under
+`.rulekit-cache/doing-vocabulary-2026-09-24.io8hdD/`. No kernel changes were needed.
+No protected TEST, review-ledger mutation, commit, push or Designer restart is
+part of this change; the user must restart Designer to load Python changes.
+
+### Previous owned-text checkpoint
 
 Owned text definitions now preserve literal spellings as `TextValue` facts and
 derive ordinary letter-count quantities. An explicit component layout

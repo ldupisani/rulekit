@@ -33,6 +33,9 @@ categories:
   purchase_request:
     parent: verb
     notes: "An order is a request, not evidence of settlement or expenditure."
+  uniform_price_attribute:
+    parent: adjective
+    notes: "Explicit equality of the individual prices in one purchased lot."
 members:
   resource_budget_noun: [budget]
   quantity_interior_location: [store]
@@ -41,8 +44,9 @@ members:
   spend_verb: [pay, paid, pays, paying]
   partitive_pair_measure: [pair]
   spatial_motion_verb: [go, goes, went, going]
-  pairable_partitive_substance: [shoe, sock]
-  transferable_quantity_object: [belt, clothes, coat, hat, pants, shirt, sock, suit]
+  pairable_partitive_substance: [shoe, sock, shorts, pants]
+  transferable_quantity_object: [belt, clothes, coat, hat, pants, shirt, sock, suit, shorts, top]
+  uniform_price_attribute: [same]
   resource_account_preposition: [with]
   transaction_supplier_preposition: [from]
   transaction_supplier: [retailer, store, shop]
@@ -56,6 +60,7 @@ members:
   purchase_request: [order, ordered, orders, ordering]
 attribute_compatibility:
   transaction_channel_descriptor: [transaction_supplier]
+  uniform_price_attribute: [price_anaphor]
 adverb_verb_compatibility:
   transaction_channel: [purchase, spend_verb, shopping_activity, purchase_request]
 adposition_roles:

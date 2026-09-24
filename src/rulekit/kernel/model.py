@@ -1308,6 +1308,23 @@ class ResourceBalance(Fact):
 
 
 @dataclass(frozen=True)
+class PurchaseTotal(Fact):
+    """A stated transaction total, distinct from a budget or a unit price."""
+
+    entity: str
+    measure: str
+    value: float
+    position: int
+    event: int
+
+    def key(self) -> tuple:
+        return ("purchase-total", self.entity, self.provenance.sentence, self.position)
+
+    def value_part(self):
+        return (self.measure, self.value, self.event)
+
+
+@dataclass(frozen=True)
 class Expenditure(Fact):
     """A total resource cost tied to a purchase target, never a unit price.
 
@@ -1347,6 +1364,7 @@ class Expenditure(Fact):
     cost_factor_position: int = -1
     # False when the list or buyer identity is not fully represented.
     complete: bool = True
+    uniform_price: bool = False
 
     def key(self) -> tuple:
         return ("expenditure", self.entity, self.provenance.sentence,
@@ -1359,7 +1377,7 @@ class Expenditure(Fact):
                 self.quantity, self.unit_price, self.quantity_position,
                 self.lot_measure, self.lot_quantity, self.lot_position,
                 self.cost_reference, self.cost_reference_qualifier,
-                self.cost_factor, self.cost_factor_position, self.complete)
+                self.cost_factor, self.cost_factor_position, self.complete, self.uniform_price)
 
 
 @dataclass(frozen=True)
@@ -1372,12 +1390,15 @@ class ResourceAccountingIssue(Fact):
 
     position: int
     reason: str
+    # A cash-balance gap need not affect a separately stated purchase cost.
+    # Existing producers default to the conservative, cross-resource scope.
+    domain: str = "resource"
 
     def key(self) -> tuple:
         return ("resource-accounting-issue", self.provenance.sentence, self.position, self.reason)
 
     def value_part(self) -> Any:
-        return self.reason
+        return (self.reason, self.domain)
 
 
 @dataclass(frozen=True)
@@ -1705,7 +1726,7 @@ class RestQuantity(Fact):
 
 @dataclass(frozen=True)
 class QuantityEventContext(Fact):
-    """An uncounted activity introduction with an explicit location.
+    """An uncounted activity introduction, optionally at an explicit location.
 
     This preserves context, not an amount or a second counted occurrence.
     Only a leading introduction followed by compatible counts can be used

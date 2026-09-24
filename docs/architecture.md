@@ -440,6 +440,73 @@ the older purchase-total path and the account calculation. Discount arithmetic
 is shared, but account discounts still need an explicit transaction-scope
 contract before they can be applied; an unlinked discount remains a decline.
 
+A fronted currency amount on an actual purchase records `PurchaseTotal`, not
+a budget or an individual item's price. The existing unit-price consumer can
+use it as the total for one buyer's complete purchase sequence. A counted lot
+with explicitly equal individual prices records an unpriced `Expenditure`
+with `uniform_price` and source-local count/event positions. Exactly one such
+unknown lot may be solved: subtract all known costs using the shared price
+resolver and resource residual, then divide by its count. The proof states the
+transaction-wide interpretation. Other buyers, incomplete purchases, extra
+resource facts, currency conflicts and negative residuals decline; every
+numeric mention is audited, and a separate use gate prevents another consumer
+from ignoring the total. Paired goods retain both the pair unit and its item:
+prices for pairs of socks and pairs of shoes cannot collide or become prices
+for individual pieces.
+
+Reference introduction is separate from this arithmetic evidence boundary.
+A named participant in earlier background prose can supply the buyer, even
+when that name is the object rather than the subject of its sentence. The
+existing discourse binder supplies that identity; the purchase consumer does
+not guess an antecedent from a shopping phrase.
+
+For a fronted transaction total, `purchase_background_facts()` identifies
+earlier non-quantitative identity/location/predicate facts and balance-only
+diagnostics. These remain in the fact store and the answer proof, but are not
+operands of the purchase-cost equation. `ResourceAccountingIssue.domain`
+distinguishes an unquantified holding/income gap (`balance`) from potentially
+relevant resource evidence (the conservative `resource` default). Closed-budget
+consumers retain their existing interval and completeness checks. Unscoped
+discounts, refunds, taxes and fees remain explicit blockers rather than
+ordinary background nouns.
+
+This is a bounded transaction scope, not a general licence to skip introductory
+text. Unknown words, extra numeric mentions, other buyers, extra purchases and
+conditions still decline; new facts inside or after the transaction do not
+automatically become background. Unresolved observers remain visible as reading
+gaps without being invented as participants in the purchase. Copular location
+phrases retain spatial facts instead of incorrectly asserting class membership;
+declared nominal modifiers and auxiliary-led verbs distinguish income nouns
+from payment predicates.
+
+Complete progressive purchase introductions reuse `QuantityEventContext`:
+"Aven is buying clothes" describes an activity, not another unpriced expenditure.
+One rule template covers bare plural collections and explicitly licensed mass
+collections, including "buying stuff" and "purchasing merchandise". Typed terms
+such as clothes or ingredients require every later item to belong to that
+declared category. Generic shopping terms such as things, items, goods and
+stuff instead require every item to be an `ownable_quantity_object`; they are
+not global synonyms for arbitrary nouns. The shared resource checker links
+one such introduction to later actual purchases by the same buyer, and the
+residual-price proof retains the original collection term. Counts, prices,
+definite sets, modifiers, other participants and mismatched typed collections
+cannot be silently discarded. The same membership check supports scoped asks
+over existing relative-price purchase ledgers; no new arithmetic is needed.
+Collection vocabulary and its licences remain in YAML.
+
+A broad spending total cannot answer a question containing an unread activity
+complement or condition. Likewise, collection-scoped relative-price asks may
+skip ordinary definite articles but not selectors that narrow the requested
+set. Vocabulary growth must not expose those ignored-scope paths as answers.
+
+Nominal condensation preserves the source unit of an explicit named possessor.
+When neither ordinary names nor animate heads supply a prior antecedent, a
+singular animate pronoun can consult preserved possessors of grammatical
+subjects, not owners buried in objects or relational complements. This recovers
+the sole person in an owned-store context without inventing a name or gender;
+competing possessors remain ambiguous. Existing antecedent resolution has
+precedence, and inanimate pronouns cannot use this fallback.
+
 Payments retain ordinary currency events for existing consumers. Purchase
 prices remain on the existing item/`Price` path: they must never become cash
 acquisitions with `Quantity(verb=buy)`. A resource consumer explicitly logs the

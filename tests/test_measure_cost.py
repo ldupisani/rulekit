@@ -36,8 +36,7 @@ def test_perimeter_costing_with_tax(reg):
 
 
 # --- KNOWN BLOCKER, pinned so it stays visible ----------------------------
-# Three of this family's four asks cannot fire yet, and NOT because the shapes
-# are wrong -- they are blocked by an unrelated kernel behaviour.
+# Area-rate asks still have an unrelated kernel ambiguity blocker.
 # `obligations.disambiguate` commits only a UNIQUE winner, so a SECOND
 # ambiguous unit anywhere in the sentence can tie the arbitration, mark every
 # ambiguous unit unresolved, and let the `ambiguity` guard veto before any ask
@@ -45,18 +44,18 @@ def test_perimeter_costing_with_tax(reg):
 # quantifier); the long frame adds 'cost' (noun / verb) and an area rate adds
 # 'square' (adjective / noun).
 #
-# These tests assert the CURRENT behaviour and name the cause. When the
-# arbitration learns to break these ties they should flip to the commented
-# expectations -- that is the signal the blocker is gone.
+# Auxiliary-led verb disambiguation now resolves the long frame's predicate.
+# The remaining area-rate test pins the unresolved adjective/noun tie.
 # (A structural `interrogative`-after-`interrogative` pre-filter was tried and
 # does NOT fix it: reducing 'much' to one option still leaves 'cost'/'square'
 # tying two ways on their own. Measured, zero buyers, reverted.)
 
 
-def test_the_long_frame_is_blocked_by_an_ambiguity_tie(reg):
+def test_the_long_frame_uses_its_auxiliary_to_select_the_cost_predicate(reg):
     got = solve("How much does it cost to fence a 10 by 20 yard at $3 per meter?", reg)
-    assert got.answer.kind == "decline"          # want: 180.0
-    assert got.veto is not None and got.veto.guard == "ambiguity"
+    assert got.answer.kind == "number"
+    assert got.answer.value == pytest.approx(180.0)
+    assert got.veto is None
 
 
 def test_an_area_rate_is_blocked_by_the_same_tie(reg):

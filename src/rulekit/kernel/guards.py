@@ -311,6 +311,13 @@ def _check_number(
                for b in (*store.by_kind(ResourceBalance), *store.by_kind(ResourceAllocation))):
             return GuardVeto("answer-accounting", "a stated budget balance was not used as allocation evidence")
 
+    if _enabled(reg, "answer-accounting") and store is not None:
+        from .model import PurchaseTotal
+
+        if any(total.key() not in log.consumed_purchase_total_keys
+               for total in store.by_kind(PurchaseTotal)):
+            return GuardVeto("answer-accounting", "a stated purchase total was not used")
+
     if _enabled(reg, "unknown-word"):
         for reading in readings:
             unknown = reading.unknown_words()

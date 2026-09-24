@@ -1,5 +1,76 @@
 format: rulekit/rules@1
+templates:
+  purchase-collection-context:
+    parameters:
+      collection_category: purchase_collection_noun
+      collection_number: plural
+    rule:
+      phase: read
+      description: >
+        A complete progressive introduction names an activity and collection,
+        not an additional completed purchase. Plural collections ("buying
+        clothes", "purchasing items") and explicitly licensed mass collections
+        ("buying stuff") share the same accounting contract. Every subsequent
+        purchase must belong to that buyer and fit the collection. Counts,
+        prices, specific items, and extra clauses are not discarded as context.
+      match:
+        sentence:
+          - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
+          - {slot: aux, cat: copula, finite_form: true}
+          - {slot: verb, cat: purchase, present_participle: true}
+          - slot: collection
+            cat: {parameter: collection_category}
+            number: {parameter: collection_number}
+            uncounted: true
+            bare: true
+            class_only: true
+            blocks_skipped: article
+          - {lit: '.', consume_skipped: true}
+      where:
+        - number_compatible: [who, aux]
+      consumes: [aux, verb, collection]
+      emits:
+        - {fact: quantity_event_context, entity: '{who}', measure: '{collection}', verb: '{verb}', place: ''}
+variants:
+  - id: arithmetic/purchase-collection-context
+    template: purchase-collection-context
+  - id: arithmetic/purchase-mass-collection-context
+    template: purchase-collection-context
+    arguments:
+      collection_category: mass_purchase_collection_noun
+      collection_number: singular
 rules:
+  - id: arithmetic/uniform-price-purchase-lot
+    description: >
+      An actual counted purchase whose individual prices are explicitly equal.
+      The price remains unknown; the count is not itself a payment or a rate.
+      A closed purchase total may later determine that common unit price.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
+        - opt:
+            - {slot: addition, cat: additive_discourse_adverb}
+        - {slot: verb, cat: purchase, finite_form: true}
+        - {slot: item, cat: transferable_quantity_object, counted: true, value_min: 1, bare: true}
+        - {lit: all}
+        - {lit: at}
+        - {slot: price, cat: price_anaphor, qualified: true, qualifier_cat: uniform_price_attribute, uncounted: true}
+        - {lit: '.', consume_skipped: true}
+    where:
+      - number_compatible: [who, verb]
+    consumes: [item, verb]
+    emits:
+      - fact: expenditure
+        entity: '{who}'
+        item: '{item}'
+        verb: '{verb}'
+        lot_measure: '{item}'
+        lot_quantity: item
+        lot_position: '{item.uid}'
+        position: '{item.uid}'
+        event: '{verb.uid}'
+        uniform_price: true
+
   - id: arithmetic/resource-budget-opening
     phase: read
     description: >

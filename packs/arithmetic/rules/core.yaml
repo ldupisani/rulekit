@@ -8542,7 +8542,7 @@ asks:
         - {lit: many}
         - {slot: item, cat: output_quantity_measure, number: plural}
         - {slot: aux, type: auxiliary}
-        - {slot: who, type: entity}
+        - {slot: who, type: entity, common_noun_cat: production_quantity_participant, referential: true, bare_reference_category: bare_entity_reference}
         - {slot: verb, cat: output_quantity_verb, bare_form: true}
         - opt:
             - {lit: in}

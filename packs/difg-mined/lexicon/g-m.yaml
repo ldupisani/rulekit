@@ -113,9 +113,6 @@ entries:
   good:
     senses:
     - adjective
-  goods:
-    senses:
-    - noun
   government:
     senses:
     - noun
@@ -300,11 +297,6 @@ entries:
   harvest:
     senses:
     - noun
-  having:
-    senses:
-    - verb
-    verb:
-      lemma: have
   healthy:
     senses:
     - adjective
@@ -641,10 +633,6 @@ entries:
     senses:
     - noun
     plural: islands
-  item:
-    senses:
-    - noun
-    plural: items
   jack:
     senses:
     - noun

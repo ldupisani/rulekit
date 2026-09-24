@@ -1,0 +1,18 @@
+format: rulekit/categories@1
+categories:
+  income_resource_noun:
+    parent: noun
+    notes: "An income source, not itself a known amount or a currency unit."
+  income_modifier:
+    parent: noun
+  transaction_adjustment_noun:
+    parent: noun
+    notes: "A possible price or payment adjustment; requires explicit accounting scope."
+members:
+  income_resource_noun: [pay, bonus]
+  income_modifier: [bonus]
+  transaction_adjustment_noun: [discount, refund, fee, tax]
+  spatial_reference_noun: [town]
+  bare_pp_object: [town]
+attribute_compatibility:
+  income_modifier: [income_resource_noun]

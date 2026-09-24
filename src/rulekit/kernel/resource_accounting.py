@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from .model import (
     Expenditure, Provenance, ResourceAccountingIssue, ResourceAllocation,
-    ResourceBalance,
+    ResourceBalance, PurchaseTotal,
 )
 
 
@@ -152,14 +152,54 @@ def allocation_attachments(reading, allocations, reg, expenses=()):
         yield phrase, verb, subject, owner
 
 
+def purchase_collection_contains(collection, item, reg):
+    """Typed collections constrain their items; generic ones still need goods.
+
+    This licence belongs to a shopping scope, not to noun identity globally.
+    An arbitrary uncounted noun must not become an ignorable introduction.
+    """
+    if not reg.word_in_category(collection, "purchase_collection_noun"):
+        return False
+    category = ("ownable_quantity_object"
+                if reg.word_in_category(collection, "generic_purchase_collection_noun")
+                else collection)
+    return reg.word_in_category(item, category)
+
+
+def purchase_context_error(contexts, expenses, reg):
+    """A leading collective activity may summarize one buyer's later ledger.
+
+    This is a category-backed elaboration link, not permission to ignore an
+    unknown purchase. The complete progressive grammar supplies the context;
+    every line must be a later actual purchase within its declared collection.
+    """
+    if not contexts:
+        return None
+    if len(contexts) != 1 or not expenses:
+        return "a purchase collection needs one introduction and a subsequent ledger"
+    context = contexts[0]
+    if (context.place or context.provenance.assumption
+            or not reg.word_in_category(context.verb, "purchase")
+            or not reg.word_in_category(context.measure, "purchase_collection_noun")
+            or context.entity_ref.owner or context.entity_ref.qualifiers
+            or context.entity_ref.label or not context.entity_ref.resolved
+            or any(e.entity != context.entity or e.basis != "purchase"
+                   or e.provenance.sentence <= context.provenance.sentence
+                   or e.provenance.assumption
+                   or not purchase_collection_contains(context.measure, e.item, reg)
+                   for e in expenses)):
+        return "purchase lines do not elaborate the same buyer's introductory collection"
+    return None
+
+
 def compose_resource_accounts(store, premises, reg):
     """Build balances, then materialize shared completeness diagnostics."""
     from .learn import _bound, _lemma
-    from .model import Price
+    from .model import Price, QuantityEventContext
 
     allocations = list(store.by_kind(ResourceAllocation))
     expenses = list(store.by_kind(Expenditure))
-    closed_account = bool(allocations or list(store.by_kind(ResourceBalance)))
+    closed_account = bool(allocations or store.by_kind(ResourceBalance) or store.by_kind(PurchaseTotal))
     if not closed_account and not any(e.cost_reference for e in expenses):
         return
     for reading in premises:
@@ -177,19 +217,24 @@ def compose_resource_accounts(store, premises, reg):
 
     balances = list(store.by_kind(ResourceBalance))
     events = {(e.provenance.sentence, e.event) for e in expenses}
+    contexts = [c for c in store.by_kind(QuantityEventContext)
+                if not c.place and reg.word_in_category(c.verb, "purchase")]
+    context_error = purchase_context_error(contexts, expenses, reg)
     for reading in premises:
         transaction_sentence = closed_account or any(
             e.provenance.sentence == reading.sentence_index for e in expenses
         )
-        def issue(unit, reason):
+        def issue(unit, reason, *, domain="resource"):
             store.admit(ResourceAccountingIssue(
                 provenance=Provenance(source="inference/resource-completeness",
                                       sentence=reading.sentence_index),
-                position=unit.uid, reason=reason,
+                position=unit.uid, reason=reason, domain=domain,
             ))
 
         for unit in reading.units:
             lemma = _lemma(unit)
+            if transaction_sentence and reg.word_in_category(lemma, "transaction_adjustment_noun"):
+                issue(unit, "unscoped-price-adjustment")
             if reg.word_in_category(lemma, "resource_budget_noun") and not _participant_account_owner(unit, reading, reg):
                 issue(unit, "owner-reference")
             if transaction_sentence and (unit.sense() in ("negator", "modal") or reg.word_in_category(lemma, "negation")):
@@ -204,9 +249,14 @@ def compose_resource_accounts(store, premises, reg):
             if reg.word_in_category(lemma, "purchase_request"):
                 issue(unit, "unsettled-request")
             event = reg.word_in_category(lemma, "purchase") or reg.word_in_category(lemma, "spend_verb")
-            if event and (reading.sentence_index, unit.uid) not in events:
+            subject, obj = _bound(unit, "subject"), _bound(unit, "dobj")
+            contextual = not context_error and unit.features.get("pattern_consumed") and any(
+                c.provenance.sentence == reading.sentence_index and c.verb == lemma
+                and subject is not None and c.entity == _lemma(subject)
+                and obj is not None and c.measure == _lemma(obj) for c in contexts
+            )
+            if event and not contextual and (reading.sentence_index, unit.uid) not in events:
                 issue(unit, "unread-event")
-            obj = _bound(unit, "dobj")
             balance_verb = obj is not None and any(
                 b.stage == "closing" and b.provenance.sentence == reading.sentence_index
                 and reg.word_in_category(lemma, "remaining_balance_state")
@@ -221,11 +271,42 @@ def compose_resource_accounts(store, premises, reg):
                 for b in balances for a in allocations
                 if a.provenance.sentence == reading.sentence_index
             )
+            balance_background = (
+                not event and obj is not None and not obj.features.get("value_kind")
+                and any(reg.word_in_category(lemma, category)
+                        for category in ("possession_state", "periodic_income_verb"))
+                and any(reg.word_in_category(_lemma(obj), category)
+                        for category in ("currency", "income_resource_noun"))
+            )
             if reg.word_in_category(lemma, "divide") or (
-                not event and obj is not None and reg.word_in_category(_lemma(obj), "currency")
+                not event and obj is not None
+                and (reg.word_in_category(_lemma(obj), "currency") or balance_background)
                 and not balance_verb and not allocation_verb
                 and not (reg.word_in_category(lemma, "price_verb") and any(
                     p.provenance.sentence == reading.sentence_index for p in store.by_kind(Price)
                 ))
             ):
-                issue(unit, "additional-change")
+                issue(unit, "additional-change", domain="balance" if balance_background else "resource")
+
+
+def purchase_background_facts(store, total):
+    """Partition non-quantitative context before an explicit transaction.
+
+    This is deliberately narrower than a general relevance engine. Identity,
+    location, ordinary predicates and incomplete cash holdings stay in the
+    store but are not operands of a fixed purchase-cost equation. Expenditures,
+    price conditions and facts inside/after that transaction are never hidden.
+    Numeric completeness remains the caller's responsibility.
+    """
+    from .model import LocationEvent, Membership, Predication, VerbalRelation
+
+    background = []
+    for fact in store.facts:
+        if fact.provenance.sentence >= total.provenance.sentence or fact.provenance.assumption:
+            continue
+        if (isinstance(fact, (Membership, Predication))
+                or isinstance(fact, VerbalRelation) and fact.role == "spatial-location"
+                or isinstance(fact, LocationEvent) and fact.effect in {"holds", "not-holds"}
+                or isinstance(fact, ResourceAccountingIssue) and fact.domain == "balance"):
+            background.append(fact)
+    return tuple(background)

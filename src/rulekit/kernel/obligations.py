@@ -758,6 +758,35 @@ def _nominal_description_list(reading: Reading, reg: Registry) -> set[int]:
     return licensed
 
 
+def _auxiliary_licenses_bare_verb(reading: Reading, unit: Unit, reg: Registry) -> bool:
+    """An auxiliary selects a bare predicate, also across an inverted subject.
+
+    Do not confuse a possessive determiner with that subject: this filter
+    must not force its following noun into a verb. It chooses an existing sense,
+    never guesses the predicate from its spelling or the question's topic.
+    """
+    fold = unit.features.get("fold", "")
+    if fold != unit.features.get("lemma", fold):
+        return False
+    index = reading.units.index(unit) - 1
+    while index >= 0 and reading.units[index].sense() in {"adverb", "negator"}:
+        index -= 1
+    if index < 0:
+        return False
+    previous = reading.units[index]
+    if previous.sense() in {"auxiliary", "modal"}:
+        # Direct adjacency is declarative only with an overt subject on the
+        # left. In an inverted question the next noun may BE the subject.
+        return index > 0 and reading.units[index - 1].sense() in {"name", "noun", "pronoun"}
+    if (previous.sense() not in {"name", "noun", "pronoun"}
+            or reg.word_in_category(previous.features.get("fold", ""), "possessive_determiner")):
+        return False
+    index -= 1
+    while index >= 0 and reading.units[index].sense() in {"article", "adjective"}:
+        index -= 1
+    return index >= 0 and reading.units[index].sense() in {"auxiliary", "modal"}
+
+
 def disambiguate(reading: Reading, reg: Registry) -> Reading:
     """Commit one sense per multi-sense unit: the assignment with the best
     obligation coverage wins, and only a unique winner commits."""
@@ -814,6 +843,9 @@ def disambiguate(reading: Reading, reg: Registry) -> Reading:
             ):
                 options.append(["adverb"])
                 continue
+        if "noun" in senses and "verb" in senses and _auxiliary_licenses_bare_verb(reading, u, reg):
+            options.append(["verb"])
+            continue
         if "noun" in senses and "verb" in senses and _relative_marker_licenses_finite_verb(reading, u):
             options.append(["verb"])
             continue

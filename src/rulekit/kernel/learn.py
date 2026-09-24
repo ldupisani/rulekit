@@ -1506,10 +1506,10 @@ def _circumstantial_verbal_relations(
 
 
 def learn(reading: Reading, reg: Registry) -> list[Fact]:
-    from .expense_learning import learn_expenditures
+    from .expense_learning import learn_expenditures, learn_purchase_totals
 
     expenses = learn_expenditures(reading, reg)
-    facts: list[Fact] = list(expenses)
+    facts: list[Fact] = [*expenses, *learn_purchase_totals(reading, reg)]
     base_prov = Provenance(
         source="fold",
         sentence=reading.sentence_index,
@@ -1547,8 +1547,11 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
             # object class ("is examining a jar" is not "is a jar").
             from .patterns import is_finite_verb_form
             i = reading.units.index(verb)
-            if i + 1 < len(reading.units):
-                following = reading.units[i + 1]
+            following_index = i + 1
+            while following_index < len(reading.units) and reading.units[following_index].sense() == "adverb":
+                following_index += 1
+            if following_index < len(reading.units):
+                following = reading.units[following_index]
                 if following.sense() == "verb" and not is_finite_verb_form(
                     following.features.get("fold", ""), _lemma(following)
                 ):
@@ -1859,7 +1862,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                 Price(
                     provenance=prov,
                     item=_lemma(dobj),
-                    qualifier=_qualifier(dobj),
+                    qualifier=_qualifier(dobj) or _measure_substance(reading, dobj, reg),
                     value=price_value,
                     verb=verb_lemma,
                     occurrence=occurrence,
@@ -2007,7 +2010,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                                 Price(
                                     provenance=prov,
                                     item=_lemma(item),
-                                    qualifier=_qualifier(item),
+                                    qualifier=_qualifier(item) or _measure_substance(reading, item, reg),
                                     value=price_value,
                                     verb=verb_lemma,
                                     occurrence=occurrence,
@@ -2177,7 +2180,12 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                     collection=collection, polarity=pol,
                 )
 
-            if not polarity and any(
+            if any(u.sense() == "preposition" and _bound(u, "anchor") is verb
+                   and _bound(u, "object") is dobj for u in reading.units):
+                # A PP endpoint is not a predicative class complement. The
+                # spatial/temporal relation folds preserve its actual role.
+                pass
+            elif not polarity and any(
                 u.sense() == "preposition" and _bound(u, "anchor") is dobj
                 for u in reading.units
             ):

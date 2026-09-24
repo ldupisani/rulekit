@@ -19,6 +19,11 @@ def unit_price_from_total(ctx: ConsumerContext):
     from ..answer import Answer
     from ..evaluate import evaluate
     from ..totals import _unit_price_from_total
+    from ..model import PurchaseTotal
+
+    if ctx.store.by_kind(PurchaseTotal):
+        from ..purchase_totals import residual_purchase_unit_price
+        return residual_purchase_unit_price(ctx)
 
     # "how much does/did each ITEM cost?" / "what is the cost of N
     # ITEM?" (mining candidate unit-price-from-total, re-cut of the
