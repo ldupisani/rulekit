@@ -1,0 +1,27 @@
+format: rulekit/lexicon@1
+entries:
+  credit: {senses: [noun]}
+  credit limit: {senses: [noun], lexical_phrase: true}
+  limit: {senses: [noun]}
+  debt: {senses: [noun], plural: debts}
+  full: {senses: [adjective]}
+  entire: {senses: [adjective]}
+  specific: {senses: [adjective]}
+  grocery: {senses: [noun], plural: groceries}
+  trip: {senses: [noun], plural: trips}
+  where: {senses: [interrogative]}
+  allow: {senses: [verb]}
+  allowed: {senses: [verb], verb: {lemma: allow}}
+  allows: {senses: [verb], verb: {lemma: allow}}
+  owe: {senses: [verb]}
+  owes: {senses: [verb], verb: {lemma: owe}}
+  owed: {senses: [verb], verb: {lemma: owe}}
+  owing: {senses: [verb], verb: {lemma: owe}}
+  repay: {senses: [verb]}
+  repays: {senses: [verb], verb: {lemma: repay}}
+  repaid: {senses: [verb], verb: {lemma: repay}}
+  repaying: {senses: [verb], verb: {lemma: repay}}
+  use: {senses: [verb]}
+  used: {senses: [verb], verb: {lemma: use}}
+  uses: {senses: [verb], verb: {lemma: use}}
+  using: {senses: [verb], verb: {lemma: use}}

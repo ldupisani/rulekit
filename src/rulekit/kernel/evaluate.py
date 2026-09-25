@@ -74,6 +74,7 @@ class ArithmeticLog:
     # Closed allocation endpoints must be consumed as balances, never as
     # ordinary holdings or silently discarded context.
     consumed_resource_balance_keys: set[tuple] = field(default_factory=set)
+    consumed_account_entry_keys: set[tuple] = field(default_factory=set)
     # A rate policy or repeated schedule cannot disappear into a flat-rate
     # answer merely because its numbers were successfully recognized.
     consumed_rate_structure_keys: set[tuple] = field(default_factory=set)

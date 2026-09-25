@@ -1,5 +1,6 @@
 format: rulekit/lexicon@1
 entries:
+  particular: {senses: [adjective]}
   stamp: {senses: [noun], plural: stamps}
   snowflake: {senses: [noun], plural: snowflakes}
   # The verb family previously belonged to scratch. Keep one lexical owner

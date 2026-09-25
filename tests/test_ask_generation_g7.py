@@ -49,7 +49,7 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
     assert any("antecedent discourse group" in blocker for blocker in contextual.blockers)
     # The reusable physics pack adds the independently generatable
     # ask/physics-quantity surface to curated.
-    assert sum(item.supported for item in availability.values()) == 140
+    assert sum(item.supported for item in availability.values()) == 141
     assert availability["ask/how-many-of-collection-are-label"].supported
     assert availability["ask/how-many-of-collection-are-label"].supported_modes == (
         "ask_only",
@@ -73,10 +73,13 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
     assert availability["ask/measured-content-in-container-unit"].blockers == (
         "ask requires generated premise evidence; standalone realization is disabled",
     )
-    assert len(availability) == 158
+    assert len(availability) == 162
     assert {
         item.id for item in availability.values() if not item.supported
     } == {
+        "ask/how-much-credit-need-pay",
+        "ask/how-much-need-pay",
+        "ask/how-much-need-repay",
         "ask/chem-cost-of-moles",
         "ask/chem-molar-mass",
         "ask/chem-moles-from-grams",
@@ -96,11 +99,18 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
         "ask/what-combined-age-at-year",
         "ask/which-discourse-group-at-day",
     }
+    unfilled_deadlines = {
+        "ask/how-much-credit-need-pay", "ask/how-much-need-pay", "ask/how-much-need-repay",
+    }
     assert all(
         "answerable" in item.supported_modes
         for item in availability.values()
         if not item.supported and not item.id.startswith("ask/chem-")
+        and item.id not in unfilled_deadlines
     )
+    for ask_id in unfilled_deadlines:
+        assert availability[ask_id].supported_modes == ()
+        assert availability[ask_id].blockers == ("no project-backed ask filler exists for deadline",)
     assert all(
         item.supported_modes == ()
         and item.blockers == ("no project-backed ask filler exists for f",)

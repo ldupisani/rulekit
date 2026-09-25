@@ -14,6 +14,7 @@ sorted order, so iteration is deterministic across processes.
 from __future__ import annotations
 
 import hashlib
+import re
 from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import Mapping
@@ -1328,6 +1329,15 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
             if token.opt is not None:
                 yield from _walk_match_tokens(token.opt)
 
+    def _validate_preceding_verb(predicate, slots, rule_id):
+        spec = predicate.preceding_verb_category
+        if spec is None:
+            return
+        if set(spec) != {"slot", "cat"} or spec.get("slot") not in slots:
+            raise CompileError(f"rule {rule_id!r}: preceding verb gate needs a declared slot and category")
+        if spec["cat"] not in valid_gates or _category_chain(spec["cat"])[-1] != "verb":
+            raise CompileError(f"rule {rule_id!r}: preceding verb gate needs a verb category")
+
     for rule in rules:
         slots: dict[str, MatchToken] = {}
         for seq in rule.match.values():
@@ -1402,6 +1412,10 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                             f"non-verb slot {tok.slot!r}"
                         )
         for emit in rule.emits:
+            for raw in emit.fields.values():
+                optional = re.fullmatch(r"\{(\w+)\.optional\}", raw) if isinstance(raw, str) else None
+                if optional is not None and optional.group(1) not in slots:
+                    raise CompileError(f"rule {rule.id!r}: optional emission needs a declared slot")
             if emit.fact != "relation":
                 continue
             for field_name, expected_root in (
@@ -1432,6 +1446,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                     )
         for predicate in (*rule.where, *rule.generation_where):
             _validate_text_prefix_split(predicate, slots, rule.id)
+            _validate_preceding_verb(predicate, slots, rule.id)
             membership = predicate.same_category_membership
             if membership is not None:
                 # Like the long-standing slot_not_category predicate, this
@@ -1940,6 +1955,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                 )
         for predicate in ask.where:
             _validate_text_prefix_split(predicate, ask_slots, ask.id)
+            _validate_preceding_verb(predicate, ask_slots, ask.id)
             if predicate.number_compatible is not None:
                 for slot_name in predicate.number_compatible:
                     if slot_name not in ask_slots:

@@ -305,7 +305,11 @@ def _check_number(
                for f in store.by_kind(kind)):
             return GuardVeto("answer-accounting", "a stated rate policy or repeated schedule was not used")
 
-        from .model import ResourceAllocation, ResourceBalance
+        from .model import ResourceAllocation, ResourceBalance, AccountEntry
+
+        if any(b.key() not in log.consumed_account_entry_keys
+               for b in store.by_kind(AccountEntry)):
+            return GuardVeto("answer-accounting", "a liability entry was not used as account evidence")
 
         if any(b.key() not in log.consumed_resource_balance_keys
                for b in (*store.by_kind(ResourceBalance), *store.by_kind(ResourceAllocation))):

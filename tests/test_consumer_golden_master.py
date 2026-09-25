@@ -58,6 +58,10 @@ def registries():
 
 # (registry, question, expected consumer, kind, value, reason prefix)
 GOLDEN = [
+    ('curated', 'Mira owes $120. Mira repaid $18 and $27. How much does Mira still owe?',
+     'liability-remainder', 'number', 75, '75 dollar still owed'),
+    ('curated', 'Mira has a credit limit of $120. How much does Mira owe?',
+     'liability-remainder', 'decline', None, 'a credit limit needs explicit use before it becomes '),
     ('curated', 'Aven spent $40. How much did Aven spend on buying toys?',
      'single-entity', 'decline', None,
      'the spending ask contains an unread activity or cond'),

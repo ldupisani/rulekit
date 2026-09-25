@@ -1282,6 +1282,38 @@ class ResourceAllocation(Fact):
 
 
 @dataclass(frozen=True)
+class AccountEntry(Fact):
+    """Source-local liability evidence, distinct from spendable cash.
+
+    A limit is permission, a draw creates debt, a repayment reduces it, and
+    a settlement requirement supplies a deadline without asserting payment.
+    Empty actors require an explicit coordinated antecedent before use.
+    """
+
+    kind: str
+    position: int
+    entity: str = ""
+    account: str = ""
+    measure: str = ""
+    value: float | None = None
+    time: str = ""
+    deadline: str = ""
+    owner: str = ""
+    reference_owner: str = ""
+    description: str = ""
+    qualifier: str = ""
+    attachment: str = ""
+
+    def key(self) -> tuple:
+        return ("account-entry", self.provenance.sentence, self.position, self.kind)
+
+    def value_part(self):
+        return (self.entity, self.account, self.measure, self.value,
+                self.time, self.deadline, self.owner, self.reference_owner,
+                self.description, self.qualifier, self.attachment)
+
+
+@dataclass(frozen=True)
 class ResourceBalance(Fact):
     """An explicit opening allocation or its closing remainder.
 

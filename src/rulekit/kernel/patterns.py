@@ -25,6 +25,7 @@ from .model import (
     ActivityDuration,
     ResourceAllocation,
     ResourceBalance,
+    AccountEntry,
     Expenditure,
     BoundedActivityInquiry,
     AgeAtYear,
@@ -113,6 +114,7 @@ from .model import (
 SKIPPABLE_SENSES = {"article", "punct"}
 
 _FACT_CLASSES = {
+    "account_entry": AccountEntry,
     "text_value": TextValue,
     "text_prefix_split": TextPrefixSplit,
     "commercial_term": CommercialTerm,
@@ -1710,6 +1712,15 @@ def _check_where(
             ]
             if len(values) != len(set(values)):
                 return False
+        if pred.preceding_verb_category is not None:
+            spec = pred.preceding_verb_category
+            unit = slots.get(spec["slot"])
+            if not isinstance(unit, Unit):
+                return False
+            preceding = reading.units[:reading.units.index(unit)]
+            verb = next((u for u in reversed(preceding) if "verb" in u.senses()), None)
+            if verb is None or not _unit_in_category(verb, spec["cat"], reg):
+                return False
         if pred.slot_not_category is not None:
             # A TIME PERIOD IS NOT A HOLDER. "he made three fewer tables
             # than this month" bound `std` to 'month' and minted a Relation
@@ -2253,6 +2264,11 @@ def _resolve_field(
     if m and not numeric:
         name, attr = m.group(1), m.group(2)
         if name not in slots:
+            # An explicitly optional string emission may omit its phrase.
+            # Ordinary templates remain strict, so misspelled bindings still
+            # fail loudly. This never supplies a missing numeric operand.
+            if attr == "optional":
+                return ""
             raise EvaluationError(f"rule {rule_id}: emit references unbound slot {name!r}")
         return _slot_value(slots[name], attr)
     if not numeric:
@@ -2321,7 +2337,7 @@ def _build_fact(
     kwargs = {}
     for key, raw in emit_fields.items():
         kwargs[key] = _resolve_field(raw, slots, reg, key in _NUMERIC_FIELDS, log, rule_id)
-    if cls is Expenditure:
+    if cls in (Expenditure, AccountEntry):
         # Source positions are identifiers, not arithmetic operands.
         for key in ("position", "event", "lot_position", "quantity_position", "cost_factor_position"):
             if key in kwargs:

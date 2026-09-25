@@ -361,10 +361,6 @@ entries:
         senses:
             - noun
         plural: tricycles
-    trip:
-        senses:
-            - noun
-        plural: trips
     triple-flip:
         senses:
             - noun
@@ -493,24 +489,6 @@ entries:
     upstairs:
         senses:
             - noun
-    use:
-        senses:
-            - verb
-    used:
-        senses:
-            - verb
-        verb:
-            lemma: use
-    uses:
-        senses:
-            - verb
-        verb:
-            lemma: use
-    using:
-        senses:
-            - verb
-        verb:
-            lemma: use
     utilities:
         senses:
             - noun
@@ -712,9 +690,6 @@ entries:
     when:
         senses:
             - conjunction
-    where:
-        senses:
-            - interrogative
     whiskers:
         senses:
             - noun

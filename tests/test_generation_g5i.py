@@ -76,7 +76,9 @@ def test_g5i_profiles_the_complete_recursive_optional_class() -> None:
     # The shared comparison family adds four item-layout variants and nine
     # additive-discourse positions; it does not add nesting depth.
     # Equal-price purchases add one optional additive continuation.
-    assert _optional_profile(project) == (97, 193, 38, 3)
+    # Liability entries add six optional dates, two draw-frame options and
+    # a nested temporal preposition within the demonstrative time adjunct.
+    assert _optional_profile(project) == (104, 202, 39, 3)
 
 
 def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
@@ -85,9 +87,9 @@ def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
         for item in list_rule_availability(load_project(CURATED))
     }
 
-    assert len(availability) == 275
-    assert sum(item.supported for item in availability.values()) == 265
-    assert sum(not item.supported for item in availability.values()) == 10
+    assert len(availability) == 287
+    assert sum(item.supported for item in availability.values()) == 270
+    assert sum(not item.supported for item in availability.values()) == 17
     assert all(availability[rule_id].supported for rule_id in NEWLY_SUPPORTED)
     assert all(
         "optional groups have no current realizer" not in item.blockers

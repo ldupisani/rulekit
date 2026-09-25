@@ -1,15 +1,14 @@
 # rulekit handoff
 
-**Updated:** 2026-09-24
-**Runtime checkpoint:** owned textual extents, reference links and full-name
-layouts committed as `026f118`; residual equal-unit purchase pricing and
-progressive collection contexts and transaction-scoped background local (uncommitted).
+**Updated:** 2026-09-25
+**Runtime checkpoint:** purchase accounting and scoped collection contexts
+committed as `ae75238`; credit liabilities and linked repayments local (uncommitted).
 Increment 134 is the last TEST checkpoint
 **Default workflow:** direct implementation for user-supplied questions;
 Mining v2 only on explicit request
-**Immediate state:** complete purchase totals can determine the common unit
-price of one explicitly equal-priced unknown lot, independently of earlier
-non-quantitative background; validated in both curated and GSM8K projects.
+**Immediate state:** an explicitly used credit limit (or stated debt), minus
+actual linked repayments, answers the remaining amount owed in curated and
+GSM8K. Limits, payments and settlement requirements remain distinct.
 Existing approval, gate, and landing records for increment 134 remain untouched.
 
 This is the operational entry point. It records current state, durable
@@ -60,6 +59,51 @@ temporal event totals (130), task-completion duration gaps (131), and
 anaphoric distance chains with exact combined totals (132).
 
 ### Latest implementation checkpoint
+
+Single-account liabilities use typed `AccountEntry` evidence and the existing
+resource residual arithmetic. A credit limit alone is not debt; explicit full
+use supplies the opening liability. Repayment lists and split sentences retain
+each amount and optional weekday. A settlement requirement records its event
+and owner without inventing a payment. Deadline asks require that same evidence.
+A shared template handles both relative requirements and standalone "It must
+be paid..." immediately after the opening account sentence; it does not skip
+intervening sentences or allow a different owner.
+Full-draw premises also accept "in that week/month/day" alongside the bare
+demonstrative time adjunct. They preserve the period label, not an invented
+calendar date; a temporal preposition cannot consume a place or conditional.
+Core English now owns "particular" (moved from mined vocabulary), so the same
+existing time-adjunct rule also reads "in that particular week" in curated.
+Alternatives include directly stated debt, "still owe", "need to repay", and
+"still need to pay". Other borrowers, extra fees/conditions, unused limits,
+qualified-account substitutions, incompatible currencies and overpayment
+decline. Source-local numeric accounting and the shared answer-use guard apply.
+
+Five complete premises are generatable; seven context-dependent fragments are
+reader-only. The generation inventory is 287 premises / 270 supported / 17
+excluded, 603 reachable filler identities, and 162 asks / 141 independently
+supported. Core owns the credit vocabulary, with no duplicate mined entries.
+Nominal activity disambiguation keeps "does her shopping" distinct from
+"is shopping"; finite "shops" retains its verb reading without losing the
+plural noun. Declared infinitive complements license the verb reading of
+income homographs. No protected TEST, review-ledger mutation, commit, push or
+Designer restart is part of this work. Python changes require a user-managed
+server restart to load.
+
+Validation evidence: `.rulekit-cache/liability-accounts-2026-09-24.Lojg0K/`.
+The second broad run passed 9,064 checks; its five remaining failures were an
+ask-generation inventory expectation and four new compiler tests using an
+unchanged cache identity. Those expectations/fixtures were corrected and
+rerun in the focused checks. The final focused generation/liability run passed
+540 checks. Latest standalone-settlement verification is in
+the `adjacent-*` logs. The original DEV baseline is
+`.rulekit-cache/doing-vocabulary-2026-09-24.io8hdD/`.
+Curated remains 71/71 and lint has zero errors. GSM8K DEV-train is 119 correct /
+0 wrong (+1 correct from baseline), DEV-holdout 58/0 and ASDiv DEV 55/0.
+The standalone-settlement follow-up is neutral on all three DEV comparisons:
+zero BROKE and zero DECL→WRONG. Its snapshots were written under each project's
+`snapshots/.rulekit-cache/liability-accounts-2026-09-24.Lojg0K/` directory.
+
+### Previous purchase-accounting checkpoint
 
 One actual buyer's fronted purchase total is now explicit `PurchaseTotal`
 evidence, distinct from a budget or an item price. The existing unit-price

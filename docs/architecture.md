@@ -318,6 +318,49 @@ borrows the nearest person or retailer. `ResourceBalance` preserves the
 participant, account head, account qualifier, explicit owner, currency, and
 opening event. A closing remainder retains the same account qualifiers.
 
+Credit liabilities are not spendable allocations. `AccountEntry` preserves
+separate limit, stated-debt, full-draw, repayment and settlement-requirement
+records. A limit alone never becomes debt: the liability consumer needs an
+explicit full draw, or a directly stated amount owed. It reuses
+`resource_equations.resource_residual` to subtract actual repayments, retaining
+each source occurrence (including equal-valued payments), named payment days,
+borrower/owner and the settlement deadline in the proof. A requirement to pay
+does not assert payment. Deadline-specific asks require the same stated event
+and owner; weekday labels are preserved, not converted into an invented
+absolute calendar.
+Full-use entries likewise retain the period label from a demonstrative time
+adjunct, with or without its declared temporal preposition. This records the
+stated period without converting it into a calendar date or a repeated draw.
+
+Settlement grammar shares one template for a relative clause in the opening
+account sentence and a standalone impersonal anaphor in the immediately next
+sentence. `AccountEntry.attachment` preserves that distinction. The consumer
+requires the unique opening account, matching borrower and no intervening
+account event; source coverage rejects an unread alternative antecedent.
+This is a bounded account link, not unrestricted cross-sentence pronoun guessing.
+
+This initial liability class admits one unqualified account and one opening
+debt, with no unstated fees, interest or further draws. Planned/negated payments,
+other borrowers, mixed currencies, excessive repayment, qualified-account
+substitutions, unread financial conditions and unaccounted numeric mentions
+decline. The shared answer-use guard also prevents unrelated consumers from
+dropping liability entries. Earlier nonnumeric context may establish the
+borrower, but cannot hide an earlier financial change or conditional opener.
+Payment ellipsis must link to a preceding account event in the same sentence;
+bare coordinated amounts additionally require the nearest preceding verb to
+belong to the declared repayment category. This opt-in
+`preceding_verb_category` predicate does not classify ordinary price lists as
+repayments. Optional string emissions can explicitly use `{slot.optional}`
+for an absent phrase; required bindings and numeric operands remain strict,
+and the compiler still requires the named slot to exist.
+
+Five complete credit-account premises support generation. Coordinated
+fragments, debt-anaphoric payment fragments and linked settlement clauses
+remain reader-only pending suitable generated context. The new ordinary
+credit vocabulary belongs to core English, with mined duplicates removed.
+Nominal activities under a declared activity auxiliary or before an event
+noun retain their noun reading; copular progressive activities remain verbs.
+
 `Expenditure` records an item-qualified cost, with an event/position
 identity that distinguishes equal-valued costs in a coordinated list. Its
 evidence basis distinguishes a purchase from a payment. Optional fields retain

@@ -176,10 +176,6 @@ entries:
   grey:
     senses:
     - adjective
-  grocery:
-    senses:
-    - noun
-    plural: groceries
   ground:
     senses:
     - noun
@@ -1030,9 +1026,6 @@ entries:
     senses:
     - noun
     plural: limbs
-  limit:
-    senses:
-    - noun
   limited:
     senses:
     - adjective

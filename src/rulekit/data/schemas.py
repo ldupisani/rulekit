@@ -1335,6 +1335,9 @@ class WherePredicate(StrictModel):
     """Closed set of cross-slot constraints."""
 
     same_lemma: list[str] | None = None
+    # An elliptical continuation may inherit only the nearest preceding verb,
+    # never search past an intervening predicate for a convenient antecedent.
+    preceding_verb_category: dict[str, str] | None = None
     # All named single-unit slots must expose the same written surface,
     # case-insensitively. This deliberately differs from ``same_lemma``:
     # pronoun lemmas follow resolved referents, while repeated possessive/
@@ -1505,6 +1508,7 @@ class WherePredicate(StrictModel):
         set_ = [
             v for v in (
                 self.same_lemma, self.same_surface, self.text_prefix_split, self.same_number,
+                self.preceding_verb_category,
                 self.same_category_membership, self.number_compatible,
                 self.bound_requires_type, self.bound_requires_category,
                 self.bound_rejects_category,
@@ -1539,6 +1543,7 @@ class WherePredicate(StrictModel):
 
 class FactEmit(StrictModel):
     fact: Literal[
+        "account_entry",
         "text_value", "text_prefix_split",
         "commercial_term",
         "allocation_ratio",

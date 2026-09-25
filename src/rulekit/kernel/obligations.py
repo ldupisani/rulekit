@@ -479,6 +479,19 @@ def _nominal_role_licenses_noun(reading: Reading, unit: Unit, reg: Registry) -> 
         return False
     prev = previous[-1]
     prev_word = prev.features.get("lemma", prev.features.get("fold", ""))
+    if reg.word_in_category(word, "nominal_activity"):
+        if (i + 1 < len(reading.units) and reg.word_in_category(
+                reading.units[i + 1].features.get("lemma", ""), "settlement_event")):
+            return True
+        cursor = i - 1
+        while cursor >= 0 and reg.word_in_category(
+                reading.units[cursor].features.get("lemma", ""), "nominal_activity_modifier"):
+            cursor -= 1
+        if (cursor > 0 and reg.word_in_category(
+                reading.units[cursor].features.get("fold", ""), "possessive_determiner")
+                and reg.word_in_category(reading.units[cursor - 1].features.get("fold", ""),
+                                         "nominal_activity_auxiliary")):
+            return True
     if i >= 2 and reg.word_in_category(prev_word, "possessive_determiner"):
         verb = previous[-2]
         verb_word = verb.features.get("lemma", verb.features.get("fold", ""))
@@ -686,7 +699,10 @@ def _infinitive_licenses_count_homograph(reading: Reading, unit: Unit, reg: Regi
 
     index = reading.units.index(unit)
     lemma = unit.features.get("lemma", "")
-    return (index > 0 and reg.word_in_category(lemma, "determiner_required_noun")
+    licensed = reg.word_in_category(lemma, "determiner_required_noun") or (
+        index > 1 and reg.word_in_category(
+            reading.units[index - 2].features.get("lemma", ""), "infinitive_complement_predicate"))
+    return (index > 0 and licensed
             and reg.word_in_category(reading.units[index - 1].features.get("lemma", ""),
                                      "infinitival_marker")
             and is_bare_verb_form(unit.features.get("fold", ""), lemma))

@@ -1,0 +1,262 @@
+format: rulekit/rules@1
+templates:
+  account-full-settlement:
+    parameters:
+      reference: [{lit: which}]
+      attachment: relative
+    rule:
+      phase: read
+      generation: reader-only
+      description: >
+        A requirement to settle the preceding account in full records a
+        deadline, never an actual payment. Relative clauses attach within
+        the opening sentence; standalone anaphors require the immediately
+        preceding account sentence without an intervening event.
+      match:
+        sentence:
+          - {parameter: reference}
+          - {slot: modal, cat: settlement_modal}
+          - {lit: be}
+          - {slot: verb, cat: passive_payment_form}
+          - {lit: in}
+          - {slot: entirety, cat: complete_account_attribute}
+          - {lit: before}
+          - {slot: poss, cat: animate_possessive_determiner}
+          - {slot: deadline, cat: settlement_event, qualified: true}
+      emits:
+        - fact: account_entry
+          kind: settlement
+          position: '{modal.span_start}'
+          deadline: '{deadline.qualified}'
+          owner: '{poss}'
+          attachment: {parameter: attachment}
+  account-repayment:
+    parameters:
+      prefix:
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true}
+        - {slot: verb, cat: repayment_verb, finite_form: true}
+      link: []
+      kind: repayment
+      entity: '{who}'
+      generation: premise
+      guards:
+        - number_compatible: [who, verb]
+    rule:
+      phase: read
+      generation: {parameter: generation}
+      description: >
+        A repayment has its own source position and optional named day.
+        Payment verbs require an explicit debt reference; repayment verbs
+        already supply that meaning. A coordinated amount retains an empty
+        actor until the account reader links it to the preceding repayment.
+      match:
+        sentence:
+          - {parameter: prefix}
+          - {slot: amount, cat: currency_measure, counted: true, value_min: 0}
+          - {parameter: link}
+          - opt:
+              - {lit: on}
+              - {slot: day, cat: named_weekday}
+      consumes: [amount]
+      where: {parameter: guards}
+      emits:
+        - fact: account_entry
+          kind: {parameter: kind}
+          entity: {parameter: entity}
+          position: '{amount.span_start}'
+          measure: '{amount}'
+          value: amount
+          time: '{day.optional}'
+  account-need-ask:
+    parameters:
+      prefix:
+        - {slot: account, cat: liability_account}
+        - {slot: aux, cat: future_modal}
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true}
+      verb_category: payment_verb
+    rule:
+      match:
+        question:
+          - {lit: how}
+          - {lit: much}
+          - {parameter: prefix}
+          - {slot: need, cat: infinitive_complement_predicate, bare_form: true}
+          - {lit: to}
+          - {slot: verb, cat: {parameter: verb_category}, bare_form: true}
+          - opt:
+              - {lit: before}
+              - {slot: poss, cat: animate_possessive_determiner}
+              - {slot: deadline, cat: settlement_event, qualified: true}
+          - {lit: '?', consume_skipped: true}
+      resolves:
+        consumer: liability-remainder
+        entity: '{who}'
+        deadline: '{deadline.qualified}'
+        owner: '{poss}'
+variants:
+  - id: arithmetic/account-relative-full-settlement
+    template: account-full-settlement
+  - id: arithmetic/account-anaphoric-full-settlement
+    template: account-full-settlement
+    arguments:
+      reference: [{lit: it, at_start: true}]
+      attachment: adjacent
+  - id: arithmetic/account-repayment
+    template: account-repayment
+  - id: arithmetic/account-referenced-payment
+    template: account-repayment
+    arguments:
+      generation: reader-only
+      prefix:
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true}
+        - {slot: verb, cat: payment_verb, finite_form: true}
+      link:
+        - {lit: of}
+        - {lit: it}
+  - id: arithmetic/account-coordinated-payment
+    template: account-repayment
+    arguments:
+      generation: reader-only
+      prefix:
+        - {lit: and}
+        - {slot: verb, cat: payment_verb, finite_form: true}
+      link:
+        - {lit: of}
+        - {lit: it}
+      kind: coordinated-repayment
+      entity: ''
+      guards: []
+  - id: arithmetic/account-coordinated-payment-amount
+    template: account-repayment
+    arguments:
+      generation: reader-only
+      prefix:
+        - {lit: and}
+      link:
+        - {lit: of}
+        - {lit: it}
+      kind: continued-repayment
+      entity: ''
+      guards: []
+  - id: arithmetic/account-coordinated-repayment-amount
+    template: account-repayment
+    arguments:
+      generation: reader-only
+      prefix:
+        - {lit: and}
+      kind: continued-repayment
+      entity: ''
+      guards:
+        - preceding_verb_category: {slot: amount, cat: repayment_verb}
+  - id: arithmetic/account-coordinated-repayment
+    template: account-repayment
+    arguments:
+      generation: reader-only
+      prefix:
+        - {lit: and}
+        - {slot: verb, cat: repayment_verb, finite_form: true}
+      kind: coordinated-repayment
+      entity: ''
+      guards: []
+ask_variants:
+  - id: ask/how-much-credit-need-pay
+    template: account-need-ask
+  - id: ask/how-much-need-repay
+    template: account-need-ask
+    arguments:
+      prefix:
+        - {slot: aux, type: auxiliary}
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true}
+      verb_category: repayment_verb
+  - id: ask/how-much-need-pay
+    template: account-need-ask
+    arguments:
+      prefix:
+        - {slot: aux, type: auxiliary}
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true}
+        - opt:
+            - {lit: still}
+rules:
+  - id: arithmetic/account-credit-grant
+    phase: read
+    description: A granted limit is permission to borrow, not money already owed.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true}
+        - {slot: aux, cat: copula, finite_form: true}
+        - {slot: verb, cat: liability_grant_verb, past_participle: true}
+        - {slot: account, cat: liability_limit, uncounted: true, referential: true}
+        - {lit: of}
+        - {slot: amount, cat: currency_measure, counted: true, value_min: 0}
+    consumes: [amount]
+    where:
+      - number_compatible: [who, aux]
+    emits:
+      - {fact: account_entry, kind: limit, entity: '{who}', account: '{account}', description: '{account.surface}', owner: '{account.owner}', position: '{who.span_start}', measure: '{amount}', value: amount}
+  - id: arithmetic/account-credit-limit
+    phase: read
+    description: An explicitly stated credit limit, separate from an actual draw.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true}
+        - {slot: verb, cat: plain_have_state, finite_form: true}
+        - {slot: account, cat: liability_limit, uncounted: true, referential: true}
+        - {lit: of}
+        - {slot: amount, cat: currency_measure, counted: true, value_min: 0}
+    consumes: [amount]
+    where:
+      - number_compatible: [who, verb]
+    emits:
+      - {fact: account_entry, kind: limit, entity: '{who}', account: '{account}', description: '{account.surface}', owner: '{account.owner}', position: '{who.span_start}', measure: '{amount}', value: amount}
+  - id: arithmetic/account-stated-liability
+    phase: read
+    description: A stated debt is an opening liability, not a cash holding.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true}
+        - {slot: verb, cat: liability_state, finite_form: true}
+        - {slot: amount, cat: currency_measure, counted: true, value_min: 0}
+    consumes: [amount]
+    where:
+      - number_compatible: [who, verb]
+    emits:
+      - {fact: account_entry, kind: liability, entity: '{who}', position: '{who.span_start}', measure: '{amount}', value: amount}
+  - id: arithmetic/account-full-draw
+    phase: read
+    description: >
+      Explicit full use draws the unique previously stated limit. An optional
+      demonstrative time adjunct ("that month" or "in that month") records
+      the period label without inferring an absolute calendar interval.
+    match:
+      sentence:
+        - opt:
+            - opt:
+                - {slot: time_prep, cat: temporal_in_point_preposition}
+            - {lit: that}
+            - {slot: period, cat: duration_measure, uncounted: true}
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true}
+        - {slot: verb, cat: liability_use_verb, finite_form: true}
+        - opt:
+            - {slot: poss, cat: animate_possessive_determiner}
+        - {slot: account, cat: liability_limit, qualified: true, qualifier_cat: complete_account_attribute, uncounted: true, referential: true}
+    where:
+      - number_compatible: [who, verb]
+    emits:
+      - {fact: account_entry, kind: full-draw, entity: '{who}', account: '{account}', owner: '{account.owner}', reference_owner: '{poss.optional}', description: '{account.surface}', qualifier: '{account.qualifier}', position: '{who.span_start}', time: '{period.optional}'}
+asks:
+  - id: ask/how-much-still-owe
+    match:
+      question:
+        - {lit: how}
+        - {lit: much}
+        - opt:
+            - {slot: account, cat: liability_account, bare: true}
+        - {slot: aux, type: auxiliary}
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true}
+        - opt:
+            - {lit: still}
+        - {slot: verb, cat: liability_state, bare_form: true}
+        - {lit: '?', consume_skipped: true}
+    resolves:
+      consumer: liability-remainder
+      entity: '{who}'

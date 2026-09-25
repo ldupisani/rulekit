@@ -28,8 +28,9 @@ entries:
   clothing: {senses: [noun]}
   retailer: {senses: [noun], plural: retailers}
   shop: {senses: [noun, verb], plural: shops}
+  shops: {senses: [noun, verb], verb: {lemma: shop}}
   shopped: {senses: [verb], verb: {lemma: shop}}
-  shopping: {senses: [verb], verb: {lemma: shop}}
+  shopping: {senses: [verb, noun], verb: {lemma: shop}}
   order: {senses: [verb]}
   ordered: {senses: [verb], verb: {lemma: order}}
   orders: {senses: [verb], verb: {lemma: order}}
