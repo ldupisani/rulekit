@@ -35,6 +35,7 @@ header {
 .mono { font-family: var(--mono); }
 .status { margin-left: auto; color: var(--dim); font-size: 0.75rem; }
 .dim { color: var(--dim); }
+.editor-help { color: var(--accent); white-space: nowrap; }
 .hidden { display: none !important; }
 body.generate-mode .tracebar,
 body.generate-mode #answer-banner,
@@ -374,7 +375,7 @@ body.resizing iframe, body.resizing textarea { pointer-events: none; }
 #editor-problems .lint-item { cursor: pointer; }
 #editor-problems .lint-item:hover { background: var(--border); }
 #editor-syntax { font-size: 0.75rem; margin-left: auto; }
-.editor-actions { display: flex; align-items: center; gap: 8px; }
+.editor-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 #save-result { font-size: 0.75rem; }
 #lint-box { max-height: 18%; overflow-y: auto; font-size: 0.7188rem; }
 .lint-item { padding: 3px 6px; border-left: 3px solid var(--amber); margin: 3px 0; background: var(--panel2); border-radius: 0 4px 4px 0; }

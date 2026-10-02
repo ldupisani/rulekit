@@ -131,7 +131,8 @@ class Registry:
     percents: Mapping[str, float]
     role_obligations: Mapping[str, RoleObligation]
     category_parents: Mapping[str, str]
-    category_members: Mapping[str, tuple[str, ...]]  # direct members, sorted
+    category_includes: Mapping[str, tuple[str, ...]]
+    category_members: Mapping[str, tuple[str, ...]]  # explicit + included members
     word_categories: Mapping[str, tuple[str, ...]]
     category_antonyms: Mapping[str, str]
     category_polarity: Mapping[str, int]
@@ -212,6 +213,22 @@ class Registry:
         for c in self.cat_descendants(category):
             words.update(self.category_members.get(c, ()))
         return sorted(words)
+
+    def category_membership_path(self, word: str, category: str) -> tuple[str, ...]:
+        """A deterministic lexical/ancestry/inclusion route for source links."""
+        if not self.word_in_category(word, category):
+            return ()
+        lemma = self.plural_to_singular.get(word, word)
+        for source in self.category_includes.get(category, ()):
+            path = self.category_membership_path(lemma, source)
+            if path:
+                return (*path, category)
+        for child, parent in sorted(self.category_parents.items()):
+            if parent == category:
+                path = self.category_membership_path(lemma, child)
+                if path:
+                    return (*path, category)
+        return (lemma, category)
 
     def word_in_category(self, word: str, category: str) -> bool:
         """difg's _cat: word satisfies category directly, via a subcategory,
@@ -572,6 +589,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
 
     # -- categories ----------------------------------------------------------
     category_parents: dict[str, str] = {}
+    category_includes: dict[str, tuple[str, ...]] = {}
     category_antonyms: dict[str, str] = {}
     category_polarity: dict[str, int] = {}
     declared_selectional_roles: dict[str, dict[str, str]] = {}
@@ -602,6 +620,8 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                 if name in category_parents:
                     raise CompileError(f"category {name!r} defined twice")
                 category_parents[name] = cdef.parent
+                if cdef.includes:
+                    category_includes[name] = tuple(sorted(set(cdef.includes)))
                 if cdef.antonym:
                     category_antonyms[name] = cdef.antonym
                 if cdef.polarity is not None:
@@ -746,6 +766,45 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
         while root in category_parents:
             root = category_parents[root]
         return root
+
+    # Resolve nominal role unions after ALL packs have contributed members.
+    # Inclusion is membership only: it must not import verb frames, polarity,
+    # coreference eligibility, or superclass aggregation flags in reverse.
+    children: dict[str, list[str]] = {}
+    for child, parent in category_parents.items():
+        children.setdefault(parent, []).append(child)
+    for target, sources in category_includes.items():
+        if _category_root(target) != "noun":
+            raise CompileError(f"category includes requires a noun-rooted target: {target!r}")
+        for source in sources:
+            if source not in category_parents:
+                raise CompileError(f"category {target!r} includes unknown category {source!r}")
+            if _category_root(source) != "noun":
+                raise CompileError(f"category {target!r} includes non-noun category {source!r}")
+    explicit_members = {c: set(words) for c, words in category_members.items()}
+    deep_members: dict[str, set[str]] = {}
+    resolving: set[str] = set()
+
+    def _included_members(category: str) -> set[str]:
+        if category in resolving:
+            raise CompileError(f"category inclusion cycle at {category!r}")
+        if category in deep_members:
+            return deep_members[category]
+        resolving.add(category)
+        included: set[str] = set()
+        for source in category_includes.get(category, ()):
+            included.update(_included_members(source))
+        if included:
+            category_members[category] = sorted(explicit_members.get(category, set()) | included)
+        result = explicit_members.get(category, set()) | included
+        for child in children.get(category, ()):
+            result = result | _included_members(child)
+        resolving.remove(category)
+        deep_members[category] = result
+        return result
+
+    for category in sorted(category_parents):
+        _included_members(category)
 
     def _effective_selectional_contract(
         category: str,
@@ -2262,6 +2321,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
         percents=_freeze(percents),
         role_obligations=_freeze(role_obligations),
         category_parents=_freeze(category_parents),
+        category_includes=_freeze(category_includes),
         category_members=_freeze({k: tuple(sorted(set(v))) for k, v in category_members.items()}),
         word_categories=_freeze({k: tuple(sorted(set(v))) for k, v in word_categories.items()}),
         category_antonyms=_freeze(category_antonyms),

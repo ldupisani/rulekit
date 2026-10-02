@@ -380,19 +380,6 @@ entries:
   history:
     senses:
     - noun
-  hit:
-    senses:
-    - verb
-  hits:
-    senses:
-    - verb
-    verb:
-      lemma: hit
-  hitting:
-    senses:
-    - verb
-    verb:
-      lemma: hit
   hockey:
     senses:
     - noun
@@ -1060,13 +1047,6 @@ entries:
   lizards:
     senses:
     - noun
-  load:
-    senses:
-    - noun
-    plural: loads
-  loaded:
-    senses:
-    - verb
   loaf:
     senses:
     - noun
@@ -1148,10 +1128,6 @@ entries:
   macaroons:
     senses:
     - noun
-  machine:
-    senses:
-    - noun
-    plural: machines
   madam:
     senses:
     - title
@@ -1188,28 +1164,10 @@ entries:
     senses:
     - noun
     plural: men
-  manage:
-    senses:
-    - verb
-  managed:
-    senses:
-    - verb
-    verb:
-      lemma: manage
   manager:
     senses:
     - noun
     plural: managers
-  manages:
-    senses:
-    - verb
-    verb:
-      lemma: manage
-  managing:
-    senses:
-    - verb
-    verb:
-      lemma: manage
   manufacturing:
     senses:
     - noun

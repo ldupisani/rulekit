@@ -1,0 +1,28 @@
+format: rulekit/lexicon@1
+entries:
+  tennis: {senses: [noun]}
+  tennis ball: {senses: [noun], plural: tennis balls, lexical_phrase: true}
+  machine: {senses: [noun], plural: machines}
+  load: {senses: [noun, verb], plural: loads}
+  loads: {senses: [noun, verb], verb: {lemma: load}}
+  loaded: {senses: [verb], verb: {lemma: load}}
+  loading: {senses: [verb], verb: {lemma: load}}
+  hit: {senses: [verb]}
+  hits: {senses: [verb], verb: {lemma: hit}}
+  hitting: {senses: [verb], verb: {lemma: hit}}
+  manage: {senses: [verb]}
+  manages: {senses: [verb], verb: {lemma: manage}}
+  managed: {senses: [verb], verb: {lemma: manage}}
+  managing: {senses: [verb], verb: {lemma: manage}}
+  inspect: {senses: [verb]}
+  inspects: {senses: [verb], verb: {lemma: inspect}}
+  inspected: {senses: [verb], verb: {lemma: inspect}}
+  play: {senses: [verb]}
+  plays: {senses: [verb], verb: {lemma: play}}
+  played: {senses: [verb], verb: {lemma: play}}
+  playing: {senses: [verb], verb: {lemma: play}}
+  practice: {senses: [noun, verb], plural: practices}
+  practicing: {senses: [verb], verb: {lemma: practice}}
+  shoot: {senses: [verb]}
+  shoots: {senses: [verb], verb: {lemma: shoot}}
+  shooting: {senses: [noun, verb], verb: {lemma: shoot}}

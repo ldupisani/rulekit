@@ -9,6 +9,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from .api import ServerState, build_router
+from .help import build_help_router
 
 STATIC = Path(__file__).parent / "static"
 
@@ -17,6 +18,7 @@ def create_app(project_root: Path) -> FastAPI:
     state = ServerState(project_root)
     app = FastAPI(title="rulekit designer", docs_url="/api/docs-ui")
     app.include_router(build_router(state))
+    app.include_router(build_help_router())
 
     @app.on_event("shutdown")
     def stop_candidate_runner() -> None:
@@ -30,7 +32,7 @@ def create_app(project_root: Path) -> FastAPI:
         # Cache-Control the browser heuristically caches static files and a
         # UI fix silently doesn't arrive until a hard reload
         response = await call_next(request)
-        if request.url.path == "/" or request.url.path.startswith("/static"):
+        if request.url.path == "/" or request.url.path.startswith(("/static", "/help")):
             response.headers["Cache-Control"] = "no-cache"
         return response
 

@@ -82,6 +82,9 @@ class LexiconDoc(StrictModel):
 
 class CategoryDef(StrictModel):
     parent: str
+    # Nominal role sets may include other nominal families (and descendants)
+    # without inheriting their taxonomy or behavioral flags. No word copying.
+    includes: list[str] = Field(default_factory=list)
     antonym: str | None = None
     # Direction for polarity-pair categories (lose=-1/acquire=+1, fewer=-1/
     # more=+1). Consumed by sign(<slot>) in rule emit expressions — the
@@ -1543,6 +1546,7 @@ class WherePredicate(StrictModel):
 
 class FactEmit(StrictModel):
     fact: Literal[
+        "batch_evidence",
         "account_entry",
         "text_value", "text_prefix_split",
         "commercial_term",

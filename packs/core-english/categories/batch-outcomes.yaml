@@ -1,0 +1,32 @@
+format: rulekit/categories@1
+categories:
+  ball: {parent: noun}
+  batch_order:
+    parent: adjective
+    notes: First starts a disjoint sequence; next advances to a new batch.
+  batch_partitive_preposition: {parent: preposition}
+  accomplishment_verb:
+    parent: verb
+    notes: A finite affirmative implicative followed by an infinitive asserts its completion.
+  collection_loading_verb: {parent: verb}
+  collection_loading_target: {parent: noun}
+  initial_state_verb: {parent: verb}
+  discrete_object_event_verb:
+    parent: animate_subject_verb
+    selectional_roles: {actor: quantity_event_participant, theme: ownable_quantity_object}
+members:
+  ball: [ball, tennis ball]
+  transferable_quantity_object: [tennis ball, box, page]
+  determiner_required_noun: [practice, load]
+  batch_order: [first, next]
+  batch_partitive_preposition: [of, out of]
+  accomplishment_verb: [manage, manages, managed]
+  collection_loading_verb: [load, loads, loaded]
+  collection_loading_target: [machine, box, basket, bag, truck]
+  initial_state_verb: [start, starts, started]
+  discrete_object_event_verb: [hit, hits, inspect, inspects, inspected]
+attribute_compatibility:
+  batch_order: [ownable_quantity_object]
+attrs:
+  first: {batch_advance: 0}
+  next: {batch_advance: 1}

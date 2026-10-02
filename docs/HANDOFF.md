@@ -1,14 +1,14 @@
 # rulekit handoff
 
-**Updated:** 2026-09-25
-**Runtime checkpoint:** purchase accounting and scoped collection contexts
-committed as `ae75238`; credit liabilities and linked repayments local (uncommitted).
+**Updated:** 2026-10-02
+**Runtime checkpoint:** credit liabilities and linked repayments committed as
+`e65f20d`; ordered-batch outcomes and nominal role-family audit local (uncommitted).
 Increment 134 is the last TEST checkpoint
 **Default workflow:** direct implementation for user-supplied questions;
 Mining v2 only on explicit request
-**Immediate state:** an explicitly used credit limit (or stated debt), minus
-actual linked repayments, answers the remaining amount owed in curated and
-GSM8K. Limits, payments and settlement requirements remain distinct.
+**Immediate state:** nominal actor/holder roles compose reusable semantic
+families instead of copying vocabulary lists. The prior ordered-batch
+implementation remains local alongside this audit.
 Existing approval, gate, and landing records for increment 134 remain untouched.
 
 This is the operational entry point. It records current state, durable
@@ -20,8 +20,9 @@ plans and architecture document.
 ## Read first
 
 1. [`../CLAUDE.md`](../CLAUDE.md) — constitution and standing gates.
-2. [`architecture.md`](architecture.md) — current runtime and authoring
-   architecture.
+2. [`architecture.md`](architecture.md) — application boundaries and data flow;
+   [`yaml-reference.md`](yaml-reference.md) — pack/project syntax and authoring
+   contracts, also linked from the Designer with live runtime schemas.
 3. [`gsm8k-mining-v2-plan.md`](gsm8k-mining-v2-plan.md) — promotion contract
    when mining is explicitly requested.
 4. [`methodology.md`](methodology.md) — DEV/TEST firewall and precision policy.
@@ -29,6 +30,14 @@ plans and architecture document.
    implemented Designer product contract and milestone record.
 
 ## Current position
+
+Documentation is now split: architecture covers application responsibilities
+and data flow; the YAML reference covers current authoring contracts. The
+Designer editor links to local rendered help and a live Pydantic-schema
+reference. Both Markdown files are bundled from their single authored copies
+for installed wheels. Documentation/server checks: 21 passed; curated 71/71;
+lint 0 errors and the same 2 warnings. The running Designer was not restarted;
+the new help routes require a user-managed restart.
 
 RuleKit is a deterministic controlled-English reader and reasoner. Language
 knowledge lives in validated YAML packs; runtime Python provides grammatical,
@@ -59,6 +68,76 @@ temporal event totals (130), task-completion duration gaps (131), and
 anaphoric distance chains with exact combined totals (132).
 
 ### Latest implementation checkpoint
+
+Nominal holder/actor whitelists now reuse semantic families through the
+compiler's noun-only category `includes` union. Student-count holders use
+people and educational institutions; earning/initiation use intentional
+agents; production additionally admits production devices; allocation uses
+intentional agents; institution holders use geographic areas/organizations.
+Animal event participants reuse the animal hierarchy. Core owns the existing
+person category; mined vocabulary extends it. People inherit ordinary quantity
+participation without automatically inheriting personal-pronoun eligibility,
+which remains independently gated by `animate`. Category compatibility never emits
+teaching, enrollment or other unstated relationships. Object-affordance and
+dimension constraints remain distinct, and no generation-only typicality
+filter hides unusual supported examples. Full audit details are in
+[`yaml-reference.md`](yaml-reference.md#nominal-family-composition). Validation evidence is under
+`/tmp/rulekit-role-audit.ckA1iL/`. Final category/extension/source-link tests:
+29 passed; personal-reference tests: 8 passed. Curated is 71/71; final DEV
+comparisons are neutral (GSM8K train 120/0, holdout 58/0; ASDiv 55/0).
+Curated/GSM8K lint have 0 errors and 2/3 existing warnings. The broad run
+completed with 9,226 passes and two vocabulary-sensitive test expectations:
+the descriptor-pair count is now 792, and the optional-branch test now pins
+its structural target instead of assuming a seed's historical outcome.
+The final affected-file rerun passed all 343 checks, including both repairs.
+The broad run preceded the final person/holder hierarchy refinement; affected
+tests and DEV snapshots are rechecked on that refinement. No protected TEST,
+review changes, commit, push, or Designer restart. The new category schema
+requires a user-managed Designer restart.
+
+### Ordered-batch checkpoint
+
+Ordered-batch outcomes use source-local `BatchEvidence`, existing fractional
+values, category-level verb roles and logged resource subtraction. A loaded
+collection is not an assertion of ownership. Initial-state premises retain
+ordinary `Quantity` evidence and its original verb, so existing transfer and
+fraction-of-remainder reasoning is not displaced; ordinary possession can
+also supply the opening count. Fractions
+are applied to their individual batches, never pooled or averaged. A bare
+superclass can abbreviate the one explicit subtype (for example a kind of
+ball), but a narrower or competing subtype cannot replace the population.
+
+First/next order licenses disjointness; exact population coverage licenses
+the complement. Multiple openings, repeated first batches, missing counts,
+changed participants/verbs/items, additional qualifiers or temporal asks,
+nonintegral outcomes and hypothetical events decline. An affirmative
+accomplishment complement asserts its event; an attempt does not. Numeric
+source accounting and the shared answer-use guard prevent dropped evidence.
+Core owns ordinary activity/equipment vocabulary, with mined duplicates
+removed. The adjective resolver now recognizes a declared compatible head
+across one cardinal, preserving the separate narrative-adverb reading.
+
+Four premises and three asks are added; ordinary positive single-entity asks
+reuse the same consumer when batch evidence exists. Invented variants include
+inspection, reading and eating. Current inventories: 291 premises / 274
+supported / 17 excluded, 613 filler identities, 165 asks / 144 independently
+supported. Validation lives in
+`/tmp/rulekit-batch-outcomes.ajCiK6/`; no protected TEST or server restart.
+
+Validation: the dedicated batch suite passed 95 checks; the final affected-file
+rerun passed 115. Curated remains 71/71. Final DEV snapshots are GSM8K
+train 120 correct / 0 wrong (+1 supplied item), holdout 58/0, and ASDiv 55/0;
+all comparisons have 0 BROKE and 0 DECL→WRONG. Both curated and GSM8K lint
+have zero errors (existing warnings remain). The broad parallel run reported
+9,187 passes and nine failures before its idle shutdown was interrupted:
+seven were an earlier revision of the new positive-ask guard, and two were
+inventory/scaffold expectations. All three affected files pass in the final
+115-check rerun; this is not a claim of a fresh uninterrupted full-suite pass.
+The supplied wording answers 110 in both projects. Alternative invented
+questions are in [`batch-outcome-examples.md`](batch-outcome-examples.md).
+Python changes require a user-managed Designer restart to load.
+
+### Previous credit-account checkpoint
 
 Single-account liabilities use typed `AccountEntry` evidence and the existing
 resource residual arithmetic. A credit limit alone is not debt; explicit full

@@ -1,0 +1,36 @@
+format: rulekit/categories@1
+categories:
+  person:
+    parent: quantity_event_participant
+    includes: [animate]
+    notes: >
+      Person-denoting nouns reuse the existing, vetted personal-reference
+      inventory. Extension packs can also classify people here without
+      granting animate's stricter personal-pronoun eligibility. Neither
+      route needs separate earning, production, or student-holder lists.
+  organization:
+    parent: quantity_holder
+    notes: >
+      Collective institutions capable of explicitly stated economic or
+      productive activity. Membership is not personal-pronoun eligibility.
+  educational_institution:
+    parent: organization
+    notes: "An educational organization; a stated student count is an association."
+  intentional_agent:
+    parent: noun
+    includes: [person, organization]
+    notes: >
+      People and organizations may initiate activities or earn resources.
+      This licenses a sentence's actor; it never asserts an event by itself.
+  production_device:
+    parent: quantity_holder
+    notes: >
+      Devices capable of producing output in an explicit production frame.
+      Production capability does not imply earning, intention, or personhood.
+  geographic_area:
+    parent: quantity_holder
+    notes: "A geographic scope that can contain a stated institutional population."
+members:
+  educational_institution: [university]
+  production_device: [machine]
+  geographic_area: [area]

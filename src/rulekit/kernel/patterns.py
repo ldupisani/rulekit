@@ -26,6 +26,7 @@ from .model import (
     ResourceAllocation,
     ResourceBalance,
     AccountEntry,
+    BatchEvidence,
     Expenditure,
     BoundedActivityInquiry,
     AgeAtYear,
@@ -114,6 +115,7 @@ from .model import (
 SKIPPABLE_SENSES = {"article", "punct"}
 
 _FACT_CLASSES = {
+    "batch_evidence": BatchEvidence,
     "account_entry": AccountEntry,
     "text_value": TextValue,
     "text_prefix_split": TextPrefixSplit,
@@ -2337,7 +2339,7 @@ def _build_fact(
     kwargs = {}
     for key, raw in emit_fields.items():
         kwargs[key] = _resolve_field(raw, slots, reg, key in _NUMERIC_FIELDS, log, rule_id)
-    if cls in (Expenditure, AccountEntry):
+    if cls in (Expenditure, AccountEntry, BatchEvidence):
         # Source positions are identifiers, not arithmetic operands.
         for key in ("position", "event", "lot_position", "quantity_position", "cost_factor_position"):
             if key in kwargs:

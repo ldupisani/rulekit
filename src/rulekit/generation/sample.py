@@ -4532,6 +4532,18 @@ def _possessed_sources(
     return refs
 
 
+def _included_category_sources(project: Project, word: str, category: str) -> list[SourceRef | None]:
+    """Source links through a nominal role union, without invented member lines."""
+    if category not in project.registry.category_includes:
+        return []
+    path = project.registry.category_membership_path(word, category)
+    if not path:
+        return []
+    index = project.source_index
+    return [index.category_members.get((path[1], path[0])),
+            *(index.categories.get(name) for name in path[1:])]
+
+
 def _category_evidence(
     project: Project, token: MatchToken, unit: Unit
 ) -> tuple[tuple[str, ...], list[SourceRef | None]]:
@@ -4553,6 +4565,13 @@ def _category_evidence(
             ancestry = reg.cat_ancestors(category)
             if category_gate not in ancestry:
                 continue
+            # Included role memberships have no copied YAML member line.
+            # Link the source family as well as the inclusion declaration.
+            if any(name in reg.category_includes for name in ancestry):
+                path = reg.category_membership_path(word, category_gate)
+                refs = [index.category_members.get((path[1], path[0]))]
+                refs.extend(index.categories.get(name) for name in path[1:])
+                return path, refs
             refs: list[SourceRef | None] = [
                 index.category_members.get((category, word)),
                 index.category_members.get((category, lemma)),
@@ -4694,6 +4713,7 @@ def _measure_holder_compatibility_evidence(
             for direct in reg.word_categories.get(holder, ()):
                 if holder_category in reg.cat_ancestors(direct):
                     refs.append(index.category_members.get((direct, holder)))
+            refs.extend(_included_category_sources(project, holder, holder_category))
     return refs
 
 
@@ -6035,6 +6055,12 @@ def _explain_candidate(
                         project.source_index.categories.get(target_category)
                         for target_category in frame.values()
                     )
+                    for role, target_category in frame.items():
+                        for slot_name in predicate.verb_roles_compatible.roles.get(role, ()):
+                            units = _slot_units(slots.get(slot_name))
+                            if len(units) == 1:
+                                where_sources.extend(_included_category_sources(
+                                    project, _unit_lemma(units[0], project.registry), target_category))
         premises.append(
             PremiseSummary(
                 index=where_no,

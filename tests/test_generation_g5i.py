@@ -78,7 +78,8 @@ def test_g5i_profiles_the_complete_recursive_optional_class() -> None:
     # Equal-price purchases add one optional additive continuation.
     # Liability entries add six optional dates, two draw-frame options and
     # a nested temporal preposition within the demonstrative time adjunct.
-    assert _optional_profile(project) == (104, 202, 39, 3)
+    # Loading adds an optional particle and an initial-state adjunct.
+    assert _optional_profile(project) == (105, 204, 39, 3)
 
 
 def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
@@ -87,8 +88,8 @@ def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
         for item in list_rule_availability(load_project(CURATED))
     }
 
-    assert len(availability) == 287
-    assert sum(item.supported for item in availability.values()) == 270
+    assert len(availability) == 291
+    assert sum(item.supported for item in availability.values()) == 274
     assert sum(not item.supported for item in availability.values()) == 17
     assert all(availability[rule_id].supported for rule_id in NEWLY_SUPPORTED)
     assert all(
@@ -138,16 +139,25 @@ def test_every_new_optional_rule_generates_a_reviewable_match(
 
 
 def test_included_and_omitted_branches_are_both_inspectable() -> None:
+    from rulekit.generation.sample import _token_nodes
+
     project = load_project(CURATED)
+    rule = next(rule for rule in project.registry.rules
+                if rule.id == "arithmetic/partition-rest-attribute")
+    optional = next(index for index, (_, token, _) in enumerate(
+        _token_nodes(rule.match["sentence"])
+    ) if token.opt)
     included = generate_candidate(
         project,
         rule_id="arithmetic/partition-rest-attribute",
         seed=0,
+        structural_target=f"optional:{optional}:included",
     )
     omitted = generate_candidate(
         project,
         rule_id="arithmetic/partition-rest-attribute",
         seed=2,
+        structural_target=f"optional:{optional}:omitted",
     )
 
     included_optional = next(

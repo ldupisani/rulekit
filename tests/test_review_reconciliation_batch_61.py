@@ -136,6 +136,11 @@ def test_sequential_percentage_ask_names_a_qualified_plural_destination(
         "science course",
     }
     assert candidate.question.endswith("courses?")
-    assert [premise["target_rule"] for premise in candidate.premises] == [
-        "arithmetic/sequential-percent-remainder-partition"
-    ]
+    # Vocabulary growth can change the seeded search's first viable scaffold.
+    # Both complete and initial-share scaffolds answer the named partition;
+    # retain the semantic contract rather than one historical search result.
+    assert len(candidate.premises) == 1
+    assert candidate.premises[0]["target_rule"] in {
+        "arithmetic/sequential-percent-remainder-partition",
+        "arithmetic/sequential-percent-remainder-partition-initial-share",
+    }

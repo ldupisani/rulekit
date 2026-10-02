@@ -11,7 +11,7 @@ categories:
   audio_product: {parent: commercial_product_family}
   publication_product: {parent: commercial_product_family}
   commercial_production_verb: {parent: verb}
-  commercial_organization: {parent: noun}
+  commercial_organization: {parent: organization}
   profit_measure: {parent: noun}
   infinitival_marker: {parent: preposition}
 members:

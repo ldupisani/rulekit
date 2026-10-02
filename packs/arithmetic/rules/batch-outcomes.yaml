@@ -1,0 +1,131 @@
+format: rulekit/rules@1
+templates:
+  ordered-batch-share:
+    parameters:
+      accomplishment: []
+      finite: true
+      bare: false
+      agreement: verb
+    rule:
+      phase: read
+      description: >
+        An asserted event affects a fraction of a counted first/next batch.
+        Each batch keeps its own population and fraction; no global holding
+        or outcome total is inferred here. An affirmative accomplishment
+        complement asserts the event, unlike an intention or attempt.
+      match:
+        sentence:
+          - {slot: partitive, cat: batch_partitive_preposition, at_start: true}
+          - {slot: batch, cat: ownable_quantity_object, counted: true, qualified: true, qualifier_cat: batch_order, value_min: 1}
+          - {slot: who, type: entity, common_noun_cat: quantity_event_participant, referential: true}
+          - {parameter: accomplishment}
+          - {slot: verb, cat: quantity_ask_verb, finite_form: {parameter: finite}, bare_form: {parameter: bare}}
+          - {slot: share, type: fraction, word_fraction_within_whole: true}
+          - {lit: of}
+          - {slot: them, cat: plural_object_pronoun}
+          - {lit: '.', consume_skipped: true}
+      where:
+        - number_compatible: [who, {parameter: agreement}]
+        - verb_roles_compatible:
+            verb: verb
+            roles: {actor: [who], theme: [batch]}
+            allow_proper_name: [who]
+      satisfies: {them: [refers]}
+      consumes: [batch, share]
+      emits:
+        - {fact: batch_evidence, kind: share, entity: '{who}', measure: '{batch}', value: batch, position: '{batch.span_start}', marker: '{batch.qualifier}', fraction: share, verb: '{verb}'}
+  batch-outcome-ask:
+    parameters:
+      opening:
+        - {slot: partitive, cat: batch_partitive_preposition, at_start: true}
+        - {lit: all}
+        - {slot: item, cat: ownable_quantity_object, number: plural, uncounted: true}
+        - {lit: how}
+        - {lit: many}
+      negation: []
+      mode: selected
+    rule:
+      match:
+        question:
+          - {parameter: opening}
+          - {slot: aux, type: auxiliary}
+          - {slot: who, type: entity, common_noun_cat: quantity_event_participant, referential: true}
+          - {parameter: negation}
+          - {slot: verb, cat: quantity_ask_verb, bare_form: true}
+          - opt:
+              - {lit: in}
+              - {lit: all}
+          - {lit: '?', consume_skipped: true}
+      where:
+        - verb_roles_compatible:
+            verb: verb
+            roles: {actor: [who], theme: [item]}
+            allow_proper_name: [who]
+      resolves: {consumer: batch-outcomes, entity: '{who}', item: '{item.qualified}', verb: '{verb}', mode: {parameter: mode}}
+variants:
+  - id: arithmetic/ordered-batch-event-share
+    template: ordered-batch-share
+  - id: arithmetic/ordered-batch-accomplished-share
+    template: ordered-batch-share
+    arguments:
+      accomplishment:
+        - {slot: accomplishment, cat: accomplishment_verb, finite_form: true}
+        - {lit: to}
+      finite: false
+      bare: true
+      agreement: accomplishment
+rules:
+  - id: arithmetic/loaded-collection-population
+    phase: read
+    description: Loading a counted collection establishes its population, not ownership or successful outcomes.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: quantity_event_participant, referential: true, at_start: true}
+        - {slot: verb, cat: collection_loading_verb, finite_form: true}
+        - opt: [{lit: up}]
+        - {slot: container, cat: collection_loading_target, referential: true}
+        - {lit: with}
+        - {slot: item, cat: ownable_quantity_object, counted: true, value_min: 1}
+        - opt:
+            - {lit: to}
+            - {slot: start, cat: initial_state_verb, bare_form: true}
+            - {lit: with}
+        - {lit: '.', consume_skipped: true}
+    where:
+      - number_compatible: [who, verb]
+    consumes: [item]
+    emits:
+      - {fact: batch_evidence, kind: population, entity: '{who}', measure: '{item}', value: item, position: '{item.span_start}', container: '{container.qualified}'}
+  - id: arithmetic/initial-collection-population
+    phase: read
+    description: >
+      An explicit initial population retains the ordinary Quantity and its
+      initial-state verb. This can anchor later batches without blocking
+      existing transfer or fraction-of-remainder reasoning.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: quantity_event_participant, referential: true, at_start: true}
+        - {slot: verb, cat: initial_state_verb, finite_form: true}
+        - {lit: with}
+        - {slot: item, cat: ownable_quantity_object, counted: true, value_min: 1}
+        - {lit: '.', consume_skipped: true}
+    where:
+      - number_compatible: [who, verb]
+    consumes: [item]
+    emits:
+      - {fact: quantity, entity: '{who}', measure: '{item}', measure_qualifier: '{item.qualifier}', value: item, verb: '{verb}'}
+ask_variants:
+  - id: ask/ordered-batch-selected-fronted
+    template: batch-outcome-ask
+  - id: ask/ordered-batch-complement-fronted
+    template: batch-outcome-ask
+    arguments: {negation: [{lit: not}], mode: complement}
+  - id: ask/ordered-batch-complement
+    template: batch-outcome-ask
+    arguments:
+      opening:
+        - {lit: how, at_start: true}
+        - {lit: many}
+        - {slot: item, cat: ownable_quantity_object, number: plural, uncounted: true}
+      negation: [{lit: not}]
+      mode: complement

@@ -305,7 +305,10 @@ def _check_number(
                for f in store.by_kind(kind)):
             return GuardVeto("answer-accounting", "a stated rate policy or repeated schedule was not used")
 
-        from .model import ResourceAllocation, ResourceBalance, AccountEntry
+        from .model import ResourceAllocation, ResourceBalance, AccountEntry, BatchEvidence
+
+        if any(b.key() not in log.consumed_batch_keys for b in store.by_kind(BatchEvidence)):
+            return GuardVeto("answer-accounting", "a stated batch outcome was not used")
 
         if any(b.key() not in log.consumed_account_entry_keys
                for b in store.by_kind(AccountEntry)):

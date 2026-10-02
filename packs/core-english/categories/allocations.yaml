@@ -2,7 +2,10 @@ format: rulekit/categories@1
 categories:
   allocatable_resource: {parent: noun}
   allocation_source: {parent: noun}
-  allocation_participant: {parent: animate}
+  allocation_participant:
+    parent: noun
+    includes: [intentional_agent]
+    notes: "People or organizations explicitly receiving a share, not an inferred allocation."
   allocation_verb: {parent: verb}
   allocation_distribution_preposition: {parent: preposition}
   allocation_ratio_noun: {parent: noun}
@@ -18,7 +21,7 @@ categories:
 members:
   allocatable_resource: [profit, money, prize]
   allocation_source: [transaction, business]
-  allocation_participant: [partner, friend, teacher]
+  animate: [partner]
   allocation_verb: [share, shared]
   allocation_distribution_preposition: [among, between]
   allocation_ratio_noun: [ratio]

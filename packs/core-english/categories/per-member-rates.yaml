@@ -8,7 +8,6 @@ members:
   residence_state_verb: [live, lives, lived]
   daily_frequency_adverb: [daily]
   animal: [beetle, jaguar, snake]
-  quantity_event_participant: [beetle, jaguar, snake]
   edible_quantity_object: [beetle, snake]
   quantity_location: [forest]
   quantity_site_location: [forest]

@@ -1282,6 +1282,32 @@ class ResourceAllocation(Fact):
 
 
 @dataclass(frozen=True)
+class BatchEvidence(Fact):
+    """An opening population or an outcome share of one disjoint ordered batch.
+
+    Source identity distinguishes equal-sized batches. Fractions remain raw
+    evidence until a consumer checks order, exhaustiveness and item identity.
+    """
+
+    kind: str
+    entity: str
+    measure: str
+    value: float
+    position: int
+    verb: str = ""
+    marker: str = ""
+    fraction: float = 1.0
+    container: str = ""
+
+    def key(self):
+        return ("batch-evidence", self.provenance.sentence, self.position, self.kind)
+
+    def value_part(self):
+        return (self.entity, self.measure, self.value, self.verb,
+                self.marker, self.fraction, self.container)
+
+
+@dataclass(frozen=True)
 class AccountEntry(Fact):
     """Source-local liability evidence, distinct from spendable cash.
 

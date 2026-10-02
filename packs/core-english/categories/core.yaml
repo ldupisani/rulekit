@@ -70,6 +70,7 @@ categories:
             declared people and animals can also move; ordinary objects do not.
     quantity_event_participant:
         parent: motion_participant
+        includes: [animal]
         notes: >
             Common nouns that can plausibly perform or undergo an arithmetic
             quantity event such as receiving, buying, eating, giving, or
@@ -968,8 +969,10 @@ categories:
             educational institution rather than an arbitrary quantity holder.
     student_quantity_holder:
         parent: noun
+        includes: [person, educational_institution]
         notes: >
-            People and institutions that may conventionally have students.
+            Possible bearers of a stated student count. This association does
+            not assert teaching, enrollment, or ownership of people.
     institution_quantity_measure:
         parent: noun
         notes: >
@@ -978,6 +981,7 @@ categories:
             available where a grammar rule permits them.
     institution_quantity_holder:
         parent: quantity_holder
+        includes: [geographic_area, organization]
         notes: >
             Geographic or organizational scopes that may conventionally have
             counted institutions. Extension packs can add cities, regions,
@@ -1066,6 +1070,7 @@ categories:
             ordinarily be initiated; start-state marker use remains separate.
     initiation_quantity_participant:
         parent: noun
+        includes: [intentional_agent]
     initiable_quantity_object:
         parent: noun
     earning_quantity_verb:
@@ -1079,6 +1084,7 @@ categories:
             declared reward, not prices or arbitrary physical populations.
     earning_quantity_participant:
         parent: noun
+        includes: [intentional_agent]
     earnable_quantity_object:
         parent: noun
     production_quantity_verb:
@@ -1092,6 +1098,7 @@ categories:
             explicit in premise rules.
     production_quantity_participant:
         parent: noun
+        includes: [intentional_agent, production_device]
     written_production_verb:
         parent: production_quantity_verb
         selectional_roles:
@@ -2679,26 +2686,17 @@ members:
     # compared with one of its own declared member kinds as if the roles were
     # necessarily disjoint.
     quantity_event_participant:
-        [animal, alpaca, dog, cat, fish, bird, rabbit, hamster]
+        [animal]
     animate_subject_verb:
         [enroll, enrolled, enrolling, enrolls, own, owns, take, takes, took,
          teach, teaches, taught]
     initiation_quantity_verb:
         [begin, begins, began, beginning, start, starts, started, starting]
-    initiation_quantity_participant:
-        [gardener, guardian, librarian, shopper, student, teacher, university,
-         violinist]
     initiable_quantity_object: [business, course]
     earning_quantity_verb: [earn, earns, earned]
-    earning_quantity_participant:
-        [gardener, guardian, librarian, shopper, student, teacher, university,
-         violinist]
     earnable_quantity_object: [dollar, money]
     production_quantity_verb: [make, makes, made, write, writes, wrote]
     written_production_verb: [write, writes, wrote]
-    production_quantity_participant:
-        [gardener, guardian, librarian, shopper, student, teacher, university,
-         violinist]
     producible_quantity_object: [book, business, coin, cookie, pencil, toy]
     cultivation_quantity_verb: [plant, planted, planting, plants]
     plantable_quantity_object: [flower, plant]
@@ -2730,11 +2728,7 @@ members:
     past_departure_quantity_verb: [left]
     finishable_quantity_object: [course, puzzle, task]
     student_quantity_measure: [student]
-    student_quantity_holder:
-        [child, friend, gardener, guardian, librarian, shopper, student,
-         teacher, university, violinist]
     institution_quantity_measure: [university]
-    institution_quantity_holder: [area]
     enrollment_quantity_object: [course, student]
     teaching_quantity_object: [course, puzzle, student]
     transferable_quantity_object:

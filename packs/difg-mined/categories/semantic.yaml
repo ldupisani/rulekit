@@ -61,8 +61,6 @@ categories:
       'comparative'/'multiplier' to recognize a comparative/ratio clause
       structurally — the SAME "test a category, never enumerate the word
       in Python" shape as 'clause_marker_prep' below.
-  person:
-    parent: noun
   persongroup:
     parent: quantity_holder
   produce:
@@ -727,8 +725,8 @@ members:
   - passengers
   - people
   - person
-  - player
-  - players
+  # An unqualified player can be a device; it is not an unconditional
+  # person/intentional-agent licence (see core's animate boundary).
   - sibling
   - siblings
   - student
@@ -800,8 +798,6 @@ members:
   producible_quantity_object:
   - button
   - page
-  production_quantity_participant:
-  - machine
   purchase:
   - order
   - ordered

@@ -594,6 +594,13 @@ def _compatible_head_licenses_adjective(
     if index + 1 >= len(reading.units):
         return False
     head = reading.units[index + 1]
+    # The same nominal head may follow one explicit cardinal before count
+    # condensation ("next 60 parcels"). Do not cross other modifiers,
+    # punctuation or predicates to manufacture an adjective attachment.
+    if head.features.get("value_kind") == "count" and head.sense() == "value":
+        if index + 2 >= len(reading.units):
+            return False
+        head = reading.units[index + 2]
     if "noun" not in head.senses():
         return False
     modifier = unit.features.get("lemma", unit.features.get("fold", ""))

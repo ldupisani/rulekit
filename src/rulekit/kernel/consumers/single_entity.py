@@ -30,6 +30,11 @@ def single_entity(ctx: ConsumerContext):
     from ..totals import _entity_total, _purchase_total, _qualified_variant_total, _revenue_total, _superordinate_total, _verb_total
 
     entity, measure = ctx.query["entity"], ctx.query["measure"]
+    from ..model import BatchEvidence
+    if ctx.store.by_kind(BatchEvidence):
+        from dataclasses import replace
+        from .batch_outcomes import consume
+        return consume(replace(ctx, query={**ctx.query, "item": measure, "mode": "selected"}))
     from ..purchase_totals import has_relative_purchase_prices, relative_purchase_total
     if (has_relative_purchase_prices(ctx.store)
             and ctx.reg.word_in_category(ctx.query.get("verb", ""), "spend_verb")

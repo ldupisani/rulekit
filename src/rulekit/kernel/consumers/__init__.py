@@ -108,6 +108,7 @@ def consumer(name: str, *, time_scoped: bool = False):
 
 
 from . import (  # noqa: E402,F401  (import registers each handler)
+    batch_outcomes as _batch_outcomes,
     liability_remainder as _liability_remainder,
     text_extent as _text_extent,
     production_profit as _production_profit,

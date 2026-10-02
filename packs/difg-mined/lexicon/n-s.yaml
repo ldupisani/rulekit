@@ -622,14 +622,6 @@ entries:
     senses:
     - noun
     plural: plates
-  play:
-    senses:
-    - verb
-  played:
-    senses:
-    - verb
-    verb:
-      lemma: play
   player:
     senses:
     - noun
@@ -637,20 +629,10 @@ entries:
   playground:
     senses:
     - noun
-  playing:
-    senses:
-    - verb
-    verb:
-      lemma: play
   playlist:
     senses:
     - noun
     plural: playlists
-  plays:
-    senses:
-    - verb
-    verb:
-      lemma: play
   plot:
     senses:
     - noun
@@ -731,15 +713,6 @@ entries:
     senses:
     - noun
     plural: potatoes
-  practice:
-    senses:
-    - noun
-    plural: practices
-  practicing:
-    senses:
-    - verb
-    verb:
-      lemma: practice
   pray:
     senses:
     - verb
@@ -1604,12 +1577,6 @@ entries:
   shoebox:
     senses:
     - noun
-  shooting:
-    senses:
-    - noun
-  shoots:
-    senses:
-    - verb
   shopkeeper:
     senses:
     - noun
