@@ -9,7 +9,6 @@ entries:
   gravitational: {senses: [adjective]}
   height: {senses: [noun], plural: heights}
   joule: {senses: [noun], plural: joules}
-  mass: {senses: [noun]}
   meter: {senses: [noun], plural: [m, meters]}
   meter_per_second: {senses: [noun], plural: [m/s]}
   momentum: {senses: [noun]}

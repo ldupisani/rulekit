@@ -14,3 +14,21 @@ entries:
   refund: {senses: [noun], plural: refunds}
   fee: {senses: [noun], plural: fees}
   tax: {senses: [noun], plural: taxes}
+  desert:
+    senses:
+    - noun
+    plural: deserts
+  island:
+    senses:
+    - noun
+    plural: islands
+  season:
+    senses:
+    - noun
+    plural: seasons
+  jack:
+    senses:
+    - noun
+    - name
+    plural: jacks
+  when: {senses: [conjunction]}

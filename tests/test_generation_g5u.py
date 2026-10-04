@@ -169,6 +169,16 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
         "arithmetic/resource-accumulation-window": ((3, 0), "particle", ((3,),)),
         "arithmetic/ordered-two-part-allocation": ((15,), "order", ()),
         "arithmetic/ordered-two-part-allocation-unqualified": ((13,), "order", ()),
+        "arithmetic/acquired-batch-counted-discard": ((4, 0), "again", ((4,),)),
+        "arithmetic/acquired-batch-counted-discard-reason": ((4, 0), "again", ((4,),)),
+        "arithmetic/acquired-batch-counted-discard-negative-reason": ((4, 0), "again", ((4,),)),
+        "arithmetic/acquired-batch-counted-classify": ((4, 0), "again", ((4,),)),
+        "arithmetic/acquired-batch-counted-classify-negative": ((4, 0), "again", ((4,),)),
+        "arithmetic/acquired-batch-more-discard": ((6, 0), "again", ((6,),)),
+        "arithmetic/acquired-batch-more-discard-reason": ((6, 0), "again", ((6,),)),
+        "arithmetic/acquired-batch-more-discard-negative-reason": ((6, 0), "again", ((6,),)),
+        "arithmetic/acquired-batch-more-classify": ((6, 0), "again", ((6,),)),
+        "arithmetic/acquired-batch-more-classify-negative": ((6, 0), "again", ((6,),)),
     }
     assert MOVED_WORD in core.lexicon
     assert set(project.registry.lexicon[MOVED_WORD].senses) == {"adverb"}
@@ -191,7 +201,7 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
         for word, entry in sorted(project.registry.lexicon.items())
         if "adverb" in entry.senses
     ] == [
-        "again", "ago", "also", "away", "back and forth", MOVED_WORD, "daily", "down", "far", "finally", "individually",
+        "again", "ago", "also", "away", "back and forth", "completely", MOVED_WORD, "daily", "down", "far", "finally", "fully", "individually",
         "just", "next", "off", "once again", "online", "only", "out", "outside", "respectively", "safely", "still", "then", "up",
     ]
 
@@ -243,8 +253,8 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
     project = load_project(CURATED)
     availability = list_rule_availability(project)
 
-    assert len(availability) == 291
-    assert sum(item.supported for item in availability) == 274
+    assert len(availability) == 331
+    assert sum(item.supported for item in availability) == 314
     assert sum(not item.supported for item in availability) == 17
     assert all(
         not item.blockers
@@ -270,7 +280,7 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
             }
         for item in availability
     )
-    assert len(exploration_status(project)["fillers"]) == 613
+    assert len(exploration_status(project)["fillers"]) == 690
 
 
 def test_currently_generates_a_matcher_confirmed_anchor() -> None:
@@ -344,7 +354,7 @@ def test_combined_project_exposes_only_declared_holding_anchor_adverbs() -> None
         for item in exploration_status(project)["fillers"]
     }
 
-    assert len(adverbs) == 49
+    assert len(adverbs) == 51
     holding_anchor_adverbs = {
         word
         for word in adverbs

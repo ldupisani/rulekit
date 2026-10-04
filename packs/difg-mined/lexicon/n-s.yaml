@@ -167,9 +167,6 @@ entries:
     - verb
     verb:
       lemma: offer
-  oil:
-    senses:
-    - noun
   oldest:
     senses:
     - adjective
@@ -499,10 +496,6 @@ entries:
     senses:
     - noun
     plural: phones
-  photo:
-    senses:
-    - noun
-    plural: photos
   phrase:
     senses:
     - noun
@@ -806,10 +799,6 @@ entries:
   program:
     senses:
     - noun
-  project:
-    senses:
-    - noun
-    plural: projects
   promotion:
     senses:
     - noun
@@ -919,9 +908,6 @@ entries:
   rainfall:
     senses:
     - noun
-  raisin:
-    senses:
-    - noun
   ranch:
     senses:
     - noun
@@ -968,19 +954,6 @@ entries:
   reality:
     senses:
     - noun
-  realize:
-    senses:
-    - verb
-  realized:
-    senses:
-    - verb
-    verb:
-      lemma: realize
-  realizes:
-    senses:
-    - verb
-    verb:
-      lemma: realize
   receiving:
     senses:
     - verb
@@ -1266,10 +1239,6 @@ entries:
   roulette:
     senses:
     - noun
-  round:
-    senses:
-    - noun
-    plural: rounds
   route:
     senses:
     - noun
@@ -1329,9 +1298,6 @@ entries:
     senses:
     - noun
   salmon:
-    senses:
-    - noun
-  salt:
     senses:
     - noun
   samosa:
@@ -1432,10 +1398,6 @@ entries:
     senses:
     - noun
     plural: seashells
-  season:
-    senses:
-    - noun
-    plural: seasons
   seat:
     senses:
     - noun
@@ -1443,9 +1405,6 @@ entries:
   seated:
     senses:
     - verb
-  second:
-    senses:
-    - adjective
   section:
     senses:
     - noun

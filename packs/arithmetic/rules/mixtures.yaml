@@ -1,0 +1,1421 @@
+format: rulekit/rules@1
+templates:
+  mixture-recovery-ask:
+    parameters:
+      head:
+      - {lit: how, at_start: true}
+      - {lit: many}
+      - {slot: unit, cat: mixture_measure, uncounted: true}
+      - {lit: of}
+      - {slot: component, cat: mixture_component, uncounted: true}
+      result:
+      - {lit: [will, does, did]}
+      - {slot: who, type: entity, common_noun_cat: quantity_event_participant, referential: true}
+      - {slot: recovery, cat: component_recovery_verb, bare_form: true}
+      holder: '{who}'
+      target: '{unit}'
+      ending:
+      - opt:
+        - {slot: completion, cat: evaporation_completion_adverb}
+      - {slot: removal, cat: solvent_removal_verb, finite_form: true, single_word: true}
+    rule:
+      match:
+        question:
+        - {parameter: head}
+        - {parameter: result}
+        - {lit: [when, after]}
+        - opt:
+          - {lit: all}
+        - {slot: solvent, cat: mixture_component, uncounted: true}
+        - {parameter: ending}
+        - {lit: '?', consume_skipped: true}
+      resolves:
+        consumer: mixture-component
+        component: '{component}'
+        entity: {parameter: holder}
+        target_measure: {parameter: target}
+        solvent: '{solvent}'
+        process: evaporation
+        quantity_basis: '{volume}'
+  mixture-share:
+    parameters:
+      body: []
+      guards: []
+      component: '{component}'
+    rule:
+      phase: read
+      description: A component proportion retains its explicit measurement basis and optional sample holder.
+      match:
+        sentence:
+        - {parameter: body}
+        - opt:
+          - {lit: by}
+          - {slot: basis, cat: mixture_basis, uncounted: true}
+        - {lit: ., consume_skipped: true}
+      where: {parameter: guards}
+      consumes:
+      - share
+      emits:
+      - {fact: mixture_evidence, kind: share, source: '{source}', component: {parameter: component}, value:
+          share, basis: '{basis.optional}', entity: '{holder.optional}'}
+  mixture-sample:
+    parameters:
+      holder:
+      - {slot: who, type: entity, common_noun_cat: quantity_event_participant, referential: true, at_start:
+          true}
+      - {slot: verb, cat: mixture_sampling_verb, finite_form: true}
+    rule:
+      phase: read
+      description: A holder acquires or has a measured sample of a substance.
+      match:
+        sentence:
+        - {parameter: holder}
+        - {slot: amount, cat: mixture_measure, counted: true}
+        - {lit: of}
+        - {slot: source, cat: mixture_material, uncounted: true}
+        - opt:
+          - lit: in
+          - slot: solvent
+            cat: mixture_component
+            uncounted: true
+        - opt:
+          - {lit: in}
+          - {slot: container, cat: measurement_container, referential: true}
+        - {lit: ., consume_skipped: true}
+      where:
+      - number_compatible:
+        - who
+        - verb
+      consumes:
+      - amount
+      emits:
+      - {fact: mixture_evidence, kind: sample, source: '{source}', entity: '{who}', value: amount, measure: '{amount}',
+        solvent: '{solvent.optional}'}
+  mixture-volume-ask:
+    parameters:
+      head:
+      - {lit: how, at_start: true}
+      - {lit: many}
+      - {slot: unit, cat: mixture_measure, uncounted: true}
+      - {lit: of}
+      - {slot: component, cat: mixture_component, uncounted: true}
+      target: '{unit}'
+    rule:
+      match:
+        question:
+        - {parameter: head}
+        - {slot: copula, cat: present_copula}
+        - {lit: in}
+        - {slot: source, cat: mixture_substance, uncounted: true}
+        - opt:
+          - lit: in
+          - slot: holder
+            cat: measurement_container
+            referential: true
+        - {lit: '?', consume_skipped: true}
+      resolves:
+        consumer: mixture-component
+        component: '{component}'
+        source: '{source}'
+        target_measure: {parameter: target}
+        quantity_basis: '{volume}'
+        entity: '{holder}'
+  mixture-state-ask:
+    parameters:
+      head:
+      - lit: how
+        at_start: true
+      - lit: many
+      - slot: unit
+        cat: mixture_measure
+        uncounted: true
+      - lit: of
+      - slot: component
+        cat: mixture_component
+        uncounted: true
+      tail:
+      - slot: remain
+        cat: inventory_remainder_verb
+        finite_form: true
+      - lit: in
+      - slot: source
+        cat: mixture_substance
+        uncounted: true
+      - opt:
+        - lit: in
+        - slot: holder
+          cat: measurement_container
+          referential: true
+      target: '{unit}'
+    rule:
+      match:
+        question:
+        - parameter: head
+        - parameter: tail
+        - lit: '?'
+          consume_skipped: true
+      resolves:
+        consumer: mixture-component
+        component: '{component}'
+        source: '{source}'
+        entity: '{holder}'
+        target_measure:
+          parameter: target
+        quantity_basis: '{volume}'
+  mixture-explicit-recovery-ask:
+    parameters:
+      head:
+      - {lit: how, at_start: true}
+      - {lit: many}
+      - {slot: unit, cat: mixture_measure, uncounted: true}
+      - {lit: of}
+      - {slot: component, cat: mixture_component, uncounted: true}
+      result:
+      - {lit: [will, does, did]}
+      - {slot: who, type: entity, common_noun_cat: quantity_event_participant, referential: true}
+      - {slot: recovery, cat: component_recovery_verb, bare_form: true}
+      holder: '{who}'
+      target: '{unit}'
+      ending:
+      - slot: copula
+        cat: singular_copula
+      - slot: removal
+        cat: inventory_withdrawal_verb
+        past_participle: true
+      - &id001
+        lit: without
+      - &id002
+        slot: loss
+        cat: mixture_loss_verb
+        present_participle: true
+      - opt:
+        - lit: any
+          consume_skipped: true
+      - &id003
+        slot: retained
+        cat: mixture_component
+        uncounted: true
+    rule:
+      match:
+        question:
+        - {parameter: head}
+        - {parameter: result}
+        - {lit: [when, after]}
+        - opt:
+          - {lit: all}
+        - {slot: solvent, cat: mixture_component, uncounted: true}
+        - {parameter: ending}
+        - {lit: '?', consume_skipped: true}
+      resolves:
+        consumer: mixture-component
+        component: '{component}'
+        entity: {parameter: holder}
+        target_measure: {parameter: target}
+        solvent: '{solvent}'
+        process: explicit-recovery
+        quantity_basis: '{volume}'
+        retained: '{retained}'
+rules:
+- id: arithmetic/measured-mixture-relative-composition
+  phase: read
+  satisfies: {copula: [subject]}
+  description: An acquired sample whose relative clause states its composition retains both the measured
+    volume and the component share.
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: quantity_event_participant, referential: true, at_start: true}
+    - {slot: verb, cat: mixture_sampling_verb, finite_form: true}
+    - {slot: amount, cat: mixture_measure, counted: true}
+    - {lit: of}
+    - {slot: source, cat: mixture_material, uncounted: true}
+    - opt:
+      - lit: in
+      - slot: solvent
+        cat: mixture_component
+        uncounted: true
+    - opt:
+      - {lit: in}
+      - {slot: container, cat: measurement_container, referential: true}
+    - {lit: [that, which]}
+    - {slot: copula, cat: singular_copula}
+    - {slot: share, type: percent}
+    - {slot: component, cat: mixture_component, uncounted: true}
+    - opt:
+      - {lit: by}
+      - {slot: basis, cat: mixture_basis, uncounted: true}
+    - {lit: ., consume_skipped: true}
+  where:
+  - number_compatible:
+    - who
+    - verb
+  consumes:
+  - amount
+  - share
+  emits:
+  - {fact: mixture_evidence, kind: sample, source: '{source}', entity: '{who}', value: amount, measure: '{amount}',
+    solvent: '{solvent.optional}'}
+  - {fact: mixture_evidence, kind: share, source: '{source}', component: '{component}', value: share, basis: '{basis.optional}',
+    entity: '{who}'}
+- id: arithmetic/mixture-weighed-sample
+  phase: read
+  match:
+    sentence:
+    - slot: source
+      cat: mixture_substance
+      uncounted: true
+      at_start: true
+    - slot: verb
+      cat: mixture_weight_verb
+      finite_form: true
+    - slot: amount
+      cat: mass_measure
+      counted: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: mixture_evidence
+    kind: sample
+    source: '{source}'
+    entity: ''
+    value: amount
+    measure: '{amount}'
+  consumes:
+  - amount
+  where:
+  - number_compatible:
+    - source
+    - verb
+- id: arithmetic/mixture-uniformity
+  phase: read
+  match:
+    sentence:
+    - slot: source
+      cat: mixture_substance
+      uncounted: true
+      at_start: true
+    - opt:
+      - lit: in
+      - slot: holder
+        cat: measurement_container
+        referential: true
+    - slot: copula
+      cat: singular_copula
+    - slot: uniform
+      cat: mixture_uniformity
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: mixture_evidence
+    kind: uniform
+    source: '{source}'
+    entity: '{holder.optional}'
+    value: 0
+- id: arithmetic/mixture-blending
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: quantity_event_participant
+      referential: true
+      at_start: true
+    - slot: verb
+      cat: mixture_blending_verb
+      finite_form: true
+    - slot: source
+      cat: mixture_substance
+      uncounted: true
+    - opt:
+      - lit: in
+      - slot: holder
+        cat: measurement_container
+        referential: true
+    - lit: with
+    - slot: other
+      cat: mixture_substance
+      uncounted: true
+    - opt:
+      - lit: in
+      - slot: other_holder
+        cat: measurement_container
+        referential: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: mixture_evidence
+    kind: blend
+    source: '{source}'
+    entity: '{holder.optional}'
+    value: 0
+    other_source: '{other}'
+    other_entity: '{other_holder.optional}'
+  where:
+  - number_compatible:
+    - who
+    - verb
+- id: arithmetic/mixture-pure-addition
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: quantity_event_participant
+      referential: true
+      at_start: true
+    - slot: verb
+      cat: mixture_addition_verb
+      finite_form: true
+    - slot: amount
+      cat: mixture_measure
+      counted: true
+    - lit: of
+    - slot: component
+      cat: mixture_component
+      uncounted: true
+      qualified: true
+      qualifier_cat: mixture_purity
+    - lit: to
+    - slot: source
+      cat: mixture_substance
+      uncounted: true
+    - opt:
+      - lit: in
+      - slot: holder
+        cat: measurement_container
+        referential: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: mixture_evidence
+    kind: add
+    source: '{source}'
+    entity: '{holder.optional}'
+    value: amount
+    measure: '{amount}'
+    component: '{component}'
+  consumes:
+  - amount
+  where:
+  - number_compatible:
+    - who
+    - verb
+- id: arithmetic/mixture-proportional-withdrawal
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: quantity_event_participant
+      referential: true
+      at_start: true
+    - slot: verb
+      cat: inventory_withdrawal_verb
+      finite_form: true
+    - slot: amount
+      cat: mixture_measure
+      counted: true
+    - lit: of
+    - slot: source
+      cat: mixture_substance
+      uncounted: true
+    - opt:
+      - lit: in
+      - slot: holder
+        cat: measurement_container
+        referential: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: mixture_evidence
+    kind: withdraw
+    source: '{source}'
+    entity: '{holder.optional}'
+    value: amount
+    measure: '{amount}'
+  consumes:
+  - amount
+  where:
+  - number_compatible:
+    - who
+    - verb
+- id: arithmetic/mixture-complete-separation
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: quantity_event_participant
+      referential: true
+      at_start: true
+    - slot: verb
+      cat: inventory_withdrawal_verb
+      finite_form: true
+    - lit: all
+    - slot: component
+      cat: mixture_component
+      uncounted: true
+    - lit: from
+    - slot: source
+      cat: mixture_substance
+      uncounted: true
+    - opt:
+      - lit: in
+      - slot: holder
+        cat: measurement_container
+        referential: true
+    - *id001
+    - *id002
+    - opt:
+      - lit: any
+        consume_skipped: true
+    - *id003
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: mixture_evidence
+    kind: recover
+    source: '{source}'
+    entity: '{holder.optional}'
+    value: 0
+    component: '{component}'
+    retained: '{retained}'
+  where:
+  - number_compatible:
+    - who
+    - verb
+- id: arithmetic/mixture-selective-removal
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: quantity_event_participant
+      referential: true
+      at_start: true
+    - slot: verb
+      cat: inventory_withdrawal_verb
+      finite_form: true
+    - slot: amount
+      cat: mixture_measure
+      counted: true
+    - lit: of
+    - slot: component
+      cat: mixture_component
+      uncounted: true
+    - lit: from
+    - slot: source
+      cat: mixture_substance
+      uncounted: true
+    - opt:
+      - lit: in
+      - slot: holder
+        cat: measurement_container
+        referential: true
+    - *id001
+    - *id002
+    - opt:
+      - lit: any
+        consume_skipped: true
+    - *id003
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: mixture_evidence
+    kind: selective-remove
+    source: '{source}'
+    entity: '{holder.optional}'
+    value: amount
+    measure: '{amount}'
+    component: '{component}'
+    retained: '{retained}'
+  consumes:
+  - amount
+  where:
+  - number_compatible:
+    - who
+    - verb
+- id: arithmetic/contained-mixture-relative-composition
+  phase: read
+  satisfies: {copula: [subject]}
+  description: An acquired sample whose relative clause states its composition retains both the measured
+    volume and the component share.
+  match:
+    sentence:
+    - slot: who
+      cat: measurement_container
+      referential: true
+      at_start: true
+    - slot: verb
+      cat: container_content_state_verb
+      finite_form: true
+    - {slot: amount, cat: mixture_measure, counted: true}
+    - {lit: of}
+    - {slot: source, cat: mixture_material, uncounted: true}
+    - opt:
+      - lit: in
+      - slot: solvent
+        cat: mixture_component
+        uncounted: true
+    - opt:
+      - {lit: in}
+      - {slot: container, cat: measurement_container, referential: true}
+    - {lit: [that, which]}
+    - {slot: copula, cat: singular_copula}
+    - {slot: share, type: percent}
+    - {slot: component, cat: mixture_component, uncounted: true}
+    - opt:
+      - {lit: by}
+      - {slot: basis, cat: mixture_basis, uncounted: true}
+    - {lit: ., consume_skipped: true}
+  where:
+  - number_compatible:
+    - who
+    - verb
+  consumes:
+  - amount
+  - share
+  emits:
+  - {fact: mixture_evidence, kind: sample, source: '{source}', entity: '{who}', value: amount, measure: '{amount}',
+    solvent: '{solvent.optional}'}
+  - {fact: mixture_evidence, kind: share, source: '{source}', component: '{component}', value: share, basis: '{basis.optional}',
+    entity: '{who}'}
+- id: arithmetic/mixture-volume-additivity
+  phase: read
+  match:
+    sentence:
+    - slot: volumes
+      cat: mixture_volume_basis
+      number: plural
+      at_start: true
+    - slot: copula
+      cat: present_copula
+    - slot: additive
+      cat: mixture_additivity
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: mixture_evidence
+    kind: additive
+    source: ''
+    value: 0
+- id: arithmetic/mixture-passive-blending
+  phase: read
+  match:
+    sentence:
+    - slot: source
+      cat: mixture_substance
+      uncounted: true
+      at_start: true
+    - opt:
+      - lit: in
+      - slot: holder
+        cat: measurement_container
+        referential: true
+    - slot: copula
+      cat: singular_copula
+    - slot: verb
+      cat: mixture_blending_verb
+      past_participle: true
+    - lit: with
+    - slot: other
+      cat: mixture_substance
+      uncounted: true
+    - opt:
+      - lit: in
+      - slot: other_holder
+        cat: measurement_container
+        referential: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: mixture_evidence
+    kind: blend
+    source: '{source}'
+    entity: '{holder.optional}'
+    value: 0
+    other_source: '{other}'
+    other_entity: '{other_holder.optional}'
+- id: arithmetic/mixture-counted-sample
+  phase: read
+  match:
+    sentence:
+    - slot: source
+      cat: mixture_material
+      uncounted: true
+      at_start: true
+    - opt:
+      - lit: in
+      - slot: holder
+        cat: measurement_container
+        referential: true
+    - slot: verb
+      cat: container_content_state_verb
+      finite_form: true
+    - slot: amount
+      cat: mixture_count_measure
+      counted: true
+    - lit: .
+      consume_skipped: true
+  where:
+  - number_compatible:
+    - source
+    - verb
+  consumes:
+  - amount
+  emits:
+  - fact: mixture_evidence
+    kind: sample
+    source: '{source}'
+    entity: '{holder.optional}'
+    value: amount
+    measure: '{amount}'
+variants:
+- id: arithmetic/mixture-component-share
+  template: mixture-share
+  arguments:
+    body:
+    - {slot: source, cat: mixture_substance, uncounted: true, at_start: true}
+    - opt:
+      - lit: in
+      - slot: holder
+        cat: measurement_container
+        referential: true
+    - {slot: copula, cat: singular_copula}
+    - {slot: share, type: percent}
+    - {slot: component, cat: mixture_component, uncounted: true}
+- id: arithmetic/mixture-component-content-share
+  template: mixture-share
+  arguments:
+    body:
+    - {slot: source, cat: mixture_substance, uncounted: true, at_start: true}
+    - opt:
+      - lit: in
+      - slot: holder
+        cat: measurement_container
+        referential: true
+    - {slot: verb, cat: plain_have_state, finite_form: true}
+    - {slot: share, type: percent}
+    - {slot: composition, cat: container_contents_noun, uncounted: true, qualified: true, qualifier_cat:
+        mixture_component}
+    guards:
+    - number_compatible:
+      - source
+      - verb
+    component: '{composition.qualifier}'
+- id: arithmetic/mixture-component-contained-share
+  template: mixture-share
+  arguments:
+    body:
+    - {slot: source, cat: mixture_substance, uncounted: true, at_start: true}
+    - opt:
+      - lit: in
+      - slot: holder
+        cat: measurement_container
+        referential: true
+    - {slot: verb, cat: mixture_composition_verb, finite_form: true}
+    - {slot: share, type: percent}
+    - {slot: component, cat: mixture_component, uncounted: true}
+    guards:
+    - number_compatible:
+      - source
+      - verb
+- id: arithmetic/mixture-component-content-of-share
+  template: mixture-share
+  arguments:
+    body:
+    - {slot: source, cat: mixture_substance, uncounted: true, at_start: true}
+    - opt:
+      - lit: in
+      - slot: holder
+        cat: measurement_container
+        referential: true
+    - {slot: verb, cat: plain_have_state, finite_form: true}
+    - {slot: composition, cat: container_contents_noun, uncounted: true, qualified: true, qualifier_cat:
+        mixture_component}
+    - {lit: of}
+    - {slot: share, type: percent}
+    guards:
+    - number_compatible:
+      - source
+      - verb
+    component: '{composition.qualifier}'
+- id: arithmetic/mixture-component-content-copular-share
+  template: mixture-share
+  arguments:
+    body:
+    - {slot: composition, cat: container_contents_noun, uncounted: true, qualified: true, qualifier_cat:
+        mixture_component, at_start: true}
+    - {lit: of}
+    - {slot: source, cat: mixture_substance, uncounted: true}
+    - opt:
+      - lit: in
+      - slot: holder
+        cat: measurement_container
+        referential: true
+    - {slot: copula, cat: singular_copula}
+    - {slot: share, type: percent}
+    component: '{composition.qualifier}'
+- id: arithmetic/mixture-component-partitive-share
+  template: mixture-share
+  arguments:
+    body:
+    - {slot: share, type: percent, at_start: true}
+    - {lit: of}
+    - {slot: source, cat: mixture_substance, uncounted: true}
+    - opt:
+      - lit: in
+      - slot: holder
+        cat: measurement_container
+        referential: true
+    - {slot: copula, cat: singular_copula}
+    - {slot: component, cat: mixture_component, uncounted: true}
+- id: arithmetic/measured-mixture-sample
+  template: mixture-sample
+- id: arithmetic/measured-mixture-container
+  template: mixture-sample
+  arguments:
+    holder:
+    - {slot: who, cat: measurement_container, referential: true, at_start: true}
+    - {slot: verb, cat: container_content_state_verb, finite_form: true}
+ask_variants:
+- id: ask/mixture-component-after-solvent-removal
+  template: mixture-recovery-ask
+- id: ask/mixture-component-left-after-solvent-removal
+  template: mixture-recovery-ask
+  arguments:
+    result:
+    - {lit: will}
+    - {lit: be}
+    - {slot: remainder, cat: remnant_adj}
+    holder: ''
+- id: ask/mixture-many-remain-after-solvent-removal
+  template: mixture-recovery-ask
+  arguments:
+    result:
+    - {lit: will}
+    - {slot: remain, cat: inventory_remainder_verb, bare_form: true}
+    holder: ''
+- id: ask/mixture-component-volume
+  template: mixture-volume-ask
+- id: ask/mixture-much-get-after-solvent-removal
+  template: mixture-recovery-ask
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - {slot: component, cat: mixture_component, uncounted: true}
+    target: ''
+- id: ask/mixture-much-left-after-solvent-removal
+  template: mixture-recovery-ask
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - {slot: component, cat: mixture_component, uncounted: true}
+    result:
+    - {lit: will}
+    - {lit: be}
+    - {slot: remainder, cat: remnant_adj}
+    holder: ''
+    target: ''
+- id: ask/mixture-much-remain-after-solvent-removal
+  template: mixture-recovery-ask
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - {slot: component, cat: mixture_component, uncounted: true}
+    result:
+    - {lit: will}
+    - {slot: remain, cat: inventory_remainder_verb, bare_form: true}
+    holder: ''
+    target: ''
+- id: ask/mixture-much-component-volume
+  template: mixture-volume-ask
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - {slot: component, cat: mixture_component, uncounted: true}
+    target: ''
+- id: ask/mixture-much-unit-get-after-solvent-removal
+  template: mixture-recovery-ask
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - {slot: component, cat: mixture_component, uncounted: true}
+    - {lit: in}
+    - {slot: unit, cat: mixture_measure, uncounted: true}
+- id: ask/mixture-much-unit-left-after-solvent-removal
+  template: mixture-recovery-ask
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - {slot: component, cat: mixture_component, uncounted: true}
+    - {lit: in}
+    - {slot: unit, cat: mixture_measure, uncounted: true}
+    result:
+    - {lit: will}
+    - {lit: be}
+    - {slot: remainder, cat: remnant_adj}
+    holder: ''
+- id: ask/mixture-much-unit-remain-after-solvent-removal
+  template: mixture-recovery-ask
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - {slot: component, cat: mixture_component, uncounted: true}
+    - {lit: in}
+    - {slot: unit, cat: mixture_measure, uncounted: true}
+    result:
+    - {lit: will}
+    - {slot: remain, cat: inventory_remainder_verb, bare_form: true}
+    holder: ''
+- id: ask/mixture-much-unit-component-volume
+  template: mixture-volume-ask
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - {slot: component, cat: mixture_component, uncounted: true}
+    - {lit: in}
+    - {slot: unit, cat: mixture_measure, uncounted: true}
+- id: ask/mixture-volume-get-after-solvent-removal
+  template: mixture-recovery-ask
+  arguments:
+    head:
+    - {lit: what, at_start: true}
+    - {slot: volume, cat: mixture_basis, uncounted: true}
+    - {lit: of}
+    - {slot: component, cat: mixture_component, uncounted: true}
+    target: ''
+- id: ask/mixture-volume-left-after-solvent-removal
+  template: mixture-recovery-ask
+  arguments:
+    head:
+    - {lit: what, at_start: true}
+    - {slot: volume, cat: mixture_basis, uncounted: true}
+    - {lit: of}
+    - {slot: component, cat: mixture_component, uncounted: true}
+    result:
+    - {lit: will}
+    - {lit: be}
+    - {slot: remainder, cat: remnant_adj}
+    holder: ''
+    target: ''
+- id: ask/mixture-volume-remain-after-solvent-removal
+  template: mixture-recovery-ask
+  arguments:
+    head:
+    - {lit: what, at_start: true}
+    - {slot: volume, cat: mixture_basis, uncounted: true}
+    - {lit: of}
+    - {slot: component, cat: mixture_component, uncounted: true}
+    result:
+    - {lit: will}
+    - {slot: remain, cat: inventory_remainder_verb, bare_form: true}
+    holder: ''
+    target: ''
+- id: ask/mixture-volume-component-volume
+  template: mixture-volume-ask
+  arguments:
+    head:
+    - {lit: what, at_start: true}
+    - {slot: volume, cat: mixture_basis, uncounted: true}
+    - {lit: of}
+    - {slot: component, cat: mixture_component, uncounted: true}
+    target: ''
+- id: ask/mixture-component-present-left-after-solvent-removal
+  template: mixture-recovery-ask
+  arguments:
+    result:
+    - {lit: are}
+    - {slot: remainder, cat: remnant_adj}
+    holder: ''
+- id: ask/mixture-component-after-solvent-removal-perfect
+  template: mixture-recovery-ask
+  arguments:
+    ending:
+    - opt:
+      - {slot: perfect, cat: evaporation_perfect_auxiliary, finite_form: true}
+    - opt:
+      - {slot: completion, cat: evaporation_completion_adverb}
+    - {slot: removal, cat: solvent_removal_verb, past_participle: true}
+- id: ask/mixture-component-left-after-solvent-removal-perfect
+  template: mixture-recovery-ask
+  arguments:
+    result:
+    - {lit: will}
+    - {lit: be}
+    - {slot: remainder, cat: remnant_adj}
+    holder: ''
+    ending:
+    - opt:
+      - {slot: perfect, cat: evaporation_perfect_auxiliary, finite_form: true}
+    - opt:
+      - {slot: completion, cat: evaporation_completion_adverb}
+    - {slot: removal, cat: solvent_removal_verb, past_participle: true}
+- id: ask/mixture-many-remain-after-solvent-removal-perfect
+  template: mixture-recovery-ask
+  arguments:
+    result:
+    - {lit: will}
+    - {slot: remain, cat: inventory_remainder_verb, bare_form: true}
+    holder: ''
+    ending:
+    - opt:
+      - {slot: perfect, cat: evaporation_perfect_auxiliary, finite_form: true}
+    - opt:
+      - {slot: completion, cat: evaporation_completion_adverb}
+    - {slot: removal, cat: solvent_removal_verb, past_participle: true}
+- id: ask/mixture-much-get-after-solvent-removal-perfect
+  template: mixture-recovery-ask
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - {slot: component, cat: mixture_component, uncounted: true}
+    target: ''
+    ending:
+    - opt:
+      - {slot: perfect, cat: evaporation_perfect_auxiliary, finite_form: true}
+    - opt:
+      - {slot: completion, cat: evaporation_completion_adverb}
+    - {slot: removal, cat: solvent_removal_verb, past_participle: true}
+- id: ask/mixture-much-left-after-solvent-removal-perfect
+  template: mixture-recovery-ask
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - {slot: component, cat: mixture_component, uncounted: true}
+    result:
+    - {lit: will}
+    - {lit: be}
+    - {slot: remainder, cat: remnant_adj}
+    holder: ''
+    target: ''
+    ending:
+    - opt:
+      - {slot: perfect, cat: evaporation_perfect_auxiliary, finite_form: true}
+    - opt:
+      - {slot: completion, cat: evaporation_completion_adverb}
+    - {slot: removal, cat: solvent_removal_verb, past_participle: true}
+- id: ask/mixture-much-remain-after-solvent-removal-perfect
+  template: mixture-recovery-ask
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - {slot: component, cat: mixture_component, uncounted: true}
+    result:
+    - {lit: will}
+    - {slot: remain, cat: inventory_remainder_verb, bare_form: true}
+    holder: ''
+    target: ''
+    ending:
+    - opt:
+      - {slot: perfect, cat: evaporation_perfect_auxiliary, finite_form: true}
+    - opt:
+      - {slot: completion, cat: evaporation_completion_adverb}
+    - {slot: removal, cat: solvent_removal_verb, past_participle: true}
+- id: ask/mixture-much-unit-get-after-solvent-removal-perfect
+  template: mixture-recovery-ask
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - {slot: component, cat: mixture_component, uncounted: true}
+    - {lit: in}
+    - {slot: unit, cat: mixture_measure, uncounted: true}
+    ending:
+    - opt:
+      - {slot: perfect, cat: evaporation_perfect_auxiliary, finite_form: true}
+    - opt:
+      - {slot: completion, cat: evaporation_completion_adverb}
+    - {slot: removal, cat: solvent_removal_verb, past_participle: true}
+- id: ask/mixture-much-unit-left-after-solvent-removal-perfect
+  template: mixture-recovery-ask
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - {slot: component, cat: mixture_component, uncounted: true}
+    - {lit: in}
+    - {slot: unit, cat: mixture_measure, uncounted: true}
+    result:
+    - {lit: will}
+    - {lit: be}
+    - {slot: remainder, cat: remnant_adj}
+    holder: ''
+    ending:
+    - opt:
+      - {slot: perfect, cat: evaporation_perfect_auxiliary, finite_form: true}
+    - opt:
+      - {slot: completion, cat: evaporation_completion_adverb}
+    - {slot: removal, cat: solvent_removal_verb, past_participle: true}
+- id: ask/mixture-much-unit-remain-after-solvent-removal-perfect
+  template: mixture-recovery-ask
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - {slot: component, cat: mixture_component, uncounted: true}
+    - {lit: in}
+    - {slot: unit, cat: mixture_measure, uncounted: true}
+    result:
+    - {lit: will}
+    - {slot: remain, cat: inventory_remainder_verb, bare_form: true}
+    holder: ''
+    ending:
+    - opt:
+      - {slot: perfect, cat: evaporation_perfect_auxiliary, finite_form: true}
+    - opt:
+      - {slot: completion, cat: evaporation_completion_adverb}
+    - {slot: removal, cat: solvent_removal_verb, past_participle: true}
+- id: ask/mixture-volume-get-after-solvent-removal-perfect
+  template: mixture-recovery-ask
+  arguments:
+    head:
+    - {lit: what, at_start: true}
+    - {slot: volume, cat: mixture_basis, uncounted: true}
+    - {lit: of}
+    - {slot: component, cat: mixture_component, uncounted: true}
+    target: ''
+    ending:
+    - opt:
+      - {slot: perfect, cat: evaporation_perfect_auxiliary, finite_form: true}
+    - opt:
+      - {slot: completion, cat: evaporation_completion_adverb}
+    - {slot: removal, cat: solvent_removal_verb, past_participle: true}
+- id: ask/mixture-volume-left-after-solvent-removal-perfect
+  template: mixture-recovery-ask
+  arguments:
+    head:
+    - {lit: what, at_start: true}
+    - {slot: volume, cat: mixture_basis, uncounted: true}
+    - {lit: of}
+    - {slot: component, cat: mixture_component, uncounted: true}
+    result:
+    - {lit: will}
+    - {lit: be}
+    - {slot: remainder, cat: remnant_adj}
+    holder: ''
+    target: ''
+    ending:
+    - opt:
+      - {slot: perfect, cat: evaporation_perfect_auxiliary, finite_form: true}
+    - opt:
+      - {slot: completion, cat: evaporation_completion_adverb}
+    - {slot: removal, cat: solvent_removal_verb, past_participle: true}
+- id: ask/mixture-volume-remain-after-solvent-removal-perfect
+  template: mixture-recovery-ask
+  arguments:
+    head:
+    - {lit: what, at_start: true}
+    - {slot: volume, cat: mixture_basis, uncounted: true}
+    - {lit: of}
+    - {slot: component, cat: mixture_component, uncounted: true}
+    result:
+    - {lit: will}
+    - {slot: remain, cat: inventory_remainder_verb, bare_form: true}
+    holder: ''
+    target: ''
+    ending:
+    - opt:
+      - {slot: perfect, cat: evaporation_perfect_auxiliary, finite_form: true}
+    - opt:
+      - {slot: completion, cat: evaporation_completion_adverb}
+    - {slot: removal, cat: solvent_removal_verb, past_participle: true}
+- id: ask/mixture-component-present-left-after-solvent-removal-perfect
+  template: mixture-recovery-ask
+  arguments:
+    result:
+    - {lit: are}
+    - {slot: remainder, cat: remnant_adj}
+    holder: ''
+    ending:
+    - opt:
+      - {slot: perfect, cat: evaporation_perfect_auxiliary, finite_form: true}
+    - opt:
+      - {slot: completion, cat: evaporation_completion_adverb}
+    - {slot: removal, cat: solvent_removal_verb, past_participle: true}
+- id: ask/mixture-many-remain-in-sample
+  template: mixture-state-ask
+  arguments: {}
+- id: ask/mixture-many-left-in-sample
+  template: mixture-state-ask
+  arguments:
+    tail:
+    - slot: copula
+      cat: present_copula
+    - slot: left
+      cat: remnant_adj
+    - lit: in
+    - slot: source
+      cat: mixture_substance
+      uncounted: true
+    - opt:
+      - lit: in
+      - slot: holder
+        cat: measurement_container
+        referential: true
+- id: ask/mixture-much-remain-in-sample
+  template: mixture-state-ask
+  arguments:
+    head: &id004
+    - lit: how
+      at_start: true
+    - lit: much
+    - slot: component
+      cat: mixture_component
+      uncounted: true
+    target: ''
+- id: ask/mixture-much-left-in-sample
+  template: mixture-state-ask
+  arguments:
+    head: *id004
+    target: ''
+    tail:
+    - slot: copula
+      cat: present_copula
+    - slot: left
+      cat: remnant_adj
+    - lit: in
+    - slot: source
+      cat: mixture_substance
+      uncounted: true
+    - opt:
+      - lit: in
+      - slot: holder
+        cat: measurement_container
+        referential: true
+- id: ask/mixture-quantity-remain-in-sample
+  template: mixture-state-ask
+  arguments:
+    head: &id005
+    - lit: what
+      at_start: true
+    - slot: volume
+      cat: mixture_basis
+      uncounted: true
+    - lit: of
+    - slot: component
+      cat: mixture_component
+      uncounted: true
+    target: ''
+- id: ask/mixture-quantity-left-in-sample
+  template: mixture-state-ask
+  arguments:
+    head: *id005
+    target: ''
+    tail:
+    - slot: copula
+      cat: present_copula
+    - slot: left
+      cat: remnant_adj
+    - lit: in
+    - slot: source
+      cat: mixture_substance
+      uncounted: true
+    - opt:
+      - lit: in
+      - slot: holder
+        cat: measurement_container
+        referential: true
+- id: ask/mixture-component-after-solvent-removal-explicit-retention
+  template: mixture-explicit-recovery-ask
+- id: ask/mixture-component-left-after-solvent-removal-explicit-retention
+  template: mixture-explicit-recovery-ask
+  arguments:
+    result:
+    - {lit: will}
+    - {lit: be}
+    - {slot: remainder, cat: remnant_adj}
+    holder: ''
+- id: ask/mixture-many-remain-after-solvent-removal-explicit-retention
+  template: mixture-explicit-recovery-ask
+  arguments:
+    result:
+    - {lit: will}
+    - {slot: remain, cat: inventory_remainder_verb, bare_form: true}
+    holder: ''
+- id: ask/mixture-much-get-after-solvent-removal-explicit-retention
+  template: mixture-explicit-recovery-ask
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - {slot: component, cat: mixture_component, uncounted: true}
+    target: ''
+- id: ask/mixture-much-left-after-solvent-removal-explicit-retention
+  template: mixture-explicit-recovery-ask
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - {slot: component, cat: mixture_component, uncounted: true}
+    result:
+    - {lit: will}
+    - {lit: be}
+    - {slot: remainder, cat: remnant_adj}
+    holder: ''
+    target: ''
+- id: ask/mixture-much-remain-after-solvent-removal-explicit-retention
+  template: mixture-explicit-recovery-ask
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - {slot: component, cat: mixture_component, uncounted: true}
+    result:
+    - {lit: will}
+    - {slot: remain, cat: inventory_remainder_verb, bare_form: true}
+    holder: ''
+    target: ''
+- id: ask/mixture-much-unit-get-after-solvent-removal-explicit-retention
+  template: mixture-explicit-recovery-ask
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - {slot: component, cat: mixture_component, uncounted: true}
+    - {lit: in}
+    - {slot: unit, cat: mixture_measure, uncounted: true}
+- id: ask/mixture-much-unit-left-after-solvent-removal-explicit-retention
+  template: mixture-explicit-recovery-ask
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - {slot: component, cat: mixture_component, uncounted: true}
+    - {lit: in}
+    - {slot: unit, cat: mixture_measure, uncounted: true}
+    result:
+    - {lit: will}
+    - {lit: be}
+    - {slot: remainder, cat: remnant_adj}
+    holder: ''
+- id: ask/mixture-much-unit-remain-after-solvent-removal-explicit-retention
+  template: mixture-explicit-recovery-ask
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - {slot: component, cat: mixture_component, uncounted: true}
+    - {lit: in}
+    - {slot: unit, cat: mixture_measure, uncounted: true}
+    result:
+    - {lit: will}
+    - {slot: remain, cat: inventory_remainder_verb, bare_form: true}
+    holder: ''
+- id: ask/mixture-volume-get-after-solvent-removal-explicit-retention
+  template: mixture-explicit-recovery-ask
+  arguments:
+    head:
+    - {lit: what, at_start: true}
+    - {slot: volume, cat: mixture_basis, uncounted: true}
+    - {lit: of}
+    - {slot: component, cat: mixture_component, uncounted: true}
+    target: ''
+- id: ask/mixture-volume-left-after-solvent-removal-explicit-retention
+  template: mixture-explicit-recovery-ask
+  arguments:
+    head:
+    - {lit: what, at_start: true}
+    - {slot: volume, cat: mixture_basis, uncounted: true}
+    - {lit: of}
+    - {slot: component, cat: mixture_component, uncounted: true}
+    result:
+    - {lit: will}
+    - {lit: be}
+    - {slot: remainder, cat: remnant_adj}
+    holder: ''
+    target: ''
+- id: ask/mixture-volume-remain-after-solvent-removal-explicit-retention
+  template: mixture-explicit-recovery-ask
+  arguments:
+    head:
+    - {lit: what, at_start: true}
+    - {slot: volume, cat: mixture_basis, uncounted: true}
+    - {lit: of}
+    - {slot: component, cat: mixture_component, uncounted: true}
+    result:
+    - {lit: will}
+    - {slot: remain, cat: inventory_remainder_verb, bare_form: true}
+    holder: ''
+    target: ''
+- id: ask/mixture-component-present-left-after-solvent-removal-explicit-retention
+  template: mixture-explicit-recovery-ask
+  arguments:
+    result:
+    - {lit: are}
+    - {slot: remainder, cat: remnant_adj}
+    holder: ''
+asks:
+- id: ask/mixture-percentage
+  match:
+    question:
+    - lit: what
+      at_start: true
+    - slot: percent
+      cat: mixture_percentage_noun
+    - lit: of
+    - slot: source
+      cat: mixture_substance
+      uncounted: true
+    - opt:
+      - lit: in
+      - slot: holder
+        cat: measurement_container
+        referential: true
+    - slot: copula
+      cat: singular_copula
+    - slot: component
+      cat: mixture_component
+      uncounted: true
+    - opt:
+      - lit: by
+      - slot: basis
+        cat: mixture_basis
+        uncounted: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: mixture-component
+    result: percentage
+    component: '{component}'
+    source: '{source}'
+    entity: '{holder}'
+    quantity_basis: '{basis}'
+- id: ask/mixture-count-component
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: many
+    - slot: component
+      cat: discrete_mixture_component
+      number: plural
+    - slot: copula
+      cat: present_copula
+    - lit: in
+    - slot: source
+      cat: mixture_substance
+      uncounted: true
+    - opt:
+      - lit: in
+      - slot: holder
+        cat: measurement_container
+        referential: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: mixture-component
+    component: '{component}'
+    source: '{source}'
+    entity: '{holder}'
+    required_dimension: count

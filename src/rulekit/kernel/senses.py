@@ -152,6 +152,22 @@ def annotate_senses(reading: Reading, reg: Registry) -> Reading:
                 continue
 
         if entry is not None:
+            # Explicit noun/name homographs use orthography and determination
+            # at sentence start too. Pack data owns which words have a name
+            # sense; an article or lowercase spelling preserves the noun.
+            if set(entry.senses) == {"noun", "name"}:
+                prev = _previous_word_unit(reading, unit)
+                previous = reg.lexicon.get(prev.features.get("fold")) if prev else None
+                named = (surface[:1].isupper() and surface[1:].islower()
+                         and not (previous and "article" in previous.senses)
+                         and number == "singular")
+                reading.record(
+                    "annotate-sense", unit,
+                    {"senses": ["name" if named else "noun"],
+                     "lemma": singular, "number": number},
+                    "declared noun/name homograph resolved by capitalization and article",
+                )
+                continue
             if entry.number is not None:
                 number = entry.number
             implicit_senses = ["noun"]

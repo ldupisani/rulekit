@@ -202,9 +202,6 @@ entries:
   ants:
     senses:
     - noun
-  any:
-    senses:
-    - article
   apartment:
     senses:
     - noun
@@ -483,9 +480,6 @@ entries:
   beauty:
     senses:
     - noun
-  because:
-    senses:
-    - conjunction
   become:
     senses:
     - verb
@@ -701,9 +695,6 @@ entries:
   broke:
     senses:
     - verb
-  bronze:
-    senses:
-    - noun
   brown:
     senses:
     - adjective
@@ -995,9 +986,6 @@ entries:
   century:
     senses:
     - noun
-  cereal:
-    senses:
-    - noun
   certain:
     senses:
     - adjective
@@ -1173,14 +1161,6 @@ entries:
   coffee:
     senses:
     - noun
-  collect:
-    senses:
-    - verb
-  collected:
-    senses:
-    - verb
-    verb:
-      lemma: collect
   collecting:
     senses:
     - verb
@@ -1193,25 +1173,12 @@ entries:
   collector:
     senses:
     - noun
-  collects:
-    senses:
-    - verb
-    verb:
-      lemma: collect
   college:
     senses:
     - noun
   colored:
     senses:
     - adjective
-  combine:
-    senses:
-    - verb
-  combines:
-    senses:
-    - verb
-    verb:
-      lemma: combine
   come:
     senses:
     - verb
@@ -1284,10 +1251,6 @@ entries:
   completing:
     senses:
     - verb
-  computer:
-    senses:
-    - noun
-    plural: computers
   concert:
     senses:
     - noun
@@ -1447,9 +1410,6 @@ entries:
     senses:
     - verb
   coughs:
-    senses:
-    - verb
-  count:
     senses:
     - verb
   counted:
@@ -1710,10 +1670,6 @@ entries:
   descending:
     senses:
     - verb
-  desert:
-    senses:
-    - noun
-    plural: deserts
   desk:
     senses:
     - noun
@@ -1883,22 +1839,6 @@ entries:
   downhill:
     senses:
     - adverb
-  download:
-    senses:
-    - verb
-  downloaded:
-    senses:
-    - verb
-    verb:
-      lemma: download
-  downloading:
-    senses:
-    - verb
-  downloads:
-    senses:
-    - verb
-    verb:
-      lemma: download
   downpayment:
     senses:
     - noun

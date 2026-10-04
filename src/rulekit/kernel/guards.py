@@ -305,6 +305,12 @@ def _check_number(
                for f in store.by_kind(kind)):
             return GuardVeto("answer-accounting", "a stated rate policy or repeated schedule was not used")
 
+        from .model import MixtureEvidence
+
+        if any(row.key() not in log.consumed_mixture_keys
+               for row in store.by_kind(MixtureEvidence)):
+            return GuardVeto("answer-accounting", "a stated mixture amount or share was not used")
+
         from .model import ResourceAllocation, ResourceBalance, AccountEntry, BatchEvidence
 
         if any(b.key() not in log.consumed_batch_keys for b in store.by_kind(BatchEvidence)):

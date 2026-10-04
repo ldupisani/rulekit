@@ -320,9 +320,6 @@ entries:
     senses:
     - noun
     plural: helicopters
-  helium:
-    senses:
-    - noun
   help:
     senses:
     - verb
@@ -612,14 +609,6 @@ entries:
   ipods:
     senses:
     - noun
-  island:
-    senses:
-    - noun
-    plural: islands
-  jack:
-    senses:
-    - noun
-    plural: jacks
   jacket:
     senses:
     - noun
@@ -1304,14 +1293,6 @@ entries:
   milk:
     senses:
     - noun
-  milliliter:
-    # The SINGULAR was missing while 'milliliters' had its own entry, so the
-    # plural never canonicalized (lemma stayed 'milliliters') and no conversion
-    # could key on it. `plural:` restores the one-identity invariant every other
-    # unit noun already has — a noun's number-forms share ONE lemma.
-    senses:
-    - noun
-    plural: milliliters
   million:
     senses:
     - noun
@@ -1361,28 +1342,7 @@ entries:
   mittens:
     senses:
     - noun
-  mix:
-    senses:
-    - verb
-  mixed:
-    senses:
-    - verb
-    verb:
-      lemma: mix
-  mixes:
-    senses:
-    - verb
-    verb:
-      lemma: mix
-  mixing:
-    senses:
-    - verb
-    verb:
-      lemma: mix
   mixtape:
-    senses:
-    - noun
-  ml:
     senses:
     - noun
   model:

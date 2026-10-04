@@ -33,6 +33,8 @@ YAML authoring reference: `docs/yaml-reference.md`. Measurement discipline:
 
 When the user asks to implement a specific question or a supplied list of
 questions, work directly in the current checkout, preserving unrelated changes.
+The default target is `projects/curated`: supplied questions must work there
+without relying on vocabulary or rules loaded only by benchmark projects.
 This is ordinary product development, **not Mining v2**, even if the question
 comes from GSM8K. Do not automatically create a mining batch, candidate
 worktrees, manifests, agent review stages, Designer promotion decisions, or

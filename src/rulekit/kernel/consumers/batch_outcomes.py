@@ -1,4 +1,4 @@
-"""A complete ordered partition, with a separate event fraction per batch."""
+"""Local batch fractions over opening-stock partitions or independent acquisitions."""
 
 from collections import Counter, defaultdict
 from math import isclose, isfinite
@@ -12,8 +12,13 @@ from ..resource_equations import resource_residual
 from ..source_coverage import uncovered_units
 
 
+ACQUIRED_BATCH_KINDS = frozenset({"acquisition", "acquired-discard", "acquired-classify", "batch-discard", "batch-classify"})
+
+
 @consumer("batch-outcomes")
 def consume(ctx):
+    if ctx.query.get("scope") == "acquired":
+        return _acquired_batches(ctx)
     def decline(reason):
         return Answer("decline", None, reason)
 
@@ -107,3 +112,165 @@ def consume(ctx):
     detail = "; ".join(f"{r.value:g} × {r.fraction:g} = {v:g}" for r, v in zip(shares, selected))
     return Answer("number", value, f"{value:g} {measure}; {detail}", proof=AnswerProof(node, (
         ProofStep("exhaustive-disjoint-batches", node, (opening, *shares), detail),)))
+
+
+def _acquired_batches(ctx):
+    """Independent acquisitions, each with its own local selection evidence.
+
+    Classification alone never removes stock. An explicit question-local
+    removal can complete a classified batch, with item, actor, quality and
+    ordinal checked against that batch rather than the accumulated balance.
+    """
+    def decline(reason):
+        return Answer("decline", None, reason)
+
+    def quality(word):
+        categories = [c for c in ctx.reg.word_categories.get(word, ())
+                      if "batch_quality" in ctx.reg.cat_ancestors(c)
+                      and c in ctx.reg.category_antonyms]
+        if len(categories) != 1:
+            return None
+        category = categories[0]
+        return (frozenset((category, ctx.reg.category_antonyms[category])),
+                ctx.reg.category_polarity.get(category))
+
+    rows = list(ctx.store.by_kind(BatchEvidence))
+    # Standalone acquisitions remain ordinary quantities for ratios, discourse
+    # groups and balance consumers. Normalize them locally only when answering
+    # a batch question; do not impose batch accounting on unrelated questions.
+    occupied = {r.provenance.sentence for r in rows}
+    quantities = [q for q in ctx.store.by_kind(Quantity)
+                  if q.provenance.sentence not in occupied
+                  and ctx.reg.word_in_category(q.verb, "batch_acquisition_verb")]
+    if any(q.owner or q.qualifier or q.label or q.measure_qualifier or q.time
+           or q.segment or q.provenance.source.startswith("synth/") for q in quantities):
+        return decline("an acquisition needs explicit unqualified source identity")
+    rows.extend(BatchEvidence(q.provenance, "acquisition", q.entity, q.measure,
+                              q.value, 0, acquisition=q.verb) for q in quantities)
+    rows.sort(key=lambda r: (r.provenance.sentence, r.position))
+    if not rows or ctx.store.collisions or ctx.store.quarantined:
+        return decline("acquired batches need unambiguous evidence")
+    if any(r.kind not in ACQUIRED_BATCH_KINDS or r.provenance.assumption for r in rows):
+        return decline("acquired batches cannot be mixed with an opening-stock partition or assumption")
+    entity, measure = rows[0].entity, rows[0].measure
+    if (not entity or not measure or ctx.query.get("entity", entity) != entity
+            or ctx.query.get("item") != measure or any(r.entity != entity for r in rows)):
+        return decline("all acquired batches must identify the same participant and item")
+    expected = defaultdict(Counter)
+    batches = []
+    for row in rows:
+        if row.kind in {"batch-discard", "batch-classify"}:
+            if (not batches or batches[-1][1] is not None
+                    or row.provenance.sentence != batches[-1][0].provenance.sentence + 1):
+                return decline("a standalone fraction needs the immediately preceding unclassified acquisition")
+            batches[-1][1] = row
+            expected[row.provenance.sentence][row.fraction] += 1
+            continue
+        if (row.measure != measure or not isfinite(row.value) or row.value <= 0
+                or not float(row.value).is_integer()):
+            return decline("each acquisition needs a positive whole count of the same item")
+        expected[row.provenance.sentence][row.value] += 1
+        outcome = None if row.kind == "acquisition" else row
+        if outcome:
+            expected[row.provenance.sentence][row.fraction] += 1
+        batches.append([row, outcome])
+    if not batches:
+        return decline("batch outcomes need an acquisition")
+    if audit_numeric_mentions((*ctx.premises, ctx.question), expected, missing="missing", duplicate="duplicate"):
+        return decline("every numeric mention must belong to an acquisition or its outcome")
+    for reading in ctx.premises:
+        if reading.sentence_index >= rows[0].provenance.sentence and uncovered_units(reading):
+            return decline("the acquired-batch interval contains an unread event or restriction")
+    unread = uncovered_units(ctx.question, ctx.match.consumed)
+    # The shared possession ask leaves a trailing remainder adjective outside
+    # its match. Admit only that exact suffix; other time/scope changes remain unread.
+    if (len(unread) == 1 and ctx.reg.word_in_category(ctx.query.get("verb", ""), "possession_state")
+            and unread[0] is next((u for u in reversed(ctx.question.units) if u.sense() != "punct"), None)
+            and ctx.reg.word_in_category(unread[0].features.get("lemma", ""), "remnant_adj")):
+        unread = ()
+    if unread:
+        return decline("the acquired-batch question contains an unread restriction")
+    if any(ctx.query.get(k) for k in ("measure_qualifier", "owner", "qualifier", "label", "time")):
+        return decline("an additionally qualified balance needs exact batch identity")
+
+    asked_quality = quality(ctx.query["attribute"]) if ctx.query.get("attribute") else None
+    if ctx.query.get("attribute") and asked_quality is None:
+        return decline("the requested quality is not a declared batch classification")
+    completion = ctx.query.get("completion_attribute")
+    completion_index = None
+    if completion:
+        if (ctx.query.get("completion_item") != measure
+                or ctx.query.get("completion_entity", entity) != entity):
+            return decline("the question-local removal identifies a different actor or item")
+        index = ctx.reg.attrs.get(ctx.query.get("completion_round", ""), {}).get("batch_index")
+        if ctx.query.get("completion_round") and index is None:
+            return decline("the requested round is not identified")
+        if index is None and sum(outcome is not None and outcome.kind in {"acquired-classify", "batch-classify"}
+                                 for _, outcome in batches) != 1:
+            return decline("an unnumbered removal needs one unambiguous classified batch")
+        completion_index = len(batches) - 1 if index in (None, -1) else int(index) - 1
+        if not 0 <= completion_index < len(batches):
+            return decline("the requested round does not exist")
+        acquired, outcome = batches[completion_index]
+        if ctx.query.get("completion_acquisition", acquired.acquisition) != acquired.acquisition:
+            return decline("the question refers to a different acquisition event")
+        if outcome is None or outcome.kind not in {"acquired-classify", "batch-classify"}:
+            return decline("question-local removal needs a classified, not already disposed, batch")
+
+    selected = []
+    details = []
+    for index, (acquired, outcome) in enumerate(batches):
+        # An asserted acquisition with no selection retains its whole count.
+        # It cannot answer a quality-specific question without classification.
+        outcome = outcome or acquired
+        if not isfinite(outcome.fraction) or not 0 <= outcome.fraction <= 1:
+            return decline("batch outcome fractions must lie within one whole")
+        affected = evaluate("population * fraction", {"population": acquired.value, "fraction": outcome.fraction},
+                            ctx.log, source="batch-selected-count")
+        if not isfinite(affected) or not isclose(affected, round(affected), rel_tol=0, abs_tol=1e-8):
+            return decline("batch outcomes must count whole objects")
+        classified = quality(outcome.attribute) if outcome.attribute else None
+        if outcome.attribute and (classified is None or outcome.sign not in (-1, 1)):
+            return decline("the outcome quality is not a declared binary classification")
+        positive = (affected if outcome.sign == 1 else acquired.value - affected) if classified else None
+        removed = 0.0
+        removed_sign = None
+        if outcome.kind in {"acquired-discard", "batch-discard"}:
+            removed, removed_sign = affected, outcome.sign
+        if index == completion_index:
+            removal_quality = quality(completion)
+            if classified is None or removal_quality is None or removal_quality[0] != classified[0]:
+                return decline("removal and classification describe different qualities")
+            removed_sign = removal_quality[1]
+            removed = positive if removed_sign == 1 else acquired.value - positive
+        if ctx.query["mode"] == "acquired":
+            if ctx.query.get("verb") != acquired.acquisition or asked_quality:
+                return decline("the requested acquisition needs matching event and class evidence")
+            value = acquired.value
+        elif ctx.query["mode"] == "discarded":
+            if ctx.query.get("disposal_verb") and outcome.verb != ctx.query["disposal_verb"]:
+                return decline("the requested disposal event does not match every batch")
+            if asked_quality:
+                if classified is None or classified[0] != asked_quality[0]:
+                    return decline("a qualified disposal needs compatible quality evidence")
+                value = removed if removed_sign == asked_quality[1] else 0.0
+            else:
+                value = removed
+        elif asked_quality:
+            if classified is None or classified[0] != asked_quality[0]:
+                return decline("a qualified remainder needs compatible quality evidence for every batch")
+            value = positive if asked_quality[1] == 1 else acquired.value - positive
+            if removed_sign == asked_quality[1]:
+                value = resource_residual([value], [removed], ctx.log, source="batch-quality-remainder")
+        else:
+            value = resource_residual([acquired.value], [removed], ctx.log, source="batch-retained-count")
+        selected.append(value)
+        details.append(f"batch {index + 1}: {acquired.value:g}, selected {affected:g}, removed {removed:g}, answer contribution {value:g}")
+    total = resource_residual(selected, [], ctx.log, source="acquired-batch-total")
+    if not isfinite(total) or total < 0:
+        return decline("invalid acquired-batch balance")
+    ctx.log.consumed_batch_keys.update(r.key() for r in rows)
+    node = SemanticNode("acquired-batches", (("entity", entity), ("measure", measure), ("mode", ctx.query["mode"])))
+    detail = "; ".join(details)
+    return Answer("number", total, f"{total:g} {measure}; {detail}", proof=AnswerProof(node, (
+        ProofStep("independent-acquisition-outcomes", node, (*ctx.store.by_kind(BatchEvidence), *quantities), detail),)))

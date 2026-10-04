@@ -9,7 +9,6 @@ entries:
   sphere: {senses: [noun], plural: spheres}
   cylinder: {senses: [noun], plural: cylinders}
   radius: {senses: [noun], plural: radii}
-  volume: {senses: [noun], plural: volumes}
   circumference: {senses: [noun], plural: circumferences}
   diagonal: {senses: [noun], plural: diagonals}
   # `surface` is noun-sensed: noun+noun condensation still makes "surface area"

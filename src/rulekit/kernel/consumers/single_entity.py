@@ -33,7 +33,13 @@ def single_entity(ctx: ConsumerContext):
     from ..model import BatchEvidence
     if ctx.store.by_kind(BatchEvidence):
         from dataclasses import replace
-        from .batch_outcomes import consume
+        from .batch_outcomes import ACQUIRED_BATCH_KINDS, consume
+        if (all(r.kind in ACQUIRED_BATCH_KINDS
+                for r in ctx.store.by_kind(BatchEvidence))
+                and any(ctx.reg.word_in_category(ctx.query.get("verb", ""), category)
+                        for category in ("possession_state", "batch_acquisition_verb"))):
+            mode = "retained" if ctx.reg.word_in_category(ctx.query.get("verb", ""), "possession_state") else "acquired"
+            return consume(replace(ctx, query={**ctx.query, "scope": "acquired", "item": measure, "mode": mode}))
         return consume(replace(ctx, query={**ctx.query, "item": measure, "mode": "selected"}))
     from ..purchase_totals import has_relative_purchase_prices, relative_purchase_total
     if (has_relative_purchase_prices(ctx.store)

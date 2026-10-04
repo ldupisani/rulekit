@@ -2,7 +2,6 @@ format: rulekit/lexicon@1
 entries:
   # Plural-only: the singular `mole` remains unavailable because it also names
   # an animal. Every supported chemistry ask uses the unambiguous plural form.
-  moles: {senses: [noun], plural: moles}
   # Adjective sense prevents premature noun-compound folding before the ask's
   # exact `molar mass` literal is considered.
   molar: {senses: [adjective]}

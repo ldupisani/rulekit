@@ -44,3 +44,49 @@ population, when participants/events/objects disagree, or when the evidence
 implies fractional discrete objects. Intentions, attempts and missing temporal
 evidence do not become successful events. No answer is inferred for unstated
 batches.
+
+## Independent acquisitions and selective disposal
+
+The same `BatchEvidence`, numeric-accounting gate, fraction evaluator and
+resource-balance arithmetic also support newly acquired batches. These batches
+do not have to partition an opening stock. Standalone acquisitions remain
+ordinary `Quantity` facts, so ratios and discourse-group totals keep using
+their existing infrastructure. The batch consumer interprets those quantities
+locally when a selection or disposal requires batch scope. Each fraction belongs
+to its own acquisition, never the accumulated balance.
+
+> Nora downloaded 300 files and deleted 60% of them because they were irrelevant.
+> She downloaded 200 more files but realized that three fourths of them were not useful.
+> How many valuable files was Nora left with after deleting the unrelated files
+> she downloaded in the second round?
+
+Answer: **170 files** — 120 from the first acquisition plus 50 from the second.
+
+Acquisitions can use download, collect or receive; disposals can use delete,
+discard or reject. Files, documents, images, photos and other countable objects
+reuse the same arithmetic. Supported constructions include:
+
+- “After downloading …, she deleted …” and “She downloaded … and deleted …”.
+- A separate acquisition followed immediately by “She deleted half of them” or
+  “She realized that half of them were irrelevant”.
+- Percentages, numeric fractions and word fractions; optional “more” and “again”.
+- Helpful/useful/relevant/valuable and irrelevant/unrelated/unhelpful/useless,
+  including negated classifications such as “not helpful”. These are a declared
+  binary relevance classification, not a general synonym substitution.
+- “How many … remain?”, “… does Nora have left?”, “… was Nora left with?” and
+  “… did Nora delete?”. Questions can name the first, second, third or last round.
+
+Classification does not itself delete anything. Before the final deletion in
+that example, **320 total files** remain, including **170 useful files** and
+**150 irrelevant files**. A qualified disposal question counts only the requested
+class; deleting irrelevant files does not count as deleting useful files.
+
+A batch with no stated disposal retains its full count; a quality-specific
+question still needs classification evidence for every batch. The consumer
+declines for an ambiguous/nonadjacent fraction,
+changed participant or item, nonexistent round, mismatched acquisition/disposal,
+additional unread event, fractions outside one whole, or fractional object counts.
+It does not infer that a fraction of all accumulated files refers to the latest
+batch. Earlier nonnumeric narrative is outside the batch interval; a pronoun
+there can still carry a reader diagnostic without affecting the supported
+numeric evidence.

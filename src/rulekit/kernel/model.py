@@ -1283,10 +1283,11 @@ class ResourceAllocation(Fact):
 
 @dataclass(frozen=True)
 class BatchEvidence(Fact):
-    """An opening population or an outcome share of one disjoint ordered batch.
+    """An opening population, independent acquisition, or local batch selection.
 
     Source identity distinguishes equal-sized batches. Fractions remain raw
-    evidence until a consumer checks order, exhaustiveness and item identity.
+    evidence until a consumer checks scope, item identity and, for partitions,
+    order and exhaustiveness. Classification alone does not assert removal.
     """
 
     kind: str
@@ -1298,13 +1299,17 @@ class BatchEvidence(Fact):
     marker: str = ""
     fraction: float = 1.0
     container: str = ""
+    attribute: str = ""
+    sign: float = 0.0
+    acquisition: str = ""
 
     def key(self):
         return ("batch-evidence", self.provenance.sentence, self.position, self.kind)
 
     def value_part(self):
         return (self.entity, self.measure, self.value, self.verb,
-                self.marker, self.fraction, self.container)
+                self.marker, self.fraction, self.container, self.attribute,
+                self.sign, self.acquisition)
 
 
 @dataclass(frozen=True)
@@ -2457,6 +2462,43 @@ class SpatialPlacement(Fact):
 
     def value_part(self) -> Any:
         return (self.reference, self.relation)
+
+
+@dataclass(frozen=True)
+class MixtureEvidence(Fact):
+    """Sample, composition or ordered process evidence for a mixture.
+
+    Empty basis preserves the elementary same-dimension convention; explicit
+    bases are never discarded. Entity/source identify the sample independently
+    of its material. Non-numeric process evidence has value zero and is excluded
+    from the numeric-mention audit, but must still be consumed.
+    """
+
+    kind: str
+    source: str
+    value: float
+    entity: str = ""
+    component: str = ""
+    measure: str = ""
+    basis: str = ""
+    solvent: str = ""
+    other_entity: str = ""
+    other_source: str = ""
+    retained: str = ""
+    entity_reference: ReferenceIdentity | None = field(default=None, metadata={"reference_for": "entity"})
+    source_reference: ReferenceIdentity | None = field(default=None, metadata={"reference_for": "source"})
+    other_entity_reference: ReferenceIdentity | None = field(default=None, metadata={"reference_for": "other_entity"})
+    other_source_reference: ReferenceIdentity | None = field(default=None, metadata={"reference_for": "other_source"})
+
+    def key(self) -> tuple:
+        return ("mixture-evidence", self.kind, self.source, self.entity,
+                self.component, self.other_entity, self.other_source,
+                self.entity_reference, self.source_reference,
+                self.other_entity_reference, self.other_source_reference,
+                self.provenance.sentence)
+
+    def value_part(self) -> Any:
+        return (self.value, self.measure, self.basis, self.solvent, self.retained)
 
 
 @dataclass(frozen=True)

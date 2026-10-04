@@ -1,0 +1,1252 @@
+format: rulekit/rules@1
+templates:
+  acquired-batch-counted-discard:
+    parameters:
+      ending: []
+      attribute: ''
+      sign: '0'
+      satisfaction:
+        them: &id005
+        - refers
+    rule:
+      phase: read
+      match:
+        sentence:
+        - slot: who
+          type: entity
+          common_noun_cat: quantity_event_participant
+          referential: true
+          at_start: true
+          bare: true
+        - slot: acquire
+          cat: batch_acquisition_verb
+          finite_form: true
+        - &id001
+          slot: item
+          cat: ownable_quantity_object
+          counted: true
+          value_min: 1
+          bare: true
+        - slot: join
+          cat: batch_continuation_conjunction
+        - opt:
+          - slot: again
+            cat: batch_repetition_adverb
+        - slot: verb
+          cat: batch_disposal_verb
+          finite_form: true
+        - slot: share
+          type: fraction
+          word_fraction_within_whole: true
+        - lit: of
+        - slot: them
+          cat: plural_object_pronoun
+        - parameter: ending
+        - lit: .
+          consume_skipped: true
+      where:
+      - number_compatible:
+        - who
+        - acquire
+      satisfies:
+        parameter: satisfaction
+      consumes:
+      - item
+      - share
+      emits:
+      - fact: batch_evidence
+        kind: acquired-discard
+        entity: '{who}'
+        measure: '{item}'
+        value: item
+        position: '{item.span_start}'
+        fraction: share
+        verb: '{verb.optional}'
+        acquisition: '{acquire}'
+        attribute:
+          parameter: attribute
+        sign:
+          parameter: sign
+  acquired-batch-counted-classify:
+    parameters:
+      ending: []
+      attribute: ''
+      sign: '0'
+      satisfaction:
+        them:
+        - refers
+    rule:
+      phase: read
+      match:
+        sentence:
+        - slot: who
+          type: entity
+          common_noun_cat: quantity_event_participant
+          referential: true
+          at_start: true
+          bare: true
+        - slot: acquire
+          cat: batch_acquisition_verb
+          finite_form: true
+        - *id001
+        - slot: join
+          cat: batch_continuation_conjunction
+        - opt:
+          - slot: again
+            cat: batch_repetition_adverb
+        - slot: realize
+          cat: batch_realization_verb
+          finite_form: true
+        - lit: that
+        - slot: share
+          type: fraction
+          word_fraction_within_whole: true
+        - lit: of
+        - slot: them
+          cat: plural_object_pronoun
+        - slot: copula
+          cat: plural_copula
+        - parameter: ending
+        - lit: .
+          consume_skipped: true
+      where:
+      - number_compatible:
+        - who
+        - acquire
+      satisfies:
+        parameter: satisfaction
+      consumes:
+      - item
+      - share
+      emits:
+      - fact: batch_evidence
+        kind: acquired-classify
+        entity: '{who}'
+        measure: '{item}'
+        value: item
+        position: '{item.span_start}'
+        fraction: share
+        verb: ''
+        acquisition: '{acquire}'
+        attribute:
+          parameter: attribute
+        sign:
+          parameter: sign
+  acquired-batch-more-discard:
+    parameters:
+      ending: []
+      attribute: ''
+      sign: '0'
+      satisfaction:
+        them: &id006
+        - refers
+        n: &id007
+        - quantifies
+        more: &id008
+        - standard
+    rule:
+      phase: read
+      match:
+        sentence:
+        - slot: who
+          type: entity
+          common_noun_cat: quantity_event_participant
+          referential: true
+          at_start: true
+          bare: true
+        - slot: acquire
+          cat: batch_acquisition_verb
+          finite_form: true
+        - &id002
+          slot: n
+          type: number
+          value_min: 1
+        - &id003
+          slot: more
+          cat: batch_additional_marker
+        - &id004
+          slot: item
+          cat: ownable_quantity_object
+          number: plural
+          uncounted: true
+          bare: true
+        - slot: join
+          cat: batch_continuation_conjunction
+        - opt:
+          - slot: again
+            cat: batch_repetition_adverb
+        - slot: verb
+          cat: batch_disposal_verb
+          finite_form: true
+        - slot: share
+          type: fraction
+          word_fraction_within_whole: true
+        - lit: of
+        - slot: them
+          cat: plural_object_pronoun
+        - parameter: ending
+        - lit: .
+          consume_skipped: true
+      where:
+      - number_compatible:
+        - who
+        - acquire
+      satisfies:
+        parameter: satisfaction
+      consumes:
+      - n
+      - share
+      emits:
+      - fact: batch_evidence
+        kind: acquired-discard
+        entity: '{who}'
+        measure: '{item}'
+        value: n
+        position: '{n.span_start}'
+        fraction: share
+        verb: '{verb.optional}'
+        acquisition: '{acquire}'
+        attribute:
+          parameter: attribute
+        sign:
+          parameter: sign
+  acquired-batch-more-classify:
+    parameters:
+      ending: []
+      attribute: ''
+      sign: '0'
+      satisfaction:
+        them:
+        - refers
+        n:
+        - quantifies
+        more:
+        - standard
+    rule:
+      phase: read
+      match:
+        sentence:
+        - slot: who
+          type: entity
+          common_noun_cat: quantity_event_participant
+          referential: true
+          at_start: true
+          bare: true
+        - slot: acquire
+          cat: batch_acquisition_verb
+          finite_form: true
+        - *id002
+        - *id003
+        - *id004
+        - slot: join
+          cat: batch_continuation_conjunction
+        - opt:
+          - slot: again
+            cat: batch_repetition_adverb
+        - slot: realize
+          cat: batch_realization_verb
+          finite_form: true
+        - lit: that
+        - slot: share
+          type: fraction
+          word_fraction_within_whole: true
+        - lit: of
+        - slot: them
+          cat: plural_object_pronoun
+        - slot: copula
+          cat: plural_copula
+        - parameter: ending
+        - lit: .
+          consume_skipped: true
+      where:
+      - number_compatible:
+        - who
+        - acquire
+      satisfies:
+        parameter: satisfaction
+      consumes:
+      - n
+      - share
+      emits:
+      - fact: batch_evidence
+        kind: acquired-classify
+        entity: '{who}'
+        measure: '{item}'
+        value: n
+        position: '{n.span_start}'
+        fraction: share
+        verb: ''
+        acquisition: '{acquire}'
+        attribute:
+          parameter: attribute
+        sign:
+          parameter: sign
+  after-acquisition-discard:
+    parameters:
+      ending: []
+      attribute: ''
+      sign: '0'
+      satisfaction:
+        them: &id009
+        - refers
+        acquire: &id010
+        - subject
+    rule:
+      phase: read
+      match:
+        sentence:
+        - lit: after
+          at_start: true
+        - slot: acquire
+          cat: batch_acquisition_verb
+          present_participle: true
+        - slot: item
+          cat: ownable_quantity_object
+          counted: true
+          value_min: 1
+          bare: true
+        - slot: who
+          type: entity
+          common_noun_cat: quantity_event_participant
+          referential: true
+          bare: true
+        - slot: verb
+          cat: batch_disposal_verb
+          finite_form: true
+        - slot: share
+          type: fraction
+          word_fraction_within_whole: true
+        - lit: of
+        - slot: them
+          cat: plural_object_pronoun
+        - parameter: ending
+        - lit: .
+          consume_skipped: true
+      where:
+      - number_compatible:
+        - who
+        - verb
+      satisfies:
+        parameter: satisfaction
+      consumes:
+      - item
+      - share
+      emits:
+      - fact: batch_evidence
+        kind: acquired-discard
+        entity: '{who}'
+        measure: '{item}'
+        value: item
+        position: '{item.span_start}'
+        fraction: share
+        verb: '{verb}'
+        acquisition: '{acquire}'
+        attribute:
+          parameter: attribute
+        sign:
+          parameter: sign
+  acquired-batch-ask:
+    parameters:
+      body: []
+      tail: []
+      mode: retained
+    rule:
+      match:
+        question:
+        - lit: how
+          at_start: true
+        - lit: many
+        - slot: item
+          cat: ownable_quantity_object
+          number: plural
+          uncounted: true
+          qualified: true
+          qualifier_cat: batch_quality
+          class_only: true
+        - parameter: body
+        - parameter: tail
+        - lit: '?'
+          consume_skipped: true
+      resolves:
+        consumer: batch-outcomes
+        scope: acquired
+        entity: '{who}'
+        item: '{item}'
+        attribute: '{item.qualifier}'
+        mode:
+          parameter: mode
+        completion_attribute: '{removed.qualifier}'
+        completion_item: '{removed}'
+        completion_entity: '{again_who}'
+        completion_acquisition: '{acquire}'
+        completion_round: '{round.qualifier}'
+        disposal_verb: '{verb}'
+  acquired-batch-bare-ask:
+    parameters:
+      body: []
+      tail: []
+      mode: retained
+    rule:
+      match:
+        question:
+        - lit: how
+          at_start: true
+        - lit: many
+        - slot: item
+          cat: ownable_quantity_object
+          number: plural
+          uncounted: true
+          bare: true
+        - parameter: body
+        - parameter: tail
+        - lit: '?'
+          consume_skipped: true
+      resolves:
+        consumer: batch-outcomes
+        scope: acquired
+        entity: '{who}'
+        item: '{item}'
+        attribute: '{item.qualifier}'
+        mode:
+          parameter: mode
+        completion_attribute: '{removed.qualifier}'
+        completion_item: '{removed}'
+        completion_entity: '{again_who}'
+        completion_acquisition: '{acquire}'
+        completion_round: '{round.qualifier}'
+        disposal_verb: '{verb}'
+variants:
+- id: arithmetic/acquired-batch-counted-discard
+  template: acquired-batch-counted-discard
+- id: arithmetic/acquired-batch-counted-discard-reason
+  template: acquired-batch-counted-discard
+  arguments:
+    ending:
+    - lit: because
+    - slot: they
+      cat: discourse_subject_group_pronoun
+    - slot: copula
+      cat: plural_copula
+    - slot: quality
+      cat: batch_quality
+    attribute: '{quality}'
+    sign: sign(quality)
+    satisfaction:
+      them: *id005
+      they:
+      - refers
+- id: arithmetic/acquired-batch-counted-discard-negative-reason
+  template: acquired-batch-counted-discard
+  arguments:
+    ending:
+    - lit: because
+    - slot: they
+      cat: discourse_subject_group_pronoun
+    - slot: copula
+      cat: plural_copula
+    - lit: not
+    - slot: quality
+      cat: batch_quality
+    attribute: '{quality}'
+    sign: -sign(quality)
+    satisfaction:
+      them: *id005
+      they:
+      - refers
+- id: arithmetic/acquired-batch-counted-classify
+  template: acquired-batch-counted-classify
+  arguments:
+    ending:
+    - slot: quality
+      cat: batch_quality
+    attribute: '{quality}'
+    sign: sign(quality)
+- id: arithmetic/acquired-batch-counted-classify-negative
+  template: acquired-batch-counted-classify
+  arguments:
+    ending:
+    - lit: not
+    - slot: quality
+      cat: batch_quality
+    attribute: '{quality}'
+    sign: -sign(quality)
+- id: arithmetic/acquired-batch-more-discard
+  template: acquired-batch-more-discard
+- id: arithmetic/acquired-batch-more-discard-reason
+  template: acquired-batch-more-discard
+  arguments:
+    ending:
+    - lit: because
+    - slot: they
+      cat: discourse_subject_group_pronoun
+    - slot: copula
+      cat: plural_copula
+    - slot: quality
+      cat: batch_quality
+    attribute: '{quality}'
+    sign: sign(quality)
+    satisfaction:
+      them: *id006
+      n: *id007
+      more: *id008
+      they:
+      - refers
+- id: arithmetic/acquired-batch-more-discard-negative-reason
+  template: acquired-batch-more-discard
+  arguments:
+    ending:
+    - lit: because
+    - slot: they
+      cat: discourse_subject_group_pronoun
+    - slot: copula
+      cat: plural_copula
+    - lit: not
+    - slot: quality
+      cat: batch_quality
+    attribute: '{quality}'
+    sign: -sign(quality)
+    satisfaction:
+      them: *id006
+      n: *id007
+      more: *id008
+      they:
+      - refers
+- id: arithmetic/acquired-batch-more-classify
+  template: acquired-batch-more-classify
+  arguments:
+    ending:
+    - slot: quality
+      cat: batch_quality
+    attribute: '{quality}'
+    sign: sign(quality)
+- id: arithmetic/acquired-batch-more-classify-negative
+  template: acquired-batch-more-classify
+  arguments:
+    ending:
+    - lit: not
+    - slot: quality
+      cat: batch_quality
+    attribute: '{quality}'
+    sign: -sign(quality)
+- id: arithmetic/after-acquisition-discard
+  template: after-acquisition-discard
+  arguments: {}
+- id: arithmetic/after-acquisition-discard-reason
+  template: after-acquisition-discard
+  arguments:
+    ending:
+    - lit: because
+    - slot: they
+      cat: discourse_subject_group_pronoun
+    - slot: copula
+      cat: plural_copula
+    - slot: quality
+      cat: batch_quality
+    attribute: '{quality}'
+    sign: sign(quality)
+    satisfaction:
+      them: *id009
+      acquire: *id010
+      they:
+      - refers
+- id: arithmetic/after-acquisition-discard-negative-reason
+  template: after-acquisition-discard
+  arguments:
+    ending:
+    - lit: because
+    - slot: they
+      cat: discourse_subject_group_pronoun
+    - slot: copula
+      cat: plural_copula
+    - lit: not
+    - slot: quality
+      cat: batch_quality
+    attribute: '{quality}'
+    sign: -sign(quality)
+    satisfaction:
+      them: *id009
+      acquire: *id010
+      they:
+      - refers
+rules:
+- id: arithmetic/acquired-batch-counted
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: quantity_event_participant
+      referential: true
+      at_start: true
+      bare: true
+    - slot: acquire
+      cat: batch_acquisition_verb
+      finite_form: true
+    - slot: item
+      cat: ownable_quantity_object
+      counted: true
+      value_min: 1
+      bare: true
+    - lit: .
+      consume_skipped: true
+  where:
+  - number_compatible:
+    - who
+    - acquire
+  satisfies: {}
+  consumes:
+  - item
+  emits:
+  - fact: quantity
+    entity: '{who}'
+    measure: '{item}'
+    value: item
+    verb: '{acquire}'
+- id: arithmetic/acquired-batch-more
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: quantity_event_participant
+      referential: true
+      at_start: true
+      bare: true
+    - slot: acquire
+      cat: batch_acquisition_verb
+      finite_form: true
+    - slot: n
+      type: number
+      value_min: 1
+    - slot: more
+      cat: batch_additional_marker
+    - slot: item
+      cat: ownable_quantity_object
+      number: plural
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  where:
+  - number_compatible:
+    - who
+    - acquire
+  satisfies:
+    n:
+    - quantifies
+    more:
+    - standard
+  consumes:
+  - n
+  emits:
+  - fact: quantity
+    entity: '{who}'
+    measure: '{item}'
+    value: n
+    verb: '{acquire}'
+- id: arithmetic/acquired-batch-disposal
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: quantity_event_participant
+      referential: true
+      at_start: true
+      bare: true
+    - slot: verb
+      cat: batch_disposal_verb
+      finite_form: true
+    - slot: share
+      type: fraction
+      word_fraction_within_whole: true
+    - lit: of
+    - slot: them
+      cat: plural_object_pronoun
+    - lit: .
+      consume_skipped: true
+  satisfies:
+    them:
+    - refers
+  consumes:
+  - share
+  emits:
+  - fact: batch_evidence
+    kind: batch-discard
+    entity: '{who}'
+    measure: ''
+    value: 0
+    position: '{share.span_start}'
+    fraction: share
+    verb: '{verb}'
+    attribute: ''
+    sign: '0'
+- id: arithmetic/acquired-batch-disposal-reason
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: quantity_event_participant
+      referential: true
+      at_start: true
+      bare: true
+    - slot: verb
+      cat: batch_disposal_verb
+      finite_form: true
+    - slot: share
+      type: fraction
+      word_fraction_within_whole: true
+    - lit: of
+    - slot: them
+      cat: plural_object_pronoun
+    - lit: because
+    - slot: they
+      cat: discourse_subject_group_pronoun
+    - slot: copula
+      cat: plural_copula
+    - slot: quality
+      cat: batch_quality
+    - lit: .
+      consume_skipped: true
+  satisfies:
+    them:
+    - refers
+    they:
+    - refers
+  consumes:
+  - share
+  emits:
+  - fact: batch_evidence
+    kind: batch-discard
+    entity: '{who}'
+    measure: ''
+    value: 0
+    position: '{share.span_start}'
+    fraction: share
+    verb: '{verb}'
+    attribute: '{quality}'
+    sign: sign(quality)
+- id: arithmetic/acquired-batch-disposal-negative-reason
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: quantity_event_participant
+      referential: true
+      at_start: true
+      bare: true
+    - slot: verb
+      cat: batch_disposal_verb
+      finite_form: true
+    - slot: share
+      type: fraction
+      word_fraction_within_whole: true
+    - lit: of
+    - slot: them
+      cat: plural_object_pronoun
+    - lit: because
+    - slot: they
+      cat: discourse_subject_group_pronoun
+    - slot: copula
+      cat: plural_copula
+    - lit: not
+    - slot: quality
+      cat: batch_quality
+    - lit: .
+      consume_skipped: true
+  satisfies:
+    them:
+    - refers
+    they:
+    - refers
+  consumes:
+  - share
+  emits:
+  - fact: batch_evidence
+    kind: batch-discard
+    entity: '{who}'
+    measure: ''
+    value: 0
+    position: '{share.span_start}'
+    fraction: share
+    verb: '{verb}'
+    attribute: '{quality}'
+    sign: -sign(quality)
+- id: arithmetic/acquired-batch-classification
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: quantity_event_participant
+      referential: true
+      at_start: true
+      bare: true
+    - slot: realize
+      cat: batch_realization_verb
+      finite_form: true
+    - lit: that
+    - slot: share
+      type: fraction
+      word_fraction_within_whole: true
+    - lit: of
+    - slot: them
+      cat: plural_object_pronoun
+    - slot: copula
+      cat: plural_copula
+    - slot: quality
+      cat: batch_quality
+    - lit: .
+      consume_skipped: true
+  satisfies:
+    them:
+    - refers
+  consumes:
+  - share
+  emits:
+  - fact: batch_evidence
+    kind: batch-classify
+    entity: '{who}'
+    measure: ''
+    value: 0
+    position: '{share.span_start}'
+    fraction: share
+    attribute: '{quality}'
+    sign: sign(quality)
+- id: arithmetic/acquired-batch-classification-negative
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: quantity_event_participant
+      referential: true
+      at_start: true
+      bare: true
+    - slot: realize
+      cat: batch_realization_verb
+      finite_form: true
+    - lit: that
+    - slot: share
+      type: fraction
+      word_fraction_within_whole: true
+    - lit: of
+    - slot: them
+      cat: plural_object_pronoun
+    - slot: copula
+      cat: plural_copula
+    - lit: not
+    - slot: quality
+      cat: batch_quality
+    - lit: .
+      consume_skipped: true
+  satisfies:
+    them:
+    - refers
+  consumes:
+  - share
+  emits:
+  - fact: batch_evidence
+    kind: batch-classify
+    entity: '{who}'
+    measure: ''
+    value: 0
+    position: '{share.span_start}'
+    fraction: share
+    attribute: '{quality}'
+    sign: -sign(quality)
+ask_variants:
+- id: ask/acquired-batch-qualified-left-with-plain
+  template: acquired-batch-ask
+  arguments:
+    body: &id011
+    - slot: copula
+      cat: singular_copula
+    - slot: who
+      type: entity
+      common_noun_cat: quantity_event_participant
+      referential: true
+      bare: true
+    - slot: left
+      cat: batch_left_verb
+    - lit: with
+    tail: []
+- id: ask/acquired-batch-qualified-left-with-after-removal
+  template: acquired-batch-ask
+  arguments:
+    body: *id011
+    tail: &id016
+    - &id012
+      lit: after
+    - &id013
+      slot: disposal
+      cat: batch_disposal_verb
+      present_participle: true
+    - &id014
+      slot: removed
+      cat: ownable_quantity_object
+      number: plural
+      uncounted: true
+      qualified: true
+      qualifier_cat: batch_quality
+      class_only: true
+- id: ask/acquired-batch-qualified-left-with-round-removal
+  template: acquired-batch-ask
+  arguments:
+    body: *id011
+    tail:
+    - *id012
+    - *id013
+    - *id014
+    - slot: again_who
+      type: entity
+      common_noun_cat: quantity_event_participant
+      referential: true
+      bare: true
+    - slot: acquire
+      cat: batch_acquisition_verb
+      finite_form: true
+    - lit: in
+    - slot: round
+      cat: batch_round_noun
+      qualified: true
+      qualifier_cat: batch_round_ordinal
+      uncounted: true
+      class_only: true
+- id: ask/acquired-batch-qualified-have-left-plain
+  template: acquired-batch-ask
+  arguments:
+    body: &id015
+    - slot: aux
+      type: auxiliary
+    - slot: who
+      type: entity
+      common_noun_cat: quantity_event_participant
+      referential: true
+      bare: true
+    - slot: have
+      cat: remaining_balance_state
+      bare_form: true
+    - slot: left
+      cat: remnant_adj
+    tail: []
+- id: ask/acquired-batch-qualified-have-left-after-removal
+  template: acquired-batch-ask
+  arguments:
+    body: *id015
+    tail: *id016
+- id: ask/acquired-batch-qualified-have-left-round-removal
+  template: acquired-batch-ask
+  arguments:
+    body: *id015
+    tail:
+    - *id012
+    - *id013
+    - *id014
+    - slot: again_who
+      type: entity
+      common_noun_cat: quantity_event_participant
+      referential: true
+      bare: true
+    - slot: acquire
+      cat: batch_acquisition_verb
+      finite_form: true
+    - lit: in
+    - slot: round
+      cat: batch_round_noun
+      qualified: true
+      qualifier_cat: batch_round_ordinal
+      uncounted: true
+      class_only: true
+- id: ask/acquired-batch-qualified-remain-plain
+  template: acquired-batch-ask
+  arguments:
+    body: &id017
+    - slot: remain
+      cat: inventory_remainder_verb
+      finite_form: true
+    tail: []
+- id: ask/acquired-batch-qualified-remain-after-removal
+  template: acquired-batch-ask
+  arguments:
+    body: *id017
+    tail: *id016
+- id: ask/acquired-batch-qualified-remain-round-removal
+  template: acquired-batch-ask
+  arguments:
+    body: *id017
+    tail:
+    - *id012
+    - *id013
+    - *id014
+    - slot: again_who
+      type: entity
+      common_noun_cat: quantity_event_participant
+      referential: true
+      bare: true
+    - slot: acquire
+      cat: batch_acquisition_verb
+      finite_form: true
+    - lit: in
+    - slot: round
+      cat: batch_round_noun
+      qualified: true
+      qualifier_cat: batch_round_ordinal
+      uncounted: true
+      class_only: true
+- id: ask/acquired-batch-bare-left-with-plain
+  template: acquired-batch-bare-ask
+  arguments:
+    body: *id011
+    tail: []
+- id: ask/acquired-batch-bare-left-with-after-removal
+  template: acquired-batch-bare-ask
+  arguments:
+    body: *id011
+    tail: *id016
+- id: ask/acquired-batch-bare-left-with-round-removal
+  template: acquired-batch-bare-ask
+  arguments:
+    body: *id011
+    tail:
+    - *id012
+    - *id013
+    - *id014
+    - slot: again_who
+      type: entity
+      common_noun_cat: quantity_event_participant
+      referential: true
+      bare: true
+    - slot: acquire
+      cat: batch_acquisition_verb
+      finite_form: true
+    - lit: in
+    - slot: round
+      cat: batch_round_noun
+      qualified: true
+      qualifier_cat: batch_round_ordinal
+      uncounted: true
+      class_only: true
+- id: ask/acquired-batch-bare-have-left-after-removal
+  template: acquired-batch-bare-ask
+  arguments:
+    body: *id015
+    tail: *id016
+- id: ask/acquired-batch-bare-have-left-round-removal
+  template: acquired-batch-bare-ask
+  arguments:
+    body: *id015
+    tail:
+    - *id012
+    - *id013
+    - *id014
+    - slot: again_who
+      type: entity
+      common_noun_cat: quantity_event_participant
+      referential: true
+      bare: true
+    - slot: acquire
+      cat: batch_acquisition_verb
+      finite_form: true
+    - lit: in
+    - slot: round
+      cat: batch_round_noun
+      qualified: true
+      qualifier_cat: batch_round_ordinal
+      uncounted: true
+      class_only: true
+- id: ask/acquired-batch-bare-remain-plain
+  template: acquired-batch-bare-ask
+  arguments:
+    body: *id017
+    tail: []
+- id: ask/acquired-batch-bare-remain-after-removal
+  template: acquired-batch-bare-ask
+  arguments:
+    body: *id017
+    tail: *id016
+- id: ask/acquired-batch-bare-remain-round-removal
+  template: acquired-batch-bare-ask
+  arguments:
+    body: *id017
+    tail:
+    - *id012
+    - *id013
+    - *id014
+    - slot: again_who
+      type: entity
+      common_noun_cat: quantity_event_participant
+      referential: true
+      bare: true
+    - slot: acquire
+      cat: batch_acquisition_verb
+      finite_form: true
+    - lit: in
+    - slot: round
+      cat: batch_round_noun
+      qualified: true
+      qualifier_cat: batch_round_ordinal
+      uncounted: true
+      class_only: true
+- id: ask/acquired-batch-qualified-discarded
+  template: acquired-batch-ask
+  arguments:
+    body:
+    - slot: aux
+      type: auxiliary
+    - slot: who
+      type: entity
+      common_noun_cat: quantity_event_participant
+      referential: true
+      bare: true
+    - slot: verb
+      cat: batch_disposal_verb
+      bare_form: true
+    mode: discarded
+- id: ask/acquired-batch-bare-discarded
+  template: acquired-batch-bare-ask
+  arguments:
+    body:
+    - slot: aux
+      type: auxiliary
+    - slot: who
+      type: entity
+      common_noun_cat: quantity_event_participant
+      referential: true
+      bare: true
+    - slot: verb
+      cat: batch_disposal_verb
+      bare_form: true
+    mode: discarded
+- id: ask/acquired-batch-qualified-have-left-after-removal-compound
+  template: acquired-batch-ask
+  arguments:
+    body:
+    - slot: aux
+      type: auxiliary
+    - slot: who
+      type: entity
+      common_noun_cat: quantity_event_participant
+      referential: true
+      bare: true
+    - slot: left
+      cat: batch_left_verb
+    tail:
+    - lit: after
+    - slot: disposal
+      cat: batch_disposal_verb
+      present_participle: true
+    - slot: removed
+      cat: ownable_quantity_object
+      number: plural
+      uncounted: true
+      qualified: true
+      qualifier_cat: batch_quality
+      class_only: true
+- id: ask/acquired-batch-qualified-have-left-round-removal-compound
+  template: acquired-batch-ask
+  arguments:
+    body:
+    - slot: aux
+      type: auxiliary
+    - slot: who
+      type: entity
+      common_noun_cat: quantity_event_participant
+      referential: true
+      bare: true
+    - slot: left
+      cat: batch_left_verb
+    tail:
+    - lit: after
+    - slot: disposal
+      cat: batch_disposal_verb
+      present_participle: true
+    - slot: removed
+      cat: ownable_quantity_object
+      number: plural
+      uncounted: true
+      qualified: true
+      qualifier_cat: batch_quality
+      class_only: true
+    - slot: again_who
+      type: entity
+      common_noun_cat: quantity_event_participant
+      referential: true
+      bare: true
+    - slot: acquire
+      cat: batch_acquisition_verb
+      finite_form: true
+    - lit: in
+    - slot: round
+      cat: batch_round_noun
+      qualified: true
+      qualifier_cat: batch_round_ordinal
+      uncounted: true
+      class_only: true
+- id: ask/acquired-batch-bare-have-left-after-removal-compound
+  template: acquired-batch-bare-ask
+  arguments:
+    body:
+    - slot: aux
+      type: auxiliary
+    - slot: who
+      type: entity
+      common_noun_cat: quantity_event_participant
+      referential: true
+      bare: true
+    - slot: left
+      cat: batch_left_verb
+    tail:
+    - lit: after
+    - slot: disposal
+      cat: batch_disposal_verb
+      present_participle: true
+    - slot: removed
+      cat: ownable_quantity_object
+      number: plural
+      uncounted: true
+      qualified: true
+      qualifier_cat: batch_quality
+      class_only: true
+- id: ask/acquired-batch-bare-have-left-round-removal-compound
+  template: acquired-batch-bare-ask
+  arguments:
+    body:
+    - slot: aux
+      type: auxiliary
+    - slot: who
+      type: entity
+      common_noun_cat: quantity_event_participant
+      referential: true
+      bare: true
+    - slot: left
+      cat: batch_left_verb
+    tail:
+    - lit: after
+    - slot: disposal
+      cat: batch_disposal_verb
+      present_participle: true
+    - slot: removed
+      cat: ownable_quantity_object
+      number: plural
+      uncounted: true
+      qualified: true
+      qualifier_cat: batch_quality
+      class_only: true
+    - slot: again_who
+      type: entity
+      common_noun_cat: quantity_event_participant
+      referential: true
+      bare: true
+    - slot: acquire
+      cat: batch_acquisition_verb
+      finite_form: true
+    - lit: in
+    - slot: round
+      cat: batch_round_noun
+      qualified: true
+      qualifier_cat: batch_round_ordinal
+      uncounted: true
+      class_only: true

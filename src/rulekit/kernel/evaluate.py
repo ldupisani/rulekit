@@ -45,6 +45,7 @@ class ArithmeticLog:
     consumed_allocation_ratio_keys: set[tuple] = field(default_factory=set)
     consumed_inventory_keys: set[tuple] = field(default_factory=set)
     consumed_batch_keys: set[tuple] = field(default_factory=set)
+    consumed_mixture_keys: set[tuple] = field(default_factory=set)
     consumed_journey_keys: set[tuple] = field(default_factory=set)
     # The deictic journal (kernel.deixis.Journal), or None when tracing is off.
     #

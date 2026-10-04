@@ -125,9 +125,6 @@ entries:
     thinks:
         senses:
             - verb
-    third:
-        senses:
-            - adjective
     thirsty:
         senses:
             - adjective
@@ -204,10 +201,6 @@ entries:
     tile:
         senses:
             - noun
-    tin:
-        senses:
-            - noun
-        plural: tins
     tip:
         senses:
             - noun
@@ -684,9 +677,6 @@ entries:
     wheelchair:
         senses:
             - noun
-    when:
-        senses:
-            - conjunction
     whiskers:
         senses:
             - noun

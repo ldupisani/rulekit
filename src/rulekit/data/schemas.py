@@ -1546,7 +1546,7 @@ class WherePredicate(StrictModel):
 
 class FactEmit(StrictModel):
     fact: Literal[
-        "batch_evidence",
+        "batch_evidence", "mixture_evidence",
         "account_entry",
         "text_value", "text_prefix_split",
         "commercial_term",

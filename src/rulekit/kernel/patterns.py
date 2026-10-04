@@ -59,6 +59,7 @@ from .model import (
     LocationEvent,
     LocationTransitionAbsence,
     MeasuredContentChange,
+    MixtureEvidence,
     Membership,
     PartitionQuantity,
     PartitionAggregateShare,
@@ -191,6 +192,7 @@ _FACT_CLASSES = {
     "location_transition_absence": LocationTransitionAbsence,
     "spatial_placement": SpatialPlacement,
     "measured_content_change": MeasuredContentChange,
+    "mixture_evidence": MixtureEvidence,
     "container_content": ContainerContent,
     "container_capacity_inquiry": ContainerCapacityInquiry,
     "container_capacity_observation": ContainerCapacityObservation,
@@ -2320,7 +2322,7 @@ def _template_reference(raw, slots):
     reference = reference_from_unit(unit)
     if matched.group(2) == "owner":
         return reference.owner
-    return reference if matched.group(2) is None else None
+    return reference if matched.group(2) in (None, "optional") else None
 
 
 def _build_fact(
@@ -2628,6 +2630,11 @@ def match_ask(
             reference = _template_reference(fields.get("entity"), match.slots)
             if reference is not None:
                 resolved_fields["evidence_entity_reference"] = reference.to_dict()
+        if resolved_fields.get("consumer") == "mixture-component":
+            for role in ("entity", "source"):
+                reference = _template_reference(fields.get(role), match.slots)
+                if reference is not None:
+                    resolved_fields[role + "_reference"] = reference.to_dict()
         return resolved_fields
 
     best: tuple[AskRule, dict[str, Any], Match] | None = None

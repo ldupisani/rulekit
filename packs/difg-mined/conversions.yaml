@@ -62,9 +62,6 @@ conversions:
 - from: gallon
   to: liter
   factor: 3.785411784
-- from: liter
-  to: milliliter
-  factor: 1000.0
 - from: pound
   to: kilogram
   factor: 0.45359237

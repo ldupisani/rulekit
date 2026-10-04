@@ -1,0 +1,110 @@
+format: rulekit/categories@1
+categories:
+  batch_acquisition_verb:
+    parent: acquire
+  batch_disposal_verb:
+    parent: verb
+  batch_realization_verb:
+    parent: verb
+  batch_quality:
+    parent: adjective
+  batch_round_noun:
+    parent: noun
+  batch_round_ordinal:
+    parent: adjective
+  batch_repetition_adverb:
+    parent: adverb
+  batch_additional_marker:
+    parent: comparative
+  batch_relevance_positive:
+    parent: batch_quality
+    polarity: 1
+    antonym: batch_relevance_negative
+  batch_relevance_negative:
+    parent: batch_quality
+    polarity: -1
+  batch_left_verb:
+    parent: verb
+  batch_continuation_conjunction:
+    parent: conjunction
+  reviewable_quantity_object:
+    parent: transferable_quantity_object
+members:
+  batch_acquisition_verb:
+  - download
+  - downloads
+  - downloaded
+  - downloading
+  - collect
+  - collects
+  - collected
+  - receive
+  - receives
+  - received
+  batch_disposal_verb:
+  - delete
+  - deletes
+  - deleted
+  - deleting
+  - discard
+  - discards
+  - discarded
+  - discarding
+  - reject
+  - rejects
+  - rejected
+  - rejecting
+  batch_realization_verb:
+  - realize
+  - realizes
+  - realized
+  batch_relevance_positive:
+  - helpful
+  - useful
+  - relevant
+  - valuable
+  batch_relevance_negative:
+  - irrelevant
+  - unrelated
+  - unhelpful
+  - useless
+  batch_round_noun:
+  - round
+  - batch
+  batch_round_ordinal:
+  - first
+  - second
+  - third
+  - last
+  batch_repetition_adverb:
+  - again
+  batch_additional_marker:
+  - more
+  batch_left_verb:
+  - left
+  batch_continuation_conjunction:
+  - and
+  - but
+  reviewable_quantity_object:
+  - file
+  - document
+  - image
+  - photo
+  - photograph
+  - book
+  - page
+  - letter
+attribute_compatibility:
+  batch_quality:
+  - reviewable_quantity_object
+  batch_round_ordinal:
+  - batch_round_noun
+attrs:
+  first:
+    batch_index: 1
+  second:
+    batch_index: 2
+  third:
+    batch_index: 3
+  last:
+    batch_index: -1

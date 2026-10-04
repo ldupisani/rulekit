@@ -1,0 +1,171 @@
+format: rulekit/lexicon@1
+entries:
+  stranded: {senses: [adjective]}
+  seawater: {senses: [noun]}
+  brine: {senses: [noun]}
+  evaporate: {senses: [verb]}
+  evaporates: {senses: [verb], verb: {lemma: evaporate}}
+  evaporated: {senses: [verb], verb: {lemma: evaporate}}
+  salt:
+    senses:
+    - noun
+  collect:
+    senses:
+    - verb
+  collects:
+    senses:
+    - verb
+    verb:
+      lemma: collect
+  collected:
+    senses:
+    - verb
+    verb:
+      lemma: collect
+  milliliter:
+    # The SINGULAR was missing while 'milliliters' had its own entry, so the
+    # plural never canonicalized (lemma stayed 'milliliters') and no conversion
+    # could key on it. `plural:` restores the one-identity invariant every other
+    # unit noun already has — a noun's number-forms share ONE lemma.
+    senses:
+    - noun
+    plural: [milliliters, millilitres]
+  ml:
+    senses:
+    - noun
+  saltwater: {senses: [noun]}
+  salt water: {senses: [noun], lexical_phrase: true}
+  sugar water: {senses: [noun], lexical_phrase: true}
+  obtain: {senses: [verb]}
+  obtains: {senses: [verb], verb: {lemma: obtain}}
+  obtained: {senses: [verb], verb: {lemma: obtain}}
+  completely: {senses: [adverb]}
+  fully: {senses: [adverb]}
+  volume: {senses: [noun], plural: volumes}
+  oil:
+    senses:
+    - noun
+  raisin:
+    senses:
+    - noun
+    plural: raisins
+  helium:
+    senses:
+    - noun
+  mix:
+    senses:
+    - verb
+  mixes:
+    senses:
+    - verb
+    verb:
+      lemma: mix
+  mixed:
+    senses:
+    - verb
+    verb:
+      lemma: mix
+  mixing:
+    senses:
+    - verb
+    verb:
+      lemma: mix
+  cereal:
+    senses:
+    - noun
+  combine:
+    senses:
+    - verb
+  combines:
+    senses:
+    - verb
+    verb:
+      lemma: combine
+  moles: {senses: [noun], plural: moles}
+  mass: {senses: [noun]}
+  alloy:
+    senses:
+    - noun
+  bronze:
+    senses:
+    - noun
+  tin:
+    senses:
+    - noun
+    plural: tins
+  copper:
+    senses:
+    - noun
+  resin:
+    senses:
+    - noun
+  ethanol:
+    senses:
+    - noun
+  solution:
+    senses:
+    - noun
+  mixture:
+    senses:
+    - noun
+  oil blend:
+    senses:
+    - noun
+    lexical_phrase: true
+  gas mixture:
+    senses:
+    - noun
+    lexical_phrase: true
+  resin solution:
+    senses:
+    - noun
+    lexical_phrase: true
+  sunflower oil:
+    senses:
+    - noun
+    lexical_phrase: true
+  pure:
+    senses:
+    - adjective
+  homogeneous:
+    senses:
+    - adjective
+  uniform:
+    senses:
+    - adjective
+  losing:
+    senses:
+    - verb
+    verb:
+      lemma: lose
+  nitrogen:
+    senses:
+    - noun
+  additive:
+    senses:
+    - adjective
+  any:
+    senses:
+    - article
+  count:
+    senses:
+    - verb
+    - noun
+  bead:
+    senses:
+    - noun
+    plural: beads
+  glass bead:
+    senses:
+    - noun
+    plural: glass beads
+    lexical_phrase: true
+  plastic bead:
+    senses:
+    - noun
+    plural: plastic beads
+    lexical_phrase: true
+  bead mixture:
+    senses:
+    - noun
+    lexical_phrase: true

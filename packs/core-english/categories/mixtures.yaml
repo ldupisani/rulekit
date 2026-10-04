@@ -1,0 +1,142 @@
+format: rulekit/categories@1
+categories:
+  aqueous_mixture: {parent: noun}
+  aqueous_solvent: {parent: noun}
+  mixture_substance: {parent: noun, includes: [mixture_material]}
+  mixture_component: {parent: noun}
+  mixture_sampling_verb: {parent: verb}
+  solvent_removal_verb: {parent: verb}
+  evaporation_perfect_auxiliary: {parent: verb}
+  component_recovery_verb: {parent: verb}
+  mixture_composition_verb: {parent: verb}
+  mixture_volume_basis: {parent: noun}
+  evaporation_completion_adverb: {parent: adverb}
+  mixture_material:
+    parent: noun
+    includes:
+    - aqueous_mixture
+  mixture_measure:
+    parent: noun
+    includes:
+    - volume_measure
+    - mass_measure
+    - mixture_mole_measure
+    - mixture_count_measure
+  mixture_mole_measure:
+    parent: noun
+  mixture_basis:
+    parent: noun
+    includes:
+    - mixture_volume_basis
+    - mixture_mass_basis
+    - mixture_mole_basis
+    - mixture_count_basis
+  mixture_mass_basis:
+    parent: noun
+  mixture_mole_basis:
+    parent: noun
+  mixture_mass_quantity:
+    parent: noun
+  mixture_blending_verb:
+    parent: verb
+  mixture_addition_verb:
+    parent: verb
+  mixture_loss_verb:
+    parent: verb
+  mixture_purity:
+    parent: adjective
+  mixture_uniformity:
+    parent: adjective
+  mixture_weight_verb:
+    parent: verb
+  aqueous_evaporation_retained_component:
+    parent: noun
+  mixture_result_noun:
+    parent: noun
+  mixture_percentage_noun:
+    parent: noun
+  mixture_additivity:
+    parent: adjective
+  mixture_count_measure:
+    parent: noun
+  mixture_count_basis:
+    parent: noun
+  discrete_mixture_component:
+    parent: noun
+members:
+  volume_measure: [milliliter, ml]
+  aqueous_mixture: [seawater, brine, saltwater, salt water, sugar water]
+  aqueous_solvent: [water]
+  mixture_substance:
+  - water
+  mixture_component: [salt, sugar, water, tin, copper, raisin, sunflower oil, helium, nitrogen, resin, ethanol,
+    oil, glass bead, plastic bead]
+  mixture_sampling_verb: [collect, collects, collected, have, has, had, get, gets, got, obtain, obtains,
+      obtained]
+  solvent_removal_verb: [evaporate, evaporates, evaporated]
+  evaporation_perfect_auxiliary: [has, had]
+  component_recovery_verb: [get, gets, got, obtain, obtains, obtained]
+  mixture_composition_verb: [contain, contains, contained, have, has, had]
+  mixture_volume_basis: [volume]
+  evaporation_completion_adverb: [completely, fully]
+  mixture_material:
+  - alloy
+  - bronze
+  - cereal
+  - oil blend
+  - gas mixture
+  - resin solution
+  - solution
+  - mixture
+  - bead mixture
+  mixture_mole_measure:
+  - moles
+  mixture_mass_basis:
+  - mass
+  - weight
+  mixture_mole_basis:
+  - moles
+  mixture_mass_quantity:
+  - mass
+  - weight
+  mixture_blending_verb:
+  - mix
+  - mixes
+  - mixed
+  - combine
+  - combines
+  mixture_addition_verb:
+  - add
+  - adds
+  - added
+  mixture_loss_verb:
+  - losing
+  mixture_purity:
+  - pure
+  mixture_uniformity:
+  - homogeneous
+  - uniform
+  mixture_weight_verb:
+  - weigh
+  - weighs
+  - weighed
+  aqueous_evaporation_retained_component:
+  - salt
+  - sugar
+  mixture_result_noun:
+  - mixture
+  mixture_percentage_noun:
+  - percentage
+  mixture_additivity:
+  - additive
+  mixture_count_measure:
+  - bead
+  mixture_count_basis:
+  - count
+  discrete_mixture_component:
+  - glass bead
+  - plastic bead
+attribute_compatibility:
+  mixture_component: [container_contents_noun]
+  mixture_purity:
+  - mixture_component

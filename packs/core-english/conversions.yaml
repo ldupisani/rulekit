@@ -29,3 +29,13 @@ conversions:
   to: week
   factor: 52
   scope: cadence
+# Standard volume abbreviation, alongside the spelled-out unit.
+- from: liter
+  to: ml
+  factor: 1000
+- from: milliliter
+  to: ml
+  factor: 1
+- from: liter
+  to: milliliter
+  factor: 1000.0

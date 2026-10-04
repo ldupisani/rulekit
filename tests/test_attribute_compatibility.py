@@ -191,7 +191,10 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
     }
 
     assert adjectives == {
-        "entire", "full", "specific", "particular",
+        "helpful", "useful", "relevant", "valuable", "irrelevant",
+        "unrelated", "unhelpful", "useless", "second", "third",
+        "entire", "full", "specific", "particular", "stranded",
+        "additive", "pure", "homogeneous", "uniform",
         "favorite", "favourite", "same",
         "weekend",
         "pink",
@@ -258,7 +261,8 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
     # seconds and moles are deliberately plural-only identities.
     # Rate policies add shift/wage and license hourly for hour/wage.
     # Savings adds six pluralizable nouns; month reuses duration descriptors.
-    assert len(plural_nouns) == 218
+    # Batch acquisition adds eight plural nouns and relevance descriptors.
+    assert len(plural_nouns) == 237
     assert {
         "boy",
         "day",
@@ -282,7 +286,7 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
         registry.attribute_applies_to(attribute, noun)
         for attribute in adjectives
         for noun in plural_nouns
-    ) == 792
+    ) == 878
 
 
 def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> None:
@@ -360,7 +364,7 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
 def test_compatibility_rule_remains_supported_after_g5j_expansion() -> None:
     availability = list_rule_availability(load_project(CURATED))
 
-    assert sum(item.supported for item in availability) == 274
+    assert sum(item.supported for item in availability) == 314
     target = next(item for item in availability if item.id == RULE_ID)
     assert target.supported
     assert target.blockers == ()

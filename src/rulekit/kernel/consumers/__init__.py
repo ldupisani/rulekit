@@ -147,6 +147,7 @@ from . import (  # noqa: E402,F401  (import registers each handler)
     age_projected as _age_projected,
     membership_verdict as _membership_verdict,
     measurement_reading as _measurement_reading,
+    mixture_component as _mixture_component,
     logic_disjunction_verdict as _logic_disjunction_verdict,
     verbal_obj_class_verdict as _verbal_obj_class_verdict,
     universal_verdict as _universal_verdict,
