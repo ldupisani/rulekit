@@ -1283,11 +1283,13 @@ class ResourceAllocation(Fact):
 
 @dataclass(frozen=True)
 class BatchEvidence(Fact):
-    """An opening population, independent acquisition, or local batch selection.
+    """An opening population, independent acquisition, or local batch evidence.
 
     Source identity distinguishes equal-sized batches. Fractions remain raw
     evidence until a consumer checks scope, item identity and, for partitions,
     order and exhaustiveness. Classification alone does not assert removal.
+    A uniform holder prefix records its content count in ``per_member``;
+    a collective prefix records its combined content count in ``subtotal``.
     """
 
     kind: str
@@ -1302,6 +1304,8 @@ class BatchEvidence(Fact):
     attribute: str = ""
     sign: float = 0.0
     acquisition: str = ""
+    per_member: float = 0.0
+    subtotal: float = 0.0
 
     def key(self):
         return ("batch-evidence", self.provenance.sentence, self.position, self.kind)
@@ -1309,7 +1313,7 @@ class BatchEvidence(Fact):
     def value_part(self):
         return (self.entity, self.measure, self.value, self.verb,
                 self.marker, self.fraction, self.container, self.attribute,
-                self.sign, self.acquisition)
+                self.sign, self.acquisition, self.per_member, self.subtotal)
 
 
 @dataclass(frozen=True)

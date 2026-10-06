@@ -838,7 +838,7 @@ def solve(
     # the four, and value accounting must still decline it
     from .patterns import match_ask as _match_ask, resolution_templates
 
-    matched_ask = _match_ask(question, reg)
+    matched_ask = _match_ask(question, reg, store=doc.store)
     if matched_ask is not None:
         _satisfy_pattern_obligations(
             question,

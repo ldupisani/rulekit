@@ -1,701 +1,1359 @@
+# Shared English dictionary, alphabetized by lexical identity.
+# Semantic roles and compatibility belong in categories/.
 format: rulekit/lexicon@1
-# Definitive dictionary, never heuristics: absent = unknown = reportable.
 entries:
-    # Atomic lexical phrases keep their full identity, including plural forms.
-    jelly bean: {senses: [noun], plural: jelly beans, lexical_phrase: true}
-    gummy worm: {senses: [noun], plural: gummy worms, lexical_phrase: true}
-    care package: {senses: [noun], plural: care packages, lexical_phrase: true}
-    boarding school: {senses: [noun], plural: boarding schools, lexical_phrase: true}
-    once again: {senses: [adverb], lexical_phrase: true}
-    brownie: {senses: [noun], plural: brownies}
-    goodie: {senses: [noun], plural: goodies}
-    create: {senses: [verb]}
-    created: {senses: [verb], verb: {lemma: create}}
-    creates: {senses: [verb], verb: {lemma: create}}
-    creating: {senses: [verb], verb: {lemma: create}}
-    send: {senses: [verb]}
-    sends: {senses: [verb], verb: {lemma: send}}
-    sending: {senses: [verb], verb: {lemma: send}}
-    sent: {senses: [verb], verb: {lemma: send}}
-    cause: {senses: [verb]}
-    causes: {senses: [verb], verb: {lemma: cause}}
-    caused: {senses: [verb], verb: {lemma: cause}}
-    causing: {senses: [verb], verb: {lemma: cause}}
-    away: {senses: [adverb]}
-    again: {senses: [adverb]}
-    next: {senses: [adjective, adverb]}
-    another: {senses: [article]}
-    # articles (skippable structure words)
-    the: {senses: [article]}
-    a: {senses: [article]}
-    an: {senses: [article]}
-    this: {senses: [article]}
-
-    # clause structure
-    if: {senses: [conjunction]}
-
-    # quantifiers
-    each: {senses: [quantifier], notes: "distributive; singular agreement"}
-    every: {senses: [quantifier]}
-    some: {senses: [quantifier]}
-    all: {senses: [quantifier]}
-    both: {senses: [quantifier]}
-    no: {senses: [quantifier]}
-
-    # modal auxiliaries
-    can: {senses: [modal, noun], plural: cans}
-    could: {senses: [modal]}
-    may: {senses: [modal, noun]}
-    might: {senses: [modal]}
-    must: {senses: [modal]}
-    should: {senses: [modal]}
-    will: {senses: [modal]}
-    would: {senses: [modal]}
-
-    # deictic temporal markers
-    now: {senses: [time]}
-    today: {senses: [time]}
-    tomorrow: {senses: [time]}
-    yesterday: {senses: [time]}
-
-    # Calendar-point nouns are ordinary core English. Their membership in
-    # `timeperiod` does not by itself assign an event time; only a licensed
-    # temporal-point construction may do that. `may` is lexically ambiguous;
-    # only an explicit calendar category inside a licensed temporal phrase
-    # selects its month reading, while ordinary modal syntax remains modal.
-    monday: {senses: [noun]}
-    tuesday: {senses: [noun]}
-    wednesday: {senses: [noun]}
-    thursday: {senses: [noun]}
-    friday: {senses: [noun]}
-    saturday: {senses: [noun]}
-    sunday: {senses: [noun]}
-    january: {senses: [noun]}
-    february: {senses: [noun]}
-    march: {senses: [noun]}
-    april: {senses: [noun]}
-    june: {senses: [noun]}
-    july: {senses: [noun]}
-    august: {senses: [noun]}
-    september: {senses: [noun]}
-    october: {senses: [noun]}
-    november: {senses: [noun]}
-    december: {senses: [noun]}
-
-    # core temporal/adverbial grammar
-    currently: {senses: [adverb]}
-    finally: {senses: [adverb]}
-    just: {senses: [adverb]}
-    only: {senses: [adverb]}
-    safely: {senses: [adverb]}
-    still: {senses: [adverb]}
-    far: {senses: [adverb]}
-    then: {senses: [adverb]}
-    ago: {senses: [adverb]}
-    individually: {senses: [adverb]}
-
-    # Event-progress grammar. ``able`` marks the realized "was able to"
-    # construction; ``last`` qualifies a named period such as "last week".
-    able: {senses: [adjective]}
-    last: {senses: [adjective, verb]}
-    new: {senses: [adjective]}
-
-    # General English prepositions. Narrow semantic roles such as source,
-    # goal, location, duration, and instrument belong in categories and rules;
-    # recognition here does not infer any one of those readings.
-    about: {senses: [preposition]}
-    above: {senses: [preposition]}
-    across: {senses: [preposition]}
-    after: {senses: [preposition]}
-    against: {senses: [preposition]}
-    along: {senses: [preposition]}
-    among: {senses: [preposition]}
-    amongst: {senses: [preposition]}
-    around: {senses: [preposition]}
-    of: {senses: [preposition]}
-    in: {senses: [preposition]}
-    on: {senses: [preposition]}
-    with: {senses: [preposition]}
-    from: {senses: [preposition]}
-    to: {senses: [preposition]}
-    at: {senses: [preposition]}
-    before: {senses: [preposition]}
-    below: {senses: [preposition]}
-    between: {senses: [preposition]}
-    by: {senses: [preposition]}
-    during: {senses: [preposition]}
-    except: {senses: [preposition]}
-    for: {senses: [preposition]}
-    including: {senses: [preposition]}
-    inside: {senses: [preposition]}
-    into: {senses: [preposition]}
-    near: {senses: [preposition]}
-    onto: {senses: [preposition]}
-    over: {senses: [preposition]}
-    past: {senses: [preposition]}
-    through: {senses: [preposition]}
-    throughout: {senses: [preposition]}
-    towards: {senses: [preposition]}
-    under: {senses: [preposition]}
-    until: {senses: [preposition]}
-    versus: {senses: [preposition]}
-    via: {senses: [preposition]}
-    within: {senses: [preposition]}
-    without: {senses: [preposition]}
-
-    # Less frequent and polysemous preposition uses. These are still only
-    # lexical recognition: semantic role categories below decide which uses
-    # can produce a relation, and unsupported readings remain visible.
-    aboard: {senses: [preposition]}
-    alongside: {senses: [preposition]}
-    amid: {senses: [preposition]}
-    amidst: {senses: [preposition]}
-    atop: {senses: [preposition]}
-    barring: {senses: [preposition]}
-    behind: {senses: [preposition]}
-    beneath: {senses: [preposition]}
-    beside: {senses: [preposition]}
-    besides: {senses: [preposition]}
-    beyond: {senses: [preposition]}
-    circa: {senses: [preposition]}
-    concerning: {senses: [preposition]}
-    despite: {senses: [preposition]}
-    down: {senses: [adverb, preposition]}
-    effective: {senses: [preposition]}
-    excepting: {senses: [preposition]}
-    failing: {senses: [preposition]}
-    following: {senses: [adjective, preposition]}
-    like: {senses: [preposition]}
-    notwithstanding: {senses: [preposition]}
-    off: {senses: [adverb, preposition]}
-    opposite: {senses: [preposition]}
-    outside: {senses: [adverb, preposition]}
-    pending: {senses: [preposition]}
-    regarding: {senses: [preposition]}
-    respecting: {senses: [preposition]}
-    since: {senses: [conjunction, preposition]}
-    toward: {senses: [noun, preposition]}
-    underneath: {senses: [preposition]}
-    unlike: {senses: [preposition]}
-    upon: {senses: [preposition]}
-    vs: {senses: [preposition]}
-
-    # Multiword prepositions are lexemes in their own right. The analyzer
-    # merges the longest declared phrase before disambiguation, so component
-    # words keep their independent ordinary senses.
-    "apart from": {senses: [preposition]}
-    "because of": {senses: [preposition]}
-    "but for": {senses: [preposition]}
-    "due to": {senses: [preposition]}
-    "instead of": {senses: [preposition]}
-    "next to": {senses: [preposition]}
-    "out of": {senses: [preposition]}
-    "short of": {senses: [preposition]}
-
-    # pronouns
-    he: {senses: [pronoun], number: singular, anaphoric_form: &masculine {paradigm: third-person-masculine, referent_numbers: [singular]}}
-    she: {senses: [pronoun], number: singular, anaphoric_form: &feminine {paradigm: third-person-feminine, referent_numbers: [singular]}}
-    they: {senses: [pronoun], number: plural, anaphoric_form: &neutral {paradigm: third-person-neutral, referent_numbers: [singular, plural]}}
-    we: {senses: [pronoun], number: plural}
-    it: {senses: [pronoun], number: singular, anaphoric_form: &impersonal {paradigm: third-person-impersonal, referent_numbers: [singular]}}
-    someone: {senses: [pronoun]}
-    somebody: {senses: [pronoun]}
-    everybody: {senses: [pronoun]}
-    nobody: {senses: [pronoun]}
-    i:
-        senses: [pronoun]
-        notes: >
-            first-person singular — a base-lexicon gap this project never needed
-            until now (GSM8K narratives are almost always third-person), closed
-            as a decline-safety prerequisite for condense.py's merge-label pass
-            (mining candidate labeled-entity-identity): without a lexicon entry,
-            the single capital letter "I" is indistinguishable from a genuine
-            index label ("Jar B") and "the jar I have" would wrongly fuse into
-            one label-distinguished noun. With this entry it keeps its own
-            pronoun sense (its `refers` obligation then simply goes unmet, same
-            decline discipline every other unresolved pronoun already has).
-    anything: {senses: [pronoun]}
-    either: {senses: [pronoun]}
-    everyone: {senses: [pronoun]}
-    everything: {senses: [pronoun]}
-    her: {senses: [pronoun], anaphoric_form: *feminine}
-    herself: {senses: [pronoun], anaphoric_form: *feminine}
-    him: {senses: [pronoun], anaphoric_form: *masculine}
-    himself: {senses: [pronoun], anaphoric_form: *masculine}
-    his: {senses: [pronoun], anaphoric_form: *masculine}
-    its: {senses: [pronoun], anaphoric_form: *impersonal}
-    my: {senses: [pronoun]}
-    ones: {senses: [pronoun]}
-    their: {senses: [pronoun], anaphoric_form: *neutral}
-    theirs: {senses: [pronoun], anaphoric_form: *neutral}
-    them: {senses: [pronoun], number: plural, anaphoric_form: *neutral}
-    themselves: {senses: [pronoun], anaphoric_form: *neutral}
-    # Demonstrative determiner ("those flowers") or a plural collection
-    # anaphor ("ten of those"). Grammar categories decide which reading a
-    # construction licenses; the dictionary does not choose one globally.
-    those: {senses: [article, pronoun], number: plural}
-    you: {senses: [pronoun]}
-    your: {senses: [pronoun]}
-
-    # negation
-    not: {senses: [negator]}
-
-    # clause coordination and relative-question structure
-    or: {senses: [conjunction]}
-    which: {senses: [wh_which]}
-
-    # the possessive clitic — tokenized as its own unit ("Tom's" -> Tom + 's)
-    "'s":
-        senses: [possessive]
-        notes: >
-            owner (left) + owned (right) bind and condense into an owner-attributed
-            noun. The copula reading ("he's got") leaves `owned` unmet and the
-            sentence declines — never a wrong fact.
+  "'s":
+    senses: [possessive]
+    notes: >
+      owner (left) + owned (right) bind and condense into an owner-attributed
+      noun. The copula reading ("he's got") leaves `owned` unmet and the
+      sentence declines — never a wrong fact.
 
     # auxiliaries / question words (structure)
-    does: {senses: [auxiliary], number: singular}
-    do: {senses: [auxiliary], number: plural}
-    did: {senses: [auxiliary]}
-    how: {senses: [interrogative]}
-    much: {senses: [interrogative, quantifier], notes: "moved from difg-mined; also the how-MUCH ask cue"}
-    many: {senses: [interrogative]}
-    double: {senses: [quantifier]}
-    triple: {senses: [quantifier, verb]}
-    what: {senses: [interrogative]}
-    who: {senses: [interrogative]}
-
-    # imperative task cue ("Compute the total…") — a task sentence is a
-    # question even without a question mark; calculate/determine gain the
-    # imperative sense in difg-mined where their verb entries live
-    compute: {senses: [imperative]}
-
-    # question/remainder skeleton (moved from difg-mined)
-    left:
-        senses: [adjective, verb]
-        notes: >
-            Past departure verb or remainder adjective. Governed rules and
-            argument structure choose the reading; the surface alone does not.
-    old: {senses: [adjective]}
-    there: {senses: [existential]}
-
-    # clause boundary — argument binding never crosses it
-    that: {senses: [complementizer], notes: "moved from difg-mined (was mis-lexiconed as article there)"}
-
-    # comparatives
-    more: {senses: [comparative]}
-    fewer: {senses: [comparative]}
-    less: {senses: [comparative]}
-    faster: {senses: [comparative]}
-    slower: {senses: [comparative]}
-    # Generic age comparatives belong with the core relation grammar. The
-    # benchmark-mined pack still extends them with its higher/lower categories.
-    older: {senses: [comparative]}
-    younger: {senses: [comparative]}
-    # Generic physical-dimension comparatives. Their signed dimension category
-    # is core grammar; difg-mined may add broader magnitude memberships.
-    heavier: {senses: [comparative]}
-    higher: {senses: [comparative]}
-    larger: {senses: [comparative]}
-    lighter: {senses: [comparative]}
-    longer: {senses: [comparative]}
-    shorter: {senses: [comparative]}
-    smaller: {senses: [comparative]}
-    taller: {senses: [comparative]}
-    wider: {senses: [comparative]}
-    than: {senses: [particle]}
-    as: {senses: [particle]}
-    altogether: {senses: [aggregate]}
-    total: {senses: [aggregate]}
-    combined: {senses: [aggregate]}
-    together: {senses: [aggregate]}
-    # moved from difg-mined (mining candidate average-asks): was mis-lexiconed
-    # as a bare noun there, which let condense.py's general NOUN+NOUN
-    # merge-compound pass eat it into a "average number"/"average amount"
-    # compound before any ask pattern ever saw a separate 'average' token —
-    # the same reason 'total'/'combined' above are tagged 'aggregate' rather
-    # than 'noun'. 'averaged'/'averages' (the verb forms) are untouched and
-    # stay in difg-mined.
-    average: {senses: [aggregate]}
-    and: {senses: [conjunction]}
-    while: {senses: [conjunction]}
-
-    # copula / possession verbs (state)
-    be: {senses: [verb]}
-    is: {senses: [verb], number: singular, verb: {lemma: be}}
-    are: {senses: [verb], number: plural, verb: {lemma: be}}
-    was: {senses: [verb], number: singular, verb: {lemma: be}}
-    were: {senses: [verb], number: plural, verb: {lemma: be}}
-    has: {senses: [verb], number: singular, verb: {lemma: have}}
-    have: {senses: [verb], number: plural, verb: {lemma: have}}
-    had: {senses: [verb], verb: {lemma: have}}
-    owns: {senses: [verb], number: singular, verb: {lemma: own}}
-    own: {senses: [verb], number: plural, verb: {lemma: own}}
-
-    # event verbs — gains
-    gets: {senses: [verb], number: singular, verb: {lemma: get}}
-    get: {senses: [verb], number: plural, verb: {lemma: get}}
-    got: {senses: [verb], verb: {lemma: get}}
-    finds: {senses: [verb], number: singular, verb: {lemma: find}}
-    find: {senses: [verb], number: plural, verb: {lemma: find}}
-    found: {senses: [verb], verb: {lemma: find}}
-    buys: {senses: [verb], number: singular, verb: {lemma: buy}}
-    buy: {senses: [verb], number: plural, verb: {lemma: buy}}
-    bought: {senses: [verb], verb: {lemma: buy}}
-    buying: {senses: [verb], verb: {lemma: buy}}
-    decide: {senses: [verb], number: plural}
-    decides: {senses: [verb], number: singular, verb: {lemma: decide}}
-    decided: {senses: [verb], verb: {lemma: decide}}
-    earns: {senses: [verb], number: singular, verb: {lemma: earn}}
-    earn: {senses: [verb], number: plural, verb: {lemma: earn}}
-    earned: {senses: [verb], verb: {lemma: earn}}
-    earning: {senses: [verb], verb: {lemma: earn}}
-    makes: {senses: [verb], number: singular, verb: {lemma: make}}
-    make: {senses: [verb], number: plural, verb: {lemma: make}}
-    made: {senses: [verb], verb: {lemma: make}}
-    writes: {senses: [verb], number: singular, verb: {lemma: write}}
-    write: {senses: [verb], number: plural, verb: {lemma: write}}
-    wrote: {senses: [verb], verb: {lemma: write}}
-    know: {senses: [verb], number: plural}
-    knows: {senses: [verb], number: singular, verb: {lemma: know}}
-    knew: {senses: [verb], verb: {lemma: know}}
-    knowing: {senses: [verb], verb: {lemma: know}}
-    see: {senses: [verb], number: plural}
-    sees: {senses: [verb], number: singular, verb: {lemma: see}}
-    saw: {senses: [verb], verb: {lemma: see}}
-    seeing: {senses: [verb], verb: {lemma: see}}
-    wonder: {senses: [verb], number: plural}
-    wonders: {senses: [verb], number: singular, verb: {lemma: wonder}}
-    wondered: {senses: [verb], verb: {lemma: wonder}}
-    wondering: {senses: [verb], verb: {lemma: wonder}}
-    check: {senses: [verb], number: plural}
-    checks: {senses: [verb], number: singular, verb: {lemma: check}}
-    checked: {senses: [verb], verb: {lemma: check}}
-    checking: {senses: [verb], verb: {lemma: check}}
-    examine: {senses: [verb], number: plural}
-    examines: {senses: [verb], number: singular, verb: {lemma: examine}}
-    examined: {senses: [verb], verb: {lemma: examine}}
-    examining: {senses: [verb], verb: {lemma: examine}}
-    study: {senses: [verb], number: plural}
-    studies: {senses: [verb], number: singular, verb: {lemma: study}}
-    studied: {senses: [verb], verb: {lemma: study}}
-    studying: {senses: [noun, verb], verb: {lemma: study}}
-    say: {senses: [verb], number: plural}
-    says: {senses: [verb], number: singular, verb: {lemma: say}}
-    said: {senses: [verb], verb: {lemma: say}}
-    saying: {senses: [verb], verb: {lemma: say}}
-    go: {senses: [verb], number: plural}
-    goes: {senses: [verb], number: singular, verb: {lemma: go}}
-    went: {senses: [verb], verb: {lemma: go}}
-    gone: {senses: [verb], verb: {lemma: go}}
-    going: {senses: [verb], verb: {lemma: go}}
-    fit: {senses: [verb], number: plural}
-    fits: {senses: [verb], number: singular, verb: {lemma: fit}}
-    fitting: {senses: [verb], verb: {lemma: fit}}
-    contain: {senses: [verb], number: plural}
-    contains: {senses: [verb], number: singular, verb: {lemma: contain}}
-    contained: {senses: [verb], verb: {lemma: contain}}
-    containing: {senses: [verb], verb: {lemma: contain}}
-    fill: {senses: [verb], number: plural}
-    fills: {senses: [verb], number: singular, verb: {lemma: fill}}
-    filled: {senses: [verb], verb: {lemma: fill}}
-    filling: {senses: [verb], verb: {lemma: fill}}
-    reads: {senses: [verb], number: singular, verb: {lemma: read}}
-    read: {senses: [verb]}
-    reading: {senses: [verb], verb: {lemma: read}}
-    receives: {senses: [verb], number: singular, verb: {lemma: receive}}
-    receive: {senses: [verb], number: plural, verb: {lemma: receive}}
-    received: {senses: [verb], verb: {lemma: receive}}
-    wins: {senses: [verb], number: singular, verb: {lemma: win}}
-    win: {senses: [verb], number: plural, verb: {lemma: win}}
-    won: {senses: [verb], verb: {lemma: win}}
-
-    # event verbs — losses
-    loses: {senses: [verb], number: singular, verb: {lemma: lose}}
-    lose: {senses: [verb], number: plural, verb: {lemma: lose}}
-    lost: {senses: [verb], verb: {lemma: lose}}
-    eats: {senses: [verb], number: singular, verb: {lemma: eat}}
-    eat: {senses: [verb], number: plural, verb: {lemma: eat}}
-    ate: {senses: [verb], verb: {lemma: eat}}
-    gives: {senses: [verb], number: singular, verb: {lemma: give}}
-    give: {senses: [verb], number: plural, verb: {lemma: give}}
-    gave: {senses: [verb], verb: {lemma: give}}
-    save: {senses: [verb], number: plural}
-    saves: {senses: [verb], number: singular, verb: {lemma: save}}
-    saved: {senses: [verb], verb: {lemma: save}}
-    saving: {senses: [verb], verb: {lemma: save}}
-    sells: {senses: [verb], number: singular, verb: {lemma: sell}}
-    sell: {senses: [verb], number: plural, verb: {lemma: sell}}
-    sold: {senses: [verb], verb: {lemma: sell}}
-    spends: {senses: [verb], number: singular, verb: {lemma: spend}}
-    spend: {senses: [verb], number: plural, verb: {lemma: spend}}
-    spent: {senses: [verb], verb: {lemma: spend}}
-    drops: {senses: [verb], number: singular, verb: {lemma: drop}}
-    dropped: {senses: [verb], verb: {lemma: drop}}
-
-    # other verbs
-    wilted: {senses: [verb], verb: {lemma: wilt}}
-    jumped: {senses: [verb], verb: {lemma: jump}}
-    walked: {senses: [verb], verb: {lemma: walk}}
-    ran: {senses: [verb], verb: {lemma: run}}
-    arrive: {senses: [verb], number: plural}
-    arrived: {senses: [verb], verb: {lemma: arrive}}
-    arrives: {senses: [verb], number: singular, verb: {lemma: arrive}}
-    leave: {senses: [verb], number: plural}
-    leaves: {senses: [verb], number: singular, verb: {lemma: leave}}
-    leaving: {senses: [verb], verb: {lemma: leave}}
-    travel: {senses: [verb], number: plural}
-    traveled: {senses: [verb], verb: {lemma: travel}}
-    travels: {senses: [verb], number: singular, verb: {lemma: travel}}
-    take: {senses: [verb], number: plural}
-    takes: {senses: [verb], verb: {lemma: take}}
-    took: {senses: [verb], verb: {lemma: take}}
-    finish: {senses: [noun, verb], number: plural}
-    finished: {senses: [verb], verb: {lemma: finish}}
-    finishes: {senses: [verb], number: singular, verb: {lemma: finish}}
-    want: {senses: [verb], number: plural}
-    wanted: {senses: [verb], verb: {lemma: want}}
-    wanting: {senses: [verb], verb: {lemma: want}}
-    wants: {senses: [verb], verb: {lemma: want}}
-    hope: {senses: [verb], number: plural}
-    hoped: {senses: [verb], verb: {lemma: hope}}
-    hoping: {senses: [verb], verb: {lemma: hope}}
-    hopes: {senses: [verb], number: singular, verb: {lemma: hope}}
-    intend: {senses: [verb], number: plural}
-    intended: {senses: [verb], verb: {lemma: intend}}
-    intending: {senses: [verb], verb: {lemma: intend}}
-    intends: {senses: [verb], number: singular, verb: {lemma: intend}}
-    need: {senses: [verb], number: plural}
-    needed: {senses: [verb], verb: {lemma: need}}
-    needs: {senses: [verb], verb: {lemma: need}}
-    require: {senses: [verb], number: plural}
-    required: {senses: [verb], verb: {lemma: require}}
-    requiring: {senses: [verb], verb: {lemma: require}}
-    requires: {senses: [verb], number: singular, verb: {lemma: require}}
-    raise: {senses: [verb], number: plural}
-    raised: {senses: [verb], verb: {lemma: raise}}
-    raises: {senses: [verb], number: singular, verb: {lemma: raise}}
-    raising: {senses: [verb], verb: {lemma: raise}}
-    begin: {senses: [verb], number: plural}
-    begins: {senses: [verb], number: singular, verb: {lemma: begin}}
-    began: {senses: [verb], verb: {lemma: begin}}
-    beginning: {senses: [noun, verb], verb: {lemma: begin}}
-    start: {senses: [verb], number: plural}
-    starts: {senses: [verb], number: singular, verb: {lemma: start}}
-    started: {senses: [verb], verb: {lemma: start}}
-    starting: {senses: [verb], verb: {lemma: start}}
-
-    # the classic multi-sense demonstrator
-    rose:
-        senses: [noun, verb]
-        plural: roses
-        verb: {lemma: rise}
-        notes: "flower (noun) or past of rise (verb) — coverage arbitrates"
+  +: {senses: [operator]}
+  a: {senses: [article]}
+  able: {senses: [adjective]}
+  aboard: {senses: [preposition]}
+  about: {senses: [preposition]}
+  above: {senses: [preposition]}
+  across: {senses: [preposition]}
+  action: {senses: [noun], plural: actions}
+  add: {senses: [verb], number: plural}
+  added: {senses: [verb], verb: {lemma: add}}
+  adding: {senses: [verb], verb: {lemma: add}}
+  additive:
+    senses:
+    - adjective
+  adds: {senses: [verb], number: singular, verb: {lemma: add}}
+  after: {senses: [preposition]}
+  again: {senses: [adverb]}
+  against: {senses: [preposition]}
+  age: {senses: [noun], plural: ages}
+  ago: {senses: [adverb]}
+  album: {senses: [noun], plural: albums}
+  all: {senses: [quantifier]}
+  allow: {senses: [verb]}
+  allowance: {senses: [noun], plural: allowances}
+  allowed: {senses: [verb], verb: {lemma: allow}}
+  allows: {senses: [verb], verb: {lemma: allow}}
+  alloy:
+    senses:
+    - noun
+  along: {senses: [preposition]}
+  alongside: {senses: [preposition]}
+  alpaca: {senses: [noun], plural: alpacas}
+  also:
+    senses:
+    - adverb
+  altogether: {senses: [aggregate]}
+  amid: {senses: [preposition]}
+  amidst: {senses: [preposition]}
+  among: {senses: [preposition]}
+  amongst: {senses: [preposition]}
+  amount: {senses: [noun], plural: amounts}
+  an: {senses: [article]}
+  and: {senses: [conjunction]}
+  animal: {senses: [noun], plural: animals}
+  another: {senses: [article]}
+  any:
+    senses:
+    - article
+  anything: {senses: [pronoun]}
+  apart from: {senses: [preposition]}
+  appetite: {senses: [noun]}
+  apple: {senses: [noun], plural: apples}
+  applied: {senses: [verb], verb: {lemma: apply}}
+  applies: {senses: [verb], verb: {lemma: apply}}
+  apply: {senses: [verb]}
+  applying: {senses: [verb], verb: {lemma: apply}}
+  apricot: {senses: [noun], plural: apricots}
+  april: {senses: [noun]}
+  are: {senses: [verb], number: plural, verb: {lemma: be}}
+  area: {senses: [noun], plural: areas}
+  around: {senses: [preposition]}
+  arrive: {senses: [verb], number: plural}
+  arrived: {senses: [verb], verb: {lemma: arrive}}
+  arrives: {senses: [verb], number: singular, verb: {lemma: arrive}}
+  as: {senses: [particle]}
+  at: {senses: [preposition]}
+  ate: {senses: [verb], verb: {lemma: eat}}
+  atop: {senses: [preposition]}
+  august: {senses: [noun]}
+  avenue:
+    senses:
+    - noun
+    plural: avenues
+  average: {senses: [aggregate]}
+  away: {senses: [adverb]}
+  babysitting: {senses: [noun]}
+  back and forth: {senses: [adverb], lexical_phrase: true}
+  bag: {senses: [noun], plural: bags}
+  ball: {senses: [noun], plural: balls}
+  barrel: {senses: [noun], plural: barrels}
+  barring: {senses: [preposition]}
+  basket: {senses: [noun], plural: baskets}
+  batch: {senses: [noun], plural: batches}
+  be: {senses: [verb]}
+  bead:
+    senses:
+    - noun
+    plural: beads
+  bead mixture:
+    senses:
+    - noun
+    lexical_phrase: true
+  beaker: {senses: [noun], plural: beakers}
+  because:
+    senses:
+    - conjunction
+  because of: {senses: [preposition]}
+  been: {senses: [verb], verb: {lemma: be}}
+  beetle: {senses: [noun], plural: beetles}
+  before: {senses: [preposition]}
+  began: {senses: [verb], verb: {lemma: begin}}
+  begin: {senses: [verb], number: plural}
+  beginning: {senses: [noun, verb], verb: {lemma: begin}}
+  begins: {senses: [verb], number: singular, verb: {lemma: begin}}
+  behind: {senses: [preposition]}
+  beige: {senses: [adjective]}
+  below: {senses: [preposition]}
+  belt:
+    senses:
+    - noun
+    plural: belts
+  bench: {senses: [noun], plural: benches}
+  beneath: {senses: [preposition]}
+  beside: {senses: [preposition]}
+  besides: {senses: [preposition]}
+  between: {senses: [preposition]}
+  beyond: {senses: [preposition]}
+  bigger: {senses: [comparative]}
+  bike: {senses: [noun, verb], plural: bikes}
+  bike ride: {senses: [noun], plural: bike rides, lexical_phrase: true}
+  bikes: {senses: [noun, verb], verb: {lemma: bike}}
+  biking: {senses: [verb], verb: {lemma: bike}}
+  bird: {senses: [noun], plural: birds}
+  blue: {senses: [adjective]}
+  boarding school: {senses: [noun], plural: boarding schools, lexical_phrase: true}
+  bonus: {senses: [noun], plural: bonuses}
+  book: {senses: [noun], plural: books}
+  both: {senses: [quantifier]}
+  bottle: {senses: [noun], plural: bottles}
+  bought: {senses: [verb], verb: {lemma: buy}}
+  boulevard:
+    senses:
+    - noun
+    plural: boulevards
+  bowl: {senses: [noun], plural: bowls}
+  box: {senses: [noun], plural: boxes}
+  boy: {senses: [noun], plural: boys}
+  brine: {senses: [noun]}
+  bring: {senses: [verb], number: plural}
+  bringing: {senses: [verb], verb: {lemma: bring}}
+  brings: {senses: [verb], number: singular, verb: {lemma: bring}}
+  bronze:
+    senses:
+    - noun
+  brother: {senses: [noun], plural: brothers}
+  brought: {senses: [verb], verb: {lemma: bring}}
+  brownie: {senses: [noun], plural: brownies}
+  bucket: {senses: [noun], plural: buckets}
+  budget:
+    senses:
+    - noun
+  built: {senses: [verb], verb: {lemma: build}}
+  business: {senses: [noun, adjective], plural: businesses}
+  but:
+    senses:
+    - conjunction
+  but for: {senses: [preposition]}
+  button-up: {senses: [adjective]}
+  buy: {senses: [verb], number: plural, verb: {lemma: buy}}
+  buying: {senses: [verb], verb: {lemma: buy}}
+  buys: {senses: [verb], number: singular, verb: {lemma: buy}}
+  by: {senses: [preposition]}
+  calculate: {senses: [verb, imperative]}
+  can: {senses: [modal, noun], plural: cans}
+  canister: {senses: [noun], plural: canisters}
+  capacity: {senses: [noun], plural: capacities}
+  card: {senses: [noun], plural: cards}
+  care package: {senses: [noun], plural: care packages, lexical_phrase: true}
+  cat: {senses: [noun], plural: cats}
+  cause: {senses: [verb]}
+  caused: {senses: [verb], verb: {lemma: cause}}
+  causes: {senses: [verb], verb: {lemma: cause}}
+  causing: {senses: [verb], verb: {lemma: cause}}
+  cd: {senses: [noun], plural: cds}
+  cereal:
+    senses:
+    - noun
+  change: {senses: [noun, verb]}
+  charcuterie: {senses: [noun]}
+  charge: {senses: [verb]}
+  charged: {senses: [verb], verb: {lemma: charge}}
+  charges: {senses: [verb], number: singular, verb: {lemma: charge}}
+  charging: {senses: [verb], verb: {lemma: charge}}
+  check: {senses: [verb], number: plural}
+  checked: {senses: [verb], verb: {lemma: check}}
+  checking: {senses: [verb], verb: {lemma: check}}
+  checks: {senses: [verb], number: singular, verb: {lemma: check}}
+  cheddar cheese: {senses: [noun], lexical_phrase: true}
+  cheese: {senses: [noun]}
+  child: {senses: [noun], plural: children}
+  circa: {senses: [preposition]}
+  clay: {senses: [noun]}
+  clearance: {senses: [noun]}
+  clip: {senses: [noun], plural: clips}
+  clothes:
+    senses:
+    - noun
+    number: plural
+  clothing: {senses: [noun]}
+  coat:
+    senses:
+    - noun
+    plural: coats
+  coconut: {senses: [noun], plural: coconuts}
+  coin: {senses: [noun], plural: coins}
+  cold cut: {senses: [noun], plural: cold cuts, lexical_phrase: true}
+  collect:
+    senses:
+    - verb
+  collected:
+    senses:
+    - verb
+    verb:
+      lemma: collect
+  collects:
+    senses:
+    - verb
+    verb:
+      lemma: collect
+  color: {senses: [noun], plural: colors}
+  combine:
+    senses:
+    - verb
+  combined: {senses: [aggregate]}
+  combines:
+    senses:
+    - verb
+    verb:
+      lemma: combine
+  company: {senses: [noun], plural: companies}
+  completely: {senses: [adverb]}
+  compute: {senses: [imperative]}
+  computer:
+    senses:
+    - noun
+    plural: computers
+  concerning: {senses: [preposition]}
+  conduct: {senses: [verb], number: plural}
+  conducted: {senses: [verb], verb: {lemma: conduct}}
+  conducting: {senses: [verb], verb: {lemma: conduct}}
+  conducts: {senses: [verb], number: singular, verb: {lemma: conduct}}
+  consume: {senses: [verb]}
+  consumed: {senses: [verb], verb: {lemma: consume}}
+  consumes: {senses: [verb], number: singular, verb: {lemma: consume}}
+  contain: {senses: [verb], number: plural}
+  contained: {senses: [verb], verb: {lemma: contain}}
+  container: {senses: [noun], plural: containers}
+  containing: {senses: [verb], verb: {lemma: contain}}
+  contains: {senses: [verb], number: singular, verb: {lemma: contain}}
+  content: {senses: [noun], plural: contents}
+  cookie: {senses: [noun], plural: cookies}
+  copper:
+    senses:
+    - noun
+  cost: {senses: [noun, verb], plural: costs}
+  costs: {senses: [noun, verb], verb: {lemma: cost}}
+  could: {senses: [modal]}
+  count:
+    senses:
+    - verb
+    - noun
+  course: {senses: [noun], plural: courses}
+  cream cheese: {senses: [noun], lexical_phrase: true}
+  create: {senses: [verb]}
+  created: {senses: [verb], verb: {lemma: create}}
+  creates: {senses: [verb], verb: {lemma: create}}
+  creating: {senses: [verb], verb: {lemma: create}}
+  credit: {senses: [noun]}
+  credit limit: {senses: [noun], lexical_phrase: true}
+  cupboard: {senses: [noun], plural: cupboards}
+  currently: {senses: [adverb]}
+  daily: {senses: [adverb]}
+  day: {senses: [noun], plural: days}
+  debt: {senses: [noun], plural: debts}
+  december: {senses: [noun]}
+  decide: {senses: [verb], number: plural}
+  decided: {senses: [verb], verb: {lemma: decide}}
+  decides: {senses: [verb], number: singular, verb: {lemma: decide}}
+  deep-sea: {senses: [adjective]}
+  delete:
+    senses:
+    - verb
+  deleted:
+    senses:
+    - verb
+    verb:
+      lemma: delete
+  deletes:
+    senses:
+    - verb
+    verb:
+      lemma: delete
+  deleting:
+    senses:
+    - verb
+    verb:
+      lemma: delete
+  deliver: {senses: [verb]}
+  delivered: {senses: [verb], verb: {lemma: deliver}}
+  delivers: {senses: [verb], number: singular, verb: {lemma: deliver}}
+  delivery: {senses: [noun], plural: deliveries}
+  department:
+    senses:
+    - noun
+  desert:
+    senses:
+    - noun
+    plural: deserts
+  design: {senses: [noun, verb], plural: designs, verb: {lemma: design}}
+  designed: {senses: [verb], verb: {lemma: design}}
+  designs: {senses: [noun, verb], verb: {lemma: design}}
+  despite: {senses: [preposition]}
+  did: {senses: [auxiliary]}
+  different: {senses: [adjective]}
+  dinner: {senses: [noun], plural: dinners}
+  discard:
+    senses:
+    - verb
+  discarded:
+    senses:
+    - verb
+    verb:
+      lemma: discard
+  discarding:
+    senses:
+    - verb
+    verb:
+      lemma: discard
+  discards:
+    senses:
+    - verb
+    verb:
+      lemma: discard
+  discount: {senses: [noun], plural: discounts}
+  do: {senses: [auxiliary], number: plural}
+  document:
+    senses:
+    - noun
+    plural: documents
+  does: {senses: [auxiliary], number: singular}
+  dog: {senses: [noun], plural: dogs}
+  doing: {senses: [verb], verb: {lemma: do}}
+  dollar: {senses: [noun], plural: dollars}
+  double: {senses: [quantifier]}
+  down: {senses: [adverb, preposition]}
+  download:
+    senses:
+    - verb
+  downloaded:
+    senses:
+    - verb
+    verb:
+      lemma: download
+  downloading:
+    senses:
+    - verb
+    verb:
+      lemma: download
+  downloads:
+    senses:
+    - verb
+    verb:
+      lemma: download
+  dragon: {senses: [noun], plural: dragons}
+  driveway: {senses: [noun], plural: driveways}
+  dropped: {senses: [verb], verb: {lemma: drop}}
+  drops: {senses: [verb], number: singular, verb: {lemma: drop}}
+  drum: {senses: [noun], plural: drums}
+  due to: {senses: [preposition]}
+  during: {senses: [preposition]}
+  dvd: {senses: [noun], plural: dvds}
+  each: {senses: [quantifier], notes: distributive; singular agreement}
+  earn: {senses: [verb], number: plural, verb: {lemma: earn}}
+  earned: {senses: [verb], verb: {lemma: earn}}
+  earning: {senses: [verb], verb: {lemma: earn}}
+  earns: {senses: [verb], number: singular, verb: {lemma: earn}}
+  eat: {senses: [verb], number: plural, verb: {lemma: eat}}
+  eaten: {senses: [verb], verb: {lemma: eat}}
+  eats: {senses: [verb], number: singular, verb: {lemma: eat}}
+  effective: {senses: [preposition]}
+  egg: {senses: [noun], plural: eggs}
+  either: {senses: [pronoun]}
+  eligible: {senses: [adjective]}
+  empire: {senses: [noun], plural: empires}
+  enough: {senses: [adjective]}
+  enroll: {senses: [verb], number: plural}
+  enrolled: {senses: [verb], verb: {lemma: enroll}}
+  enrolling: {senses: [verb], verb: {lemma: enroll}}
+  enrolls: {senses: [verb], number: singular, verb: {lemma: enroll}}
+  entire: {senses: [adjective]}
+  envelope: {senses: [noun], plural: envelopes}
+  ethanol:
+    senses:
+    - noun
+  evaporate: {senses: [verb]}
+  evaporated: {senses: [verb], verb: {lemma: evaporate}}
+  evaporates: {senses: [verb], verb: {lemma: evaporate}}
+  every: {senses: [quantifier]}
+  everybody: {senses: [pronoun]}
+  everyone: {senses: [pronoun]}
+  everything: {senses: [pronoun]}
+  examine: {senses: [verb], number: plural}
+  examined: {senses: [verb], verb: {lemma: examine}}
+  examines: {senses: [verb], number: singular, verb: {lemma: examine}}
+  examining: {senses: [verb], verb: {lemma: examine}}
+  except: {senses: [preposition]}
+  excepting: {senses: [preposition]}
+  experiment: {senses: [noun], plural: experiments}
+  failing: {senses: [preposition]}
+  far: {senses: [adverb]}
+  farm: {senses: [noun], plural: farms}
+  faster: {senses: [comparative]}
+  favorite: {senses: [adjective]}
+  favourite: {senses: [adjective]}
+  feast: {senses: [verb]}
+  feasted: {senses: [verb], verb: {lemma: feast}}
+  feasts: {senses: [verb], number: singular, verb: {lemma: feast}}
+  february: {senses: [noun]}
+  fee: {senses: [noun], plural: fees}
+  fewer: {senses: [comparative]}
+  fifth:
+    senses:
+    - adjective
+  file:
+    senses:
+    - noun
+    plural: files
+  fill: {senses: [verb], number: plural}
+  filled: {senses: [verb], verb: {lemma: fill}}
+  filling: {senses: [verb], verb: {lemma: fill}}
+  fills: {senses: [verb], number: singular, verb: {lemma: fill}}
+  film: {senses: [noun], plural: films}
+  final: {senses: [adjective]}
+  finally: {senses: [adverb]}
+  find: {senses: [verb], number: plural, verb: {lemma: find}}
+  finds: {senses: [verb], number: singular, verb: {lemma: find}}
+  finish: {senses: [noun, verb], number: plural}
+  finished: {senses: [verb], verb: {lemma: finish}}
+  finishes: {senses: [verb], number: singular, verb: {lemma: finish}}
+  first: {senses: [adjective]}
+  first name: {senses: [noun], plural: first names, lexical_phrase: true}
+  fish: {senses: [noun], plural: fish}
+  fit: {senses: [verb], number: plural}
+  fits: {senses: [verb], number: singular, verb: {lemma: fit}}
+  fitting: {senses: [verb], verb: {lemma: fit}}
+  flask: {senses: [noun], plural: flasks}
+  flower: {senses: [noun], plural: flowers}
+  following: {senses: [adjective, preposition]}
+  for: {senses: [preposition]}
+  forest: {senses: [noun], plural: forests}
+  found: {senses: [verb], verb: {lemma: find}}
+  fourth:
+    senses:
+    - adjective
+  friday: {senses: [noun]}
+  fridge: {senses: [noun], plural: fridges}
+  friend: {senses: [noun], plural: friends}
+  from: {senses: [preposition]}
+  full: {senses: [adjective]}
+  full name: {senses: [noun], plural: full names, lexical_phrase: true}
+  fully: {senses: [adverb]}
+  garden: {senses: [noun], plural: gardens}
+  gardener: {senses: [noun], plural: gardeners}
+  gardening: {senses: [noun]}
+  gas mixture:
+    senses:
+    - noun
+    lexical_phrase: true
+  gate: {senses: [noun], plural: gates}
+  gave: {senses: [verb], verb: {lemma: give}}
+  get: {senses: [verb], number: plural, verb: {lemma: get}}
+  gets: {senses: [verb], number: singular, verb: {lemma: get}}
+  girl: {senses: [noun], plural: girls}
+  give: {senses: [verb], number: plural, verb: {lemma: give}}
+  gives: {senses: [verb], number: singular, verb: {lemma: give}}
+  glass bead:
+    senses:
+    - noun
+    plural: glass beads
+    lexical_phrase: true
+  gnome:
+    senses:
+    - noun
+    plural: gnomes
+  go: {senses: [verb], number: plural}
+  goes: {senses: [verb], number: singular, verb: {lemma: go}}
+  going: {senses: [verb], verb: {lemma: go}}
+  gone: {senses: [verb], verb: {lemma: go}}
+  goodie: {senses: [noun], plural: goodies}
+  goods: {senses: [noun], number: plural}
+  got: {senses: [verb], verb: {lemma: get}}
+  gram: {senses: [noun], plural: grams}
+  grandparent: {senses: [noun], plural: grandparents}
+  grape: {senses: [noun], plural: grapes}
+  green: {senses: [adjective]}
+  grocery: {senses: [noun], plural: groceries}
+  guardian: {senses: [noun], plural: guardians}
+  gummy worm: {senses: [noun], plural: gummy worms, lexical_phrase: true}
+  had: {senses: [verb], verb: {lemma: have}}
+  had been: {senses: [verb], verb: {lemma: be}}
+  hamster: {senses: [noun], plural: hamsters}
+  hard hat: {senses: [noun], plural: hard hats, lexical_phrase: true}
+  has: {senses: [verb], number: singular, verb: {lemma: have}}
+  has been: {senses: [verb], number: singular, verb: {lemma: be}}
+  hat:
+    senses:
+    - noun
+    plural: hats
+  have: {senses: [verb], number: plural, verb: {lemma: have}}
+  have been: {senses: [verb], number: plural, verb: {lemma: be}}
+  having: {senses: [verb], verb: {lemma: have}}
+  he: {senses: [pronoun], number: singular, anaphoric_form: &masculine {paradigm: third-person-masculine,
+        referent_numbers: [singular]}}
+  head: {senses: [noun], plural: heads}
+  heavier: {senses: [comparative]}
+  helium:
+    senses:
+    - noun
+  helpful:
+    senses:
+    - adjective
+  her: {senses: [pronoun], anaphoric_form: &feminine {paradigm: third-person-feminine, referent_numbers: [
+          singular]}}
+  herself: {senses: [pronoun], anaphoric_form: *feminine}
+  higher: {senses: [comparative]}
+  him: {senses: [pronoun], anaphoric_form: *masculine}
+  himself: {senses: [pronoun], anaphoric_form: *masculine}
+  his: {senses: [pronoun], anaphoric_form: *masculine}
+  hit: {senses: [verb]}
+  hits: {senses: [verb], verb: {lemma: hit}}
+  hitting: {senses: [verb], verb: {lemma: hit}}
+  homogeneous:
+    senses:
+    - adjective
+  hope: {senses: [verb], number: plural}
+  hoped: {senses: [verb], verb: {lemma: hope}}
+  hopes: {senses: [verb], number: singular, verb: {lemma: hope}}
+  hoping: {senses: [verb], verb: {lemma: hope}}
+  hour: {senses: [noun], plural: hours}
+  hourly: {senses: [adjective]}
+  house:
+    senses:
+    - noun
+    plural: houses
+  how: {senses: [interrogative]}
+  humanities: {senses: [noun, adjective]}
+  hunger: {senses: [noun]}
+  i:
+    senses: [pronoun]
+    notes: >
+      first-person singular — a base-lexicon gap this project never needed
+      until now (GSM8K narratives are almost always third-person), closed
+      as a decline-safety prerequisite for condense.py's merge-label pass
+      (mining candidate labeled-entity-identity): without a lexicon entry,
+      the single capital letter "I" is indistinguishable from a genuine
+      index label ("Jar B") and "the jar I have" would wrongly fuse into
+      one label-distinguished noun. With this entry it keeps its own
+      pronoun sense (its `refers` obligation then simply goes unmet, same
+      decline discipline every other unresolved pronoun already has).
+  if: {senses: [conjunction]}
+  image:
+    senses:
+    - noun
+    plural: images
+  in: {senses: [preposition]}
+  inch: {senses: [noun], plural: inches}
+  including: {senses: [preposition]}
+  individually: {senses: [adverb]}
+  ingredient: {senses: [noun], plural: ingredients}
+  inside: {senses: [preposition]}
+  inspect: {senses: [verb]}
+  inspected: {senses: [verb], verb: {lemma: inspect}}
+  inspects: {senses: [verb], verb: {lemma: inspect}}
+  instead of: {senses: [preposition]}
+  intend: {senses: [verb], number: plural}
+  intended: {senses: [verb], verb: {lemma: intend}}
+  intending: {senses: [verb], verb: {lemma: intend}}
+  intends: {senses: [verb], number: singular, verb: {lemma: intend}}
+  internet:
+    senses:
+    - noun
+  interview: {senses: [noun], plural: interviews}
+  into: {senses: [preposition]}
+  irrelevant:
+    senses:
+    - adjective
+  is: {senses: [verb], number: singular, verb: {lemma: be}}
+  island:
+    senses:
+    - noun
+    plural: islands
+  it: {senses: [pronoun], number: singular, anaphoric_form: &impersonal {paradigm: third-person-impersonal,
+        referent_numbers: [singular]}}
+  item: {senses: [noun], plural: items}
+  its: {senses: [pronoun], anaphoric_form: *impersonal}
+  jack:
+    senses:
+    - noun
+    - name
+    plural: jacks
+  jaguar: {senses: [noun], plural: jaguars}
+  january: {senses: [noun]}
+  jar: {senses: [noun], plural: jars}
+  jelly bean: {senses: [noun], plural: jelly beans, lexical_phrase: true}
+  job:
+    senses:
+    - noun
+    plural: jobs
+  jug: {senses: [noun], plural: jugs}
+  july: {senses: [noun]}
+  jumped: {senses: [verb], verb: {lemma: jump}}
+  june: {senses: [noun]}
+  just: {senses: [adverb]}
+  key: {senses: [noun], plural: keys}
+  kilogram: {senses: [noun], plural: [kg, kilograms]}
+  kilometer: {senses: [noun], plural: [km, kilometers]}
+  knew: {senses: [verb], verb: {lemma: know}}
+  know: {senses: [verb], number: plural}
+  knowing: {senses: [verb], verb: {lemma: know}}
+  knows: {senses: [verb], number: singular, verb: {lemma: know}}
+  lane:
+    senses:
+    - noun
+    plural: lanes
+  large: {senses: [adjective]}
+  larger: {senses: [comparative]}
+  last: {senses: [adjective, verb]}
+  last name: {senses: [noun], plural: last names, lexical_phrase: true}
+  lawn: {senses: [noun], plural: lawns}
+  leave: {senses: [verb], number: plural}
+  leaves: {senses: [verb], number: singular, verb: {lemma: leave}}
+  leaving: {senses: [verb], verb: {lemma: leave}}
+  left:
+    senses: [adjective, verb]
+    notes: >
+      Past departure verb or remainder adjective. Governed rules and
+      argument structure choose the reading; the surface alone does not.
+  length: {senses: [noun], plural: lengths}
+  less: {senses: [comparative]}
+  letter: {senses: [noun], plural: letters}
+  librarian: {senses: [noun], plural: librarians}
+  lighter: {senses: [comparative]}
+  like: {senses: [preposition]}
+  limit: {senses: [noun]}
+  liter: {senses: [noun], plural: [liters, litres]}
+  litter: {senses: [noun], plural: litter}
+  live: {senses: [verb], number: plural}
+  lived: {senses: [verb], verb: {lemma: live}}
+  lives: {senses: [verb], number: singular, verb: {lemma: live}}
+  load: {senses: [noun, verb], plural: loads}
+  loaded: {senses: [verb], verb: {lemma: load}}
+  loading: {senses: [verb], verb: {lemma: load}}
+  loads: {senses: [noun, verb], verb: {lemma: load}}
+  longer: {senses: [comparative]}
+  lose: {senses: [verb], number: plural, verb: {lemma: lose}}
+  loses: {senses: [verb], number: singular, verb: {lemma: lose}}
+  losing:
+    senses:
+    - verb
+    verb:
+      lemma: lose
+  lost: {senses: [verb], verb: {lemma: lose}}
+  machine: {senses: [noun], plural: machines}
+  made: {senses: [verb], verb: {lemma: make}}
+  make: {senses: [verb], number: plural, verb: {lemma: make}}
+  makes: {senses: [verb], number: singular, verb: {lemma: make}}
+  manage: {senses: [verb]}
+  managed: {senses: [verb], verb: {lemma: manage}}
+  manages: {senses: [verb], verb: {lemma: manage}}
+  managing: {senses: [verb], verb: {lemma: manage}}
+  mango: {senses: [noun], plural: [mangoes, mangos]}
+  many: {senses: [interrogative]}
+  marble: {senses: [noun], plural: marbles}
+  march: {senses: [noun]}
+  mass: {senses: [noun]}
+  may: {senses: [modal, noun]}
+  measure: {senses: [verb], number: plural}
+  measured: {senses: [verb], verb: {lemma: measure}}
+  measures: {senses: [verb], number: singular, verb: {lemma: measure}}
+  measuring: {senses: [verb], verb: {lemma: measure}}
+  media: {senses: [adjective]}
+  merchandise: {senses: [noun]}
+  might: {senses: [modal]}
+  mile: {senses: [noun], plural: miles}
+  milliliter:
+    # The SINGULAR was missing while 'milliliters' had its own entry, so the
+    # plural never canonicalized (lemma stayed 'milliliters') and no conversion
+    # could key on it. `plural:` restores the one-identity invariant every other
+    # unit noun already has — a noun's number-forms share ONE lemma.
+    senses:
+    - noun
+    plural: [milliliters, millilitres]
+  minute: {senses: [noun], plural: minutes}
+  mix:
+    senses:
+    - verb
+  mixed:
+    senses:
+    - verb
+    verb:
+      lemma: mix
+  mixes:
+    senses:
+    - verb
+    verb:
+      lemma: mix
+  mixing:
+    senses:
+    - verb
+    verb:
+      lemma: mix
+  mixture:
+    senses:
+    - noun
+  ml:
+    senses:
+    - noun
+  moles: {senses: [noun], plural: moles}
+  monday: {senses: [noun]}
+  money: {senses: [noun]}
+  monster: {senses: [noun], plural: monsters}
+  month: {senses: [noun], plural: months}
+  more: {senses: [comparative]}
+  movie: {senses: [noun], plural: movies}
+  mow: {senses: [verb]}
+  mowed: {senses: [verb], verb: {lemma: mow}}
+  mowing: {senses: [verb], verb: {lemma: mow}}
+  mows: {senses: [verb], number: singular, verb: {lemma: mow}}
+  mph: {senses: [noun], plural: mph}
+  much: {senses: [interrogative, quantifier], notes: moved from difg-mined; also the how-MUCH ask cue}
+  must: {senses: [modal]}
+  my: {senses: [pronoun]}
+  near: {senses: [preposition]}
+  need: {senses: [verb], number: plural}
+  needed: {senses: [verb], verb: {lemma: need}}
+  needs: {senses: [verb], verb: {lemma: need}}
+  new: {senses: [adjective]}
+  next: {senses: [adjective, adverb]}
+  next to: {senses: [preposition]}
+  nickname: {senses: [noun], plural: nicknames}
+  nitrogen:
+    senses:
+    - noun
+  no: {senses: [quantifier]}
+  nobody: {senses: [pronoun]}
+  not: {senses: [negator]}
+  notwithstanding: {senses: [preposition]}
+  november: {senses: [noun]}
+  now: {senses: [time]}
+  number: {senses: [noun], plural: numbers}
+  observe: {senses: [verb]}
+  observed: {senses: [verb], verb: {lemma: observe}}
+  observes: {senses: [verb], verb: {lemma: observe}}
+  observing: {senses: [verb], verb: {lemma: observe}}
+  obtain: {senses: [verb]}
+  obtained: {senses: [verb], verb: {lemma: obtain}}
+  obtains: {senses: [verb], verb: {lemma: obtain}}
+  october: {senses: [noun]}
+  of: {senses: [preposition]}
+  off: {senses: [adverb, preposition]}
+  office: {senses: [noun], plural: offices}
+  oil:
+    senses:
+    - noun
+  oil blend:
+    senses:
+    - noun
+    lexical_phrase: true
+  old: {senses: [adjective]}
+  older: {senses: [comparative]}
+  on: {senses: [preposition]}
+  once again: {senses: [adverb], lexical_phrase: true}
+  ones: {senses: [pronoun]}
+  online: {senses: [adverb, adjective]}
+  only: {senses: [adverb]}
+  onto: {senses: [preposition]}
+  opposite: {senses: [preposition]}
+  or: {senses: [conjunction]}
+  order: {senses: [verb]}
+  ordered: {senses: [verb], verb: {lemma: order}}
+  ordering: {senses: [verb], verb: {lemma: order}}
+  orders: {senses: [verb], verb: {lemma: order}}
+  out: {senses: [adverb]}
+  out of: {senses: [preposition]}
+  outside: {senses: [adverb, preposition]}
+  over: {senses: [preposition]}
+  overtime: {senses: [noun]}
+  owe: {senses: [verb]}
+  owed: {senses: [verb], verb: {lemma: owe}}
+  owes: {senses: [verb], verb: {lemma: owe}}
+  owing: {senses: [verb], verb: {lemma: owe}}
+  own: {senses: [verb], number: plural, verb: {lemma: own}}
+  owns: {senses: [verb], number: singular, verb: {lemma: own}}
+  pack: {senses: [noun], plural: packs}
+  page: {senses: [noun], plural: pages}
+  paid:
+    senses:
+    - verb
+    verb:
+      lemma: pay
+  paint: {senses: [verb]}
+  painted: {senses: [verb], verb: {lemma: paint}}
+  paints: {senses: [verb], number: singular, verb: {lemma: paint}}
+  pair:
+    senses:
+    - noun
+    plural: pairs
+  pantry: {senses: [noun], plural: pantries}
+  pants:
+    senses:
+    - noun
+  paper: {senses: [noun], plural: papers}
+  paperback: {senses: [noun], plural: paperbacks}
+  parent: {senses: [noun], plural: parents}
+  particular: {senses: [adjective]}
+  partner: {senses: [noun], plural: partners}
+  party: {senses: [noun], plural: parties}
+  past: {senses: [preposition]}
+  pattern: {senses: [noun], plural: patterns}
+  pay:
+    senses:
+    - verb
+    - noun
+  paying:
+    senses:
+    - verb
+    verb:
+      lemma: pay
+  pays:
+    senses:
+    - verb
+    verb:
+      lemma: pay
+  pear: {senses: [noun], plural: pears}
+  pencil: {senses: [noun], plural: pencils}
+  pending: {senses: [preposition]}
+  per: {senses: [rate]}
+  percentage: {senses: [noun], plural: percentages}
+  person: {senses: [noun], plural: [people, persons]}
+  photo:
+    senses:
+    - noun
+    plural: photos
+  photograph:
+    senses:
+    - noun
+    plural: photographs
+  pickle:
+    senses: [noun]
+    plural: pickles
+  piece: {senses: [noun], plural: pieces}
+  pink: {senses: [adjective]}
+  pizza: {senses: [noun], plural: pizzas}
+  place: {senses: [verb], number: plural}
+  placed: {senses: [verb], verb: {lemma: place}}
+  places: {senses: [verb], number: singular, verb: {lemma: place}}
+  placing: {senses: [verb], verb: {lemma: place}}
+  plant: {senses: [noun, verb], plural: plants}
+  planted: {senses: [verb], verb: {lemma: plant}}
+  planting: {senses: [verb], verb: {lemma: plant}}
+  plants: {senses: [noun, verb], verb: {lemma: plant}}
+  plastic bead:
+    senses:
+    - noun
+    plural: plastic beads
+    lexical_phrase: true
+  play: {senses: [verb]}
+  played: {senses: [verb], verb: {lemma: play}}
+  playing: {senses: [verb], verb: {lemma: play}}
+  plays: {senses: [verb], verb: {lemma: play}}
+  plum: {senses: [noun], plural: plums}
+  plus: {senses: [operator]}
+  post office: {senses: [noun], plural: post offices, lexical_phrase: true}
+  pound: {senses: [noun], plural: pounds}
+  pour: {senses: [verb], number: plural}
+  poured: {senses: [verb], verb: {lemma: pour}}
+  pouring: {senses: [verb], verb: {lemma: pour}}
+  pours: {senses: [verb], number: singular, verb: {lemma: pour}}
+  practice: {senses: [noun, verb], plural: practices}
+  practicing: {senses: [verb], verb: {lemma: practice}}
+  previous: {senses: [adjective]}
+  price: {senses: [noun], plural: prices}
+  prize: {senses: [noun], plural: prizes}
+  produce: {senses: [verb]}
+  produced: {senses: [verb], verb: {lemma: produce}}
+  produces: {senses: [verb], number: singular, verb: {lemma: produce}}
+  profit: {senses: [noun], plural: profits}
+  project:
+    senses:
+    - noun
+    plural: projects
+  purchase:
+    senses:
+    - verb
+  purchased:
+    senses:
+    - verb
+    verb:
+      lemma: purchase
+  purchases:
+    senses:
+    - verb
+    verb:
+      lemma: purchase
+  purchasing:
+    senses:
+    - verb
+    verb:
+      lemma: purchase
+  pure:
+    senses:
+    - adjective
+  purple: {senses: [adjective]}
+  purpose: {senses: [noun], plural: purposes}
+  put: {senses: [verb], verb: {lemma: put}}
+  puts: {senses: [verb], number: singular, verb: {lemma: put}}
+  putting: {senses: [verb], verb: {lemma: put}}
+  puzzle: {senses: [noun], plural: puzzles}
+  rabbit: {senses: [noun], plural: rabbits}
+  raise: {senses: [verb], number: plural}
+  raised: {senses: [verb], verb: {lemma: raise}}
+  raises: {senses: [verb], number: singular, verb: {lemma: raise}}
+  raisin:
+    senses:
+    - noun
+    plural: raisins
+  raising: {senses: [verb], verb: {lemma: raise}}
+  ran: {senses: [verb], verb: {lemma: run}}
+  ratio: {senses: [noun], plural: ratios}
+  read: {senses: [verb]}
+  reading: {senses: [verb], verb: {lemma: read}}
+  reads: {senses: [verb], number: singular, verb: {lemma: read}}
+  realize:
+    senses:
+    - verb
+  realized:
+    senses:
+    - verb
+    verb:
+      lemma: realize
+  realizes:
+    senses:
+    - verb
+    verb:
+      lemma: realize
+  receipt: {senses: [noun], plural: receipts}
+  receive: {senses: [verb], number: plural, verb: {lemma: receive}}
+  received: {senses: [verb], verb: {lemma: receive}}
+  receives: {senses: [verb], number: singular, verb: {lemma: receive}}
+  red: {senses: [adjective]}
+  reference:
+    senses:
+    - noun
+  refund: {senses: [noun], plural: refunds}
+  regarding: {senses: [preposition]}
+  reject:
+    senses:
+    - verb
+  rejected:
+    senses:
+    - verb
+    verb:
+      lemma: reject
+  rejecting:
+    senses:
+    - verb
+    verb:
+      lemma: reject
+  rejects:
+    senses:
+    - verb
+    verb:
+      lemma: reject
+  relevant:
+    senses:
+    - adjective
+  remain: {senses: [verb]}
+  remainder: {senses: [noun]}
+  remained: {senses: [verb], verb: {lemma: remain}}
+  remaining: {senses: [adjective]}
+  remains: {senses: [verb], verb: {lemma: remain}}
+  remove: {senses: [verb], number: plural}
+  removed: {senses: [verb], verb: {lemma: remove}}
+  removes: {senses: [verb], number: singular, verb: {lemma: remove}}
+  repaid: {senses: [verb], verb: {lemma: repay}}
+  repay: {senses: [verb]}
+  repaying: {senses: [verb], verb: {lemma: repay}}
+  repays: {senses: [verb], verb: {lemma: repay}}
+  require: {senses: [verb], number: plural}
+  required: {senses: [verb], verb: {lemma: require}}
+  requires: {senses: [verb], number: singular, verb: {lemma: require}}
+  requiring: {senses: [verb], verb: {lemma: require}}
+  research:
+    senses:
+    - verb
+  researched:
+    senses:
+    - verb
+    verb:
+      lemma: research
+  researches:
+    senses:
+    - verb
+    verb:
+      lemma: research
+  researching:
+    senses:
+    - verb
+    verb:
+      lemma: research
+  resin:
+    senses:
+    - noun
+  resin solution:
+    senses:
+    - noun
+    lexical_phrase: true
+  respecting: {senses: [preposition]}
+  respectively: {senses: [adverb]}
+  rest: {senses: [noun]}
+  retailer: {senses: [noun], plural: retailers}
+  return: {senses: [verb]}
+  returned: {senses: [verb], verb: {lemma: return}}
+  returns: {senses: [verb], number: singular, verb: {lemma: return}}
+  ride: {senses: [verb]}
+  rides: {senses: [verb], verb: {lemma: ride}}
+  rise: {senses: [verb]}
+  rises: {senses: [verb], number: singular, verb: {lemma: rise}}
+  road:
+    senses:
+    - noun
+    plural: roads
+  rose:
+    senses: [noun, verb]
+    plural: roses
+    verb: {lemma: rise}
+    notes: flower (noun) or past of rise (verb) — coverage arbitrates
 
     # common nouns
-    apple: {senses: [noun], plural: apples}
-    animal: {senses: [noun], plural: animals}
-    age: {senses: [noun], plural: ages}
-    amount: {senses: [noun], plural: amounts}
-    number: {senses: [noun], plural: numbers}
-    percentage: {senses: [noun], plural: percentages}
-    price: {senses: [noun], plural: prices}
-    # Generic mass currency language is needed by the core arithmetic
-    # relation grammar; corpus-mined packs may extend the category with
-    # narrower financial heads.
-    money: {senses: [noun]}
-    cost: {senses: [noun, verb], plural: costs}
-    # `costs` is both the plural noun and the third-person verb. Its noun
-    # number still comes from `cost.plural`; the verb lemma lets generated
-    # singular priced targets realize the finite surface.
-    costs: {senses: [noun, verb], verb: {lemma: cost}}
-    remainder: {senses: [noun]}
-    rest: {senses: [noun]}
-    topic: {senses: [noun], plural: topics}
-    task: {senses: [noun]}
-    year: {senses: [noun], plural: years}
-    day: {senses: [noun], plural: days}
-    week: {senses: [noun], plural: weeks}
-    hour: {senses: [noun], plural: hours}
-    minute: {senses: [noun], plural: minutes}
-    time: {senses: [noun], plural: times}
-    inch: {senses: [noun], plural: inches}
-    pound: {senses: [noun], plural: pounds}
-    # promoted from difg-mined 2026-07-20: packs/reference needs it too, and
-    # packs may not shadow — the shared base is the one home both can require
-    area: {senses: [noun], plural: areas}
-    plum: {senses: [noun], plural: plums}
-    marble: {senses: [noun], plural: marbles}
-    bag: {senses: [noun], plural: bags}
-    book: {senses: [noun], plural: books}
-    letter: {senses: [noun], plural: letters}
-    brother: {senses: [noun], plural: brothers}
-    parent: {senses: [noun], plural: parents}
-    grandparent: {senses: [noun], plural: grandparents}
-    shoe: {senses: [noun], plural: shoes}
-    wallet: {senses: [noun], plural: wallets}
-    purpose: {senses: [noun], plural: purposes}
-    page: {senses: [noun], plural: pages}
-    cookie: {senses: [noun], plural: cookies}
-    pizza: {senses: [noun], plural: pizzas}
-    piece: {senses: [noun], plural: pieces}
-    slice: {senses: [noun], plural: slices}
-    ball: {senses: [noun], plural: balls}
-    toy: {senses: [noun], plural: toys}
-    pencil: {senses: [noun], plural: pencils}
-    sticker: {senses: [noun], plural: stickers}
-    card: {senses: [noun], plural: cards}
-    clip: {senses: [noun], plural: clips}
-    coin: {senses: [noun], plural: coins}
-    color: {senses: [noun], plural: colors}
-    dollar: {senses: [noun], plural: dollars}
-    egg: {senses: [noun], plural: eggs}
-    flower: {senses: [noun], plural: flowers}
-    garden: {senses: [noun], plural: gardens}
-    plant: {senses: [noun, verb], plural: plants}
-    planted: {senses: [verb], verb: {lemma: plant}}
-    planting: {senses: [verb], verb: {lemma: plant}}
-    plants: {senses: [noun, verb], verb: {lemma: plant}}
-    babysitting: {senses: [noun]}
-    gardening: {senses: [noun]}
-    tutoring: {senses: [noun]}
-    teacher: {senses: [noun], plural: teachers}
-    student: {senses: [noun], plural: students}
-    boy: {senses: [noun], plural: boys}
-    girl: {senses: [noun], plural: girls}
-    head: {senses: [noun], plural: heads}
-    university: {senses: [noun], plural: universities}
-    course: {senses: [noun], plural: courses}
-    science: {senses: [noun, adjective], plural: sciences}
-    business: {senses: [noun, adjective], plural: businesses}
-    humanities: {senses: [noun, adjective]}
-    enroll: {senses: [verb], number: plural}
-    enrolls: {senses: [verb], number: singular, verb: {lemma: enroll}}
-    enrolled: {senses: [verb], verb: {lemma: enroll}}
-    enrolling: {senses: [verb], verb: {lemma: enroll}}
-    teach: {senses: [verb], number: plural}
-    teaches: {senses: [verb], number: singular, verb: {lemma: teach}}
-    taught: {senses: [verb], verb: {lemma: teach}}
-    teaching: {senses: [verb], verb: {lemma: teach}}
-    child: {senses: [noun], plural: children}
-    friend: {senses: [noun], plural: friends}
-    dog: {senses: [noun], plural: dogs}
-    cat: {senses: [noun], plural: cats}
-    fish: {senses: [noun], plural: fish}
-    bird: {senses: [noun], plural: birds}
-    rabbit: {senses: [noun], plural: rabbits}
-    hamster: {senses: [noun], plural: hamsters}
-    litter: {senses: [noun], plural: litter}
-    tree: {senses: [noun], plural: trees}
-
-    # Broad, ordinary vocabulary for deterministic rule exploration. These
-    # words are useful across several count, comparison, partition, and
-    # location frames; their narrower semantic roles are declared in the
-    # category file rather than inferred by the generator.
-    drum: {senses: [noun], plural: drums}
-    puzzle: {senses: [noun], plural: puzzles}
-    key: {senses: [noun], plural: keys}
-    envelope: {senses: [noun], plural: envelopes}
-    tomato: {senses: [noun], plural: tomatoes}
-    pear: {senses: [noun], plural: pears}
-    grape: {senses: [noun], plural: grapes}
-    apricot: {senses: [noun], plural: apricots}
-    alpaca: {senses: [noun], plural: alpacas}
-
-    # Unambiguous people for referential common-noun subjects and standards.
-    gardener: {senses: [noun], plural: gardeners}
-    librarian: {senses: [noun], plural: librarians}
-    violinist: {senses: [noun], plural: violinists}
-    shopper: {senses: [noun], plural: shoppers}
-    guardian: {senses: [noun], plural: guardians}
-
-    # Common quantitative locations. Their compatible prepositions are
-    # declared separately, so adding them does not make every PP acceptable.
-    pantry: {senses: [noun], plural: pantries}
-    cupboard: {senses: [noun], plural: cupboards}
-    fridge: {senses: [noun], plural: fridges}
-    storeroom: {senses: [noun], plural: storerooms}
-    bench: {senses: [noun], plural: benches}
-
-    # Ordinary mass quantities. Paper also has a valid count reading.
-    sand: {senses: [noun]}
-    clay: {senses: [noun]}
-    wool: {senses: [noun]}
-    paper: {senses: [noun], plural: papers}
-
-    # Aggregate measurement language. These are ordinary English words used
-    # by the arithmetic pack's container/instrument construction; keeping the
-    # essential vocabulary in core makes that general rule available without
-    # loading the much broader corpus-mined lexicon.
-    box: {senses: [noun], plural: boxes}
-    bucket: {senses: [noun], plural: buckets}
-    barrel: {senses: [noun], plural: barrels}
-    beaker: {senses: [noun], plural: beakers}
-    bottle: {senses: [noun], plural: bottles}
-    bowl: {senses: [noun], plural: bowls}
-    canister: {senses: [noun], plural: canisters}
-    container: {senses: [noun], plural: containers}
-    capacity: {senses: [noun], plural: capacities}
-    content: {senses: [noun], plural: contents}
-    flask: {senses: [noun], plural: flasks}
-    jar: {senses: [noun], plural: jars}
-    jug: {senses: [noun], plural: jugs}
-    tank: {senses: [noun], plural: tanks}
-    vessel: {senses: [noun], plural: vessels}
-    vial: {senses: [noun], plural: vials}
-    scale: {senses: [noun], plural: scales}
-    water: {senses: [noun]}
-    sugar: {senses: [noun]}
-    vinegar: {senses: [noun]}
-    weight: {senses: [noun], plural: weights}
-    experiment: {senses: [noun], plural: experiments}
-    gram: {senses: [noun], plural: grams}
-    kilogram: {senses: [noun], plural: [kg, kilograms]}
-    liter: {senses: [noun], plural: [liters, litres]}
-    enough: {senses: [adjective]}
-    final: {senses: [adjective]}
-    add: {senses: [verb], number: plural}
-    added: {senses: [verb], verb: {lemma: add}}
-    adding: {senses: [verb], verb: {lemma: add}}
-    adds: {senses: [verb], number: singular, verb: {lemma: add}}
-    bring: {senses: [verb], number: plural}
-    bringing: {senses: [verb], verb: {lemma: bring}}
-    brings: {senses: [verb], number: singular, verb: {lemma: bring}}
-    brought: {senses: [verb], verb: {lemma: bring}}
-    conduct: {senses: [verb], number: plural}
-    conducted: {senses: [verb], verb: {lemma: conduct}}
-    conducting: {senses: [verb], verb: {lemma: conduct}}
-    conducts: {senses: [verb], number: singular, verb: {lemma: conduct}}
-    measure: {senses: [verb], number: plural}
-    measured: {senses: [verb], verb: {lemma: measure}}
-    measuring: {senses: [verb], verb: {lemma: measure}}
-    measures: {senses: [verb], number: singular, verb: {lemma: measure}}
-    weigh: {senses: [verb], number: plural}
-    weighed: {senses: [verb], verb: {lemma: weigh}}
-    weighing: {senses: [verb], verb: {lemma: weigh}}
-    weighs: {senses: [verb], number: singular, verb: {lemma: weigh}}
-    place: {senses: [verb], number: plural}
-    placed: {senses: [verb], verb: {lemma: place}}
-    places: {senses: [verb], number: singular, verb: {lemma: place}}
-    placing: {senses: [verb], verb: {lemma: place}}
-    pour: {senses: [verb], number: plural}
-    poured: {senses: [verb], verb: {lemma: pour}}
-    pouring: {senses: [verb], verb: {lemma: pour}}
-    pours: {senses: [verb], number: singular, verb: {lemma: pour}}
-    put: {senses: [verb], verb: {lemma: put}}
-    puts: {senses: [verb], number: singular, verb: {lemma: put}}
-    putting: {senses: [verb], verb: {lemma: put}}
-
-    # adjectives
-    red: {senses: [adjective]}
-    green: {senses: [adjective]}
-    blue: {senses: [adjective]}
-    different: {senses: [adjective]}
-    purple: {senses: [adjective]}
-    yellow: {senses: [adjective]}
-    beige: {senses: [adjective]}
-    turquoise: {senses: [adjective]}
-    violet: {senses: [adjective]}
-    remaining: {senses: [adjective]}
-    small: {senses: [adjective]}
-    large: {senses: [adjective]}
-    tall: {senses: [adjective]}
+  round:
+    senses:
+    - noun
+    plural: rounds
+  safely: {senses: [adverb]}
+  said: {senses: [verb], verb: {lemma: say}}
+  salt:
+    senses:
+    - noun
+  salt water: {senses: [noun], lexical_phrase: true}
+  saltwater: {senses: [noun]}
+  same: {senses: [adjective]}
+  sand: {senses: [noun]}
+  sate: {senses: [verb]}
+  satisfy: {senses: [verb]}
+  saturday: {senses: [noun]}
+  save: {senses: [verb], number: plural}
+  saved: {senses: [verb], verb: {lemma: save}}
+  saves: {senses: [verb], number: singular, verb: {lemma: save}}
+  saving: {senses: [verb], verb: {lemma: save}}
+  saw: {senses: [verb], verb: {lemma: see}}
+  say: {senses: [verb], number: plural}
+  saying: {senses: [verb], verb: {lemma: say}}
+  says: {senses: [verb], number: singular, verb: {lemma: say}}
+  scale: {senses: [noun], plural: scales}
+  school: {senses: [noun], plural: schools}
+  school project:
+    senses:
+    - noun
+    lexical_phrase: true
+  science: {senses: [noun, adjective], plural: sciences}
+  sea: {senses: [noun], plural: seas}
+  season:
+    senses:
+    - noun
+    plural: seasons
+  seawater: {senses: [noun]}
+  second:
+    senses:
+    - adjective
+  see: {senses: [verb], number: plural}
+  seeing: {senses: [verb], verb: {lemma: see}}
+  sees: {senses: [verb], number: singular, verb: {lemma: see}}
+  sell: {senses: [verb], number: plural, verb: {lemma: sell}}
+  sells: {senses: [verb], number: singular, verb: {lemma: sell}}
+  send: {senses: [verb]}
+  sending: {senses: [verb], verb: {lemma: send}}
+  sends: {senses: [verb], verb: {lemma: send}}
+  sent: {senses: [verb], verb: {lemma: send}}
+  september: {senses: [noun]}
+  serve: {senses: [verb]}
+  served: {senses: [verb], verb: {lemma: serve}}
+  serves: {senses: [verb], verb: {lemma: serve}}
+  set:
+    senses:
+    - noun
+    plural: sets
+  share: {senses: [noun, verb]}
+  shared: {senses: [verb], verb: {lemma: share}}
+  she: {senses: [pronoun], number: singular, anaphoric_form: *feminine}
+  shift: {senses: [noun], plural: shifts}
+  ship: {senses: [noun, verb], plural: ships}
+  shirt:
+    senses:
+    - noun
+    plural: shirts
+  shoe: {senses: [noun], plural: shoes}
+  shoot: {senses: [verb]}
+  shooting: {senses: [noun, verb], verb: {lemma: shoot}}
+  shoots: {senses: [verb], verb: {lemma: shoot}}
+  shop: {senses: [noun, verb], plural: shops}
+  shopped: {senses: [verb], verb: {lemma: shop}}
+  shopper: {senses: [noun], plural: shoppers}
+  shopping: {senses: [verb, noun], verb: {lemma: shop}}
+  shops: {senses: [noun, verb], verb: {lemma: shop}}
+  short of: {senses: [preposition]}
+  shorter: {senses: [comparative]}
+  shorts: {senses: [noun], number: plural}
+  should: {senses: [modal]}
+  shovel: {senses: [verb]}
+  shoveled: {senses: [verb], verb: {lemma: shovel}}
+  shovelled: {senses: [verb], verb: {lemma: shovel}}
+  shovels: {senses: [verb], number: singular, verb: {lemma: shovel}}
+  since: {senses: [conjunction, preposition]}
+  sixth:
+    senses:
+    - adjective
+  slice: {senses: [noun], plural: slices}
+  slower: {senses: [comparative]}
+  small: {senses: [adjective]}
+  smaller: {senses: [comparative]}
+  snake: {senses: [noun], plural: snakes}
+  snowflake: {senses: [noun], plural: snowflakes}
+  so: {senses: [conjunction]}
+  sock: {senses: [noun], plural: socks}
+  sold: {senses: [verb], verb: {lemma: sell}}
+  solution:
+    senses:
+    - noun
+  some: {senses: [quantifier]}
+  somebody: {senses: [pronoun]}
+  someone: {senses: [pronoun]}
+  specific: {senses: [adjective]}
+  spend: {senses: [verb], number: plural, verb: {lemma: spend}}
+  spending: {senses: [verb], verb: {lemma: spend}}
+  spends: {senses: [verb], number: singular, verb: {lemma: spend}}
+  spent: {senses: [verb], verb: {lemma: spend}}
+  stamp: {senses: [noun], plural: stamps}
+  start: {senses: [verb], number: plural}
+  started: {senses: [verb], verb: {lemma: start}}
+  starting: {senses: [verb], verb: {lemma: start}}
+  starts: {senses: [verb], number: singular, verb: {lemma: start}}
+  sticker: {senses: [noun], plural: stickers}
+  still: {senses: [adverb]}
+  store:
+    senses:
+    - noun
+    plural: stores
+  storeroom: {senses: [noun], plural: storerooms}
+  stranded: {senses: [adjective]}
+  street:
+    senses:
+    - noun
+    plural: streets
+  student: {senses: [noun], plural: students}
+  studied: {senses: [verb], verb: {lemma: study}}
+  studies: {senses: [verb], number: singular, verb: {lemma: study}}
+  study: {senses: [verb], number: plural}
+  studying: {senses: [noun, verb], verb: {lemma: study}}
+  stuff: {senses: [noun]}
+  sugar: {senses: [noun]}
+  sugar water: {senses: [noun], lexical_phrase: true}
+  suit: {senses: [noun], plural: suits}
+  summer: {senses: [noun]}
+  sunday: {senses: [noun]}
+  sunflower oil:
+    senses:
+    - noun
+    lexical_phrase: true
+  surname: {senses: [noun], plural: surnames}
+  take: {senses: [verb], number: plural}
+  takes: {senses: [verb], verb: {lemma: take}}
+  tall: {senses: [adjective]}
+  taller: {senses: [comparative]}
+  tank: {senses: [noun], plural: tanks}
+  task: {senses: [noun]}
+  taught: {senses: [verb], verb: {lemma: teach}}
+  tax: {senses: [noun], plural: taxes}
+  teach: {senses: [verb], number: plural}
+  teacher: {senses: [noun], plural: teachers}
+  teaches: {senses: [verb], number: singular, verb: {lemma: teach}}
+  teaching: {senses: [verb], verb: {lemma: teach}}
+  tennis: {senses: [noun]}
+  tennis ball: {senses: [noun], plural: tennis balls, lexical_phrase: true}
+  than: {senses: [particle]}
+  that: {senses: [complementizer], notes: moved from difg-mined (was mis-lexiconed as article there)}
+  the: {senses: [article]}
+  their: {senses: [pronoun], anaphoric_form: &neutral {paradigm: third-person-neutral, referent_numbers: [
+          singular, plural]}}
+  theirs: {senses: [pronoun], anaphoric_form: *neutral}
+  them: {senses: [pronoun], number: plural, anaphoric_form: *neutral}
+  themselves: {senses: [pronoun], anaphoric_form: *neutral}
+  then: {senses: [adverb]}
+  there: {senses: [existential]}
+  they: {senses: [pronoun], number: plural, anaphoric_form: *neutral}
+  thing: {senses: [noun], plural: things}
+  third:
+    senses:
+    - adjective
+  this: {senses: [article]}
+  those: {senses: [article, pronoun], number: plural}
+  through: {senses: [preposition]}
+  throughout: {senses: [preposition]}
+  thursday: {senses: [noun]}
+  time: {senses: [noun], plural: times}
+  tin:
+    senses:
+    - noun
+    plural: tins
+  to: {senses: [preposition]}
+  today: {senses: [time]}
+  together: {senses: [aggregate]}
+  tomato: {senses: [noun], plural: tomatoes}
+  tomorrow: {senses: [time]}
+  took: {senses: [verb], verb: {lemma: take}}
+  top: {senses: [noun], plural: tops}
+  topic: {senses: [noun], plural: topics}
+  total: {senses: [aggregate]}
+  toward: {senses: [noun, preposition]}
+  towards: {senses: [preposition]}
+  town: {senses: [noun], plural: towns}
+  toy: {senses: [noun], plural: toys}
+  transaction: {senses: [noun], plural: transactions}
+  travel: {senses: [verb], number: plural}
+  traveled: {senses: [verb], verb: {lemma: travel}}
+  travels: {senses: [verb], number: singular, verb: {lemma: travel}}
+  tree: {senses: [noun], plural: trees}
+  trip: {senses: [noun], plural: trips}
+  triple: {senses: [quantifier, verb]}
+  truck: {senses: [noun], plural: trucks}
+  tuesday: {senses: [noun]}
+  turquoise: {senses: [adjective]}
+  tutoring: {senses: [noun]}
+  under: {senses: [preposition]}
+  underneath: {senses: [preposition]}
+  unhelpful:
+    senses:
+    - adjective
+  uniform:
+    senses:
+    - adjective
+  university: {senses: [noun], plural: universities}
+  unlike: {senses: [preposition]}
+  unrelated:
+    senses:
+    - adjective
+  until: {senses: [preposition]}
+  up: {senses: [adverb]}
+  upon: {senses: [preposition]}
+  use: {senses: [verb]}
+  used: {senses: [verb], verb: {lemma: use}}
+  useful:
+    senses:
+    - adjective
+  useless:
+    senses:
+    - adjective
+  uses: {senses: [verb], verb: {lemma: use}}
+  using: {senses: [verb], verb: {lemma: use}}
+  valuable:
+    senses:
+    - adjective
+  versus: {senses: [preposition]}
+  vessel: {senses: [noun], plural: vessels}
+  via: {senses: [preposition]}
+  vial: {senses: [noun], plural: vials}
+  vinegar: {senses: [noun]}
+  violet: {senses: [adjective]}
+  violinist: {senses: [noun], plural: violinists}
+  volume: {senses: [noun], plural: volumes}
+  vs: {senses: [preposition]}
+  wage: {senses: [noun], plural: wages}
+  walk: {senses: [verb]}
+  walked: {senses: [verb], verb: {lemma: walk}}
+  walking: {senses: [verb], verb: {lemma: walk}}
+  walks: {senses: [verb], verb: {lemma: walk}}
+  wallet: {senses: [noun], plural: wallets}
+  want: {senses: [verb], number: plural}
+  wanted: {senses: [verb], verb: {lemma: want}}
+  wanting: {senses: [verb], verb: {lemma: want}}
+  wants: {senses: [verb], verb: {lemma: want}}
+  was: {senses: [verb], number: singular, verb: {lemma: be}}
+  wash: {senses: [verb]}
+  washed: {senses: [verb], verb: {lemma: wash}}
+  washes: {senses: [verb], number: singular, verb: {lemma: wash}}
+  water: {senses: [noun]}
+  waters: {senses: [noun], number: plural}
+  we: {senses: [pronoun], number: plural}
+  wear: {senses: [verb]}
+  wearing: {senses: [verb], verb: {lemma: wear}}
+  wears: {senses: [verb], verb: {lemma: wear}}
+  wednesday: {senses: [noun]}
+  week: {senses: [noun], plural: weeks}
+  weekend: {senses: [noun, adjective], plural: weekends}
+  weigh: {senses: [verb], number: plural}
+  weighed: {senses: [verb], verb: {lemma: weigh}}
+  weighing: {senses: [verb], verb: {lemma: weigh}}
+  weighs: {senses: [verb], number: singular, verb: {lemma: weigh}}
+  weight: {senses: [noun], plural: weights}
+  went: {senses: [verb], verb: {lemma: go}}
+  were: {senses: [verb], number: plural, verb: {lemma: be}}
+  what: {senses: [interrogative]}
+  when: {senses: [conjunction]}
+  where: {senses: [interrogative]}
+  which: {senses: [wh_which]}
+  while: {senses: [conjunction]}
+  who: {senses: [interrogative]}
+  wider: {senses: [comparative]}
+  will: {senses: [modal]}
+  wilted: {senses: [verb], verb: {lemma: wilt}}
+  win: {senses: [verb], number: plural, verb: {lemma: win}}
+  window: {senses: [noun], plural: windows}
+  wins: {senses: [verb], number: singular, verb: {lemma: win}}
+  with: {senses: [preposition]}
+  within: {senses: [preposition]}
+  without: {senses: [preposition]}
+  won: {senses: [verb], verb: {lemma: win}}
+  wonder: {senses: [verb], number: plural}
+  wondered: {senses: [verb], verb: {lemma: wonder}}
+  wondering: {senses: [verb], verb: {lemma: wonder}}
+  wonders: {senses: [verb], number: singular, verb: {lemma: wonder}}
+  wool: {senses: [noun]}
+  wore: {senses: [verb], verb: {lemma: wear}}
+  work: {senses: [verb, noun]}
+  workday: {senses: [noun], plural: workdays}
+  worked: {senses: [verb], verb: {lemma: work}}
+  working: {senses: [verb], verb: {lemma: work}}
+  works: {senses: [verb], number: singular, verb: {lemma: work}}
+  would: {senses: [modal]}
+  write: {senses: [verb], number: plural, verb: {lemma: write}}
+  writes: {senses: [verb], number: singular, verb: {lemma: write}}
+  wrote: {senses: [verb], verb: {lemma: write}}
+  year: {senses: [noun], plural: years}
+  yellow: {senses: [adjective]}
+  yesterday: {senses: [time]}
+  you: {senses: [pronoun]}
+  younger: {senses: [comparative]}
+  your: {senses: [pronoun]}

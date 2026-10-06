@@ -2,10 +2,28 @@ format: rulekit/categories@1
 categories:
   anaphoric_person_subject:
     parent: pronoun
-    notes: "Subject forms; a construction must separately establish their referent."
+    notes: Subject forms; a construction must separately establish their referent.
   anaphoric_person_possessive:
     parent: possessive_determiner
-    notes: "Third-person forms, including number-neutral ownership."
+    notes: Third-person forms, including number-neutral ownership.
+  ordinal_quantity_holder:
+    parent: noun
+    includes:
+    - quantity_holder
+    - quantity_container
+  holder_prefix_order:
+    parent: adjective
+  holder_ordinal:
+    parent: adjective
+  holder_terminal_order:
+    parent: adjective
 members:
-  anaphoric_person_subject: [he, she, they]
   anaphoric_person_possessive: [her, his, their]
+  anaphoric_person_subject: [he, she, they]
+  holder_ordinal: [fifth, first, fourth, second, sixth, third]
+  holder_prefix_order: [first]
+  holder_terminal_order: [final, last, remaining]
+attribute_compatibility:
+  holder_ordinal: [ordinal_quantity_holder]
+  holder_prefix_order: [ordinal_quantity_holder]
+  holder_terminal_order: [ordinal_quantity_holder]

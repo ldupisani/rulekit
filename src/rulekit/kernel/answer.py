@@ -278,7 +278,7 @@ def answer(
             f"({c.a_value} vs {c.b_value})",
         )
 
-    matched = match_ask(question, reg)
+    matched = match_ask(question, reg, store=store)
     if matched is None:
         return Answer("decline", None, "no ask shape recognizes this question")
     ask, query, _match = matched

@@ -14,11 +14,24 @@ categories:
   commercial_organization: {parent: organization}
   profit_measure: {parent: noun}
   infinitival_marker: {parent: preposition}
+  income_resource_noun:
+    parent: noun
+    notes: An income source, not itself a known amount or a currency unit.
+  income_modifier:
+    parent: noun
+  transaction_adjustment_noun:
+    parent: noun
+    notes: A possible price or payment adjustment; requires explicit accounting scope.
 members:
-  audiovisual_product: [movie, film, dvd]
   audio_product: [album, cd]
-  publication_product: [book, paperback]
-  commercial_production_verb: [create, creates, created, make, makes, made, produce, produces, produced]
-  commercial_organization: [empire, business, company]
-  profit_measure: [profit]
+  audiovisual_product: [dvd, film, movie]
+  commercial_organization: [business, company, empire]
+  commercial_production_verb: [create, created, creates, made, make, makes, produce, produced, produces]
+  income_modifier: [bonus]
+  income_resource_noun: [bonus, pay]
   infinitival_marker: [to]
+  profit_measure: [profit]
+  publication_product: [book, paperback]
+  transaction_adjustment_noun: [discount, fee, refund, tax]
+attribute_compatibility:
+  income_modifier: [income_resource_noun]

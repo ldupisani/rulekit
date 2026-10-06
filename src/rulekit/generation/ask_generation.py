@@ -1965,7 +1965,7 @@ def generate_ask_scenario(
                     raise GenerationError(
                         "generated contextual scenario lost its question"
                     )
-                final_match = match_ask(result.question, project.registry)
+                final_match = match_ask(result.question, project.registry, store=result.store)
                 if final_match is None or final_match[0].id != ask.id:
                     winner = None if final_match is None else final_match[0].id
                     raise GenerationError(

@@ -1,18 +1,13 @@
 format: rulekit/categories@1
 categories:
-  income_resource_noun:
-    parent: noun
-    notes: "An income source, not itself a known amount or a currency unit."
-  income_modifier:
-    parent: noun
-  transaction_adjustment_noun:
-    parent: noun
-    notes: "A possible price or payment adjustment; requires explicit accounting scope."
+  additive_discourse_adverb:
+    parent: adverb
+    notes: Adds a parallel assertion without changing its amount or temporal perspective.
+  contrastive_conjunction:
+    parent: conjunction
+    notes: Contrasts two asserted clauses rather than offering alternatives.
+  conditional_consequent_marker: {parent: adverb}
 members:
-  income_resource_noun: [pay, bonus]
-  income_modifier: [bonus]
-  transaction_adjustment_noun: [discount, refund, fee, tax]
-  spatial_reference_noun: [town]
-  bare_pp_object: [town]
-attribute_compatibility:
-  income_modifier: [income_resource_noun]
+  additive_discourse_adverb: [also]
+  conditional_consequent_marker: [then]
+  contrastive_conjunction: [but]

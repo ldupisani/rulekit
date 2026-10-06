@@ -15,18 +15,13 @@ categories:
     parent: animate_subject_verb
     selectional_roles: {actor: quantity_event_participant, theme: ownable_quantity_object}
 members:
+  accomplishment_verb: [manage, managed, manages]
   ball: [ball, tennis ball]
-  transferable_quantity_object: [tennis ball, box, page]
-  determiner_required_noun: [practice, load]
   batch_order: [first, next]
   batch_partitive_preposition: [of, out of]
-  accomplishment_verb: [manage, manages, managed]
-  collection_loading_verb: [load, loads, loaded]
-  collection_loading_target: [machine, box, basket, bag, truck]
-  initial_state_verb: [start, starts, started]
-  discrete_object_event_verb: [hit, hits, inspect, inspects, inspected]
+  collection_loading_target: [bag, basket, box, machine, truck]
+  collection_loading_verb: [load, loaded, loads]
+  discrete_object_event_verb: [hit, hits, inspect, inspected, inspects]
+  initial_state_verb: [start, started, starts]
 attribute_compatibility:
   batch_order: [ownable_quantity_object]
-attrs:
-  first: {batch_advance: 0}
-  next: {batch_advance: 1}

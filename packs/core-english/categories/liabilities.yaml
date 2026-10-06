@@ -14,18 +14,18 @@ categories:
   nominal_activity_modifier: {parent: noun}
   nominal_activity_auxiliary: {parent: auxiliary}
 members:
+  complete_account_attribute: [entire, full]
+  infinitive_complement_predicate: [need]
   liability_account: [credit, debt]
-  liability_limit: [credit, credit limit]
   liability_grant_verb: [allow, allowed, allows]
-  liability_state: [owe, owes, owed, owing]
-  liability_use_verb: [spend, spent, spends, use, used, uses]
-  repayment_verb: [repay, repaid, repays, repaying]
-  complete_account_attribute: [full, entire]
+  liability_limit: [credit, credit limit]
+  liability_state: [owe, owed, owes, owing]
+  liability_use_verb: [spend, spends, spent, use, used, uses]
+  nominal_activity: [shop, shopping]
+  nominal_activity_auxiliary: [did, do, does]
+  nominal_activity_modifier: [grocery]
+  repayment_verb: [repaid, repay, repaying, repays]
   settlement_event: [trip]
   settlement_modal: [must]
-  infinitive_complement_predicate: [need]
-  nominal_activity: [shop, shopping]
-  nominal_activity_modifier: [grocery]
-  nominal_activity_auxiliary: [do, does, did]
 attribute_compatibility:
-  complete_account_attribute: [liability_limit, liability_account]
+  complete_account_attribute: [liability_account, liability_limit]

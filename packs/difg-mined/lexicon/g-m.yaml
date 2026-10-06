@@ -436,10 +436,6 @@ entries:
     senses:
     - noun
     plural: hotels
-  house:
-    senses:
-    - noun
-    plural: houses
   housed:
     senses:
     - verb
@@ -822,10 +818,6 @@ entries:
     - verb
     verb:
       lemma: land
-  lane:
-    senses:
-    - noun
-    plural: lanes
   lap:
     senses:
     - noun

@@ -36,30 +36,30 @@ categories:
   accumulation_particle: {parent: adverb}
   accumulation_period_descriptor: {parent: preposition}
   cash_remainder_noun: {parent: noun}
-members:
-  service_activity_verb: [mow, mows, mowed, mowing, shovel, shovels, shoveled, shovelled, wash, washes, washed, paint, paints, painted]
-  habitual_service_predicate: [mow, mows, shovel, shovels, wash, washes, paint, paints]
-  past_service_predicate: [mowed, shoveled, shovelled, washed, painted]
-  ground_cutting_service: [mow, mows, mowed, mowing]
-  surface_clearing_service: [shovel, shovels, shoveled, shovelled]
-  surface_washing_service: [wash, washes, washed]
-  surface_coating_service: [paint, paints, painted]
-  cuttable_ground: [lawn]
-  clearable_surface: [driveway]
-  washable_surface: [window, gate, driveway]
-  coatable_surface: [window, gate]
-  service_object: [lawn, driveway, window, gate]
-  service_tariff_verb: [charge, charges, charged]
-  periodic_income_verb: [get, gets, got, receive, receives, received, earn, earns, earned]
-  resource_accumulation_verb: [save, saves, saved, saving]
-  periodic_income_noun: [allowance]
-  accumulation_particle: [up]
-  accumulation_period_descriptor: [past]
-  cash_remainder_noun: [change]
-  duration_measure: [month]
 context_synonyms:
   wage_earnings:
     gate: currency
     # Earning/making a monetary amount are equivalent only in this resource
     # context. Producing a non-currency object is not an earning event.
     forms: [earn, make]
+members:
+  accumulation_particle: [up]
+  accumulation_period_descriptor: [past]
+  cash_remainder_noun: [change]
+  clearable_surface: [driveway]
+  coatable_surface: [gate, window]
+  cuttable_ground: [lawn]
+  ground_cutting_service: [mow, mowed, mowing, mows]
+  habitual_service_predicate: [mow, mows, paint, paints, shovel, shovels, wash, washes]
+  past_service_predicate: [mowed, painted, shoveled, shovelled, washed]
+  periodic_income_noun: [allowance]
+  periodic_income_verb: [earn, earned, earns, get, gets, got, receive, received, receives]
+  resource_accumulation_verb: [save, saved, saves, saving]
+  service_activity_verb: [mow, mowed, mowing, mows, paint, painted, paints, shovel, shoveled, shovelled,
+      shovels, wash, washed, washes]
+  service_object: [driveway, gate, lawn, window]
+  service_tariff_verb: [charge, charged, charges]
+  surface_clearing_service: [shovel, shoveled, shovelled, shovels]
+  surface_coating_service: [paint, painted, paints]
+  surface_washing_service: [wash, washed, washes]
+  washable_surface: [driveway, gate, window]

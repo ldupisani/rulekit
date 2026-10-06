@@ -81,7 +81,7 @@ def test_g5i_profiles_the_complete_recursive_optional_class() -> None:
     # Loading adds an optional particle and an initial-state adjunct.
     # Mixture frames retain optional holders, solvents, bases and retention
     # quantifiers without increasing the maximum optional nesting depth.
-    assert _optional_profile(project) == (133, 248, 39, 3)
+    assert _optional_profile(project) == (144, 260, 39, 3)
 
 
 def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
@@ -90,8 +90,8 @@ def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
         for item in list_rule_availability(load_project(CURATED))
     }
 
-    assert len(availability) == 331
-    assert sum(item.supported for item in availability.values()) == 314
+    assert len(availability) == 346
+    assert sum(item.supported for item in availability.values()) == 329
     assert sum(not item.supported for item in availability.values()) == 17
     assert all(availability[rule_id].supported for rule_id in NEWLY_SUPPORTED)
     assert all(

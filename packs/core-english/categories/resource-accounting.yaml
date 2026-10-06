@@ -2,21 +2,18 @@ format: rulekit/categories@1
 categories:
   resource_budget_noun:
     parent: noun
-    notes: "An explicitly bounded allocation, not an ordinary current holding."
-  contrastive_conjunction:
-    parent: conjunction
-    notes: "Contrasts two asserted clauses rather than offering alternatives."
+    notes: An explicitly bounded allocation, not an ordinary current holding.
   resource_account_preposition:
     parent: preposition
-    notes: "Introduces an allocation accompanying an independently read activity."
+    notes: Introduces an allocation accompanying an independently read activity.
   transaction_supplier_preposition:
     parent: preposition
   transaction_supplier:
     parent: noun
-    notes: "A commercial source, not necessarily a physical destination."
+    notes: A commercial source, not necessarily a physical destination.
   transaction_channel:
     parent: adverb
-    notes: "A channel of purchase, not a supplier or a place."
+    notes: A channel of purchase, not a supplier or a place.
   transaction_channel_descriptor:
     parent: adjective
   shopping_activity:
@@ -29,40 +26,13 @@ categories:
     parent: preposition
   payment_verb:
     parent: spend_verb
-    notes: "An actual payment; a purchase alone does not assert payment."
+    notes: An actual payment; a purchase alone does not assert payment.
   purchase_request:
     parent: verb
-    notes: "An order is a request, not evidence of settlement or expenditure."
+    notes: An order is a request, not evidence of settlement or expenditure.
   uniform_price_attribute:
     parent: adjective
-    notes: "Explicit equality of the individual prices in one purchased lot."
-members:
-  resource_budget_noun: [budget]
-  quantity_interior_location: [store]
-  contrastive_conjunction: [but]
-  purchase: [purchase, purchased, purchases, purchasing]
-  spend_verb: [pay, paid, pays, paying]
-  partitive_pair_measure: [pair]
-  spatial_motion_verb: [go, goes, went, going]
-  pairable_partitive_substance: [shoe, sock, shorts, pants]
-  transferable_quantity_object: [belt, clothes, coat, hat, pants, shirt, sock, suit, shorts, top]
-  uniform_price_attribute: [same]
-  resource_account_preposition: [with]
-  transaction_supplier_preposition: [from]
-  transaction_supplier: [retailer, store, shop]
-  transaction_channel: [online]
-  transaction_channel_descriptor: [online]
-  shopping_activity: [shop, shopped, shopping]
-  transaction_price_preposition: [for]
-  transaction_unit_price_preposition: [at, for]
-  transaction_account_preposition: [with, from]
-  payment_verb: [pay, paid, pays, paying]
-  purchase_request: [order, ordered, orders, ordering]
-attribute_compatibility:
-  transaction_channel_descriptor: [transaction_supplier]
-  uniform_price_attribute: [price_anaphor]
-adverb_verb_compatibility:
-  transaction_channel: [purchase, spend_verb, shopping_activity, purchase_request]
+    notes: Explicit equality of the individual prices in one purchased lot.
 adposition_roles:
   allocation-context:
     preposition_category: resource_account_preposition
@@ -73,3 +43,22 @@ adposition_roles:
     object_category: transaction_supplier
     verb_category: purchase
     allow_name_object: true
+members:
+  payment_verb: [paid, pay, paying, pays]
+  purchase_request: [order, ordered, ordering, orders]
+  resource_account_preposition: [with]
+  resource_budget_noun: [budget]
+  shopping_activity: [shop, shopped, shopping]
+  transaction_account_preposition: [from, with]
+  transaction_channel: [online]
+  transaction_channel_descriptor: [online]
+  transaction_price_preposition: [for]
+  transaction_supplier: [retailer, shop, store]
+  transaction_supplier_preposition: [from]
+  transaction_unit_price_preposition: [at, for]
+  uniform_price_attribute: [same]
+attribute_compatibility:
+  transaction_channel_descriptor: [transaction_supplier]
+  uniform_price_attribute: [price_anaphor]
+adverb_verb_compatibility:
+  transaction_channel: [purchase, purchase_request, shopping_activity, spend_verb]

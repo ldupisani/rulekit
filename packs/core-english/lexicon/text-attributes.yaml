@@ -1,8 +1,0 @@
-format: rulekit/lexicon@1
-entries:
-  last name: {senses: [noun], plural: last names, lexical_phrase: true}
-  first name: {senses: [noun], plural: first names, lexical_phrase: true}
-  full name: {senses: [noun], plural: full names, lexical_phrase: true}
-  surname: {senses: [noun], plural: surnames}
-  nickname: {senses: [noun], plural: nicknames}
-  length: {senses: [noun], plural: lengths}

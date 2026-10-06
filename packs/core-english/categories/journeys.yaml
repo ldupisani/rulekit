@@ -3,7 +3,7 @@ categories:
   journey_activity_verb: {parent: spatial_motion_verb}
   nominal_object_verb:
     parent: verb
-    notes: "Takes a nominal theme here, not an object followed by a bare verbal complement."
+    notes: Takes a nominal theme here, not an object followed by a bare verbal complement.
   journey_vehicle_verb:
     parent: nominal_object_verb
     selectional_roles: {actor: animate, theme: journey_vehicle}
@@ -25,24 +25,24 @@ categories:
   miles_per_hour_unit: {parent: noun}
   journey_start_verb: {parent: spatial_motion_verb}
 members:
-  journey_activity_verb: [walk, walks, walking, walked, bike, bikes, biking]
-  journey_vehicle_verb: [ride, rides]
-  journey_vehicle: [bike]
-  journey_destination: [work, school, office]
-  nominal_location: [work, school, office]
-  locative_source_preposition: [from]
-  locative_goal_preposition: [to]
-  journey_expletive: [it]
+  cycling_journey_noun: [bike ride]
+  distance_separation_adverb: [away]
+  journey_activity_verb: [bike, bikes, biking, walk, walked, walking, walks]
+  journey_destination: [office, school, work]
+  journey_distance_measure: [kilometer, mile]
   journey_duration_ask_verb: [take]
+  journey_expletive: [it]
   journey_goal_verb: [get]
   journey_mode_list_preposition: [with]
-  return_direction_adverb: [back and forth]
-  working_day_unit: [workday]
-  weekly_leisure_period: [weekend]
-  cycling_journey_noun: [bike ride]
-  journey_distance_measure: [mile, kilometer]
-  distance_separation_adverb: [away]
+  journey_start_verb: [go, goes, going, went]
+  journey_vehicle: [bike]
+  journey_vehicle_verb: [ride, rides]
+  locative_goal_preposition: [to]
+  locative_source_preposition: [from]
   miles_per_hour_unit: [mph]
-  journey_start_verb: [go, goes, went, going]
+  nominal_location: [office, school, work]
+  return_direction_adverb: [back and forth]
+  weekly_leisure_period: [weekend]
+  working_day_unit: [workday]
 attribute_compatibility:
   weekly_leisure_period: [cycling_journey_noun]

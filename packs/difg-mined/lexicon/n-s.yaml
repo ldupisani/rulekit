@@ -1182,10 +1182,6 @@ entries:
   river:
     senses:
     - noun
-  road:
-    senses:
-    - noun
-    plural: roads
   robin:
     senses:
     - noun
@@ -1648,9 +1644,6 @@ entries:
   sixteen:
     senses:
     - value
-  sixth:
-    senses:
-    - adjective
   sixth-grade:
     senses:
     - adjective
@@ -1976,10 +1969,6 @@ entries:
     senses:
     - noun
     plural: strawberries
-  street:
-    senses:
-    - noun
-    plural: streets
   strictly:
     senses:
     - adverb

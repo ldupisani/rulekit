@@ -16,7 +16,10 @@ from dataclasses import dataclass, field, fields, replace
 from .reference_identity import reference_from_unit
 from .reference_bindings import project_references
 from collections.abc import Iterable, Mapping
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from .facts import FactStore
 
 from ..data.registry import Registry
 from ..data.schemas import AskRule, MatchToken, PatternRule
@@ -2290,7 +2293,7 @@ def _resolve_field(
 
 
 _NUMERIC_FIELDS = {
-    "lot_quantity",
+    "lot_quantity", "per_member", "subtotal",
     "group_size",
     "value", "year", "factor", "offset", "fraction", "numerator", "denominator",
     "elapsed",
@@ -2555,7 +2558,7 @@ def run_rules(
 
 
 def match_ask(
-    reading: Reading, reg: Registry
+    reading: Reading, reg: Registry, *, store: FactStore | None = None
 ) -> tuple[AskRule, dict[str, Any], Match] | None:
     """Match question shapes; the MOST SPECIFIC matching ask wins (max
     consumed units — a longer match read more of the question), then Σ CATEGORY
@@ -2569,7 +2572,12 @@ def match_ask(
     inches are in 3 feet?" went to ask/how-many-in-place (which reads "3 feet" as
     a PLACE and declines) purely because 'h' < 'u'. Ties are the only matches
     affected; any match that already won on length still wins.
+
+    A supplied store filters consumers by their typed-evidence prerequisites
+    before ranking. Without a store this remains a structural authoring match.
     """
+    from .consumers import consumer_applicable
+
     class AskResolutionMismatch(Exception):
         pass
 
@@ -2667,6 +2675,8 @@ def match_ask(
             else:
                 resolved = resolve(ask.resolves, m)
         except AskResolutionMismatch:
+            continue
+        if store is not None and not consumer_applicable(resolved.get("consumer"), store):
             continue
         if best is None or _ask_rank(m, ask, reg) > _ask_rank(best[2], best[0], reg):
             best = (ask, resolved, m)

@@ -64,6 +64,22 @@ def annotate_numbers(reading: Reading, reg: Registry) -> Reading:
     while i < len(units):
         unit = units[i]
         fold = unit.features.get("fold", "")
+        # A declared ordinal modifying a compatible noun stays a lexical
+        # modifier, preserving reference identity through ordinary condensation.
+        # Counted fractions retain their existing interpretation.
+        ordinal = reg.attrs.get(fold, {}).get("ordinal_index")
+        head = units[i + 1].features.get("fold", "") if i + 1 < len(units) else ""
+        head = reg.plural_to_singular.get(head, head)
+        previous = units[i - 1].features if i else {}
+        if (ordinal is not None and fold in reg.fractions and head
+                and any(category == "holder_ordinal" for category, _ in
+                        reg.attribute_compatibility_pairs(fold, head))
+                and previous.get("value_kind") not in {"count", "fraction"}):
+            reading.record("annotate-ordinal-modifier", unit,
+                           {"ordinal_index": float(ordinal)},
+                           "declared ordinal modifying a compatible noun")
+            i += 1
+            continue
         # the SURFACE, not the fold: symbols are case-significant ('Co' the
         # element vs 'CO' carbon monoxide), and the fold is lower-cased
         dm = _ISO_DATE.match(fold)

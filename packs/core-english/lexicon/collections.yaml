@@ -1,5 +1,0 @@
-format: rulekit/lexicon@1
-entries:
-  mango: {senses: [noun], plural: [mangoes, mangos]}
-  coconut: {senses: [noun], plural: coconuts}
-  farm: {senses: [noun], plural: farms}

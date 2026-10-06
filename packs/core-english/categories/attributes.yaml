@@ -1,0 +1,32 @@
+format: rulekit/categories@1
+attrs:
+  bird:
+    legs: 2
+  cat:
+    legs: 4
+  dog:
+    legs: 4
+  fifth:
+    ordinal_index: 5
+  final:
+    sequence_index: -1
+  first:
+    batch_index: 1
+    batch_advance: 0
+    ordinal_index: 1
+    sequence_index: 1
+  fourth:
+    ordinal_index: 4
+  last:
+    batch_index: -1
+    sequence_index: -1
+  next:
+    batch_advance: 1
+  second:
+    batch_index: 2
+    ordinal_index: 2
+  sixth:
+    ordinal_index: 6
+  third:
+    batch_index: 3
+    ordinal_index: 3

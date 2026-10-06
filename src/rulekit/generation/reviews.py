@@ -1166,7 +1166,7 @@ def replay_ask_review(project: Project, review: dict) -> dict[str, str]:
         # appear to supersede the reviewed discourse-specific rule.
         result = solve(text, project.registry, tracing=False)
         reading = result.question or analyze(question, project.registry)
-        matched = match_ask(reading, project.registry)
+        matched = match_ask(reading, project.registry, store=result.store)
         if matched is None:
             return {
                 "status": "regressed",

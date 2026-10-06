@@ -28,7 +28,8 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Callable
 
 if TYPE_CHECKING:  # pragma: no cover - import cycle at runtime, types only
-    from ..model import FactStore, Reading
+    from ..facts import FactStore
+    from ..model import Reading
     from ...data.registry import Registry
     from ..evaluate import ArithmeticLog
 
@@ -85,10 +86,23 @@ CONSUMERS: dict[str, Callable[[ConsumerContext], Any]] = {}
 # `ctx.store` already filtered. All 15 extracted so far are above it — verified
 # against the pre-refactor file, not assumed.
 TIME_SCOPED: set[str] = set()
+# Optional typed-evidence prerequisites for overlapping question shapes.
+APPLICABILITY: dict[str, Callable[["FactStore"], bool]] = {}
 
 
-def consumer(name: str, *, time_scoped: bool = False):
+def consumer_applicable(name: str | None, store: "FactStore") -> bool:
+    predicate = APPLICABILITY.get(name) if name is not None else None
+    return predicate is None or predicate(store)
+
+
+def consumer(name: str, *, time_scoped: bool = False,
+             applicable: Callable[["FactStore"], bool] | None = None):
     """Register a handler under the name its asks resolve to.
+
+    `applicable` opts a structured family into question selection only when
+    its required evidence exists. It must be read-only and must not infer an
+    answer or weaken the consumer's validation. Structural generation can
+    still match the question without a store.
 
     `time_scoped` marks a consumer that lived BELOW the temporal origo and must
     therefore receive the time-filtered store. Getting it wrong is invisible in
@@ -100,6 +114,8 @@ def consumer(name: str, *, time_scoped: bool = False):
         if name in CONSUMERS:
             raise RuntimeError(f"consumer {name!r} registered twice")
         CONSUMERS[name] = fn
+        if applicable is not None:
+            APPLICABILITY[name] = applicable
         if time_scoped:
             TIME_SCOPED.add(name)
         return fn
@@ -109,6 +125,7 @@ def consumer(name: str, *, time_scoped: bool = False):
 
 from . import (  # noqa: E402,F401  (import registers each handler)
     batch_outcomes as _batch_outcomes,
+    holder_remainder as _holder_remainder,
     liability_remainder as _liability_remainder,
     text_extent as _text_extent,
     production_profit as _production_profit,

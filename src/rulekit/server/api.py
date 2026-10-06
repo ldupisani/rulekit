@@ -828,7 +828,7 @@ def trace_project(project: Project, body: TraceBody) -> dict[str, Any]:
             "traceback": traceback.format_exc()[-2000:],
         }
     readings = result.premises + ([result.question] if result.question else [])
-    ask = match_ask(result.question, registry) if result.question else None
+    ask = match_ask(result.question, registry, store=result.store) if result.question else None
     return {
         "error": None,
         "answer": {

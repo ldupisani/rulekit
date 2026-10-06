@@ -26,39 +26,34 @@ categories:
   sequence_result_conjunction: {parent: conjunction}
   sequence_passive_auxiliary: {parent: verb}
   abstract_time_noun: {parent: noun}
-members:
-  sequence_carrier: [ship, box, batch, delivery, truck, basket, bag]
-  sequence_event_verb: [eat, eats, ate, feast, feasts, feasted, consume, consumes, consumed, deliver, delivers, delivered, send, sends, sent, receive, receives, received]
-  carrier_transitive_event_verb: [eat, eats, ate, consume, consumes, consumed, deliver, delivers, delivered, send, sends, sent, receive, receives, received]
-  carrier_prepositional_event_verb: [feast, feasts, feasted]
-  sequence_singular_anaphor: [it]
-  sequence_current_descriptor: [new, next]
-  sequence_previous_descriptor: [last, previous]
-  sequence_index_descriptor: [first, final, last]
-  sequence_location_preposition: [in, on]
-  carrier_event_object_preposition: [on]
-  sequence_motion_verb: [rise, rises, rose, return, returns, returned]
-  sequence_origin_preposition: [from]
-  sequence_motive_verb: [sate, satisfy]
-  sequence_motive_noun: [hunger, appetite]
-  sequence_creation_verb: [built, made, produced]
-  sequence_growth_descriptor: [larger, bigger]
-  sequence_elapsed_preposition: [over]
-  sequence_result_conjunction: [so]
-  sequence_passive_auxiliary: [have been, has been, had been]
-  abstract_time_noun: [time]
-  quantity_event_participant: [monster, dragon]
-  animate: [person]
-  quantity_location: [sea, waters]
-attribute_compatibility:
-  sequence_previous_descriptor: [sequence_carrier]
-  sequence_current_descriptor: [sequence_carrier]
-  sequence_index_descriptor: [sequence_carrier, duration_measure]
 context_synonyms:
   carrier_consumption:
     gate: sequence_carrier
     forms: [eat, consume, feast]
-attrs:
-  first: {sequence_index: 1}
-  final: {sequence_index: -1}
-  last: {sequence_index: -1}
+members:
+  abstract_time_noun: [time]
+  carrier_event_object_preposition: [on]
+  carrier_prepositional_event_verb: [feast, feasted, feasts]
+  carrier_transitive_event_verb: [ate, consume, consumed, consumes, deliver, delivered, delivers, eat, eats,
+      receive, received, receives, send, sends, sent]
+  sequence_carrier: [bag, basket, batch, box, delivery, ship, truck]
+  sequence_creation_verb: [built, made, produced]
+  sequence_current_descriptor: [new, next]
+  sequence_elapsed_preposition: [over]
+  sequence_event_verb: [ate, consume, consumed, consumes, deliver, delivered, delivers, eat, eats, feast,
+      feasted, feasts, receive, received, receives, send, sends, sent]
+  sequence_growth_descriptor: [bigger, larger]
+  sequence_index_descriptor: [final, first, last]
+  sequence_location_preposition: [in, on]
+  sequence_motion_verb: [return, returned, returns, rise, rises, rose]
+  sequence_motive_noun: [appetite, hunger]
+  sequence_motive_verb: [sate, satisfy]
+  sequence_origin_preposition: [from]
+  sequence_passive_auxiliary: [had been, has been, have been]
+  sequence_previous_descriptor: [last, previous]
+  sequence_result_conjunction: [so]
+  sequence_singular_anaphor: [it]
+attribute_compatibility:
+  sequence_current_descriptor: [sequence_carrier]
+  sequence_index_descriptor: [duration_measure, sequence_carrier]
+  sequence_previous_descriptor: [sequence_carrier]

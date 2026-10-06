@@ -407,7 +407,7 @@ def _check_number(
         exempt_document = False
         if question is not None:
             from .patterns import match_ask
-            qm = match_ask(question, reg)
+            qm = match_ask(question, reg, store=store)
             if qm is not None:
                 matched_consumer = qm[1].get("consumer")
                 if matched_consumer in _WHOLE_LIST_CONSUMERS:
@@ -514,7 +514,7 @@ def _check_number(
         from .model import Quantity
         from .patterns import match_ask
 
-        matched = match_ask(question, reg)
+        matched = match_ask(question, reg, store=store)
         if matched is not None:
             _ask, query, _m = matched
             accounting_store = store
