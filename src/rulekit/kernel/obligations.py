@@ -424,7 +424,7 @@ def _article_licenses_noun(reading: Reading, unit: Unit, reg: Registry | None = 
                 reg.plural_to_singular.get(unit.features.get("fold", ""), unit.features.get("fold", "")),
             )
         )
-        if sense == "adjective" or (
+        if sense in {"adjective", "ordinal"} or (
             reg is not None and "adjective" in prev.senses()
             and reg.attribute_applies_to(
                 prev.features.get("lemma", prev.features.get("fold", "")),
@@ -620,6 +620,13 @@ def _compatible_predicate_licenses_adverb(reading: Reading, unit: Unit, reg: Reg
     predicates = [
         v for v in reading.units if v.sense() == "verb"
         and not _crosses_clause_boundary(reading, unit, v)
+        and not any(u.sense() == "conjunction"
+                    and min(unit.span[0], v.span[0]) < u.span[0] < max(unit.span[0], v.span[0])
+                    # A coordinated object may elide the shared predicate.
+                    # Only an explicit predicate opens a new verbal clause.
+                    and any(p.sense() == "verb" and u.span[0] < p.span[0]
+                            <= max(unit.span[0], v.span[0]) for p in reading.units)
+                    for u in reading.units)
     ]
     return len(predicates) == 1 and reg.adverb_applies_to_verb(
         unit.features.get("lemma", unit.features.get("fold", "")),

@@ -1,0 +1,73 @@
+format: rulekit/categories@1
+categories:
+  path_vehicle:
+    parent: noun
+  path_site:
+    parent: noun
+  path_route:
+    parent: noun
+  path_checkpoint:
+    parent: noun
+  path_travel_verb:
+    parent: verb
+  path_exit_verb:
+    parent: verb
+  path_immediate_adverb:
+    parent: adverb
+  path_further_adverb:
+    parent: adverb
+  path_small_descriptor:
+    parent: adjective
+  path_turn_descriptor:
+    parent: adjective
+  path_singular_reference:
+    parent: pronoun
+  path_requirement_verb:
+    parent: verb
+  path_distance_measure:
+    parent: noun
+members:
+  path_vehicle:
+  - car
+  - bike
+  - truck
+  path_site:
+  - tunnel
+  path_route:
+  - ring
+  - road
+  path_checkpoint:
+  - turn
+  path_travel_verb:
+  - drive
+  - driven
+  - driving
+  - travel
+  - travels
+  - traveled
+  path_exit_verb:
+  - exit
+  - exits
+  path_immediate_adverb:
+  - immediately
+  path_further_adverb:
+  - further
+  path_small_descriptor:
+  - little
+  path_turn_descriptor:
+  - right-hand
+  - left-hand
+  path_singular_reference:
+  - it
+  path_requirement_verb:
+  - require
+  - requires
+  path_distance_measure:
+  - meter
+  - kilometer
+  - mile
+attribute_compatibility:
+  path_turn_descriptor:
+  - path_checkpoint
+adverb_verb_compatibility:
+  path_further_adverb: [path_travel_verb]

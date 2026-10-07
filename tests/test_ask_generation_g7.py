@@ -49,7 +49,7 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
     assert any("antecedent discourse group" in blocker for blocker in contextual.blockers)
     # The reusable physics pack adds the independently generatable
     # ask/physics-quantity surface to curated.
-    assert sum(item.supported for item in availability.values()) == 222
+    assert sum(item.supported for item in availability.values()) == 238
     assert availability["ask/how-many-of-collection-are-label"].supported
     assert availability["ask/how-many-of-collection-are-label"].supported_modes == (
         "ask_only",
@@ -73,11 +73,15 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
     assert availability["ask/measured-content-in-container-unit"].blockers == (
         "ask requires generated premise evidence; standalone realization is disabled",
     )
-    assert len(availability) == 243
+    assert len(availability) == 263
     assert {
         item.id for item in availability.values() if not item.supported
     } == {
         "ask/how-much-credit-need-pay",
+        "ask/path-distance-after-numeric",
+        "ask/path-distance-after-numeric-reference",
+        "ask/path-distance-unit-after-numeric",
+        "ask/path-distance-unit-after-numeric-reference",
         "ask/how-much-need-pay",
         "ask/how-much-need-repay",
         "ask/chem-cost-of-moles",
@@ -102,11 +106,20 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
     unfilled_deadlines = {
         "ask/how-much-credit-need-pay", "ask/how-much-need-pay", "ask/how-much-need-repay",
     }
+    unfilled_ordinals = {
+        "ask/path-distance-after-numeric", "ask/path-distance-after-numeric-reference",
+        "ask/path-distance-unit-after-numeric", "ask/path-distance-unit-after-numeric-reference",
+    }
+    assert all(availability[ask_id].supported_modes == ()
+               and availability[ask_id].blockers == (
+                   "no project-backed ask filler exists for point_index",
+               )
+               for ask_id in unfilled_ordinals)
     assert all(
         "answerable" in item.supported_modes
         for item in availability.values()
         if not item.supported and not item.id.startswith("ask/chem-")
-        and item.id not in unfilled_deadlines
+        and item.id not in unfilled_deadlines | unfilled_ordinals
     )
     for ask_id in unfilled_deadlines:
         assert availability[ask_id].supported_modes == ()
@@ -489,15 +502,22 @@ def test_answerable_scenario_locks_normalized_counted_measure_identity(
 
 
 def test_random_answerable_mode_skips_unsupported_scenario_contracts(
-    curated,
+    curated, monkeypatch,
 ) -> None:
+    # Fix the review frontier so vocabulary/ask additions cannot replace the
+    # intended unsupported-first, supported-second experiment with eight
+    # unrelated randomly selected asks.
+    from rulekit.generation import ask_generation
+    counts = {ask.id: 2 for ask in curated.registry.asks}
+    counts.update({"ask/how-many-capacity": 0, "ask/how-old-is": 1})
+    monkeypatch.setattr(ask_generation, "ask_review_target_counts", lambda *a, **k: counts)
     candidate = generate_ask_scenario(
         curated,
         seed=2,
         scenario_mode="answerable",
     )
 
-    # This seed first selects the independently realizable capacity ask, for
+    # This frontier first selects the independently realizable capacity ask, for
     # which the bounded premise search has no answerable construction. Random
     # mode advances deterministically to another answerable ask; an explicit
     # capacity selection does not. Grammar refinements may change which later

@@ -700,7 +700,7 @@ def _split_question_scoped(
     premise recovery remain asserted: they describe source-text boundaries,
     not a hypothetical context.
     """
-    sentences = split_sentences(text)
+    sentences = split_sentences(text, reg.category_members.get("person_title", ()) if reg else ())
     if not sentences:
         return [], None
     last = sentences[-1]

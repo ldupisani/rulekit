@@ -18,6 +18,10 @@ categories:
       A singular count-noun use needs a determiner or owner. After an
       infinitival marker, a bare verb homograph is therefore the verb,
       unlike nominal activity/location words that permit bare reference.
+  unspecified_amount_descriptor:
+    parent: adjective
+  allocation_amount_noun:
+    parent: noun
 members:
   allocatable_resource: [money, prize, profit]
   allocation_distribution_preposition: [among, between]
@@ -28,5 +32,11 @@ members:
   allocation_verb: [share, shared]
   commercial_context_descriptor: [business]
   determiner_required_noun: [load, practice, share]
+  unspecified_amount_descriptor:
+  - certain
+  allocation_amount_noun:
+  - amount
 attribute_compatibility:
   commercial_context_descriptor: [allocation_participant, allocation_source]
+  unspecified_amount_descriptor:
+  - allocation_amount_noun

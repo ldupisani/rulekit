@@ -34,6 +34,8 @@ FUTURE_RULES = {
     "arithmetic/temporal-offset-times-as-old-as-future",
 }
 EXPECTED_OCCURRENCES = {
+    "arithmetic/path-checkpoint-count": ((2, 0), "modal", ((2,),)),
+    "arithmetic/path-checkpoint-count-qualified": ((2, 0), "modal", ((2,),)),
     "logic-arithmetic/universal-location-exit-impossibility": (
         (1,),
         None,
@@ -204,9 +206,9 @@ def test_g5s_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 346
-    assert sum(item.supported for item in availability.values()) == 329
-    assert sum(not item.supported for item in availability.values()) == 17
+    assert len(availability) == 405
+    assert sum(item.supported for item in availability.values()) == 361
+    assert sum(not item.supported for item in availability.values()) == 44
     assert availability["arithmetic/periodic-rate-every-span"].supported
     assert all(availability[rule_id].supported for rule_id in FUTURE_RULES)
     # G5t subsequently supplied the temporal-marker domain for the fourth
@@ -217,7 +219,7 @@ def test_g5s_unlocks_exactly_the_preregistered_frontier() -> None:
     assert availability[
         "arithmetic/anchored-relation-conjoined-anchor"
     ].supported
-    assert len(exploration_status(project)["fillers"]) == 701
+    assert len(exploration_status(project)["fillers"]) == 742
 
 
 @pytest.mark.parametrize("modal", sorted(MOVED_WORDS))

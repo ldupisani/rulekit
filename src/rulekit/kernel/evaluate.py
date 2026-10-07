@@ -42,8 +42,11 @@ class LogEntry:
 class ArithmeticLog:
     entries: list[LogEntry] = field(default_factory=list)
     consumed_commercial_term_keys: set[tuple] = field(default_factory=set)
+    consumed_component_keys: set[tuple] = field(default_factory=set)
     consumed_allocation_ratio_keys: set[tuple] = field(default_factory=set)
     consumed_inventory_keys: set[tuple] = field(default_factory=set)
+    consumed_fraction_keys: set[tuple] = field(default_factory=set)
+    consumed_proportional_base_keys: set[tuple] = field(default_factory=set)
     consumed_batch_keys: set[tuple] = field(default_factory=set)
     consumed_mixture_keys: set[tuple] = field(default_factory=set)
     consumed_journey_keys: set[tuple] = field(default_factory=set)

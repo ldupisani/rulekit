@@ -137,9 +137,9 @@ def test_g5q_unlocks_exactly_the_preregistered_rule() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 346
-    assert sum(item.supported for item in availability.values()) == 329
-    assert sum(not item.supported for item in availability.values()) == 17
+    assert len(availability) == 405
+    assert sum(item.supported for item in availability.values()) == 361
+    assert sum(not item.supported for item in availability.values()) == 44
     assert availability[
         "arithmetic/times-comparative-age-relation"
     ].supported
@@ -149,7 +149,7 @@ def test_g5q_unlocks_exactly_the_preregistered_rule() -> None:
     assert availability[
         "arithmetic/anchored-relation-postfix-age"
     ].supported
-    assert len(exploration_status(project)["fillers"]) == 701
+    assert len(exploration_status(project)["fillers"]) == 742
 
 
 @pytest.mark.parametrize("comparative", sorted(MOVED_WORDS))

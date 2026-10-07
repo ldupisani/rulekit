@@ -14,6 +14,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field, fields, replace
 from .reference_identity import reference_from_unit
+from .model import AllocationGroup, IndexedPathEvidence, MeasuredComponent
 from .reference_bindings import project_references
 from collections.abc import Iterable, Mapping
 from typing import TYPE_CHECKING, Any
@@ -30,6 +31,7 @@ from .model import (
     ResourceBalance,
     AccountEntry,
     BatchEvidence,
+    ProportionalBaseEvidence,
     Expenditure,
     BoundedActivityInquiry,
     AgeAtYear,
@@ -119,7 +121,11 @@ from .model import (
 SKIPPABLE_SENSES = {"article", "punct"}
 
 _FACT_CLASSES = {
+    "allocation_group": AllocationGroup,
+    "indexed_path_evidence": IndexedPathEvidence,
+    "measured_component": MeasuredComponent,
     "batch_evidence": BatchEvidence,
+    "proportional_base_evidence": ProportionalBaseEvidence,
     "account_entry": AccountEntry,
     "text_value": TextValue,
     "text_prefix_split": TextPrefixSplit,
@@ -452,6 +458,8 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
         t = token.type
         sense = unit.sense()
         kind = unit.features.get("value_kind")
+        if t == "ordinal":
+            return kind == "ordinal"
         if t == "number":
             return kind == "count"
         if t == "fraction":
@@ -990,6 +998,8 @@ def _try_match_at(
             rest = tokens[k + 1:]
             for end in range(len(units), i, -1):
                 captured = tuple(units[i:end])
+                if token.enumeration_cat and _category_enumeration(captured, token.enumeration_cat, reg) is None:
+                    continue
                 if not any(u.sense() not in SKIPPABLE_SENSES for u in captured):
                     continue  # a span must capture something meaningful
                 if not rest and any(
@@ -1882,47 +1892,38 @@ def _enumeration_segments(span: tuple) -> list[tuple]:
 
 
 def _named_enumeration(span: tuple, reg: Registry) -> list[str] | None:
-    """Return an exact coordinated-name list, or refuse malformed scope.
+    """Require at least two coordinated names using the shared list grammar."""
+    members = _category_enumeration(span, "name", reg)
+    return list(members) if members and len(members) >= 2 else None
 
-    A span is only a named enumeration when every segment contains exactly
-    one name, every conjunction is the pack-declared conjunctive marker, and
-    the final two names are joined by a conjunction. Commas alone do not state
-    coordination, and a disjunction must never become a sum.
-    """
+
+def _category_enumeration(span, category, reg):
+    """An exact singleton or conjunctive list of category-compatible heads."""
     segments = _enumeration_segments(span)
-    if len(segments) < 2:
+    if not segments:
         return None
-
-    conjunction_indexes: list[int] = []
-    names: list[tuple[int, str]] = []
-    for index, unit in enumerate(span):
-        if unit.sense() == "conjunction":
-            if not reg.word_in_category(
-                unit.features.get("fold", ""), "holder_list_conjunction"
-            ):
-                return None
-            conjunction_indexes.append(index)
-        elif (
-            unit.sense() == "punct"
-            and unit.features.get("fold") != ","
-        ):
-            return None
-
+    names = []
     for segment in segments:
-        content = [
-            unit for unit in segment
-            if unit.sense() not in SKIPPABLE_SENSES
-        ]
-        if len(content) != 1 or content[0].sense() != "name":
+        content = [u for u in segment if u.sense() not in SKIPPABLE_SENSES]
+        if len(content) != 1:
             return None
         unit = content[0]
-        names.append((span.index(unit), _lemma_of(unit)))
-
-    if not conjunction_indexes:
+        if unit.features.get("reference_qualifiers") or "value" in unit.features:
+            return None
+        if not (unit.sense() == category or reg.word_in_category(_lemma_of(unit), category)):
+            return None
+        names.append(_lemma_of(unit))
+    conjunctions = [i for i, u in enumerate(span) if u.sense() == "conjunction"]
+    if any(not reg.word_in_category(span[i].features.get("fold", ""), "holder_list_conjunction")
+           for i in conjunctions):
         return None
-    if not names[-2][0] < conjunction_indexes[-1] < names[-1][0]:
+    if any(u.sense() == "punct" and u.surface != "," for u in span):
         return None
-    return [name for _index, name in names]
+    if len(names) > 1:
+        heads = [i for i, u in enumerate(span) if u.sense() not in SKIPPABLE_SENSES and u.sense() != "conjunction"]
+        if not conjunctions or not heads[-2] < conjunctions[-1] < heads[-1]:
+            return None
+    return tuple(names)
 
 
 # Which fact kinds decompose, and on WHICH field. Only UPWARD-monotone
@@ -2176,6 +2177,9 @@ def _slot_value(unit: Unit, attr: str | None) -> str:
         # `coordinate` consumer splits it. A tuple has no scalar `value`, so
         # this is the only way to read one.
         return unit.features.get("components", "") or ""
+    if attr == "owner_identity":
+        owner = reference_from_unit(unit).owner
+        return owner.head if owner and owner.resolved and not owner.described else ""
     if attr == "owner":
         # the possessive owner of a `possessed`-typed slot (condense.py
         # merge-possessive) — an ask's `entity_owner: "{who.owner}"`
@@ -2277,6 +2281,10 @@ def _resolve_field(
             if attr == "optional":
                 return ""
             raise EvaluationError(f"rule {rule_id}: emit references unbound slot {name!r}")
+        if attr == "members":
+            span = slots[name]
+            return tuple(_lemma_of(next(u for u in segment if u.sense() not in SKIPPABLE_SENSES))
+                         for segment in _enumeration_segments(span))
         return _slot_value(slots[name], attr)
     if not numeric:
         # a string with embedded templates
@@ -2287,7 +2295,7 @@ def _resolve_field(
     env = {
         name: float(u.features["value"])
         for name, u in slots.items()
-        if "value" in u.features
+        if isinstance(u, Unit) and "value" in u.features
     }
     return evaluate(expr, env, log, source=rule_id)
 

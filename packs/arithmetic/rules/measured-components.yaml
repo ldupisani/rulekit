@@ -1,0 +1,611 @@
+format: rulekit/rules@1
+templates:
+  measured-component-comparison-0:
+    parameters:
+      factor:
+      - {slot: factor, type: fraction}
+      - opt:
+        - {lit: times}
+    rule:
+      phase: read
+      description: A component count is an explicit multiple of another component count, preserving unit 
+        labels.
+      match:
+        sentence:
+        - opt:
+          - {lit: to}
+          - {slot: make, cat: component_production_verb, bare_form: true}
+          - {slot: product, cat: component_product, bare: true, uncounted: true}
+          - opt:
+            - {lit: together}
+            - {lit: with}
+            - {slot: other, cat: purchase_collection_noun, qualified: true, qualifier_cat: 
+                component_miscellaneous_descriptor, uncounted: true}
+        - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, bare: true}
+        - {slot: need, cat: component_requirement_verb}
+        - {parameter: factor}
+        - {lit: as}
+        - {lit: many}
+        - {slot: targetunit, cat: component_measure, bare: true, uncounted: true}
+        - {lit: of}
+        - {slot: target, cat: component_material, bare: true, uncounted: true}
+        - {lit: as}
+        - opt:
+          - {lit: number}
+          - {lit: of}
+        - {slot: referenceunit, cat: component_measure, bare: true, uncounted: true}
+        - {lit: of}
+        - {slot: reference, cat: component_material, bare: true, uncounted: true}
+        - {lit: ., consume_skipped: true}
+      consumes:
+      - factor
+      satisfies:
+        make:
+        - subject
+        need:
+        - subject
+      emits:
+      - fact: measured_component
+        entity: '{who}'
+        component: '{target}'
+        measure: '{targetunit}'
+        value: factor
+        reference: '{reference}'
+        reference_measure: '{referenceunit}'
+        product: '{product.optional}'
+  measured-component-comparison-1:
+    parameters:
+      factor:
+      - {slot: factor, type: fraction}
+      - opt:
+        - {lit: times}
+    rule:
+      phase: read
+      description: A component count is an explicit multiple of another component count, preserving unit 
+        labels.
+      match:
+        sentence:
+        - opt:
+          - {lit: to}
+          - {slot: make, cat: component_production_verb, bare_form: true}
+          - {slot: product, cat: component_product, bare: true, uncounted: true}
+          - opt:
+            - {lit: together}
+            - {lit: with}
+            - {slot: other, cat: purchase_collection_noun, qualified: true, qualifier_cat: 
+                component_miscellaneous_descriptor, uncounted: true}
+        - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, bare: true}
+        - {slot: need, cat: component_requirement_verb}
+        - {slot: unit0, cat: component_measure, bare: true, counted: true}
+        - {lit: of}
+        - {slot: item0, cat: component_material, bare: true, uncounted: true}
+        - {lit: and}
+        - {parameter: factor}
+        - {lit: as}
+        - {lit: many}
+        - {slot: targetunit, cat: component_measure, bare: true, uncounted: true}
+        - {lit: of}
+        - {slot: target, cat: component_material, bare: true, uncounted: true}
+        - {lit: as}
+        - opt:
+          - {lit: number}
+          - {lit: of}
+        - {slot: referenceunit, cat: component_measure, bare: true, uncounted: true}
+        - {lit: of}
+        - {slot: reference, cat: component_material, bare: true, uncounted: true}
+        - {lit: ., consume_skipped: true}
+      consumes:
+      - unit0
+      - factor
+      satisfies:
+        make:
+        - subject
+        need:
+        - subject
+      emits:
+      - fact: measured_component
+        entity: '{who}'
+        component: '{item0}'
+        measure: '{unit0}'
+        value: unit0
+        product: '{product.optional}'
+      - fact: measured_component
+        entity: '{who}'
+        component: '{target}'
+        measure: '{targetunit}'
+        value: factor
+        reference: '{reference}'
+        reference_measure: '{referenceunit}'
+        product: '{product.optional}'
+  measured-component-comparison-2:
+    parameters:
+      factor:
+      - {slot: factor, type: fraction}
+      - opt:
+        - {lit: times}
+    rule:
+      phase: read
+      description: A component count is an explicit multiple of another component count, preserving unit 
+        labels.
+      match:
+        sentence:
+        - opt:
+          - {lit: to}
+          - {slot: make, cat: component_production_verb, bare_form: true}
+          - {slot: product, cat: component_product, bare: true, uncounted: true}
+          - opt:
+            - {lit: together}
+            - {lit: with}
+            - {slot: other, cat: purchase_collection_noun, qualified: true, qualifier_cat: 
+                component_miscellaneous_descriptor, uncounted: true}
+        - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, bare: true}
+        - {slot: need, cat: component_requirement_verb}
+        - {slot: unit0, cat: component_measure, bare: true, counted: true}
+        - {lit: of}
+        - {slot: item0, cat: component_material, bare: true, uncounted: true}
+        - lit: ','
+          consume_skipped: true
+        - {slot: unit1, cat: component_measure, bare: true, counted: true}
+        - {lit: of}
+        - {slot: item1, cat: component_material, bare: true, uncounted: true}
+        - {lit: and}
+        - {parameter: factor}
+        - {lit: as}
+        - {lit: many}
+        - {slot: targetunit, cat: component_measure, bare: true, uncounted: true}
+        - {lit: of}
+        - {slot: target, cat: component_material, bare: true, uncounted: true}
+        - {lit: as}
+        - opt:
+          - {lit: number}
+          - {lit: of}
+        - {slot: referenceunit, cat: component_measure, bare: true, uncounted: true}
+        - {lit: of}
+        - {slot: reference, cat: component_material, bare: true, uncounted: true}
+        - {lit: ., consume_skipped: true}
+      consumes:
+      - unit0
+      - unit1
+      - factor
+      satisfies:
+        make:
+        - subject
+        need:
+        - subject
+      emits:
+      - fact: measured_component
+        entity: '{who}'
+        component: '{item0}'
+        measure: '{unit0}'
+        value: unit0
+        product: '{product.optional}'
+      - fact: measured_component
+        entity: '{who}'
+        component: '{item1}'
+        measure: '{unit1}'
+        value: unit1
+        product: '{product.optional}'
+      - fact: measured_component
+        entity: '{who}'
+        component: '{target}'
+        measure: '{targetunit}'
+        value: factor
+        reference: '{reference}'
+        reference_measure: '{referenceunit}'
+        product: '{product.optional}'
+variants:
+- id: arithmetic/measured-component-comparison-0-fraction
+  template: measured-component-comparison-0
+  arguments:
+    factor:
+    - {slot: factor, type: fraction}
+    - opt:
+      - {lit: times}
+- id: arithmetic/measured-component-comparison-0-multiplier
+  template: measured-component-comparison-0
+  arguments:
+    factor:
+    - {slot: factor, type: multiplier}
+- id: arithmetic/measured-component-comparison-1-fraction
+  template: measured-component-comparison-1
+  arguments:
+    factor:
+    - {slot: factor, type: fraction}
+    - opt:
+      - {lit: times}
+- id: arithmetic/measured-component-comparison-1-multiplier
+  template: measured-component-comparison-1
+  arguments:
+    factor:
+    - {slot: factor, type: multiplier}
+- id: arithmetic/measured-component-comparison-2-fraction
+  template: measured-component-comparison-2
+  arguments:
+    factor:
+    - {slot: factor, type: fraction}
+    - opt:
+      - {lit: times}
+- id: arithmetic/measured-component-comparison-2-multiplier
+  template: measured-component-comparison-2
+  arguments:
+    factor:
+    - {slot: factor, type: multiplier}
+rules:
+- id: arithmetic/measured-requirements-1
+  phase: read
+  description: Explicitly measured component requirements, retaining both substance and unit.
+  match:
+    sentence:
+    - opt:
+      - {lit: to}
+      - {slot: make, cat: component_production_verb, bare_form: true}
+      - {slot: product, cat: component_product, bare: true, uncounted: true}
+      - opt:
+        - {lit: together}
+        - {lit: with}
+        - {slot: other, cat: purchase_collection_noun, qualified: true, qualifier_cat: 
+            component_miscellaneous_descriptor, uncounted: true}
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, bare: true}
+    - {slot: need, cat: component_requirement_verb}
+    - {slot: unit0, cat: component_measure, bare: true, counted: true}
+    - {lit: of}
+    - {slot: item0, cat: component_material, bare: true, uncounted: true}
+    - {lit: ., consume_skipped: true}
+  consumes:
+  - unit0
+  satisfies:
+    make:
+    - subject
+    need:
+    - subject
+  emits:
+  - fact: measured_component
+    entity: '{who}'
+    component: '{item0}'
+    measure: '{unit0}'
+    value: unit0
+    product: '{product.optional}'
+- id: arithmetic/measured-requirements-2
+  phase: read
+  description: Explicitly measured component requirements, retaining both substance and unit.
+  match:
+    sentence:
+    - opt:
+      - {lit: to}
+      - {slot: make, cat: component_production_verb, bare_form: true}
+      - {slot: product, cat: component_product, bare: true, uncounted: true}
+      - opt:
+        - {lit: together}
+        - {lit: with}
+        - {slot: other, cat: purchase_collection_noun, qualified: true, qualifier_cat: 
+            component_miscellaneous_descriptor, uncounted: true}
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, bare: true}
+    - {slot: need, cat: component_requirement_verb}
+    - {slot: unit0, cat: component_measure, bare: true, counted: true}
+    - {lit: of}
+    - {slot: item0, cat: component_material, bare: true, uncounted: true}
+    - {lit: and}
+    - {slot: unit1, cat: component_measure, bare: true, counted: true}
+    - {lit: of}
+    - {slot: item1, cat: component_material, bare: true, uncounted: true}
+    - {lit: ., consume_skipped: true}
+  consumes:
+  - unit0
+  - unit1
+  satisfies:
+    make:
+    - subject
+    need:
+    - subject
+  emits:
+  - fact: measured_component
+    entity: '{who}'
+    component: '{item0}'
+    measure: '{unit0}'
+    value: unit0
+    product: '{product.optional}'
+  - fact: measured_component
+    entity: '{who}'
+    component: '{item1}'
+    measure: '{unit1}'
+    value: unit1
+    product: '{product.optional}'
+- id: arithmetic/measured-requirements-3
+  phase: read
+  description: Explicitly measured component requirements, retaining both substance and unit.
+  match:
+    sentence:
+    - opt:
+      - {lit: to}
+      - {slot: make, cat: component_production_verb, bare_form: true}
+      - {slot: product, cat: component_product, bare: true, uncounted: true}
+      - opt:
+        - {lit: together}
+        - {lit: with}
+        - {slot: other, cat: purchase_collection_noun, qualified: true, qualifier_cat: 
+            component_miscellaneous_descriptor, uncounted: true}
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, bare: true}
+    - {slot: need, cat: component_requirement_verb}
+    - {slot: unit0, cat: component_measure, bare: true, counted: true}
+    - {lit: of}
+    - {slot: item0, cat: component_material, bare: true, uncounted: true}
+    - lit: ','
+      consume_skipped: true
+    - {slot: unit1, cat: component_measure, bare: true, counted: true}
+    - {lit: of}
+    - {slot: item1, cat: component_material, bare: true, uncounted: true}
+    - {lit: and}
+    - {slot: unit2, cat: component_measure, bare: true, counted: true}
+    - {lit: of}
+    - {slot: item2, cat: component_material, bare: true, uncounted: true}
+    - {lit: ., consume_skipped: true}
+  consumes:
+  - unit0
+  - unit1
+  - unit2
+  satisfies:
+    make:
+    - subject
+    need:
+    - subject
+  emits:
+  - fact: measured_component
+    entity: '{who}'
+    component: '{item0}'
+    measure: '{unit0}'
+    value: unit0
+    product: '{product.optional}'
+  - fact: measured_component
+    entity: '{who}'
+    component: '{item1}'
+    measure: '{unit1}'
+    value: unit1
+    product: '{product.optional}'
+  - fact: measured_component
+    entity: '{who}'
+    component: '{item2}'
+    measure: '{unit2}'
+    value: unit2
+    product: '{product.optional}'
+asks:
+- id: ask/measured-count-total-2-imperative
+  match:
+    question:
+    - {slot: directive, cat: compute_verb, at_start: true}
+    - opt:
+      - {lit: combined}
+    - {lit: total}
+    - {lit: number}
+    - {lit: of}
+    - {slot: unit0, cat: component_measure, bare: true, uncounted: true}
+    - {lit: of}
+    - {slot: item0, cat: component_material, bare: true, uncounted: true}
+    - {lit: and}
+    - {slot: unit1, cat: component_measure, bare: true, uncounted: true}
+    - {lit: of}
+    - {slot: item1, cat: component_material, bare: true, uncounted: true}
+    - opt:
+      - {lit: that}
+      - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, bare: true}
+      - {slot: need, cat: component_requirement_verb}
+      - opt:
+        - {lit: to}
+        - {slot: make, cat: component_production_verb, bare_form: true}
+        - {slot: product, cat: component_product, bare: true, uncounted: true}
+    - {lit: ., consume_skipped: true}
+  satisfies: {}
+  resolves:
+    consumer: component-tally
+    components:
+    - '{item0}'
+    - '{item1}'
+    measures:
+    - '{unit0}'
+    - '{unit1}'
+    entity: '{who}'
+    product: '{product.optional}'
+- id: ask/measured-count-total-2-interrogative
+  match:
+    question:
+    - {lit: what, at_start: true}
+    - {slot: cop, cat: copula}
+    - opt:
+      - {lit: combined}
+    - {lit: total}
+    - {lit: number}
+    - {lit: of}
+    - {slot: unit0, cat: component_measure, bare: true, uncounted: true}
+    - {lit: of}
+    - {slot: item0, cat: component_material, bare: true, uncounted: true}
+    - {lit: and}
+    - {slot: unit1, cat: component_measure, bare: true, uncounted: true}
+    - {lit: of}
+    - {slot: item1, cat: component_material, bare: true, uncounted: true}
+    - opt:
+      - {lit: that}
+      - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, bare: true}
+      - {slot: need, cat: component_requirement_verb}
+      - opt:
+        - {lit: to}
+        - {slot: make, cat: component_production_verb, bare_form: true}
+        - {slot: product, cat: component_product, bare: true, uncounted: true}
+    - {lit: '?', consume_skipped: true}
+  satisfies:
+    cop:
+    - subject
+  resolves:
+    consumer: component-tally
+    components:
+    - '{item0}'
+    - '{item1}'
+    measures:
+    - '{unit0}'
+    - '{unit1}'
+    entity: '{who}'
+    product: '{product.optional}'
+- id: ask/measured-count-total-3-imperative
+  match:
+    question:
+    - {slot: directive, cat: compute_verb, at_start: true}
+    - opt:
+      - {lit: combined}
+    - {lit: total}
+    - {lit: number}
+    - {lit: of}
+    - {slot: unit0, cat: component_measure, bare: true, uncounted: true}
+    - {lit: of}
+    - {slot: item0, cat: component_material, bare: true, uncounted: true}
+    - {slot: unit1, cat: component_measure, bare: true, uncounted: true}
+    - {lit: of}
+    - {slot: item1, cat: component_material, bare: true, uncounted: true}
+    - {lit: and}
+    - {slot: unit2, cat: component_measure, bare: true, uncounted: true}
+    - {lit: of}
+    - {slot: item2, cat: component_material, bare: true, uncounted: true}
+    - opt:
+      - {lit: that}
+      - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, bare: true}
+      - {slot: need, cat: component_requirement_verb}
+      - opt:
+        - {lit: to}
+        - {slot: make, cat: component_production_verb, bare_form: true}
+        - {slot: product, cat: component_product, bare: true, uncounted: true}
+    - {lit: ., consume_skipped: true}
+  satisfies: {}
+  resolves:
+    consumer: component-tally
+    components:
+    - '{item0}'
+    - '{item1}'
+    - '{item2}'
+    measures:
+    - '{unit0}'
+    - '{unit1}'
+    - '{unit2}'
+    entity: '{who}'
+    product: '{product.optional}'
+- id: ask/measured-count-total-3-interrogative
+  match:
+    question:
+    - {lit: what, at_start: true}
+    - {slot: cop, cat: copula}
+    - opt:
+      - {lit: combined}
+    - {lit: total}
+    - {lit: number}
+    - {lit: of}
+    - {slot: unit0, cat: component_measure, bare: true, uncounted: true}
+    - {lit: of}
+    - {slot: item0, cat: component_material, bare: true, uncounted: true}
+    - {slot: unit1, cat: component_measure, bare: true, uncounted: true}
+    - {lit: of}
+    - {slot: item1, cat: component_material, bare: true, uncounted: true}
+    - {lit: and}
+    - {slot: unit2, cat: component_measure, bare: true, uncounted: true}
+    - {lit: of}
+    - {slot: item2, cat: component_material, bare: true, uncounted: true}
+    - opt:
+      - {lit: that}
+      - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, bare: true}
+      - {slot: need, cat: component_requirement_verb}
+      - opt:
+        - {lit: to}
+        - {slot: make, cat: component_production_verb, bare_form: true}
+        - {slot: product, cat: component_product, bare: true, uncounted: true}
+    - {lit: '?', consume_skipped: true}
+  satisfies:
+    cop:
+    - subject
+  resolves:
+    consumer: component-tally
+    components:
+    - '{item0}'
+    - '{item1}'
+    - '{item2}'
+    measures:
+    - '{unit0}'
+    - '{unit1}'
+    - '{unit2}'
+    entity: '{who}'
+    product: '{product.optional}'
+- id: ask/measured-count-total-3-imperative-elliptical
+  match:
+    question:
+    - {slot: directive, cat: compute_verb, at_start: true}
+    - opt:
+      - {lit: combined}
+    - {lit: total}
+    - {lit: number}
+    - {lit: of}
+    - {slot: unit0, cat: component_measure, bare: true, uncounted: true}
+    - {lit: of}
+    - {slot: item0, cat: component_material, bare: true, uncounted: true}
+    - {slot: item1, cat: component_material, bare: true, uncounted: true}
+    - {lit: and}
+    - {slot: unit2, cat: component_measure, bare: true, uncounted: true}
+    - {lit: of}
+    - {slot: item2, cat: component_material, bare: true, uncounted: true}
+    - opt:
+      - {lit: that}
+      - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, bare: true}
+      - {slot: need, cat: component_requirement_verb}
+      - opt:
+        - {lit: to}
+        - {slot: make, cat: component_production_verb, bare_form: true}
+        - {slot: product, cat: component_product, bare: true, uncounted: true}
+    - {lit: ., consume_skipped: true}
+  satisfies: {}
+  resolves:
+    consumer: component-tally
+    components:
+    - '{item0}'
+    - '{item1}'
+    - '{item2}'
+    measures:
+    - '{unit0}'
+    - '{unit0}'
+    - '{unit2}'
+    entity: '{who}'
+    product: '{product.optional}'
+- id: ask/measured-count-total-3-interrogative-elliptical
+  match:
+    question:
+    - {lit: what, at_start: true}
+    - {slot: cop, cat: copula}
+    - opt:
+      - {lit: combined}
+    - {lit: total}
+    - {lit: number}
+    - {lit: of}
+    - {slot: unit0, cat: component_measure, bare: true, uncounted: true}
+    - {lit: of}
+    - {slot: item0, cat: component_material, bare: true, uncounted: true}
+    - {slot: item1, cat: component_material, bare: true, uncounted: true}
+    - {lit: and}
+    - {slot: unit2, cat: component_measure, bare: true, uncounted: true}
+    - {lit: of}
+    - {slot: item2, cat: component_material, bare: true, uncounted: true}
+    - opt:
+      - {lit: that}
+      - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, bare: true}
+      - {slot: need, cat: component_requirement_verb}
+      - opt:
+        - {lit: to}
+        - {slot: make, cat: component_production_verb, bare_form: true}
+        - {slot: product, cat: component_product, bare: true, uncounted: true}
+    - {lit: '?', consume_skipped: true}
+  satisfies:
+    cop:
+    - subject
+  resolves:
+    consumer: component-tally
+    components:
+    - '{item0}'
+    - '{item1}'
+    - '{item2}'
+    measures:
+    - '{unit0}'
+    - '{unit0}'
+    - '{unit2}'
+    entity: '{who}'
+    product: '{product.optional}'

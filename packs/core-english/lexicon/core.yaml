@@ -50,7 +50,19 @@ entries:
   amidst: {senses: [preposition]}
   among: {senses: [preposition]}
   amongst: {senses: [preposition]}
-  amount: {senses: [noun], plural: amounts}
+  amount:
+    senses:
+    - noun
+    - verb
+    plural: amounts
+    verb:
+      lemma: amount
+  amounts:
+    senses:
+    - noun
+    - verb
+    verb:
+      lemma: amount
   an: {senses: [article]}
   and: {senses: [conjunction]}
   animal: {senses: [noun], plural: animals}
@@ -172,10 +184,18 @@ entries:
   buying: {senses: [verb], verb: {lemma: buy}}
   buys: {senses: [verb], number: singular, verb: {lemma: buy}}
   by: {senses: [preposition]}
+  cake:
+    senses:
+    - noun
+    plural: cakes
   calculate: {senses: [verb, imperative]}
   can: {senses: [modal, noun], plural: cans}
   canister: {senses: [noun], plural: canisters}
   capacity: {senses: [noun], plural: capacities}
+  car:
+    senses:
+    - noun
+    plural: cars
   card: {senses: [noun], plural: cards}
   care package: {senses: [noun], plural: care packages, lexical_phrase: true}
   cat: {senses: [noun], plural: cats}
@@ -187,6 +207,9 @@ entries:
   cereal:
     senses:
     - noun
+  certain:
+    senses:
+    - adjective
   change: {senses: [noun, verb]}
   charcuterie: {senses: [noun]}
   charge: {senses: [verb]}
@@ -279,8 +302,20 @@ entries:
   creating: {senses: [verb], verb: {lemma: create}}
   credit: {senses: [noun]}
   credit limit: {senses: [noun], lexical_phrase: true}
+  cup:
+    senses:
+    - noun
+    plural: cups
   cupboard: {senses: [noun], plural: cupboards}
+  current:
+    senses:
+    - adjective
   currently: {senses: [adverb]}
+  cut:
+    senses:
+    - verb
+    verb:
+      lemma: cut
   daily: {senses: [adverb]}
   day: {senses: [noun], plural: days}
   debt: {senses: [noun], plural: debts}
@@ -322,6 +357,10 @@ entries:
   designed: {senses: [verb], verb: {lemma: design}}
   designs: {senses: [noun, verb], verb: {lemma: design}}
   despite: {senses: [preposition]}
+  determine:
+    senses:
+    - verb
+    - imperative
   did: {senses: [auxiliary]}
   different: {senses: [adjective]}
   dinner: {senses: [noun], plural: dinners}
@@ -373,8 +412,26 @@ entries:
     - verb
     verb:
       lemma: download
+  dr:
+    senses:
+    - title
   dragon: {senses: [noun], plural: dragons}
+  drive:
+    senses:
+    - verb
+    verb:
+      lemma: drive
+  driven:
+    senses:
+    - verb
+    verb:
+      lemma: drive
   driveway: {senses: [noun], plural: driveways}
+  driving:
+    senses:
+    - verb
+    verb:
+      lemma: drive
   dropped: {senses: [verb], verb: {lemma: drop}}
   drops: {senses: [verb], number: singular, verb: {lemma: drop}}
   drum: {senses: [noun], plural: drums}
@@ -417,6 +474,20 @@ entries:
   examining: {senses: [verb], verb: {lemma: examine}}
   except: {senses: [preposition]}
   excepting: {senses: [preposition]}
+  exit:
+    senses:
+    - verb
+    verb:
+      lemma: exit
+  exits:
+    senses:
+    - verb
+    verb:
+      lemma: exit
+  expense:
+    senses:
+    - noun
+    plural: expenses
   experiment: {senses: [noun], plural: experiments}
   failing: {senses: [preposition]}
   far: {senses: [adverb]}
@@ -456,6 +527,9 @@ entries:
   fits: {senses: [verb], number: singular, verb: {lemma: fit}}
   fitting: {senses: [verb], verb: {lemma: fit}}
   flask: {senses: [noun], plural: flasks}
+  flour:
+    senses:
+    - noun
   flower: {senses: [noun], plural: flowers}
   following: {senses: [adjective, preposition]}
   for: {senses: [preposition]}
@@ -471,6 +545,10 @@ entries:
   full: {senses: [adjective]}
   full name: {senses: [noun], plural: full names, lexical_phrase: true}
   fully: {senses: [adverb]}
+  further:
+    senses:
+    - adjective
+    - adverb
   garden: {senses: [noun], plural: gardens}
   gardener: {senses: [noun], plural: gardeners}
   gardening: {senses: [noun]}
@@ -574,9 +652,31 @@ entries:
     senses:
     - noun
     plural: images
+  immediately:
+    senses:
+    - adverb
   in: {senses: [preposition]}
   inch: {senses: [noun], plural: inches}
   including: {senses: [preposition]}
+  income:
+    senses:
+    - noun
+    plural: incomes
+  increase:
+    senses:
+    - verb
+    verb:
+      lemma: increase
+  increased:
+    senses:
+    - verb
+    verb:
+      lemma: increase
+  increases:
+    senses:
+    - verb
+    verb:
+      lemma: increase
   individually: {senses: [adverb]}
   ingredient: {senses: [noun], plural: ingredients}
   inside: {senses: [preposition]}
@@ -647,6 +747,9 @@ entries:
     notes: >
       Past departure verb or remainder adjective. Governed rules and
       argument structure choose the reading; the surface alone does not.
+  left-hand:
+    senses:
+    - adjective
   length: {senses: [noun], plural: lengths}
   less: {senses: [comparative]}
   letter: {senses: [noun], plural: letters}
@@ -656,6 +759,9 @@ entries:
   limit: {senses: [noun]}
   liter: {senses: [noun], plural: [liters, litres]}
   litter: {senses: [noun], plural: litter}
+  little:
+    senses:
+    - adjective
   live: {senses: [verb], number: plural}
   lived: {senses: [verb], verb: {lemma: live}}
   lives: {senses: [verb], number: singular, verb: {lemma: live}}
@@ -692,6 +798,12 @@ entries:
   measuring: {senses: [verb], verb: {lemma: measure}}
   media: {senses: [adjective]}
   merchandise: {senses: [noun]}
+  meter:
+    senses:
+    - noun
+    plural:
+    - m
+    - meters
   might: {senses: [modal]}
   mile: {senses: [noun], plural: miles}
   milliliter:
@@ -732,6 +844,9 @@ entries:
   money: {senses: [noun]}
   monster: {senses: [noun], plural: monsters}
   month: {senses: [noun], plural: months}
+  monthly:
+    senses:
+    - adjective
   more: {senses: [comparative]}
   movie: {senses: [noun], plural: movies}
   mow: {senses: [verb]}
@@ -739,6 +854,15 @@ entries:
   mowing: {senses: [verb], verb: {lemma: mow}}
   mows: {senses: [verb], number: singular, verb: {lemma: mow}}
   mph: {senses: [noun], plural: mph}
+  mr:
+    senses:
+    - title
+  mrs:
+    senses:
+    - title
+  ms:
+    senses:
+    - title
   much: {senses: [interrogative, quantifier], notes: moved from difg-mined; also the how-MUCH ask cue}
   must: {senses: [modal]}
   my: {senses: [pronoun]}
@@ -792,6 +916,9 @@ entries:
   ordered: {senses: [verb], verb: {lemma: order}}
   ordering: {senses: [verb], verb: {lemma: order}}
   orders: {senses: [verb], verb: {lemma: order}}
+  other:
+    senses:
+    - adjective
   out: {senses: [adverb]}
   out of: {senses: [preposition]}
   outside: {senses: [adverb, preposition]}
@@ -812,11 +939,23 @@ entries:
       lemma: pay
   paint: {senses: [verb]}
   painted: {senses: [verb], verb: {lemma: paint}}
+  painter:
+    senses:
+    - noun
+    plural: painters
+  painting:
+    senses:
+    - noun
+    plural: paintings
   paints: {senses: [verb], number: singular, verb: {lemma: paint}}
   pair:
     senses:
     - noun
     plural: pairs
+  pan:
+    senses:
+    - noun
+    plural: pans
   pantry: {senses: [noun], plural: pantries}
   pants:
     senses:
@@ -824,6 +963,10 @@ entries:
   paper: {senses: [noun], plural: papers}
   paperback: {senses: [noun], plural: paperbacks}
   parent: {senses: [noun], plural: parents}
+  park:
+    senses:
+    - noun
+    plural: parks
   particular: {senses: [adjective]}
   partner: {senses: [noun], plural: partners}
   party: {senses: [noun], plural: parties}
@@ -849,6 +992,9 @@ entries:
   per: {senses: [rate]}
   percentage: {senses: [noun], plural: percentages}
   person: {senses: [noun], plural: [people, persons]}
+  personal:
+    senses:
+    - adjective
   photo:
     senses:
     - noun
@@ -860,6 +1006,10 @@ entries:
   pickle:
     senses: [noun]
     plural: pickles
+  picture:
+    senses:
+    - noun
+    plural: pictures
   piece: {senses: [noun], plural: pieces}
   pink: {senses: [adjective]}
   pizza: {senses: [noun], plural: pizzas}
@@ -959,6 +1109,9 @@ entries:
   receive: {senses: [verb], number: plural, verb: {lemma: receive}}
   received: {senses: [verb], verb: {lemma: receive}}
   receives: {senses: [verb], number: singular, verb: {lemma: receive}}
+  recently:
+    senses:
+    - adverb
   red: {senses: [adjective]}
   reference:
     senses:
@@ -994,6 +1147,9 @@ entries:
   remove: {senses: [verb], number: plural}
   removed: {senses: [verb], verb: {lemma: remove}}
   removes: {senses: [verb], number: singular, verb: {lemma: remove}}
+  rent:
+    senses:
+    - noun
   repaid: {senses: [verb], verb: {lemma: repay}}
   repay: {senses: [verb]}
   repaying: {senses: [verb], verb: {lemma: repay}}
@@ -1036,6 +1192,13 @@ entries:
   returns: {senses: [verb], number: singular, verb: {lemma: return}}
   ride: {senses: [verb]}
   rides: {senses: [verb], verb: {lemma: ride}}
+  right-hand:
+    senses:
+    - adjective
+  ring:
+    senses:
+    - noun
+    plural: rings
   rise: {senses: [verb]}
   rises: {senses: [verb], number: singular, verb: {lemma: rise}}
   road:
@@ -1055,6 +1218,17 @@ entries:
     plural: rounds
   safely: {senses: [adverb]}
   said: {senses: [verb], verb: {lemma: say}}
+  salary:
+    senses:
+    - noun
+    plural: salaries
+  sale:
+    senses:
+    - noun
+    plural: sales
+  sales:
+    senses:
+    - noun
   salt:
     senses:
     - noun
@@ -1151,6 +1325,10 @@ entries:
   some: {senses: [quantifier]}
   somebody: {senses: [pronoun]}
   someone: {senses: [pronoun]}
+  son:
+    senses:
+    - noun
+    plural: sons
   specific: {senses: [adjective]}
   spend: {senses: [verb], number: plural, verb: {lemma: spend}}
   spending: {senses: [verb], verb: {lemma: spend}}
@@ -1201,6 +1379,10 @@ entries:
   teacher: {senses: [noun], plural: teachers}
   teaches: {senses: [verb], number: singular, verb: {lemma: teach}}
   teaching: {senses: [verb], verb: {lemma: teach}}
+  teaspoon:
+    senses:
+    - noun
+    plural: teaspoons
   tennis: {senses: [noun]}
   tennis ball: {senses: [noun], plural: tennis balls, lexical_phrase: true}
   than: {senses: [particle]}
@@ -1250,10 +1432,28 @@ entries:
   triple: {senses: [quantifier, verb]}
   truck: {senses: [noun], plural: trucks}
   tuesday: {senses: [noun]}
+  tunnel:
+    senses:
+    - noun
+    plural: tunnels
+  turn:
+    senses:
+    - noun
+    - verb
+    plural: turns
+  turns:
+    senses:
+    - noun
+    - verb
+    verb:
+      lemma: turn
   turquoise: {senses: [adjective]}
   tutoring: {senses: [noun]}
   under: {senses: [preposition]}
   underneath: {senses: [preposition]}
+  uneaten:
+    senses:
+    - adjective
   unhelpful:
     senses:
     - adjective
@@ -1278,6 +1478,9 @@ entries:
     - adjective
   uses: {senses: [verb], verb: {lemma: use}}
   using: {senses: [verb], verb: {lemma: use}}
+  utilities:
+    senses:
+    - noun
   valuable:
     senses:
     - adjective

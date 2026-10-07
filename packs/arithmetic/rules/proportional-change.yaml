@@ -1,0 +1,97 @@
+format: rulekit/rules@1
+templates:
+  prior-income-share:
+    parameters: {habitual: []}
+    rule:
+      phase: read
+      description: A prior expense share of one participant's periodic income.
+      match:
+        sentence:
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
+        - {parameter: habitual}
+        - {slot: spending, cat: spend_verb}
+        - {slot: share, type: fraction}
+        - {lit: of}
+        - {slot: owner, cat: possessive_determiner}
+        - {slot: resource, cat: periodic_income_noun, possessed: true, uncounted: true}
+        - {slot: prep, cat: spend_target_prep}
+        - {slot: costs, span: true, enumeration_cat: expense_item}
+        - {lit: ., consume_skipped: true}
+      consumes: [share]
+      emits:
+      - {fact: proportional_base_evidence, kind: prior-share, entity: '{who}', resource: '{resource}', value:
+          share, owner: '{resource.owner_identity}', period: '{resource.qualifier}', scope: '{costs.members}'}
+  income-increase-share:
+    parameters:
+      equivalence:
+      - opt:
+        - lit: only
+      - slot: equivalent
+        cat: expense_equivalence_verb
+      - lit: to
+    rule:
+      phase: read
+      description: An additive income increase explains a reduced share for the same named expense bundle.
+      match:
+        sentence:
+        - {slot: owner, cat: possessive_determiner, at_start: true}
+        - {slot: resource, cat: periodic_income_noun, possessed: true, uncounted: true}
+        - opt:
+          - {slot: cop, cat: singular_copula}
+        - opt:
+          - {slot: recent, cat: recent_change_adverb}
+        - {slot: change, cat: base_increase_verb}
+        - {lit: by}
+        - {slot: amount, cat: currency_measure, counted: true}
+        - {lit: so}
+        - {lit: now}
+        - {slot: cost_owner, cat: possessive_determiner}
+        - {slot: costs, span: true, enumeration_cat: expense_item}
+        - parameter: equivalence
+        - {slot: share, type: fraction}
+        - {lit: of}
+        - {slot: later_owner, cat: possessive_determiner}
+        - {slot: later_resource, cat: periodic_income_noun, possessed: true, uncounted: true}
+        - {lit: ., consume_skipped: true}
+      where:
+      - same_surface: [owner, cost_owner, later_owner]
+      consumes: [amount, share]
+      emits:
+      - {fact: proportional_base_evidence, kind: base-increase, entity: '{resource.owner_identity}', resource: '{resource}',
+        value: amount, measure: '{amount}'}
+      - {fact: proportional_base_evidence, kind: invariant-share, entity: '{later_resource.owner_identity}',
+          resource: '{later_resource}', value: share, period: '{later_resource.qualifier}', scope: '{costs.members}'}
+variants:
+- id: arithmetic/prior-habitual-income-share
+  template: prior-income-share
+  arguments:
+    habitual:
+    - {slot: habitual, cat: previous_habitual_verb}
+    - {lit: to}
+- id: arithmetic/prior-income-spending-share
+  template: prior-income-share
+- id: arithmetic/income-increase-with-expense-share
+  template: income-increase-share
+- id: arithmetic/income-increase-with-expense-copula
+  template: income-increase-share
+  arguments:
+    equivalence:
+    - slot: equivalent
+      cat: copula
+rules: []
+asks:
+- id: ask/previous-periodic-income
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - {slot: cop, cat: singular_copula}
+    - {slot: owner, cat: possessive_determiner}
+    - {slot: resource, cat: periodic_income_noun, uncounted: true, qualified: true, qualifier_cat:
+        income_prior_descriptor}
+    - {lit: '?', consume_skipped: true}
+  resolves: {consumer: proportional-base, entity: '{resource.owner_identity}', resource: '{resource}', mode:
+      prior}
+  satisfies:
+    cop:
+    - subject

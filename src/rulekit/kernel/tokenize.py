@@ -57,9 +57,18 @@ _TOKEN = re.compile(
 # comparison see ONE spelling
 _FOLD_APOSTROPHE = str.maketrans("’", "'")
 
-def split_sentences(text: str) -> list[str]:
+def split_sentences(text: str, nonterminal_abbreviations=()) -> list[str]:
     parts = [p.strip() for p in _SENT_SPLIT.split(text.strip())]
-    return [p for p in parts if p]
+    sentences = []
+    abbreviations = {word.casefold().rstrip(".") for word in nonterminal_abbreviations}
+    for part in parts:
+        if not part:
+            continue
+        if sentences and sentences[-1].split()[-1].casefold().rstrip(".") in abbreviations:
+            sentences[-1] += " " + part
+        else:
+            sentences.append(part)
+    return sentences
 
 
 def tokenize(

@@ -1,0 +1,42 @@
+format: rulekit/categories@1
+categories:
+  component_measure:
+    parent: noun
+  component_material:
+    parent: noun
+  component_product:
+    parent: noun
+  component_requirement_verb:
+    parent: verb
+  component_production_verb:
+    parent: verb
+  component_miscellaneous_descriptor:
+    parent: adjective
+members:
+  component_measure:
+  - cup
+  - teaspoon
+  - liter
+  - milliliter
+  - gram
+  - kilogram
+  component_material:
+  - water
+  - flour
+  - salt
+  - sugar
+  component_product:
+  - pizza
+  - cake
+  component_requirement_verb:
+  - need
+  - needs
+  - needed
+  component_production_verb:
+  - make
+  - makes
+  component_miscellaneous_descriptor:
+  - other
+attribute_compatibility:
+  component_miscellaneous_descriptor:
+  - purchase_collection_noun

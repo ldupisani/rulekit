@@ -45,9 +45,31 @@ def test_only_declared_non_generative_rules_remain_outside_generation(project) -
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 346
+    assert len(availability) == 405
     assert {item.id for item in availability.values() if not item.supported} == (
-        SAFETY_RULES | {"arithmetic/measured-content-resulting-total-gapped", "arithmetic/two-part-personal-name",
+        SAFETY_RULES | {
+            'arithmetic/explicit-allocation-recipients',
+            'arithmetic/named-allocation-group',
+            'arithmetic/named-unspecified-allocation-group',
+            'arithmetic/path-gap-and-exit-numeric-numeric',
+            'arithmetic/path-gap-and-exit-numeric-numeric-reference01',
+            'arithmetic/path-gap-and-exit-numeric-numeric-reference10',
+            'arithmetic/path-gap-and-exit-numeric-numeric-reference11',
+            'arithmetic/path-gap-and-exit-numeric-word',
+            'arithmetic/path-gap-and-exit-numeric-word-reference01',
+            'arithmetic/path-gap-and-exit-numeric-word-reference10',
+            'arithmetic/path-gap-and-exit-numeric-word-reference11',
+            'arithmetic/path-gap-and-exit-word-numeric',
+            'arithmetic/path-gap-and-exit-word-numeric-reference01',
+            'arithmetic/path-gap-and-exit-word-numeric-reference10',
+            'arithmetic/path-gap-and-exit-word-numeric-reference11',
+            'arithmetic/path-immediate-exit-numeric',
+            'arithmetic/path-immediate-exit-numeric-reference',
+            'arithmetic/path-leg-distance-numeric',
+            'arithmetic/path-leg-distance-numeric-reference',
+            'arithmetic/path-unknown-leg-numeric',
+            'arithmetic/path-unknown-leg-numeric-reference',
+'arithmetic/named-individual-portions', 'arithmetic/named-portion-consumption', 'arithmetic/prior-habitual-income-share', 'arithmetic/prior-income-spending-share', 'arithmetic/income-increase-with-expense-share', 'arithmetic/income-increase-with-expense-copula', "arithmetic/measured-content-resulting-total-gapped", "arithmetic/two-part-personal-name",
                         "arithmetic/account-coordinated-payment", "arithmetic/account-coordinated-payment-amount",
                         "arithmetic/account-coordinated-repayment", "arithmetic/account-coordinated-repayment-amount",
                         "arithmetic/account-referenced-payment", "arithmetic/account-relative-full-settlement",
@@ -125,8 +147,8 @@ def test_generation_api_separates_safety_consumers_from_targets() -> None:
 
     payload = endpoint()
 
-    assert payload["supported"] == 329
-    assert payload["total"] == 338
+    assert payload["supported"] == 361
+    assert payload["total"] == 397
     assert payload["safety_total"] == 8
     assert {rule["id"] for rule in payload["safety_rules"]} == SAFETY_RULES
     assert not ({rule["id"] for rule in payload["rules"]} & SAFETY_RULES)

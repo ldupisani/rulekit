@@ -1,5 +1,6 @@
 format: rulekit/categories@1
 categories:
+  group_possessive_determiner: {parent: possessive_determiner}
   anaphoric_person_subject:
     parent: pronoun
     notes: Subject forms; a construction must separately establish their referent.
@@ -17,13 +18,21 @@ categories:
     parent: adjective
   holder_terminal_order:
     parent: adjective
+  person_title:
+    parent: title
 members:
+  group_possessive_determiner: [their]
   anaphoric_person_possessive: [her, his, their]
   anaphoric_person_subject: [he, she, they]
   holder_ordinal: [fifth, first, fourth, second, sixth, third]
   holder_prefix_order: [first]
   holder_terminal_order: [final, last, remaining]
+  person_title:
+  - dr
+  - mr
+  - mrs
+  - ms
 attribute_compatibility:
-  holder_ordinal: [ordinal_quantity_holder]
+  holder_ordinal: [ordinal_quantity_holder, path_checkpoint]
   holder_prefix_order: [ordinal_quantity_holder]
   holder_terminal_order: [ordinal_quantity_holder]

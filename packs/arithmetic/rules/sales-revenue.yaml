@@ -1,0 +1,210 @@
+format: rulekit/rules@1
+templates:
+  prior-basket-sales-1:
+    parameters:
+      opening: []
+      closing: []
+    rule:
+      phase: read
+      description: Product counts sold in one explicitly prior period.
+      match:
+        sentence:
+        - {parameter: opening}
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true}
+        - {slot: sale, cat: sell, finite_form: true}
+        - {slot: item0, cat: commercial_product, counted: true}
+        - {parameter: closing}
+        - {lit: ., consume_skipped: true}
+      consumes:
+      - item0
+      emits:
+      - fact: commercial_term
+        entity: '{who}'
+        item: '{item0}'
+        qualifier: '{item0.qualifier}'
+        basis: basket-count
+        measure: ''
+        value: item0
+        period: '{period}'
+  prior-basket-sales-2:
+    parameters:
+      opening: []
+      closing: []
+    rule:
+      phase: read
+      description: Product counts sold in one explicitly prior period.
+      match:
+        sentence:
+        - {parameter: opening}
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true}
+        - {slot: sale, cat: sell, finite_form: true}
+        - {slot: item0, cat: commercial_product, counted: true}
+        - {lit: and}
+        - {slot: item1, cat: commercial_product, counted: true}
+        - {parameter: closing}
+        - {lit: ., consume_skipped: true}
+      consumes:
+      - item0
+      - item1
+      emits:
+      - fact: commercial_term
+        entity: '{who}'
+        item: '{item0}'
+        qualifier: '{item0.qualifier}'
+        basis: basket-count
+        measure: ''
+        value: item0
+        period: '{period}'
+      - fact: commercial_term
+        entity: '{who}'
+        item: '{item1}'
+        qualifier: '{item1.qualifier}'
+        basis: basket-count
+        measure: ''
+        value: item1
+        period: '{period}'
+variants:
+- id: arithmetic/prior-basket-sales-1-front
+  template: prior-basket-sales-1
+  arguments:
+    opening:
+    - {slot: period, cat: duration_measure, uncounted: true, qualified: true, qualifier_cat:
+        sequence_previous_descriptor}
+- id: arithmetic/prior-basket-sales-1-end
+  template: prior-basket-sales-1
+  arguments:
+    closing:
+    - {slot: period, cat: duration_measure, uncounted: true, qualified: true, qualifier_cat:
+        sequence_previous_descriptor}
+- id: arithmetic/prior-basket-sales-2-front
+  template: prior-basket-sales-2
+  arguments:
+    opening:
+    - {slot: period, cat: duration_measure, uncounted: true, qualified: true, qualifier_cat:
+        sequence_previous_descriptor}
+- id: arithmetic/prior-basket-sales-2-end
+  template: prior-basket-sales-2
+  arguments:
+    closing:
+    - {slot: period, cat: duration_measure, uncounted: true, qualified: true, qualifier_cat:
+        sequence_previous_descriptor}
+rules:
+- id: arithmetic/commercial-work-context
+  phase: read
+  description: A participant makes a declared product and offers that product at a declared location.
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
+    - {slot: production, cat: commercial_production_verb, finite_form: true}
+    - {slot: item, cat: commercial_product, uncounted: true}
+    - {lit: and}
+    - {slot: sale, cat: sell, finite_form: true}
+    - {slot: reference, cat: commercial_object_anaphor}
+    - {slot: prep, cat: quantity_site_preposition}
+    - {slot: place, cat: quantity_site_location, bare: true}
+    - {lit: ., consume_skipped: true}
+  satisfies:
+    reference:
+    - refers
+  emits:
+  - fact: predication
+    subject: '{who}'
+    verb: '{production}'
+    dobj: '{item}'
+- id: arithmetic/current-sales-factor
+  phase: read
+  description: The current sales amount is a stated multiple of the preceding sales amount.
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
+    - {slot: sale, cat: sell, finite_form: true}
+    - {slot: factor, type: multiplier}
+    - {lit: as}
+    - {lit: much}
+    - {lit: this, consume_skipped: true}
+    - {slot: period, cat: duration_measure, uncounted: true, bare: true}
+    - {lit: ., consume_skipped: true}
+  consumes:
+  - factor
+  emits:
+  - fact: commercial_term
+    entity: '{who}'
+    item: ''
+    basis: sales-scale
+    measure: ''
+    value: factor
+    period: '{period}'
+- id: arithmetic/basket-unit-quotes-1
+  phase: read
+  description: Explicit per-product currency quotes, preserving product descriptors.
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
+    - {slot: quote, cat: commercial_quote_verb, finite_form: true}
+    - {slot: price0, cat: currency_measure, counted: true}
+    - {lit: for}
+    - {slot: item0, cat: commercial_product, uncounted: true}
+    - {lit: ., consume_skipped: true}
+  consumes:
+  - price0
+  emits:
+  - fact: commercial_term
+    entity: '{who}'
+    item: '{item0}'
+    qualifier: '{item0.qualifier}'
+    basis: basket-price
+    measure: '{price0}'
+    value: price0
+- id: arithmetic/basket-unit-quotes-2
+  phase: read
+  description: Explicit per-product currency quotes, preserving product descriptors.
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
+    - {slot: quote, cat: commercial_quote_verb, finite_form: true}
+    - {slot: price0, cat: currency_measure, counted: true}
+    - {lit: for}
+    - {slot: item0, cat: commercial_product, uncounted: true}
+    - {lit: and}
+    - {slot: price1, cat: currency_measure, counted: true}
+    - {lit: for}
+    - {slot: item1, cat: commercial_product, uncounted: true}
+    - {lit: ., consume_skipped: true}
+  consumes:
+  - price0
+  - price1
+  emits:
+  - fact: commercial_term
+    entity: '{who}'
+    item: '{item0}'
+    qualifier: '{item0.qualifier}'
+    basis: basket-price
+    measure: '{price0}'
+    value: price0
+  - fact: commercial_term
+    entity: '{who}'
+    item: '{item1}'
+    qualifier: '{item1.qualifier}'
+    basis: basket-price
+    measure: '{price1}'
+    value: price1
+asks:
+- id: ask/current-sales-value
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - {slot: cop, cat: copula}
+    - {slot: owner, cat: possessive_determiner}
+    - {slot: sales, cat: sale_revenue_noun, possessed: true, uncounted: true}
+    - {lit: for}
+    - {lit: this, consume_skipped: true}
+    - {slot: period, cat: duration_measure, uncounted: true, bare: true}
+    - {lit: '?', consume_skipped: true}
+  satisfies:
+    cop:
+    - subject
+  resolves:
+    consumer: sales-revenue
+    entity: '{sales.owner_identity}'
+    period: '{period}'

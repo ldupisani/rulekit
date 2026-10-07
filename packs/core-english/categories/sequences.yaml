@@ -56,4 +56,4 @@ members:
 attribute_compatibility:
   sequence_current_descriptor: [sequence_carrier]
   sequence_index_descriptor: [duration_measure, sequence_carrier]
-  sequence_previous_descriptor: [sequence_carrier]
+  sequence_previous_descriptor: [sequence_carrier, duration_measure]

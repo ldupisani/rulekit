@@ -801,10 +801,6 @@ entries:
     senses:
     - noun
     plural: cages
-  cake:
-    senses:
-    - noun
-    plural: cakes
   calculated:
     senses:
     - verb
@@ -874,10 +870,6 @@ entries:
   captain:
     senses:
     - noun
-  car:
-    senses:
-    - noun
-    plural: cars
   caramel:
     senses:
     - adjective
@@ -986,9 +978,6 @@ entries:
   century:
     senses:
     - noun
-  certain:
-    senses:
-    - adjective
   chair:
     senses:
     - noun
@@ -1534,17 +1523,10 @@ entries:
     senses:
     - noun
     plural: cucumbers
-  cup:
-    senses:
-    - noun
-    plural: cups
   cupcake:
     senses:
     - noun
     plural: cupcakes
-  current:
-    senses:
-    - adjective
   curtain:
     senses:
     - noun
@@ -1556,9 +1538,6 @@ entries:
     senses:
     - noun
     plural: customers
-  cut:
-    senses:
-    - verb
   cutlery:
     senses:
     - noun
@@ -1686,10 +1665,6 @@ entries:
     senses:
     - noun
     plural: destinations
-  determine:
-    senses:
-    - verb
-    - imperative
   detour:
     senses:
     - noun
@@ -1849,9 +1824,6 @@ entries:
     senses:
     - noun
     plural: dozens
-  dr:
-    senses:
-    - title
   drank:
     senses:
     - verb
@@ -1895,19 +1867,11 @@ entries:
   drips:
     senses:
     - verb
-  drive:
-    senses:
-    - verb
   driver:
     senses:
     - noun
     plural: drivers
   drives:
-    senses:
-    - verb
-    verb:
-      lemma: drive
-  driving:
     senses:
     - verb
     verb:
@@ -2159,10 +2123,6 @@ entries:
     senses:
     - noun
     plural: exhibits
-  expense:
-    senses:
-    - noun
-    plural: expenses
   expensive:
     senses:
     - adjective
@@ -2347,9 +2307,6 @@ entries:
     senses:
     - noun
     plural: floors
-  flour:
-    senses:
-    - noun
   flowerbed:
     senses:
     - noun
@@ -2505,6 +2462,3 @@ entries:
   furnish:
     senses:
     - verb
-  further:
-    senses:
-    - adjective

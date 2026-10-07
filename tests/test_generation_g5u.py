@@ -76,6 +76,33 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
     }
 
     assert occurrences == {
+        'arithmetic/path-gap-and-exit-numeric-numeric': ((12,), 'immediate', ()),
+        'arithmetic/path-gap-and-exit-numeric-numeric-reference01': ((12,), 'immediate', ()),
+        'arithmetic/path-gap-and-exit-numeric-numeric-reference10': ((12,), 'immediate', ()),
+        'arithmetic/path-gap-and-exit-numeric-numeric-reference11': ((12,), 'immediate', ()),
+        'arithmetic/path-gap-and-exit-numeric-word': ((11,), 'immediate', ()),
+        'arithmetic/path-gap-and-exit-numeric-word-reference01': ((11,), 'immediate', ()),
+        'arithmetic/path-gap-and-exit-numeric-word-reference10': ((11,), 'immediate', ()),
+        'arithmetic/path-gap-and-exit-numeric-word-reference11': ((11,), 'immediate', ()),
+        'arithmetic/path-gap-and-exit-word-numeric': ((11,), 'immediate', ()),
+        'arithmetic/path-gap-and-exit-word-numeric-reference01': ((11,), 'immediate', ()),
+        'arithmetic/path-gap-and-exit-word-numeric-reference10': ((11,), 'immediate', ()),
+        'arithmetic/path-gap-and-exit-word-numeric-reference11': ((11,), 'immediate', ()),
+        'arithmetic/path-gap-and-exit-word-word': ((10,), 'immediate', ()),
+        'arithmetic/path-gap-and-exit-word-word-reference01': ((10,), 'immediate', ()),
+        'arithmetic/path-gap-and-exit-word-word-reference10': ((10,), 'immediate', ()),
+        'arithmetic/path-gap-and-exit-word-word-reference11': ((10,), 'immediate', ()),
+        'arithmetic/path-immediate-exit-numeric': ((4,), 'immediate', ()),
+        'arithmetic/path-immediate-exit-numeric-reference': ((4,), 'immediate', ()),
+        'arithmetic/path-immediate-exit-word': ((3,), 'immediate', ()),
+        'arithmetic/path-immediate-exit-word-reference': ((3,), 'immediate', ()),
+        'arithmetic/path-unknown-leg-numeric': ((6,), 'further', ()),
+        'arithmetic/path-unknown-leg-numeric-reference': ((6,), 'further', ()),
+        'arithmetic/path-unknown-leg-word': ((5,), 'further', ()),
+        'arithmetic/path-unknown-leg-word-reference': ((5,), 'further', ()),
+
+        "arithmetic/income-increase-with-expense-copula": ((3, 0), "recent", ((3,),)),
+        "arithmetic/income-increase-with-expense-share": ((3, 0), "recent", ((3,),)),
         "arithmetic/uniform-price-purchase-lot": ((1, 0), "addition", ((1,),)),
         "arithmetic/per-member-daily-rates": ((4,), "frequency", ()),
         "arithmetic/two-per-member-daily-rates": ((10,), "frequency2", ()),
@@ -201,8 +228,8 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
         for word, entry in sorted(project.registry.lexicon.items())
         if "adverb" in entry.senses
     ] == [
-        "again", "ago", "also", "away", "back and forth", "completely", MOVED_WORD, "daily", "down", "far", "finally", "fully", "individually",
-        "just", "next", "off", "once again", "online", "only", "out", "outside", "respectively", "safely", "still", "then", "up",
+        "again", "ago", "also", "away", "back and forth", "completely", MOVED_WORD, "daily", "down", "far", "finally", "fully", "further", "immediately", "individually",
+        "just", "next", "off", "once again", "online", "only", "out", "outside", "recently", "respectively", "safely", "still", "then", "up",
     ]
 
 
@@ -253,13 +280,41 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
     project = load_project(CURATED)
     availability = list_rule_availability(project)
 
-    assert len(availability) == 346
-    assert sum(item.supported for item in availability) == 329
-    assert sum(not item.supported for item in availability) == 17
+    assert len(availability) == 405
+    assert sum(item.supported for item in availability) == 361
+    assert sum(not item.supported for item in availability) == 44
     assert all(
         not item.blockers
         or item.id
         in {
+                "arithmetic/named-individual-portions",
+                "arithmetic/named-portion-consumption",
+                "arithmetic/prior-habitual-income-share",
+                "arithmetic/prior-income-spending-share",
+                "arithmetic/income-increase-with-expense-share",
+                "arithmetic/income-increase-with-expense-copula",
+                'arithmetic/explicit-allocation-recipients',
+                'arithmetic/named-allocation-group',
+                'arithmetic/named-unspecified-allocation-group',
+                'arithmetic/path-gap-and-exit-numeric-numeric',
+                'arithmetic/path-gap-and-exit-numeric-numeric-reference01',
+                'arithmetic/path-gap-and-exit-numeric-numeric-reference10',
+                'arithmetic/path-gap-and-exit-numeric-numeric-reference11',
+                'arithmetic/path-gap-and-exit-numeric-word',
+                'arithmetic/path-gap-and-exit-numeric-word-reference01',
+                'arithmetic/path-gap-and-exit-numeric-word-reference10',
+                'arithmetic/path-gap-and-exit-numeric-word-reference11',
+                'arithmetic/path-gap-and-exit-word-numeric',
+                'arithmetic/path-gap-and-exit-word-numeric-reference01',
+                'arithmetic/path-gap-and-exit-word-numeric-reference10',
+                'arithmetic/path-gap-and-exit-word-numeric-reference11',
+                'arithmetic/path-immediate-exit-numeric',
+                'arithmetic/path-immediate-exit-numeric-reference',
+                'arithmetic/path-leg-distance-numeric',
+                'arithmetic/path-leg-distance-numeric-reference',
+                'arithmetic/path-unknown-leg-numeric',
+                'arithmetic/path-unknown-leg-numeric-reference',
+
                 "arithmetic/account-coordinated-payment",
                 "arithmetic/account-coordinated-payment-amount",
                 "arithmetic/account-coordinated-repayment",
@@ -280,7 +335,7 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
             }
         for item in availability
     )
-    assert len(exploration_status(project)["fillers"]) == 701
+    assert len(exploration_status(project)["fillers"]) == 742
 
 
 def test_currently_generates_a_matcher_confirmed_anchor() -> None:
@@ -354,7 +409,7 @@ def test_combined_project_exposes_only_declared_holding_anchor_adverbs() -> None
         for item in exploration_status(project)["fillers"]
     }
 
-    assert len(adverbs) == 51
+    assert len(adverbs) == 53
     holding_anchor_adverbs = {
         word
         for word in adverbs

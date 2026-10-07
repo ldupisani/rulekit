@@ -1063,13 +1063,87 @@ class CommercialTerm(Fact):
     basis: str
     measure: str
     value: float
+    qualifier: str = ""
+    period: str = ""
 
     def key(self):
         return ("commercial-term", self.entity, self.item, self.basis,
-                self.provenance.sentence)
+                self.provenance.sentence, self.qualifier, self.period)
 
     def value_part(self):
         return (self.measure, self.value)
+
+
+@dataclass(frozen=True)
+class ProportionalBaseEvidence(Fact):
+    """A scoped share or additive change of one changing resource base."""
+    kind: str
+    entity: str
+    resource: str
+    value: float
+    period: str = ""
+    scope: tuple[str, ...] = ()
+    measure: str = ""
+    owner: str = ""
+
+    def key(self):
+        return ("proportional-base", self.provenance.sentence, self.kind)
+
+    def value_part(self):
+        return (self.entity, self.resource, self.value, self.period, self.scope, self.measure, self.owner)
+
+
+
+@dataclass(frozen=True)
+class AllocationGroup(Fact):
+    """An exhaustive named recipient set for one shared resource."""
+    source: str
+    resource: str
+    members: tuple[str, ...]
+    value: float | None = None
+
+    def key(self):
+        return ("allocation-group", self.provenance.sentence)
+
+    def value_part(self):
+        return (self.source, self.resource, self.members, self.value)
+
+
+@dataclass(frozen=True)
+class IndexedPathEvidence(Fact):
+    """A bounded path's checkpoints, component distances and endpoint."""
+    kind: str
+    entity: str
+    checkpoint: str = ""
+    index: str = ""
+    value: float = 0
+    measure: str = ""
+    route: str = ""
+    site: str = ""
+
+    def key(self):
+        return ("indexed-path", self.provenance.sentence, self.kind, self.index)
+
+    def value_part(self):
+        return (self.entity, self.checkpoint, self.value, self.measure, self.route, self.site)
+
+
+@dataclass(frozen=True)
+class MeasuredComponent(Fact):
+    """A stated amount or numerical comparison between explicitly unit-labelled components."""
+    entity: str
+    component: str
+    measure: str
+    value: float
+    reference: str = ""
+    reference_measure: str = ""
+    product: str = ""
+
+    def key(self):
+        return ("measured-component", self.entity, self.component, self.measure, self.provenance.sentence)
+
+    def value_part(self):
+        return (self.value, self.reference, self.reference_measure, self.product)
 
 
 @dataclass(frozen=True)
@@ -1306,6 +1380,8 @@ class BatchEvidence(Fact):
     acquisition: str = ""
     per_member: float = 0.0
     subtotal: float = 0.0
+    members: tuple[str, ...] = ()
+    entity_ref: ReferenceIdentity | None = field(default=None, metadata={"reference_for": "entity"})
 
     def key(self):
         return ("batch-evidence", self.provenance.sentence, self.position, self.kind)
@@ -1313,7 +1389,8 @@ class BatchEvidence(Fact):
     def value_part(self):
         return (self.entity, self.measure, self.value, self.verb,
                 self.marker, self.fraction, self.container, self.attribute,
-                self.sign, self.acquisition, self.per_member, self.subtotal)
+                self.sign, self.acquisition, self.per_member, self.subtotal, self.members,
+                self.entity_ref.key() if self.entity_ref else None)
 
 
 @dataclass(frozen=True)

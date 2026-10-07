@@ -107,7 +107,7 @@ ROOT_SENSES = (
     "operator",
     "noun", "verb", "adjective", "quantifier", "preposition", "comparative",
     "negator", "conjunction", "modal", "particle", "adverb", "time",
-    "article", "pronoun", "auxiliary", "imperative", "aggregate", "possessive",
+    "article", "pronoun", "auxiliary", "imperative", "aggregate", "possessive", "title",
 )
 
 
@@ -1410,6 +1410,10 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                         raise CompileError(
                             f"rule {rule.id!r} gates on unknown category {cat!r}"
                         )
+                    if tok.enumeration_cat and tok.enumeration_cat not in valid_gates:
+                        raise CompileError(
+                            f"rule {rule.id!r} enumeration gates on unknown category {tok.enumeration_cat!r}"
+                        )
                     common_noun_cat = getattr(tok, "common_noun_cat", None)
                     if common_noun_cat:
                         if common_noun_cat not in valid_gates:
@@ -1472,6 +1476,11 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                         )
         for emit in rule.emits:
             for raw in emit.fields.values():
+                members = re.fullmatch(r"\{(\w+)\.members\}", raw) if isinstance(raw, str) else None
+                if members is not None:
+                    token = slots.get(members.group(1))
+                    if token is None or not token.enumeration_cat:
+                        raise CompileError(f"rule {rule.id!r}: members emission needs an enumeration-gated span")
                 optional = re.fullmatch(r"\{(\w+)\.optional\}", raw) if isinstance(raw, str) else None
                 if optional is not None and optional.group(1) not in slots:
                     raise CompileError(f"rule {rule.id!r}: optional emission needs a declared slot")
@@ -1995,6 +2004,11 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
     # Validate the cross-slot predicate introduced for partitive questions at
     # compile time so an authoring typo cannot become a silently dead ask.
     for ask in asks:
+        for token in _walk_match_tokens(ask.match["question"]):
+            if token.enumeration_cat and token.enumeration_cat not in valid_gates:
+                raise CompileError(
+                    f"ask {ask.id!r} enumeration gates on unknown category {token.enumeration_cat!r}"
+                )
         ask_slots = {
             token.slot: token
             for token in _walk_match_tokens(ask.match["question"])

@@ -1,0 +1,80 @@
+format: rulekit/rules@1
+templates:
+  named-allocation-group:
+    parameters:
+      amount: []
+    rule:
+      phase: read
+      description: An exhaustive counted group of named recipients of one shared resource.
+      match:
+        sentence:
+        - {slot: source, type: entity, common_noun_cat: allocation_participant, referential: true, bare: true, 
+            at_start: true}
+        - {slot: sharing, cat: allocation_verb}
+        - {parameter: amount}
+        - {slot: resource, cat: allocatable_resource, uncounted: true, bare: true}
+        - {slot: distribution, cat: allocation_distribution_preposition}
+        - opt:
+          - {slot: owner, cat: possessive_determiner}
+        - {slot: group, cat: allocation_participant, counted: true, bare: true}
+        - {slot: recipients, span: true, enumeration_cat: name}
+        - {lit: ., consume_skipped: true}
+      consumes: [group]
+      satisfies:
+        owner: [refers]
+      emits:
+      - {fact: allocation_group, source: '{source}', resource: '{resource}', members: '{recipients.members}', 
+          value: group}
+variants:
+- id: arithmetic/named-allocation-group
+  template: named-allocation-group
+- id: arithmetic/named-unspecified-allocation-group
+  template: named-allocation-group
+  arguments:
+    amount:
+    - {slot: amount, cat: allocation_amount_noun, qualified: true, qualifier_cat: 
+        unspecified_amount_descriptor, uncounted: true}
+    - {lit: of}
+rules:
+- phase: read
+  description: An exhaustive counted group of named recipients of one shared resource.
+  match:
+    sentence:
+    - {slot: source, type: entity, common_noun_cat: allocation_participant, referential: true, bare: true, 
+        at_start: true}
+    - {slot: sharing, cat: allocation_verb}
+    - {slot: resource, cat: allocatable_resource, uncounted: true, bare: true}
+    - {slot: distribution, cat: allocation_distribution_preposition}
+    - {slot: recipients, span: true, enumeration_cat: name}
+    - {lit: ., consume_skipped: true}
+  consumes: []
+  satisfies: {}
+  emits:
+  - {fact: allocation_group, source: '{source}', resource: '{resource}', members: '{recipients.members}'}
+  id: arithmetic/explicit-allocation-recipients
+asks:
+- id: ask/shared-resource-total
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - {slot: cop, cat: copula}
+    - {slot: resource, cat: allocatable_resource, uncounted: true, bare: true}
+    - {slot: sharing, cat: allocation_verb}
+    - {lit: '?', consume_skipped: true}
+  satisfies:
+    cop: [subject]
+  resolves: {consumer: allocation-total, resource: '{resource}'}
+- id: ask/source-shared-total
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - {slot: resource, cat: allocatable_resource, uncounted: true, bare: true}
+    - {slot: aux, cat: auxiliary}
+    - {slot: source, type: entity, common_noun_cat: allocation_participant, referential: true, bare: true}
+    - {slot: sharing, cat: allocation_verb}
+    - {lit: '?', consume_skipped: true}
+  satisfies:
+    aux: [subject]
+  resolves: {consumer: allocation-total, source: '{source}', resource: '{resource}'}

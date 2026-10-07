@@ -508,25 +508,9 @@ entries:
   in-game:
     senses:
     - adjective
-  income:
-    senses:
-    - noun
   incomes:
     senses:
     - noun
-  increase:
-    senses:
-    - verb
-  increased:
-    senses:
-    - verb
-    verb:
-      lemma: increase
-  increases:
-    senses:
-    - verb
-    verb:
-      lemma: increase
   incurred:
     senses:
     - verb
@@ -1016,9 +1000,6 @@ entries:
   lists:
     senses:
     - noun
-  little:
-    senses:
-    - adjective
   living:
     senses:
     - adjective
@@ -1360,9 +1341,6 @@ entries:
     senses:
     - noun
     plural: monkeys
-  monthly:
-    senses:
-    - adjective
   morning:
     senses:
     - noun
@@ -1386,15 +1364,6 @@ entries:
   mpg:
     senses:
     - noun
-  mr:
-    senses:
-    - title
-  mrs:
-    senses:
-    - title
-  ms:
-    senses:
-    - title
   muffin:
     senses:
     - noun

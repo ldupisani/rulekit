@@ -34,3 +34,6 @@ members:
   educational_institution: [university]
   geographic_area: [area]
   production_device: [machine]
+  person:
+  - painter
+  - son

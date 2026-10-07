@@ -1,0 +1,44 @@
+format: rulekit/categories@1
+categories:
+  portion_acquisition_verb:
+    parent: verb
+  portion_division_verb:
+    parent: verb
+  portion_unconsumed_attribute:
+    parent: adjective
+  portion_size_descriptor:
+    parent: adjective
+    notes: A serving-size description of a divisible food whole.
+  food_preparation_vessel:
+    parent: noun
+    notes: A vessel used as a nominal modifier of prepared food.
+  food_ingredient_modifier:
+    parent: noun
+    includes:
+    - ingredient
+    notes: A food input used as a nominal modifier of a prepared whole.
+members:
+  portion_acquisition_verb:
+  - bought
+  - buy
+  - buys
+  - get
+  - gets
+  - got
+  - has
+  - have
+  portion_division_verb:
+  - cut
+  portion_unconsumed_attribute:
+  - uneaten
+  portion_size_descriptor:
+  - personal
+  food_preparation_vessel:
+  - pan
+attribute_compatibility:
+  portion_size_descriptor:
+  - decomposable_quantity_whole
+  food_preparation_vessel:
+  - decomposable_quantity_whole
+  food_ingredient_modifier:
+  - decomposable_quantity_whole

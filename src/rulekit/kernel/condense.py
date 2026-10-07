@@ -170,6 +170,18 @@ def _nominal_attribute_postmodifier(reading: Reading, reg: Registry) -> bool:
 
 def _nominal_pass(reading: Reading, reg: Registry) -> bool:
     units = reading.units
+    # Declared abbreviated personal titles remain attached to their name.
+    for i in range(len(units) - 2):
+        title, period, name = units[i:i + 3]
+        if (reg.word_in_category(title.features.get("fold", ""), "person_title")
+                and period.surface == "." and name.sense() == "name"
+                and len(name.features.get("lemma", "")) > 1):
+            merged = reading.new_unit(title.words + period.words + name.words, dict(name.features))
+            units[i:i + 3] = [merged]
+            identity = title.features["fold"] + ". " + name.features["lemma"]
+            reading.record("merge-personal-title", merged, {"fold": identity, "lemma": identity},
+                           "a declared personal title qualifies this name")
+            return True
     # perfect tense: have-lemma verb + verb -> ONE verb ("has read 32 books"
     # is a reading event, not a having plus a mystery participle)
     for i in range(len(units) - 1):
@@ -451,7 +463,9 @@ def _nominal_pass(reading: Reading, reg: Registry) -> bool:
                        "attributes": attrs,
                        "qualifier": qualifier,
                        "reference_qualifiers": tuple(sorted(set(
-                           reference_from_unit(b).qualifiers + (qualifier,)))),
+                           reference_from_unit(b).qualifiers
+                           + reference_from_unit(a).qualifiers
+                           + (a.features.get("lemma", a.features["fold"]),)))),
                        # A source hyphen immediately before the nominal
                        # modifier is retained through this merge.  If a count
                        # sits to the left, the count pass can then represent

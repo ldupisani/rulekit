@@ -61,10 +61,6 @@ entries:
     teammate:
         senses:
             - noun
-    teaspoon:
-        senses:
-            - noun
-        plural: teaspoons
     tees:
         senses:
             - noun
@@ -375,20 +371,12 @@ entries:
     tuition:
         senses:
             - noun
-    turn:
-        senses:
-            - verb
     turned:
         senses:
             - verb
         verb:
             lemma: turn
     turning:
-        senses:
-            - verb
-        verb:
-            lemma: turn
-    turns:
         senses:
             - verb
         verb:
@@ -455,9 +443,6 @@ entries:
     underground:
         senses:
             - noun
-    uneaten:
-        senses:
-            - adjective
     uniformly:
         senses:
             - manner
@@ -477,9 +462,6 @@ entries:
         senses:
             - adjective
     upstairs:
-        senses:
-            - noun
-    utilities:
         senses:
             - noun
     utility:

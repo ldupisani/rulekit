@@ -557,11 +557,40 @@ def test_boundary_mode_survives_retest_and_review_without_counting_coverage(
 def test_gsm8k_generation_fixtures_make_every_premise_rule_available() -> None:
     availability = list_rule_availability(load_project(Path("projects/gsm8k")))
 
-    assert len(availability) == 338
+    assert len(availability) == 397
     blocked = {
         rule.id: rule for rule in availability if not rule.supported
     }
     assert set(blocked) == {
+        'arithmetic/explicit-allocation-recipients',
+        'arithmetic/named-allocation-group',
+        'arithmetic/named-unspecified-allocation-group',
+        'arithmetic/path-gap-and-exit-numeric-numeric',
+        'arithmetic/path-gap-and-exit-numeric-numeric-reference01',
+        'arithmetic/path-gap-and-exit-numeric-numeric-reference10',
+        'arithmetic/path-gap-and-exit-numeric-numeric-reference11',
+        'arithmetic/path-gap-and-exit-numeric-word',
+        'arithmetic/path-gap-and-exit-numeric-word-reference01',
+        'arithmetic/path-gap-and-exit-numeric-word-reference10',
+        'arithmetic/path-gap-and-exit-numeric-word-reference11',
+        'arithmetic/path-gap-and-exit-word-numeric',
+        'arithmetic/path-gap-and-exit-word-numeric-reference01',
+        'arithmetic/path-gap-and-exit-word-numeric-reference10',
+        'arithmetic/path-gap-and-exit-word-numeric-reference11',
+        'arithmetic/path-immediate-exit-numeric',
+        'arithmetic/path-immediate-exit-numeric-reference',
+        'arithmetic/path-leg-distance-numeric',
+        'arithmetic/path-leg-distance-numeric-reference',
+        'arithmetic/path-unknown-leg-numeric',
+        'arithmetic/path-unknown-leg-numeric-reference',
+
+        "arithmetic/named-individual-portions",
+        "arithmetic/named-portion-consumption",
+        "arithmetic/prior-habitual-income-share",
+        "arithmetic/prior-income-spending-share",
+        "arithmetic/income-increase-with-expense-share",
+        "arithmetic/income-increase-with-expense-copula",
+
         "arithmetic/account-coordinated-payment",
         "arithmetic/account-coordinated-payment-amount",
         "arithmetic/account-coordinated-repayment",

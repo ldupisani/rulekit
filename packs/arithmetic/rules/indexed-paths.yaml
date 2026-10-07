@@ -1,0 +1,888 @@
+format: rulekit/rules@1
+templates:
+  path-site-context:
+    parameters:
+      who:
+      - {slot: who, cat: path_vehicle, bare: true, uncounted: true, referential: true, at_start: true}
+    rule:
+      phase: read
+      description: Ordered route evidence with explicit checkpoints, distances and terminal boundaries.
+      match:
+        sentence:
+        - {parameter: who}
+        - opt:
+          - {slot: cop, cat: copula}
+        - {slot: travel, cat: path_travel_verb}
+        - {lit: through}
+        - {slot: site, cat: path_site, bare: true, uncounted: true}
+        - {lit: with}
+        - {lit: many}
+        - {slot: points, cat: path_checkpoint, bare: true, uncounted: true}
+        - {lit: ., consume_skipped: true}
+      consumes: []
+      satisfies: {}
+      emits:
+      - fact: indexed_path_evidence
+        kind: context
+        entity: '{who}'
+        site: '{site}'
+        checkpoint: '{points}'
+  path-checkpoint-count:
+    parameters:
+      who:
+      - {slot: who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+    rule:
+      phase: read
+      description: Ordered route evidence with explicit checkpoints, distances and terminal boundaries.
+      match:
+        sentence:
+        - opt:
+          - {lit: after, at_start: true}
+          - lit: a
+            consume_skipped: true
+          - {lit: while}
+        - {parameter: who}
+        - opt:
+          - {slot: modal, type: modal}
+        - {slot: travel, cat: path_travel_verb}
+        - {lit: through}
+        - {slot: route, cat: path_route, bare: true, uncounted: true}
+        - {lit: that}
+        - {slot: require, cat: path_requirement_verb}
+        - opt:
+          - {lit: total}
+          - {lit: of}
+        - {slot: points, cat: path_checkpoint, counted: true, bare: true}
+        - {lit: ., consume_skipped: true}
+      consumes:
+      - points
+      satisfies:
+        require:
+        - subject
+        who:
+        - refers
+      emits:
+      - fact: indexed_path_evidence
+        kind: population
+        entity: '{who}'
+        route: '{route}'
+        checkpoint: '{points}'
+        value: points
+  path-checkpoint-count-qualified:
+    parameters:
+      who:
+      - {slot: who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+    rule:
+      phase: read
+      description: Ordered route evidence with explicit checkpoints, distances and terminal boundaries.
+      match:
+        sentence:
+        - opt:
+          - {lit: after, at_start: true}
+          - lit: a
+            consume_skipped: true
+          - {lit: while}
+        - {parameter: who}
+        - opt:
+          - {slot: modal, type: modal}
+        - {slot: travel, cat: path_travel_verb}
+        - {lit: through}
+        - {slot: route, cat: path_route, bare: true, uncounted: true}
+        - {lit: that}
+        - {slot: require, cat: path_requirement_verb}
+        - opt:
+          - {lit: total}
+          - {lit: of}
+        - {slot: points, cat: path_checkpoint, counted: true, qualified: true, qualifier_cat: 
+            path_turn_descriptor}
+        - {lit: ., consume_skipped: true}
+      consumes:
+      - points
+      satisfies:
+        require:
+        - subject
+        who:
+        - refers
+      emits:
+      - fact: indexed_path_evidence
+        kind: population
+        entity: '{who}'
+        route: '{route}'
+        checkpoint: '{points}'
+        value: points
+  path-total-distance:
+    parameters:
+      who:
+      - {slot: who, cat: path_vehicle, bare: true, uncounted: true, referential: true, at_start: true}
+    rule:
+      phase: read
+      description: Ordered route evidence with explicit checkpoints, distances and terminal boundaries.
+      match:
+        sentence:
+        - {parameter: who}
+        - {slot: travel, cat: path_travel_verb}
+        - opt:
+          - {lit: total}
+          - {lit: of}
+        - {slot: distance, cat: path_distance_measure, counted: true, bare: true}
+        - {lit: around}
+        - {slot: route, cat: path_route, bare: true, uncounted: true}
+        - {lit: ., consume_skipped: true}
+      consumes:
+      - distance
+      satisfies:
+        who:
+        - refers
+      emits:
+      - fact: indexed_path_evidence
+        kind: total
+        entity: '{who}'
+        value: distance
+        measure: '{distance}'
+        route: '{route}'
+  path-leg-distance-numeric:
+    parameters:
+      who:
+      - {slot: who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+    rule:
+      phase: read
+      description: Ordered route evidence with explicit checkpoints, distances and terminal boundaries.
+      match:
+        sentence:
+        - {lit: after, at_start: true}
+        - {slot: point_index, type: ordinal}
+        - {slot: point, cat: path_checkpoint, bare: true, uncounted: true}
+        - {parameter: who}
+        - {slot: travel, cat: path_travel_verb}
+        - {slot: distance, cat: path_distance_measure, counted: true, bare: true}
+        - {lit: ., consume_skipped: true}
+      consumes:
+      - distance
+      satisfies:
+        who:
+        - refers
+      emits:
+      - fact: indexed_path_evidence
+        kind: distance
+        entity: '{who}'
+        checkpoint: '{point}'
+        index: '{point_index.value}'
+        value: distance
+        measure: '{distance}'
+  path-unknown-leg-numeric:
+    parameters:
+      who:
+      - {slot: who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+    rule:
+      phase: read
+      description: Ordered route evidence with explicit checkpoints, distances and terminal boundaries.
+      match:
+        sentence:
+        - {lit: after, at_start: true}
+        - {slot: point_index, type: ordinal}
+        - {slot: point, cat: path_checkpoint, bare: true, uncounted: true}
+        - {parameter: who}
+        - {slot: travel, cat: path_travel_verb}
+        - opt:
+          - {slot: small, cat: path_small_descriptor}
+        - {slot: further, cat: path_further_adverb}
+        - {lit: ., consume_skipped: true}
+      consumes: []
+      satisfies:
+        who:
+        - refers
+      emits:
+      - fact: indexed_path_evidence
+        kind: gap
+        entity: '{who}'
+        checkpoint: '{point}'
+        index: '{point_index.value}'
+  path-immediate-exit-numeric:
+    parameters:
+      who:
+      - {slot: who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+    rule:
+      phase: read
+      description: Ordered route evidence with explicit checkpoints, distances and terminal boundaries.
+      match:
+        sentence:
+        - {lit: at, at_start: true}
+        - {slot: point_index, type: ordinal}
+        - {slot: point, cat: path_checkpoint, bare: true, uncounted: true}
+        - {parameter: who}
+        - {slot: immediate, cat: path_immediate_adverb}
+        - {slot: exit, cat: path_exit_verb}
+        - {slot: site, cat: path_site, bare: true, uncounted: true}
+        - {lit: ., consume_skipped: true}
+      consumes: []
+      satisfies:
+        who:
+        - refers
+      emits:
+      - fact: indexed_path_evidence
+        kind: terminal
+        entity: '{who}'
+        checkpoint: '{point}'
+        index: '{point_index.value}'
+        site: '{site}'
+  path-gap-and-exit-numeric-numeric:
+    parameters:
+      who:
+      - {slot: who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+      last_who:
+      - {slot: last_who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+    rule:
+      phase: read
+      description: Ordered route evidence with explicit checkpoints, distances and terminal boundaries.
+      match:
+        sentence:
+        - {lit: after, at_start: true}
+        - {slot: point_index, type: ordinal}
+        - {slot: point, cat: path_checkpoint, bare: true, uncounted: true}
+        - {parameter: who}
+        - {slot: travel, cat: path_travel_verb}
+        - opt:
+          - {slot: small, cat: path_small_descriptor}
+        - {slot: further, cat: path_further_adverb}
+        - {lit: and}
+        - {lit: at}
+        - {slot: terminal_index, type: ordinal}
+        - {slot: terminal, cat: path_checkpoint, bare: true, uncounted: true}
+        - {parameter: last_who}
+        - {slot: immediate, cat: path_immediate_adverb}
+        - {slot: exit, cat: path_exit_verb}
+        - {slot: site, cat: path_site, bare: true, uncounted: true}
+        - {lit: ., consume_skipped: true}
+      consumes: []
+      satisfies:
+        who:
+        - refers
+        last_who:
+        - refers
+      emits:
+      - fact: indexed_path_evidence
+        kind: gap
+        entity: '{who}'
+        checkpoint: '{point}'
+        index: '{point_index.value}'
+      - fact: indexed_path_evidence
+        kind: terminal
+        entity: '{last_who}'
+        checkpoint: '{terminal}'
+        index: '{terminal_index.value}'
+        site: '{site}'
+  path-gap-and-exit-numeric-word:
+    parameters:
+      who:
+      - {slot: who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+      last_who:
+      - {slot: last_who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+    rule:
+      phase: read
+      description: Ordered route evidence with explicit checkpoints, distances and terminal boundaries.
+      match:
+        sentence:
+        - {lit: after, at_start: true}
+        - {slot: point_index, type: ordinal}
+        - {slot: point, cat: path_checkpoint, bare: true, uncounted: true}
+        - {parameter: who}
+        - {slot: travel, cat: path_travel_verb}
+        - opt:
+          - {slot: small, cat: path_small_descriptor}
+        - {slot: further, cat: path_further_adverb}
+        - {lit: and}
+        - {lit: at}
+        - {slot: terminal, cat: path_checkpoint, qualified: true, qualifier_cat: holder_ordinal, uncounted: 
+            true, referential: true, number: singular}
+        - {parameter: last_who}
+        - {slot: immediate, cat: path_immediate_adverb}
+        - {slot: exit, cat: path_exit_verb}
+        - {slot: site, cat: path_site, bare: true, uncounted: true}
+        - {lit: ., consume_skipped: true}
+      consumes: []
+      satisfies:
+        who:
+        - refers
+        last_who:
+        - refers
+      emits:
+      - fact: indexed_path_evidence
+        kind: gap
+        entity: '{who}'
+        checkpoint: '{point}'
+        index: '{point_index.value}'
+      - fact: indexed_path_evidence
+        kind: terminal
+        entity: '{last_who}'
+        checkpoint: '{terminal}'
+        index: '{terminal.qualifier}'
+        site: '{site}'
+  path-leg-distance-word:
+    parameters:
+      who:
+      - {slot: who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+    rule:
+      phase: read
+      description: Ordered route evidence with explicit checkpoints, distances and terminal boundaries.
+      match:
+        sentence:
+        - {lit: after, at_start: true}
+        - {slot: point, cat: path_checkpoint, qualified: true, qualifier_cat: holder_ordinal, uncounted: true, 
+            referential: true, number: singular}
+        - {parameter: who}
+        - {slot: travel, cat: path_travel_verb}
+        - {slot: distance, cat: path_distance_measure, counted: true, bare: true}
+        - {lit: ., consume_skipped: true}
+      consumes:
+      - distance
+      satisfies:
+        who:
+        - refers
+      emits:
+      - fact: indexed_path_evidence
+        kind: distance
+        entity: '{who}'
+        checkpoint: '{point}'
+        index: '{point.qualifier}'
+        value: distance
+        measure: '{distance}'
+  path-unknown-leg-word:
+    parameters:
+      who:
+      - {slot: who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+    rule:
+      phase: read
+      description: Ordered route evidence with explicit checkpoints, distances and terminal boundaries.
+      match:
+        sentence:
+        - {lit: after, at_start: true}
+        - {slot: point, cat: path_checkpoint, qualified: true, qualifier_cat: holder_ordinal, uncounted: true, 
+            referential: true, number: singular}
+        - {parameter: who}
+        - {slot: travel, cat: path_travel_verb}
+        - opt:
+          - {slot: small, cat: path_small_descriptor}
+        - {slot: further, cat: path_further_adverb}
+        - {lit: ., consume_skipped: true}
+      consumes: []
+      satisfies:
+        who:
+        - refers
+      emits:
+      - fact: indexed_path_evidence
+        kind: gap
+        entity: '{who}'
+        checkpoint: '{point}'
+        index: '{point.qualifier}'
+  path-immediate-exit-word:
+    parameters:
+      who:
+      - {slot: who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+    rule:
+      phase: read
+      description: Ordered route evidence with explicit checkpoints, distances and terminal boundaries.
+      match:
+        sentence:
+        - {lit: at, at_start: true}
+        - {slot: point, cat: path_checkpoint, qualified: true, qualifier_cat: holder_ordinal, uncounted: true, 
+            referential: true, number: singular}
+        - {parameter: who}
+        - {slot: immediate, cat: path_immediate_adverb}
+        - {slot: exit, cat: path_exit_verb}
+        - {slot: site, cat: path_site, bare: true, uncounted: true}
+        - {lit: ., consume_skipped: true}
+      consumes: []
+      satisfies:
+        who:
+        - refers
+      emits:
+      - fact: indexed_path_evidence
+        kind: terminal
+        entity: '{who}'
+        checkpoint: '{point}'
+        index: '{point.qualifier}'
+        site: '{site}'
+  path-gap-and-exit-word-numeric:
+    parameters:
+      who:
+      - {slot: who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+      last_who:
+      - {slot: last_who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+    rule:
+      phase: read
+      description: Ordered route evidence with explicit checkpoints, distances and terminal boundaries.
+      match:
+        sentence:
+        - {lit: after, at_start: true}
+        - {slot: point, cat: path_checkpoint, qualified: true, qualifier_cat: holder_ordinal, uncounted: true, 
+            referential: true, number: singular}
+        - {parameter: who}
+        - {slot: travel, cat: path_travel_verb}
+        - opt:
+          - {slot: small, cat: path_small_descriptor}
+        - {slot: further, cat: path_further_adverb}
+        - {lit: and}
+        - {lit: at}
+        - {slot: terminal_index, type: ordinal}
+        - {slot: terminal, cat: path_checkpoint, bare: true, uncounted: true}
+        - {parameter: last_who}
+        - {slot: immediate, cat: path_immediate_adverb}
+        - {slot: exit, cat: path_exit_verb}
+        - {slot: site, cat: path_site, bare: true, uncounted: true}
+        - {lit: ., consume_skipped: true}
+      consumes: []
+      satisfies:
+        who:
+        - refers
+        last_who:
+        - refers
+      emits:
+      - fact: indexed_path_evidence
+        kind: gap
+        entity: '{who}'
+        checkpoint: '{point}'
+        index: '{point.qualifier}'
+      - fact: indexed_path_evidence
+        kind: terminal
+        entity: '{last_who}'
+        checkpoint: '{terminal}'
+        index: '{terminal_index.value}'
+        site: '{site}'
+  path-gap-and-exit-word-word:
+    parameters:
+      who:
+      - {slot: who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+      last_who:
+      - {slot: last_who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+    rule:
+      phase: read
+      description: Ordered route evidence with explicit checkpoints, distances and terminal boundaries.
+      match:
+        sentence:
+        - {lit: after, at_start: true}
+        - {slot: point, cat: path_checkpoint, qualified: true, qualifier_cat: holder_ordinal, uncounted: true, 
+            referential: true, number: singular}
+        - {parameter: who}
+        - {slot: travel, cat: path_travel_verb}
+        - opt:
+          - {slot: small, cat: path_small_descriptor}
+        - {slot: further, cat: path_further_adverb}
+        - {lit: and}
+        - {lit: at}
+        - {slot: terminal, cat: path_checkpoint, qualified: true, qualifier_cat: holder_ordinal, uncounted: 
+            true, referential: true, number: singular}
+        - {parameter: last_who}
+        - {slot: immediate, cat: path_immediate_adverb}
+        - {slot: exit, cat: path_exit_verb}
+        - {slot: site, cat: path_site, bare: true, uncounted: true}
+        - {lit: ., consume_skipped: true}
+      consumes: []
+      satisfies:
+        who:
+        - refers
+        last_who:
+        - refers
+      emits:
+      - fact: indexed_path_evidence
+        kind: gap
+        entity: '{who}'
+        checkpoint: '{point}'
+        index: '{point.qualifier}'
+      - fact: indexed_path_evidence
+        kind: terminal
+        entity: '{last_who}'
+        checkpoint: '{terminal}'
+        index: '{terminal.qualifier}'
+        site: '{site}'
+variants:
+- id: arithmetic/path-site-context
+  template: path-site-context
+  arguments:
+    who:
+    - {slot: who, cat: path_vehicle, bare: true, uncounted: true, referential: true, at_start: true}
+- id: arithmetic/path-checkpoint-count
+  template: path-checkpoint-count
+  arguments:
+    who:
+    - {slot: who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+- id: arithmetic/path-checkpoint-count-qualified
+  template: path-checkpoint-count-qualified
+  arguments:
+    who:
+    - {slot: who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+- id: arithmetic/path-total-distance
+  template: path-total-distance
+  arguments:
+    who:
+    - {slot: who, cat: path_vehicle, bare: true, uncounted: true, referential: true, at_start: true}
+- id: arithmetic/path-total-distance-reference
+  template: path-total-distance
+  arguments:
+    who:
+    - {slot: who, cat: path_singular_reference, at_start: true}
+- id: arithmetic/path-leg-distance-numeric
+  template: path-leg-distance-numeric
+  arguments:
+    who:
+    - {slot: who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+- id: arithmetic/path-leg-distance-numeric-reference
+  template: path-leg-distance-numeric
+  arguments:
+    who:
+    - {slot: who, cat: path_singular_reference}
+- id: arithmetic/path-unknown-leg-numeric
+  template: path-unknown-leg-numeric
+  arguments:
+    who:
+    - {slot: who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+- id: arithmetic/path-unknown-leg-numeric-reference
+  template: path-unknown-leg-numeric
+  arguments:
+    who:
+    - {slot: who, cat: path_singular_reference}
+- id: arithmetic/path-immediate-exit-numeric
+  template: path-immediate-exit-numeric
+  arguments:
+    who:
+    - {slot: who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+- id: arithmetic/path-immediate-exit-numeric-reference
+  template: path-immediate-exit-numeric
+  arguments:
+    who:
+    - {slot: who, cat: path_singular_reference}
+- id: arithmetic/path-gap-and-exit-numeric-numeric
+  template: path-gap-and-exit-numeric-numeric
+  arguments:
+    who:
+    - {slot: who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+    last_who:
+    - {slot: last_who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+- id: arithmetic/path-gap-and-exit-numeric-numeric-reference01
+  template: path-gap-and-exit-numeric-numeric
+  arguments:
+    who:
+    - {slot: who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+    last_who:
+    - {slot: last_who, cat: path_singular_reference}
+- id: arithmetic/path-gap-and-exit-numeric-numeric-reference10
+  template: path-gap-and-exit-numeric-numeric
+  arguments:
+    who:
+    - {slot: who, cat: path_singular_reference}
+    last_who:
+    - {slot: last_who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+- id: arithmetic/path-gap-and-exit-numeric-numeric-reference11
+  template: path-gap-and-exit-numeric-numeric
+  arguments:
+    who:
+    - {slot: who, cat: path_singular_reference}
+    last_who:
+    - {slot: last_who, cat: path_singular_reference}
+- id: arithmetic/path-gap-and-exit-numeric-word
+  template: path-gap-and-exit-numeric-word
+  arguments:
+    who:
+    - {slot: who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+    last_who:
+    - {slot: last_who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+- id: arithmetic/path-gap-and-exit-numeric-word-reference01
+  template: path-gap-and-exit-numeric-word
+  arguments:
+    who:
+    - {slot: who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+    last_who:
+    - {slot: last_who, cat: path_singular_reference}
+- id: arithmetic/path-gap-and-exit-numeric-word-reference10
+  template: path-gap-and-exit-numeric-word
+  arguments:
+    who:
+    - {slot: who, cat: path_singular_reference}
+    last_who:
+    - {slot: last_who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+- id: arithmetic/path-gap-and-exit-numeric-word-reference11
+  template: path-gap-and-exit-numeric-word
+  arguments:
+    who:
+    - {slot: who, cat: path_singular_reference}
+    last_who:
+    - {slot: last_who, cat: path_singular_reference}
+- id: arithmetic/path-leg-distance-word
+  template: path-leg-distance-word
+  arguments:
+    who:
+    - {slot: who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+- id: arithmetic/path-leg-distance-word-reference
+  template: path-leg-distance-word
+  arguments:
+    who:
+    - {slot: who, cat: path_singular_reference}
+- id: arithmetic/path-unknown-leg-word
+  template: path-unknown-leg-word
+  arguments:
+    who:
+    - {slot: who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+- id: arithmetic/path-unknown-leg-word-reference
+  template: path-unknown-leg-word
+  arguments:
+    who:
+    - {slot: who, cat: path_singular_reference}
+- id: arithmetic/path-immediate-exit-word
+  template: path-immediate-exit-word
+  arguments:
+    who:
+    - {slot: who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+- id: arithmetic/path-immediate-exit-word-reference
+  template: path-immediate-exit-word
+  arguments:
+    who:
+    - {slot: who, cat: path_singular_reference}
+- id: arithmetic/path-gap-and-exit-word-numeric
+  template: path-gap-and-exit-word-numeric
+  arguments:
+    who:
+    - {slot: who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+    last_who:
+    - {slot: last_who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+- id: arithmetic/path-gap-and-exit-word-numeric-reference01
+  template: path-gap-and-exit-word-numeric
+  arguments:
+    who:
+    - {slot: who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+    last_who:
+    - {slot: last_who, cat: path_singular_reference}
+- id: arithmetic/path-gap-and-exit-word-numeric-reference10
+  template: path-gap-and-exit-word-numeric
+  arguments:
+    who:
+    - {slot: who, cat: path_singular_reference}
+    last_who:
+    - {slot: last_who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+- id: arithmetic/path-gap-and-exit-word-numeric-reference11
+  template: path-gap-and-exit-word-numeric
+  arguments:
+    who:
+    - {slot: who, cat: path_singular_reference}
+    last_who:
+    - {slot: last_who, cat: path_singular_reference}
+- id: arithmetic/path-gap-and-exit-word-word
+  template: path-gap-and-exit-word-word
+  arguments:
+    who:
+    - {slot: who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+    last_who:
+    - {slot: last_who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+- id: arithmetic/path-gap-and-exit-word-word-reference01
+  template: path-gap-and-exit-word-word
+  arguments:
+    who:
+    - {slot: who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+    last_who:
+    - {slot: last_who, cat: path_singular_reference}
+- id: arithmetic/path-gap-and-exit-word-word-reference10
+  template: path-gap-and-exit-word-word
+  arguments:
+    who:
+    - {slot: who, cat: path_singular_reference}
+    last_who:
+    - {slot: last_who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+- id: arithmetic/path-gap-and-exit-word-word-reference11
+  template: path-gap-and-exit-word-word
+  arguments:
+    who:
+    - {slot: who, cat: path_singular_reference}
+    last_who:
+    - {slot: last_who, cat: path_singular_reference}
+rules: []
+asks:
+- id: ask/path-distance-after-numeric
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: far}
+    - {slot: aux, type: auxiliary}
+    - {slot: who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+    - opt:
+      - {lit: have}
+      - {lit: to}
+    - {slot: travel, cat: path_travel_verb}
+    - {lit: after}
+    - {slot: point_index, type: ordinal}
+    - {slot: point, cat: path_checkpoint, bare: true, uncounted: true}
+    - {lit: '?', consume_skipped: true}
+  satisfies:
+    who:
+    - refers
+  resolves:
+    consumer: indexed-path
+    entity: '{who}'
+    checkpoint: '{point}'
+    index: '{point_index.value}'
+- id: ask/path-distance-after-numeric-reference
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: far}
+    - {slot: aux, type: auxiliary}
+    - {slot: who, cat: path_singular_reference}
+    - opt:
+      - {lit: have}
+      - {lit: to}
+    - {slot: travel, cat: path_travel_verb}
+    - {lit: after}
+    - {slot: point_index, type: ordinal}
+    - {slot: point, cat: path_checkpoint, bare: true, uncounted: true}
+    - {lit: '?', consume_skipped: true}
+  satisfies:
+    who:
+    - refers
+  resolves:
+    consumer: indexed-path
+    entity: '{who}'
+    checkpoint: '{point}'
+    index: '{point_index.value}'
+- id: ask/path-distance-after-word
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: far}
+    - {slot: aux, type: auxiliary}
+    - {slot: who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+    - opt:
+      - {lit: have}
+      - {lit: to}
+    - {slot: travel, cat: path_travel_verb}
+    - {lit: after}
+    - {slot: point, cat: path_checkpoint, qualified: true, qualifier_cat: holder_ordinal, uncounted: true, 
+        referential: true, number: singular}
+    - {lit: '?', consume_skipped: true}
+  satisfies:
+    who:
+    - refers
+  resolves:
+    consumer: indexed-path
+    entity: '{who}'
+    checkpoint: '{point}'
+    index: '{point.qualifier}'
+- id: ask/path-distance-after-word-reference
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: far}
+    - {slot: aux, type: auxiliary}
+    - {slot: who, cat: path_singular_reference}
+    - opt:
+      - {lit: have}
+      - {lit: to}
+    - {slot: travel, cat: path_travel_verb}
+    - {lit: after}
+    - {slot: point, cat: path_checkpoint, qualified: true, qualifier_cat: holder_ordinal, uncounted: true, 
+        referential: true, number: singular}
+    - {lit: '?', consume_skipped: true}
+  satisfies:
+    who:
+    - refers
+  resolves:
+    consumer: indexed-path
+    entity: '{who}'
+    checkpoint: '{point}'
+    index: '{point.qualifier}'
+- id: ask/path-distance-unit-after-numeric
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: measure, cat: path_distance_measure, uncounted: true, bare: true}
+    - {slot: aux, type: auxiliary}
+    - {slot: who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+    - opt:
+      - {lit: have}
+      - {lit: to}
+    - {slot: travel, cat: path_travel_verb}
+    - {lit: after}
+    - {slot: point_index, type: ordinal}
+    - {slot: point, cat: path_checkpoint, bare: true, uncounted: true}
+    - {lit: '?', consume_skipped: true}
+  satisfies:
+    who:
+    - refers
+  resolves:
+    consumer: indexed-path
+    entity: '{who}'
+    checkpoint: '{point}'
+    index: '{point_index.value}'
+    measure: '{measure}'
+- id: ask/path-distance-unit-after-numeric-reference
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: measure, cat: path_distance_measure, uncounted: true, bare: true}
+    - {slot: aux, type: auxiliary}
+    - {slot: who, cat: path_singular_reference}
+    - opt:
+      - {lit: have}
+      - {lit: to}
+    - {slot: travel, cat: path_travel_verb}
+    - {lit: after}
+    - {slot: point_index, type: ordinal}
+    - {slot: point, cat: path_checkpoint, bare: true, uncounted: true}
+    - {lit: '?', consume_skipped: true}
+  satisfies:
+    who:
+    - refers
+  resolves:
+    consumer: indexed-path
+    entity: '{who}'
+    checkpoint: '{point}'
+    index: '{point_index.value}'
+    measure: '{measure}'
+- id: ask/path-distance-unit-after-word
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: measure, cat: path_distance_measure, uncounted: true, bare: true}
+    - {slot: aux, type: auxiliary}
+    - {slot: who, cat: path_vehicle, bare: true, uncounted: true, referential: true}
+    - opt:
+      - {lit: have}
+      - {lit: to}
+    - {slot: travel, cat: path_travel_verb}
+    - {lit: after}
+    - {slot: point, cat: path_checkpoint, qualified: true, qualifier_cat: holder_ordinal, uncounted: true, 
+        referential: true, number: singular}
+    - {lit: '?', consume_skipped: true}
+  satisfies:
+    who:
+    - refers
+  resolves:
+    consumer: indexed-path
+    entity: '{who}'
+    checkpoint: '{point}'
+    index: '{point.qualifier}'
+    measure: '{measure}'
+- id: ask/path-distance-unit-after-word-reference
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: measure, cat: path_distance_measure, uncounted: true, bare: true}
+    - {slot: aux, type: auxiliary}
+    - {slot: who, cat: path_singular_reference}
+    - opt:
+      - {lit: have}
+      - {lit: to}
+    - {slot: travel, cat: path_travel_verb}
+    - {lit: after}
+    - {slot: point, cat: path_checkpoint, qualified: true, qualifier_cat: holder_ordinal, uncounted: true, 
+        referential: true, number: singular}
+    - {lit: '?', consume_skipped: true}
+  satisfies:
+    who:
+    - refers
+  resolves:
+    consumer: indexed-path
+    entity: '{who}'
+    checkpoint: '{point}'
+    index: '{point.qualifier}'
+    measure: '{measure}'

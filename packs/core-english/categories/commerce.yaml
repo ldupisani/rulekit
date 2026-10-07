@@ -22,16 +22,53 @@ categories:
   transaction_adjustment_noun:
     parent: noun
     notes: A possible price or payment adjustment; requires explicit accounting scope.
+  visual_product:
+    parent: commercial_product_family
+  sale_revenue_noun:
+    parent: noun
+  commercial_quote_verb:
+    parent: verb
+  commercial_object_anaphor:
+    parent: pronoun
 members:
   audio_product: [album, cd]
   audiovisual_product: [dvd, film, movie]
   commercial_organization: [business, company, empire]
-  commercial_production_verb: [create, created, creates, made, make, makes, produce, produced, produces]
+  commercial_production_verb:
+  - create
+  - created
+  - creates
+  - made
+  - make
+  - makes
+  - paint
+  - painted
+  - paints
+  - produce
+  - produced
+  - produces
   income_modifier: [bonus]
-  income_resource_noun: [bonus, pay]
+  income_resource_noun:
+  - bonus
+  - income
+  - pay
+  - salary
   infinitival_marker: [to]
   profit_measure: [profit]
   publication_product: [book, paperback]
   transaction_adjustment_noun: [discount, fee, refund, tax]
+  visual_product:
+  - painting
+  - picture
+  sale_revenue_noun:
+  - sale
+  - sales
+  commercial_quote_verb:
+  - charge
+  - charged
+  - charges
+  commercial_object_anaphor:
+  - it
+  - them
 attribute_compatibility:
   income_modifier: [income_resource_noun]

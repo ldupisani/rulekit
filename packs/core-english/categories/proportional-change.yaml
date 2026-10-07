@@ -1,0 +1,42 @@
+format: rulekit/categories@1
+categories:
+  income_period_descriptor:
+    parent: adjective
+  income_prior_descriptor:
+    parent: adjective
+  expense_item:
+    parent: noun
+  base_increase_verb:
+    parent: verb
+  recent_change_adverb:
+    parent: adverb
+  expense_equivalence_verb:
+    parent: verb
+  previous_habitual_verb:
+    parent: verb
+members:
+  income_period_descriptor:
+  - monthly
+  income_prior_descriptor:
+  - old
+  - previous
+  expense_item:
+  - expense
+  - rent
+  - utilities
+  base_increase_verb:
+  - increase
+  - increased
+  - increases
+  recent_change_adverb:
+  - recently
+  expense_equivalence_verb:
+  - amount
+  - amounts
+  previous_habitual_verb:
+  - used
+attribute_compatibility:
+  income_period_descriptor:
+  - periodic_income_noun
+  income_prior_descriptor:
+  - periodic_income_noun

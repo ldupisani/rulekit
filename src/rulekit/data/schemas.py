@@ -414,7 +414,7 @@ class ObligationsDoc(StrictModel):
 # ---------------------------------------------------------------------------
 
 SLOT_TYPES = (
-    "number", "fraction", "multiplier", "nonunit_multiplier",
+    "number", "ordinal", "fraction", "multiplier", "nonunit_multiplier",
     "name", "noun", "plural", "counted",
     "entity", "verb", "auxiliary", "modal", "future_modal",
     "pronoun", "word",
@@ -634,6 +634,7 @@ class MatchToken(StrictModel):
     # _canonical_phrase, model.Atom). Defaults False: every existing slot
     # binds exactly one unit, byte-identical.
     span: bool = False
+    enumeration_cat: str | None = None
     # OPT-IN, span-only: name a CATEGORY whose members may never be swallowed
     # into the captured phrase (e.g. packs/logic's `negation`) — a polarity
     # word hidden inside a phrase key would bury the negation where no
@@ -898,6 +899,8 @@ class MatchToken(StrictModel):
             raise ValueError(
                 "`determinerless_category` requires `referential: true`"
             )
+        if self.enumeration_cat is not None and not self.span:
+            raise ValueError("enumeration_cat requires a span")
         if self.span_blocks is not None and not self.span:
             raise ValueError("`span_blocks` only qualifies a span slot")
         if self.bare and self.slot is None:
@@ -1546,11 +1549,11 @@ class WherePredicate(StrictModel):
 
 class FactEmit(StrictModel):
     fact: Literal[
-        "batch_evidence", "mixture_evidence",
+        "batch_evidence", "mixture_evidence", "proportional_base_evidence",
         "account_entry",
         "text_value", "text_prefix_split",
         "commercial_term",
-        "allocation_ratio",
+        "allocation_ratio", "allocation_group", "indexed_path_evidence", "measured_component",
         "inventory_scope", "inventory_withdrawal",
         "journey_leg", "journey_schedule", "journey_extra", "journey_pace",
         "accumulation_window", "earning_rate", "service_scope", "purchase_endpoint",

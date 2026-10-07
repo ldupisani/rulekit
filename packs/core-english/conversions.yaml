@@ -1,5 +1,8 @@
 format: rulekit/conversions@1
 conversions:
+- from: kilometer
+  to: meter
+  factor: 1000
 - from: mile
   to: kilometer
   factor: 1.609344

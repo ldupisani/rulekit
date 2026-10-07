@@ -271,9 +271,6 @@ entries:
   originally:
     senses:
     - adverb
-  other:
-    senses:
-    - article
   others:
     senses:
     - noun
@@ -338,13 +335,6 @@ entries:
     senses:
     - noun
     plural: paintbrushes
-  painter:
-    senses:
-    - noun
-  painting:
-    senses:
-    - noun
-    plural: paintings
   pakora:
     senses:
     - noun
@@ -356,10 +346,6 @@ entries:
   palm:
     senses:
     - noun
-  pan:
-    senses:
-    - noun
-    plural: pans
   pancake:
     senses:
     - noun
@@ -373,10 +359,6 @@ entries:
   panels:
     senses:
     - noun
-  park:
-    senses:
-    - noun
-    plural: parks
   parking:
     senses:
     - noun
@@ -479,9 +461,6 @@ entries:
     senses:
     - noun
     plural: periods
-  personal:
-    senses:
-    - adjective
   personalized:
     senses:
     - adjective
@@ -526,10 +505,6 @@ entries:
     senses:
     - noun
     plural: picnics
-  picture:
-    senses:
-    - noun
-    plural: pictures
   pie:
     senses:
     - noun
@@ -959,9 +934,6 @@ entries:
     - verb
     verb:
       lemma: receive
-  recently:
-    senses:
-    - adverb
   recharges:
     senses:
     - verb
@@ -1046,9 +1018,6 @@ entries:
     - verb
     verb:
       lemma: remove
-  rent:
-    senses:
-    - noun
   rental:
     senses:
     - noun
@@ -1173,9 +1142,6 @@ entries:
   right-angle:
     senses:
     - adjective
-  ring:
-    senses:
-    - noun
   ripe:
     senses:
     - adjective
@@ -1282,14 +1248,6 @@ entries:
   salad:
     senses:
     - noun
-  salary:
-    senses:
-    - noun
-    plural: salaries
-  sale:
-    senses:
-    - noun
-    plural: sales
   salesman:
     senses:
     - noun
@@ -1748,10 +1706,6 @@ entries:
   something:
     senses:
     - noun
-  son:
-    senses:
-    - noun
-    plural: sons
   song:
     senses:
     - noun

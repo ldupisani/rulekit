@@ -356,8 +356,11 @@ Use one token form: `lit`, a named `slot`, or an `opt` sequence.
 `type` or a category `cat`. Optional groups contain ordinary tokens.
 Tokens match analyzed/condensed units, not raw character spans.
 
-Common built-in types include `number, fraction, multiplier, name, entity,
+Common built-in types include `number, ordinal, fraction, multiplier, name, entity,
 noun, plural, counted, possessed, qualified, verb, auxiliary, pronoun`.
+`ordinal` matches a productive numeric ordinal, separately from a cardinal
+count. Lexical ordinals remain pack-declared noun modifiers. Numeric ordinal
+slots currently have no Designer generation realizer.
 Structured types include `point, date, formula`. `proper_name` excludes a
 resolved pronoun; `common_noun` is narrower than a general entity.
 `bare_plural` and `generic_plural` describe generic class subjects, not
@@ -374,6 +377,7 @@ arbitrary definite plural references. Live schemas lists all `SLOT_TYPES`.
 | `fraction_within_whole, word_fraction_within_whole, fraction_positive` | Part-of-whole and positivity contracts |
 | `bare_form, finite_form, present_participle, past_participle` | Verb morphology |
 | `span, span_blocks, span_blocks_counted` | Bounded span capture and barriers |
+| `enumeration_cat` | Span-only: an exact singleton or conjunctive list of heads in this category |
 | `at_start` | Anchor the first match token |
 | `consume_skipped, blocks_skipped` | Control permitted skipped material |
 
@@ -441,10 +445,41 @@ String templates such as `'{who}'`, `'{item.qualified}'`, or
 evaluator, not Python execution. `sign(dir)` reads category polarity.
 Not every unit property is a supported template attribute.
 
+`'{people.members}'` emits a tuple of canonical heads from a span with
+`enumeration_cat`. The compiler requires that gate; the matcher rejects
+mixed-category, modified, counted, and disjunctive lists. Named-holder asks
+use the same list grammar and require at least two names.
+`'{resource.owner_identity}'` reads a resolved, unmodified owner identity
+from the structured reference; unresolved ownership renders empty and must
+be rejected by the consumer.
+
 Keep identity and qualifiers in fields supported by the target fact.
 Do not encode several meanings into an opaque concatenated string when a
 typed field exists. A count of people, an item amount, a goal, a credit limit,
 and an actual account entry are different commitments.
+
+Portioned-whole rules retain structured noun references on `batch_evidence`.
+Modifiers are composed using ordinary noun grammar and category-owned
+compatibility; product variants do not need atomic lexicon entries or alias
+families. Later less-specific references may describe the one established
+population, while an extra or contradictory modifier declines. Nominal
+compounds retain both the modifier's head and its own qualifiers.
+
+Three scoped aggregation facts preserve information that ordinary quantities
+cannot express on their own:
+
+- `allocation_group` carries the source, resource, exhaustive named recipients,
+  and optional stated recipient count. Its consumer reuses ordinary receipt
+  quantities, relations and holder totals.
+- `indexed_path_evidence` distinguishes a route's checkpoint population, known
+  segment lengths, unknown segment, immediate exit and overall length. A
+  residual needs every other segment accounted for; turn direction never
+  implies equal lengths or rectangular geometry.
+- `measured_component` keeps the participant, material and unit together,
+  plus an optional dependency on another material/unit count. The explicit
+  component-tally ask adds the requested numerical counts; it does not convert
+  unlike physical quantities. Missing references, cycles, repeated components
+  and mismatched unit labels decline.
 
 Special emission metadata includes `temporal_perspective`,
 `distributive` (quantity/rate), and `container_count` (quantity).

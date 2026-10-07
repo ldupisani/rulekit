@@ -79,6 +79,11 @@ def _tokens_intersect(a: MatchToken, b: MatchToken, reg: Registry) -> bool:
     # is "do ANY of the options intersect" rather than a scalar comparison.
     # Equality on `.lit` would read False for two overlapping alternations and
     # silently under-report real overlaps.
+    # A bare reference cannot also carry a qualifier or possessive owner.
+    # These gates constrain the condensed unit independently of its noun category.
+    if ((a.bare and (b.qualified or b.possessed or b.qualifier_cat or b.type in {"qualified", "possessed"}))
+            or (b.bare and (a.qualified or a.possessed or a.qualifier_cat or a.type in {"qualified", "possessed"}))):
+        return False
     if a.number is not None and b.number is not None and a.number != b.number:
         return False
     if a.lit is not None and b.lit is not None:

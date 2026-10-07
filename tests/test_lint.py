@@ -501,3 +501,11 @@ def test_a_quantifier_lit_cannot_collide_with_a_bare_plural_slot(tmp_path):
 def test_a_plural_noun_lit_still_collides_with_a_bare_plural_slot(tmp_path):
     findings = _bp_overlaps(tmp_path, "{lit: dogs}")
     assert findings, "the real overlap disappeared with the false one"
+
+
+@pytest.mark.parametrize("gate", ["qualified: true", "possessed: true", "type: qualified", "type: possessed"])
+def test_bare_and_described_slots_are_disjoint(tmp_path, gate):
+    reg = _mk(tmp_path, BASE_LEX, BASE_CATS,
+              RULE_TMPL.format(rid="r/bare", gate="cat: animal, bare: true"),
+              RULE_TMPL.format(rid="r/described", gate=(gate if gate.startswith("type:") else "cat: animal, " + gate)))
+    assert lint_overlaps(reg) == []

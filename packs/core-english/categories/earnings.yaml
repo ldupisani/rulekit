@@ -52,7 +52,10 @@ members:
   ground_cutting_service: [mow, mowed, mowing, mows]
   habitual_service_predicate: [mow, mows, paint, paints, shovel, shovels, wash, washes]
   past_service_predicate: [mowed, painted, shoveled, shovelled, washed]
-  periodic_income_noun: [allowance]
+  periodic_income_noun:
+  - allowance
+  - income
+  - salary
   periodic_income_verb: [earn, earned, earns, get, gets, got, receive, received, receives]
   resource_accumulation_verb: [save, saved, saves, saving]
   service_activity_verb: [mow, mowed, mowing, mows, paint, painted, paints, shovel, shoveled, shovelled,

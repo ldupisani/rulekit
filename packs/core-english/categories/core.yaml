@@ -2608,7 +2608,7 @@ members:
   complement_boy: [boy]
   complement_girl: [girl]
   component_quantity_measure: [piece, slice]
-  compute_verb: [calculate, compute]
+  compute_verb: [calculate, compute, determine]
   conjunct_comparison_incompatible_noun: [time]
   conservative_inference_adverb: [safely]
   consumption_quantity_verb: [consume, consumed, consumes]
@@ -2636,7 +2636,9 @@ members:
   current_day_marker: [today]
   current_holding_anchor_adverb: [currently]
   day_deictic_marker: [today, tomorrow, yesterday]
-  decomposable_quantity_whole: [pizza]
+  decomposable_quantity_whole:
+  - cake
+  - pizza
   definite_article: [the]
   deictic_temporal_marker: [now, today, tomorrow, yesterday]
   destination_preposition: [to]
@@ -2650,9 +2652,39 @@ members:
   discourse_subject_group_pronoun: [they]
   distributive_quantifier: [each, every]
   drop_quantity_verb: [dropped, drops]
-  droppable_quantity_object: [apple, apricot, ball, book, card, charcuterie, cheddar cheese, cheese, clip,
-      coin, cold cut, cookie, cream cheese, drum, egg, envelope, grape, key, marble, pack, paper, pear, pencil,
-    pickle, plum, puzzle, rose, stamp, sticker, tomato, toy]
+  droppable_quantity_object:
+  - apple
+  - apricot
+  - ball
+  - book
+  - cake
+  - card
+  - charcuterie
+  - cheddar cheese
+  - cheese
+  - clip
+  - coin
+  - cold cut
+  - cookie
+  - cream cheese
+  - drum
+  - egg
+  - envelope
+  - grape
+  - key
+  - marble
+  - pack
+  - paper
+  - pear
+  - pencil
+  - pickle
+  - plum
+  - puzzle
+  - rose
+  - stamp
+  - sticker
+  - tomato
+  - toy
   duration_dimension_comparative: [longer, shorter]
   duration_measure: [day, hour, minute, month, week, year]
   duration_total_subject: [time]
@@ -2660,8 +2692,31 @@ members:
   earnable_quantity_object: [dollar, money]
   earning_quantity_verb: [earn, earned, earns]
   eating_quantity_verb: [ate, eat, eats]
-  edible_quantity_object: [apple, apricot, beetle, bird, charcuterie, cheddar cheese, cheese, cold cut, cookie,
-    cream cheese, egg, fish, grape, pear, pickle, piece, pizza, plum, rabbit, slice, snake, sugar, tomato]
+  edible_quantity_object:
+  - apple
+  - apricot
+  - beetle
+  - bird
+  - cake
+  - charcuterie
+  - cheddar cheese
+  - cheese
+  - cold cut
+  - cookie
+  - cream cheese
+  - egg
+  - fish
+  - grape
+  - pear
+  - pickle
+  - piece
+  - pizza
+  - plum
+  - rabbit
+  - slice
+  - snake
+  - sugar
+  - tomato
   enrollment_quantity_object: [course, student]
   enrollment_quantity_verb: [enroll, enrolled, enrolling, enrolls]
   epistemic_report_verb: [said, say, saying, says]
@@ -2830,11 +2885,32 @@ members:
   quantity_interior_location: [area, bag, barrel, beaker, bottle, bowl, box, bucket, canister, container,
       cupboard, flask, forest, fridge, garden, jar, jug, pantry, store, storeroom, tank, truck, university,
       vessel, vial]
-  quantity_location: [area, bench, cupboard, farm, forest, garden, pantry, post office, sea, storeroom, tree,
-      university, waters]
+  quantity_location:
+  - area
+  - bench
+  - cupboard
+  - farm
+  - forest
+  - garden
+  - pantry
+  - park
+  - post office
+  - sea
+  - storeroom
+  - tree
+  - university
+  - waters
   quantity_location_preposition: [in, into]
   quantity_remainder_preposition: [with]
-  quantity_site_location: [bench, farm, forest, garden, post office, tree, university]
+  quantity_site_location:
+  - bench
+  - farm
+  - forest
+  - garden
+  - park
+  - post office
+  - tree
+  - university
   quantity_site_preposition: [at]
   quantity_surface_location: [avenue, bench, boulevard, farm, lane, road, street, tree]
   quantity_surface_preposition: [on]
@@ -2875,8 +2951,22 @@ members:
       beside, beyond, in, inside, near, next to, on, opposite, outside, over, under, underneath, upon, within]
   spatial_motion_verb: [go, goes, going, jumped, ran, travel, traveled, travels, walked, went]
   spatial_path_preposition: [across, along, around, down, over, past, through, under, via]
-  spatial_reference_noun: [area, avenue, bench, boulevard, cupboard, garden, lane, pantry, road, storeroom,
-      street, town, tree, university]
+  spatial_reference_noun:
+  - area
+  - avenue
+  - bench
+  - boulevard
+  - cupboard
+  - garden
+  - lane
+  - pantry
+  - park
+  - road
+  - storeroom
+  - street
+  - town
+  - tree
+  - university
   spatial_relation_verb: [taught, teach, teaches]
   spatial_source_preposition: [from, off, out of]
   spend_target_prep: [for, on]
@@ -2947,7 +3037,11 @@ attribute_compatibility:
   relative_period_attribute: [duration_measure]
   remnant_adj: [content_progress_measure, remainder_collection_noun]
   ripeness_attribute: [ripenable_noun]
-  size_attribute: [magnitude_noun, physical_size_noun, sized_content_bearing_whole]
+  size_attribute:
+  - commercial_product
+  - magnitude_noun
+  - physical_size_noun
+  - sized_content_bearing_whole
   temporal_at_point_preposition: [temporal_at_point_object]
   temporal_deadline_preposition: [timeperiod]
   temporal_duration_preposition: [timeperiod]

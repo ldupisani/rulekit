@@ -305,6 +305,17 @@ def _check_number(
                for f in store.by_kind(kind)):
             return GuardVeto("answer-accounting", "a stated rate policy or repeated schedule was not used")
 
+        from .model import AllocationGroup, IndexedPathEvidence, MeasuredComponent
+        if any(f.key() not in log.consumed_component_keys
+               for kind in (AllocationGroup, IndexedPathEvidence, MeasuredComponent)
+               for f in store.by_kind(kind)):
+            return GuardVeto("answer-accounting", "a scoped component was not used")
+
+        from .model import ProportionalBaseEvidence
+        if any(f.key() not in log.consumed_proportional_base_keys
+               for f in store.by_kind(ProportionalBaseEvidence)):
+            return GuardVeto("answer-accounting", "a stated proportional base was not used")
+
         from .model import MixtureEvidence
 
         if any(row.key() not in log.consumed_mixture_keys
@@ -821,7 +832,7 @@ def _check_number(
             if q.provenance.source.startswith("synth/")
         }
         for f in store.by_kind(FractionQuantity):
-            if (f.entity, f.verb, f.occurrence) not in derived:
+            if (f.entity, f.verb, f.occurrence) not in derived and f.key() not in log.consumed_fraction_keys:
                 return GuardVeto(
                     "unresolved-derivation",
                     f"the fraction of {f.measure!r} ({f.entity!r}, {f.verb!r}) "
