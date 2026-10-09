@@ -1,0 +1,42 @@
+format: rulekit/categories@1
+categories:
+  resource_user:
+    parent: noun
+    includes:
+    - intentional_agent
+    - production_device
+    - computing_device
+  usable_quantity_resource:
+    parent: noun
+    includes:
+    - ownable_quantity_object
+    - edible_quantity_object
+    - quantity_container
+    - currency
+    - timeperiod
+    - mass_unit
+    - volume_measure
+  resource_usage_verb:
+    parent: quantity_comparison_verb
+    selectional_roles:
+      actor: resource_user
+      theme: usable_quantity_resource
+  physical_disposal_verb:
+    parent: quantity_comparison_verb
+    selectional_roles:
+      actor: intentional_agent
+      theme: ownable_quantity_object
+members:
+  resource_usage_verb:
+  - use
+  - used
+  - uses
+  physical_disposal_verb:
+  - discard
+  - discarded
+  - discarding
+  - discards
+  - reject
+  - rejected
+  - rejecting
+  - rejects

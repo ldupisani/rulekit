@@ -1,0 +1,626 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/itemized-order-population
+  phase: read
+  match:
+    sentence:
+    - slot: group
+      cat: person
+      counted: true
+      bare: true
+      at_start: true
+    - slot: order
+      cat: itemized_acquisition_verb
+    - slot: list
+      cat: list_introduction_marker
+    - lit: ':'
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: bill-population
+    entity: '{group}'
+    measure: ''
+    value: group
+    position: '{group.span_start}'
+  consumes:
+  - group
+  satisfies:
+    order:
+    - subject
+- id: arithmetic/explicit-equal-bill-division
+  phase: read
+  match:
+    sentence:
+    - slot: people
+      cat: discourse_subject_group_pronoun
+      at_start: true
+    - opt:
+      - slot: future
+        type: future_modal
+    - slot: split
+      cat: equal_division_verb
+    - slot: bill
+      cat: shared_cost_noun
+    - slot: equal
+      cat: equal_division_adverb
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: bill-division
+    entity: ''
+    measure: ''
+    value: 0
+    position: '{split.span_start}'
+  satisfies:
+    people:
+    - refers
+- id: arithmetic/activity-itemized-account-population
+  phase: read
+  match:
+    sentence:
+    - slot: group
+      cat: person
+      counted: true
+      bare: true
+      at_start: true
+    - slot: activity
+      cat: purchase_context_activity
+    - lit: at
+    - slot: site
+      cat: purchase_context_site
+      uncounted: true
+    - lit: and
+    - slot: order
+      cat: itemized_acquisition_verb
+    - slot: list
+      cat: list_introduction_marker
+    - lit: ':'
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: bill-population
+    entity: '{group}'
+    measure: ''
+    value: group
+    position: '{group.span_start}'
+  consumes:
+  - group
+  satisfies:
+    order:
+    - subject
+asks:
+- id: ask/equal-itemized-bill-group
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: much
+    - slot: modal
+      type: future_modal
+    - lit: each
+    - lit: of
+    - slot: group
+      cat: discourse_referential_group_pronoun
+    - slot: pay
+      cat: payment_verb
+    - lit: if
+    - slot: people
+      cat: discourse_referential_group_pronoun
+    - opt:
+      - slot: future
+        type: future_modal
+    - slot: split
+      cat: equal_division_verb
+    - slot: bill
+      cat: shared_cost_noun
+    - slot: equal
+      cat: equal_division_adverb
+    - &id001
+      lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: shared-account-cost
+    equal: 'true'
+  satisfies:
+    group:
+    - refers
+    people:
+    - refers
+    pay:
+    - subject
+- id: ask/equal-itemized-bill-person
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: much
+    - slot: aux
+      type: auxiliary
+    - lit: each
+    - slot: person
+      cat: person
+      uncounted: true
+      bare: true
+    - slot: pay
+      cat: payment_verb
+    - lit: if
+    - slot: people
+      cat: discourse_referential_group_pronoun
+    - opt:
+      - slot: future
+        type: future_modal
+    - slot: split
+      cat: equal_division_verb
+    - slot: bill
+      cat: shared_cost_noun
+    - slot: equal
+      cat: equal_division_adverb
+    - *id001
+  resolves:
+    consumer: shared-account-cost
+    person: '{person}'
+    equal: 'true'
+  satisfies:
+    people:
+    - refers
+    pay:
+    - subject
+- id: ask/stated-equal-bill-group
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: much
+    - slot: aux
+      type: auxiliary
+    - lit: each
+    - lit: of
+    - slot: group
+      cat: discourse_group_pronoun
+    - slot: pay
+      cat: payment_verb
+    - &id002
+      lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: shared-account-cost
+  satisfies:
+    group:
+    - refers
+    pay:
+    - subject
+- id: ask/stated-equal-bill-group-modal
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: much
+    - slot: aux
+      type: future_modal
+    - lit: each
+    - lit: of
+    - slot: group
+      cat: discourse_group_pronoun
+    - slot: pay
+      cat: payment_verb
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: shared-account-cost
+  satisfies:
+    group:
+    - refers
+    pay:
+    - subject
+- id: ask/stated-equal-bill-person
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: much
+    - slot: aux
+      type: auxiliary
+    - lit: each
+    - slot: person
+      cat: person
+      uncounted: true
+      bare: true
+    - slot: pay
+      cat: payment_verb
+    - *id002
+  resolves:
+    consumer: shared-account-cost
+    person: '{person}'
+  satisfies:
+    pay:
+    - subject
+
+templates:
+  itemized-price-quote:
+    parameters:
+      ending:
+      - opt:
+        - cat: postpositive_distributive_quantifier
+          slot: each
+      pricing:
+        quantity: count
+        total: null
+        unit: price
+      quote:
+      - cat: price_quote_participle
+        present_participle: true
+        slot: cost
+      satisfaction:
+        cost:
+        - subject
+        each:
+        - collection
+      subject:
+        item: '{item}'
+        qualifier: '{item.qualifier}'
+        tokens:
+        - bare: true
+          cat: purchase_count_measure
+          counted: true
+          slot: count
+        - lit: of
+        - cat: purchase_item
+          slot: item
+          uncounted: true
+    rule:
+      consumes:
+      - count
+      - price
+      description: An explicit itemized asking-price quote, with unit and
+        whole-line prices kept distinct. Estimated values do not establish
+        charges.
+      emits:
+      - basis: quote
+        entity: ''
+        event: '{count.uid}'
+        fact: expenditure
+        item:
+          parameter: subject.item
+        lot_measure: '{count}'
+        lot_position: '{count.uid}'
+        lot_quantity: count
+        measure: '{price}'
+        position: '{price.uid}'
+        qualifier:
+          parameter: subject.qualifier
+        quantity:
+          parameter: pricing.quantity
+        quantity_position: '{count.uid}'
+        unit_price:
+          parameter: pricing.unit
+        value:
+          parameter: pricing.total
+        verb: '{cost}'
+      match:
+        sentence:
+        - consume_skipped: true
+          lit:
+          - ':'
+          - ;
+        - opt:
+          - lit: and
+        - parameter: subject.tokens
+        - parameter: quote
+        - bare: true
+          cat: currency_measure
+          counted: true
+          slot: price
+        - parameter: ending
+      phase: read
+      satisfies:
+        parameter: satisfaction
+variants:
+- arguments:
+    satisfaction:
+      cost:
+      - subject
+      each:
+      - collection
+  id: arithmetic/itemized-participial-price-serving-unit
+  template: itemized-price-quote
+- arguments:
+    ending:
+    - lit: in
+    - lit: total
+    pricing:
+      quantity: null
+      total: price
+      unit: null
+    satisfaction:
+      cost:
+      - subject
+  id: arithmetic/itemized-participial-price-serving-total
+  template: itemized-price-quote
+- arguments:
+    quote:
+    - cat: marked_price_participle
+      past_participle: true
+      slot: cost
+    - cat: price_at_marker
+      slot: marker
+    satisfaction:
+      cost:
+      - subject
+      each:
+      - collection
+      marker:
+      - object
+  id: arithmetic/itemized-marked-price-serving-unit
+  template: itemized-price-quote
+- arguments:
+    ending:
+    - lit: in
+    - lit: total
+    pricing:
+      quantity: null
+      total: price
+      unit: null
+    quote:
+    - cat: marked_price_participle
+      past_participle: true
+      slot: cost
+    - cat: price_at_marker
+      slot: marker
+    satisfaction:
+      cost:
+      - subject
+      marker:
+      - object
+  id: arithmetic/itemized-marked-price-serving-total
+  template: itemized-price-quote
+- arguments:
+    quote:
+    - cat: sale_offer_participle
+      present_participle: true
+      slot: cost
+    - cat: price_for_marker
+      slot: marker
+    satisfaction:
+      cost:
+      - subject
+      each:
+      - collection
+      marker:
+      - object
+  id: arithmetic/itemized-sale-offer-price-serving-unit
+  template: itemized-price-quote
+- arguments:
+    ending:
+    - lit: in
+    - lit: total
+    pricing:
+      quantity: null
+      total: price
+      unit: null
+    quote:
+    - cat: sale_offer_participle
+      present_participle: true
+      slot: cost
+    - cat: price_for_marker
+      slot: marker
+    satisfaction:
+      cost:
+      - subject
+      marker:
+      - object
+  id: arithmetic/itemized-sale-offer-price-serving-total
+  template: itemized-price-quote
+- arguments:
+    satisfaction:
+      cost:
+      - subject
+      each:
+      - collection
+    subject:
+      item: '{count}'
+      qualifier: '{count.qualifier}'
+      tokens:
+      - cat: purchase_item
+        counted: true
+        slot: count
+  id: arithmetic/itemized-participial-price-item-unit
+  template: itemized-price-quote
+- arguments:
+    ending:
+    - lit: in
+    - lit: total
+    pricing:
+      quantity: null
+      total: price
+      unit: null
+    satisfaction:
+      cost:
+      - subject
+    subject:
+      item: '{count}'
+      qualifier: '{count.qualifier}'
+      tokens:
+      - cat: purchase_item
+        counted: true
+        slot: count
+  id: arithmetic/itemized-participial-price-item-total
+  template: itemized-price-quote
+- arguments:
+    quote:
+    - cat: marked_price_participle
+      past_participle: true
+      slot: cost
+    - cat: price_at_marker
+      slot: marker
+    satisfaction:
+      cost:
+      - subject
+      each:
+      - collection
+      marker:
+      - object
+    subject:
+      item: '{count}'
+      qualifier: '{count.qualifier}'
+      tokens:
+      - cat: purchase_item
+        counted: true
+        slot: count
+  id: arithmetic/itemized-marked-price-item-unit
+  template: itemized-price-quote
+- arguments:
+    ending:
+    - lit: in
+    - lit: total
+    pricing:
+      quantity: null
+      total: price
+      unit: null
+    quote:
+    - cat: marked_price_participle
+      past_participle: true
+      slot: cost
+    - cat: price_at_marker
+      slot: marker
+    satisfaction:
+      cost:
+      - subject
+      marker:
+      - object
+    subject:
+      item: '{count}'
+      qualifier: '{count.qualifier}'
+      tokens:
+      - cat: purchase_item
+        counted: true
+        slot: count
+  id: arithmetic/itemized-marked-price-item-total
+  template: itemized-price-quote
+- arguments:
+    quote:
+    - cat: sale_offer_participle
+      present_participle: true
+      slot: cost
+    - cat: price_for_marker
+      slot: marker
+    satisfaction:
+      cost:
+      - subject
+      each:
+      - collection
+      marker:
+      - object
+    subject:
+      item: '{count}'
+      qualifier: '{count.qualifier}'
+      tokens:
+      - cat: purchase_item
+        counted: true
+        slot: count
+  id: arithmetic/itemized-sale-offer-price-item-unit
+  template: itemized-price-quote
+- arguments:
+    ending:
+    - lit: in
+    - lit: total
+    pricing:
+      quantity: null
+      total: price
+      unit: null
+    quote:
+    - cat: sale_offer_participle
+      present_participle: true
+      slot: cost
+    - cat: price_for_marker
+      slot: marker
+    satisfaction:
+      cost:
+      - subject
+      marker:
+      - object
+    subject:
+      item: '{count}'
+      qualifier: '{count.qualifier}'
+      tokens:
+      - cat: purchase_item
+        counted: true
+        slot: count
+  id: arithmetic/itemized-sale-offer-price-item-total
+  template: itemized-price-quote
+- arguments:
+    quote:
+    - lit: that
+    - cat: price_verb
+      finite_form: true
+      slot: cost
+    satisfaction:
+      cost:
+      - subject
+      each:
+      - collection
+  id: arithmetic/itemized-relative-price-serving-unit
+  template: itemized-price-quote
+- arguments:
+    ending:
+    - lit: in
+    - lit: total
+    pricing:
+      quantity: null
+      total: price
+      unit: null
+    quote:
+    - lit: that
+    - cat: price_verb
+      finite_form: true
+      slot: cost
+    satisfaction:
+      cost:
+      - subject
+  id: arithmetic/itemized-relative-price-serving-total
+  template: itemized-price-quote
+- arguments:
+    quote:
+    - lit: that
+    - cat: price_verb
+      finite_form: true
+      slot: cost
+    satisfaction:
+      cost:
+      - subject
+      each:
+      - collection
+    subject:
+      item: '{count}'
+      qualifier: '{count.qualifier}'
+      tokens:
+      - cat: purchase_item
+        counted: true
+        slot: count
+  id: arithmetic/itemized-relative-price-item-unit
+  template: itemized-price-quote
+- arguments:
+    ending:
+    - lit: in
+    - lit: total
+    pricing:
+      quantity: null
+      total: price
+      unit: null
+    quote:
+    - lit: that
+    - cat: price_verb
+      finite_form: true
+      slot: cost
+    satisfaction:
+      cost:
+      - subject
+    subject:
+      item: '{count}'
+      qualifier: '{count.qualifier}'
+      tokens:
+      - cat: purchase_item
+        counted: true
+        slot: count
+  id: arithmetic/itemized-relative-price-item-total
+  template: itemized-price-quote

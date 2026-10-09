@@ -427,6 +427,20 @@ facets, negative exclusions, or a construction-specific role mapping that
 cannot be represented as a complete frame. Do not duplicate verb/object
 vocabulary pairs in every rule.
 
+`modifier_host_compatible` defaults to a noun host. With `host_type: verb`,
+it requires an object slot and a declared verb–preposition–object licence in
+`adposition_roles`. Matching, learning and generation use the same table;
+an omitted optional phrase is neutral. This prevents a valid location phrase
+from attaching to a verb that cannot take that relationship. An explicit
+`nominal_host` slot also permits a declared nominal modifier (such as a
+book's topic); it does not make otherwise unlicensed PPs optional. A separate
+noun-host predicate can enforce attachment restrictions on both readings.
+
+`bound_requires_category` can include `bound_cat` to activate the restriction
+only for controller words in that category. For example, third-person
+possessives can restrict a nearby relationship owner while first- and
+second-person possessives remain anchored to the speaker or addressee.
+
 The example `number_compatible: [who, verb]` checks agreement, not semantic
 plausibility. Likewise, being different words is not necessarily evidence
 that two participant descriptions denote distinct entities.
@@ -625,6 +639,13 @@ found. “Answerable from validated premises” uses included clean human-positi
 evidence and rechecks it against the current runtime; an unrelated valid
 review is not sufficient for every ask.
 
+A generated premise's `target_status` reports a structural match;
+`clean_reading` additionally requires strict generation, no collisions, no
+reading deficiencies and no lexical relaxations. It is not a human judgment
+of meaning. Pinned premise reviews with machine gaps remain in need of
+attention even when their grammatical verdict is valid, and cannot supply
+clean reusable evidence. Review history remains unchanged.
+
 Project generation fixtures and append-only review/exploration records are
 authoring data, not `rulekit/*@1` runtime pack documents. Do not copy review
 JSONL into a pack.
@@ -741,3 +762,53 @@ Typical commands from a development checkout:
 Maintain this guide when a YAML contract changes. Update architecture only
 when responsibility or data flow changes; keep per-question history and
 validation counts in the handoff, focused examples, or campaign records.
+
+Scoped proportional calculations also retain their population and role evidence:
+
+- `population_evidence` retains member type, owner, indexed collection,
+  assessment and boundary independently. Education contributes cohort vocabulary;
+  the same partition rules cover people and products in other indexed collections.
+  A numeric collection index is an identifier, not a population count. A
+  `scale_label` reads a categorical assessment boundary; numeric boundaries remain
+  raw operands and are audited in both the premise and question.
+  A strict threshold supports its identical strict query or its inclusive
+  opposite at the same boundary; the kernel does not invent a grade ordering.
+  Unindexed shares reuse ordinary ownership counts for the same owner and member
+  type. An indexed share still requires an explicitly matching indexed total.
+  An explicit named owner of a plural subject or its preceding indexed collection
+  remains a discourse candidate after condensation. Later personal and possessive
+  pronouns can refer to that owner; competing names remain ambiguous.
+- An `enumeration_cat` span can require `enumeration_min_members` (default 1).
+  Joint totals require at least two named participants, leaving individual
+  earning statements to the ordinary quantity machinery.
+- Joint earnings retain the named participants, total, absolute share references,
+  and relative share dependencies. Existing `relation` facts can supply pure
+  fractional or multiplicative edges. Cycles, conflicting definitions, foreign
+  participants, and shares exceeding the total decline.
+- Itemized accounts use `expenditure` facts with `basis: quote`, preserving
+  quantity, unit price or whole-lot price, and original numeric positions. Shared
+  pricing resolves these operands; shared resource arithmetic totals the charges.
+  Quotes establish costs, not paid transactions or cash balances. Objects and
+  packages use purchase categories. A shared activity/location introduction
+  covers work and dining; domain activities and venues enter through subcategories.
+  Relative price quotes are per item or package unless explicitly marked as a
+  line total. Equal allocation requires a payer count and an equal-split clause.
+  `charge_record_noun` supplies bill, invoice, statement, check, tab and account
+  as contextual names for those charges. This category does not equate their
+  other senses or infer a balance, payment, or settlement from the noun alone.
+- `specification_evidence` separates application context, reference input/output ratio,
+  explicit ratio reuse, and output demand. A recipe, formula, method, prescription,
+  procedure, blueprint or plan supplies no ratio by its name alone. An explicit
+  "requires N inputs for every M outputs" or "uses N inputs per M outputs"
+  specification and its matching adoption determine a scalable input requirement.
+  Counted goods and measured materials share the same rate/unit machinery.
+  Observed output/input relationships and population-based demands use shared
+  grammar in the same file. Culinary products, activities and portion measures
+  enter through subcategories; the rules contain no culinary category gates. The same substance and unit can occur
+  in both roles without becoming the same quantity. Unit conversion stays within
+  each role. Source-local numeric auditing explicitly includes measured modifiers
+  such as an `8-ounce` serving; ordinary consumers retain their existing policy.
+- Located yield facts retain the collector, item, station, and site. Ordered site
+  references resolve against the order of the two introduced sites; each rate
+  uses its own population. A missing comparison standard is licensed only when
+  precisely two compatible collectors are established.

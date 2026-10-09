@@ -611,7 +611,11 @@ def review_needs_attention(review: dict) -> bool:
     evidence would erase the very problem the reviewer recorded.
     """
 
-    return bool(review.get("defects")) or review.get("verdict") in {
+    evidence = review.get("premise_evidence") or {}
+    machine_gaps = bool(evidence.get("collisions") or evidence.get("deficiencies"))
+    if review.get("target_rule") and evidence:
+        machine_gaps |= evidence.get("target_status") not in {"matched", "shadowed"}
+    return machine_gaps or bool(review.get("defects")) or review.get("verdict") in {
         "invalid",
         "unclear",
     } or review.get("interpretation_judgment") in {

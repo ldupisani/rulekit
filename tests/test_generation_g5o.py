@@ -18,6 +18,14 @@ ROOT = Path(__file__).resolve().parents[1]
 CURATED = ROOT / "projects" / "curated"
 
 EXPECTED_OCCURRENCES = {
+    "arithmetic/itemized-participial-price-serving-unit": ((7, 0), "each"),
+    "arithmetic/itemized-participial-price-item-unit": ((5, 0), "each"),
+    "arithmetic/itemized-marked-price-serving-unit": ((8, 0), "each"),
+    "arithmetic/itemized-marked-price-item-unit": ((6, 0), "each"),
+    "arithmetic/itemized-sale-offer-price-serving-unit": ((8, 0), "each"),
+    "arithmetic/itemized-sale-offer-price-item-unit": ((6, 0), "each"),
+    "arithmetic/itemized-relative-price-item-unit": ((6, 0), "each"),
+    "arithmetic/itemized-relative-price-serving-unit": ((8, 0), "each"),
     "arithmetic/holder-prefix-subtotal-trailing": ((4, 0), "total_quantifier"),
     "arithmetic/collection-nominal-attribute": ((0,), "subset"),
     "arithmetic/collection-two-nominal-attributes": ((6,), "subset2"),
@@ -136,9 +144,9 @@ def test_g5o_unlocks_only_the_preregistered_rule() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 405
-    assert sum(item.supported for item in availability.values()) == 361
-    assert sum(not item.supported for item in availability.values()) == 44
+    assert len(availability) == 464
+    assert sum(item.supported for item in availability.values()) == 416
+    assert sum(not item.supported for item in availability.values()) == 48
     assert availability[
         "arithmetic/existential-premise-distributive"
     ].supported
@@ -148,7 +156,7 @@ def test_g5o_unlocks_only_the_preregistered_rule() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 742
+    assert len(exploration_status(project)["fillers"]) == 793
 
 
 @pytest.mark.parametrize("quantifier", sorted(EXPECTED_DISTRIBUTIVE_FILLERS))

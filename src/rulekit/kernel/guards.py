@@ -273,6 +273,12 @@ def _check_number(
                for kind in (InventoryScope, InventoryWithdrawal) for f in store.by_kind(kind)):
             return GuardVeto("answer-accounting", "a stated inventory or withdrawal was not used")
 
+        from .model import Expenditure
+
+        if any(e.basis == "quote" and e.key() not in log.consumed_expenditure_keys
+               for e in store.by_kind(Expenditure)):
+            return GuardVeto("answer-accounting", "an itemized cost quote was not used")
+
         from .model import AllocationRatio
 
         if any(f.key() not in log.consumed_allocation_ratio_keys
@@ -305,9 +311,9 @@ def _check_number(
                for f in store.by_kind(kind)):
             return GuardVeto("answer-accounting", "a stated rate policy or repeated schedule was not used")
 
-        from .model import AllocationGroup, IndexedPathEvidence, MeasuredComponent
+        from .model import AllocationGroup, IndexedPathEvidence, MeasuredComponent, SpecificationEvidence, PopulationEvidence
         if any(f.key() not in log.consumed_component_keys
-               for kind in (AllocationGroup, IndexedPathEvidence, MeasuredComponent)
+               for kind in (AllocationGroup, IndexedPathEvidence, MeasuredComponent, SpecificationEvidence, PopulationEvidence)
                for f in store.by_kind(kind)):
             return GuardVeto("answer-accounting", "a scoped component was not used")
 

@@ -1,0 +1,587 @@
+format: rulekit/rules@1
+templates:
+  input-output-ratio:
+    parameters:
+      input:
+        tokens:
+        - slot: input
+          cat: specification_resource
+          counted: true
+          bare: true
+        item: '{input}'
+      basis:
+      - lit: for
+      - lit: every
+      output:
+        tokens:
+        - slot: output
+          cat: specification_resource
+          counted: true
+          bare: true
+        item: '{output}'
+    rule:
+      phase: read
+      match:
+        sentence:
+        - slot: spec
+          cat: specification_noun
+          uncounted: true
+          bare: true
+          at_start: true
+        - slot: require
+          cat: specification_requirement_verb
+        - parameter: input.tokens
+        - parameter: basis
+        - parameter: output.tokens
+        - lit: .
+          consume_skipped: true
+      emits:
+      - fact: specification_evidence
+        kind: reference
+        position: '{input.uid}'
+        scope: '{spec}'
+        input_item:
+          parameter: input.item
+        measure: '{input}'
+        value: input
+        output_item:
+          parameter: output.item
+        output_measure: '{output}'
+        output_value: output
+      consumes:
+      - input
+      - output
+      description: An explicitly proportional specification preserves input and 
+        output resources independently from units.
+  specification-application:
+    parameters:
+      output:
+        tokens:
+        - slot: output
+          cat: specification_resource
+          counted: true
+          bare: true
+        item: '{output}'
+    rule:
+      phase: read
+      match:
+        sentence:
+        - slot: who
+          type: name
+          at_start: true
+        - slot: use
+          cat: specification_application_verb
+        - lit:
+          - this
+          - the
+          - that
+          consume_skipped: true
+        - slot: spec
+          cat: specification_noun
+          uncounted: true
+          bare: true
+        - lit: to
+        - slot: make
+          cat: specification_production_verb
+        - parameter: output.tokens
+        - lit: .
+          consume_skipped: true
+      emits:
+      - fact: specification_evidence
+        kind: application
+        position: '{output.uid}'
+        entity: '{who}'
+        scope: '{spec}'
+        output_item:
+          parameter: output.item
+        output_measure: '{output}'
+        output_value: output
+      consumes:
+      - output
+  specification-output-context:
+    parameters:
+      scope:
+        slot: scope
+        cat: specification_scope
+        uncounted: true
+        bare: true
+    rule:
+      phase: read
+      match:
+        sentence:
+        - slot: who
+          type: name
+          at_start: true
+        - slot: cop
+          cat: singular_copula
+        - slot: make
+          cat: specification_preparation_verb
+          present_participle: true
+        - slot: output_item
+          cat: specification_resource
+          bare: true
+          uncounted: true
+        - lit: for
+        - parameter: scope
+        - lit: .
+          consume_skipped: true
+      emits:
+      - fact: specification_evidence
+        kind: context
+        position: '{who.span_start}'
+        entity: '{who}'
+        output_item: '{output_item}'
+        scope: '{scope}'
+  explicit-proportion-adoption:
+    parameters:
+      scope:
+        slot: scope
+        cat: specification_scope
+        bare: true
+        uncounted: true
+    rule:
+      phase: read
+      match:
+        sentence:
+        - slot: who
+          type: name
+          at_start: true
+        - opt:
+          - slot: future
+            type: future_modal
+        - slot: use
+          cat: specification_application_verb
+        - slot: ratio
+          cat: proportional_relation_noun
+          qualifier_cat: same_ratio_descriptor
+          qualified: true
+        - lit: for
+        - parameter: scope
+        - lit: .
+          consume_skipped: true
+      emits:
+      - fact: specification_evidence
+        kind: reuse
+        position: '{who.span_start}'
+        entity: '{who}'
+        scope: '{scope}'
+  population-output-demand:
+    parameters:
+      scope:
+        slot: scope
+        cat: specification_scope
+        uncounted: true
+        bare: true
+        at_start: true
+    rule:
+      phase: read
+      match:
+        sentence:
+        - parameter: scope
+        - slot: have
+          cat: possession_state
+        - slot: population
+          cat: demand_participant
+          counted: true
+          bare: true
+        - opt:
+          - lit: there
+        - lit: and
+        - lit: each
+        - lit: of
+        - slot: group
+          cat: discourse_group_pronoun
+        - slot: want
+          cat: specification_demand_verb
+        - slot: output
+          cat: measured_output_container
+          attributive_counted: true
+          qualified: true
+          qualifier_cat: specification_unit
+        - lit: of
+        - slot: output_item
+          cat: specification_resource
+          bare: true
+          uncounted: true
+        - lit: .
+          consume_skipped: true
+      emits:
+      - fact: specification_evidence
+        kind: target
+        position: '{population.span_start}'
+        output_item: '{output_item}'
+        scope: '{scope}'
+        population: population
+        output_value: output
+        output_measure: '{output.qualifier}'
+        population_item: '{population}'
+      consumes:
+      - population
+      - output
+      satisfies:
+        group:
+        - refers
+variants:
+- id: arithmetic/specification-ratio-counted-every
+  template: input-output-ratio
+- id: arithmetic/specification-ratio-counted-per
+  template: input-output-ratio
+  arguments:
+    basis:
+    - lit: per
+- id: arithmetic/specification-ratio-measured-every
+  template: input-output-ratio
+  arguments:
+    input:
+      tokens:
+      - slot: input
+        cat: specification_unit
+        counted: true
+        bare: true
+      - lit: of
+      - slot: item
+        cat: specification_resource
+        uncounted: true
+        bare: true
+      item: '{item}'
+- id: arithmetic/specification-ratio-measured-per
+  template: input-output-ratio
+  arguments:
+    input:
+      tokens:
+      - slot: input
+        cat: specification_unit
+        counted: true
+        bare: true
+      - lit: of
+      - slot: item
+        cat: specification_resource
+        uncounted: true
+        bare: true
+      item: '{item}'
+    basis:
+    - lit: per
+- id: arithmetic/specification-ratio-counted-every-measured-output
+  template: input-output-ratio
+  arguments:
+    output:
+      tokens:
+      - slot: output
+        cat: specification_unit
+        counted: true
+        bare: true
+      - lit: of
+      - slot: product
+        cat: specification_resource
+        bare: true
+        uncounted: true
+      item: '{product}'
+- id: arithmetic/specification-ratio-counted-per-measured-output
+  template: input-output-ratio
+  arguments:
+    basis:
+    - lit: per
+    output:
+      tokens:
+      - slot: output
+        cat: specification_unit
+        counted: true
+        bare: true
+      - lit: of
+      - slot: product
+        cat: specification_resource
+        bare: true
+        uncounted: true
+      item: '{product}'
+- id: arithmetic/specification-ratio-measured-every-measured-output
+  template: input-output-ratio
+  arguments:
+    input:
+      tokens:
+      - slot: input
+        cat: specification_unit
+        counted: true
+        bare: true
+      - lit: of
+      - slot: item
+        cat: specification_resource
+        uncounted: true
+        bare: true
+      item: '{item}'
+    output:
+      tokens:
+      - slot: output
+        cat: specification_unit
+        counted: true
+        bare: true
+      - lit: of
+      - slot: product
+        cat: specification_resource
+        bare: true
+        uncounted: true
+      item: '{product}'
+- id: arithmetic/specification-ratio-measured-per-measured-output
+  template: input-output-ratio
+  arguments:
+    input:
+      tokens:
+      - slot: input
+        cat: specification_unit
+        counted: true
+        bare: true
+      - lit: of
+      - slot: item
+        cat: specification_resource
+        uncounted: true
+        bare: true
+      item: '{item}'
+    basis:
+    - lit: per
+    output:
+      tokens:
+      - slot: output
+        cat: specification_unit
+        counted: true
+        bare: true
+      - lit: of
+      - slot: product
+        cat: specification_resource
+        bare: true
+        uncounted: true
+      item: '{product}'
+- id: arithmetic/specification-application
+  template: specification-application
+- id: arithmetic/specification-application-measured-output
+  template: specification-application
+  arguments:
+    output:
+      tokens:
+      - slot: output
+        cat: specification_unit
+        counted: true
+        bare: true
+      - lit: of
+      - slot: product
+        cat: specification_resource
+        bare: true
+        uncounted: true
+      item: '{product}'
+- id: arithmetic/specification-output-context
+  template: specification-output-context
+- id: arithmetic/specification-output-context-owned-scope
+  template: specification-output-context
+  arguments:
+    scope:
+    - opt:
+      - slot: scope_determiner
+        cat: possessive_determiner
+    - slot: scope
+      cat: specification_scope
+      uncounted: true
+      possessed: true
+- id: arithmetic/explicit-proportion-adoption
+  template: explicit-proportion-adoption
+- id: arithmetic/explicit-proportion-adoption-owned-scope
+  template: explicit-proportion-adoption
+  arguments:
+    scope:
+    - opt:
+      - slot: scope_determiner
+        cat: possessive_determiner
+    - slot: scope
+      cat: specification_scope
+      uncounted: true
+      possessed: true
+- id: arithmetic/population-output-demand
+  template: population-output-demand
+- id: arithmetic/population-output-demand-owned-scope
+  template: population-output-demand
+  arguments:
+    scope:
+    - opt:
+      - slot: scope_determiner
+        cat: possessive_determiner
+        at_start: true
+    - slot: scope
+      cat: specification_scope
+      uncounted: true
+      possessed: true
+asks:
+- id: ask/scaled-specification-input-measure
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: many
+    - slot: unit
+      cat: specification_unit
+      uncounted: true
+      bare: true
+    - lit: of
+    - slot: ingredient
+      cat: specification_resource
+      bare: true
+      uncounted: true
+    - slot: aux
+      type: auxiliary
+    - slot: who
+      type: name
+    - slot: need
+      cat: component_requirement_verb
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: specification-scale
+    entity: '{who}'
+    measure: '{unit}'
+    input_item: '{ingredient}'
+- id: ask/scaled-specification-input-count
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: many
+    - slot: input
+      cat: specification_resource
+      uncounted: true
+      bare: true
+    - slot: aux
+      type: auxiliary
+    - slot: who
+      type: name
+    - slot: need
+      cat: component_requirement_verb
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: specification-scale
+    entity: '{who}'
+    measure: '{input}'
+    input_item: '{input}'
+rules:
+- id: arithmetic/observed-input-output-ratio
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: name
+      at_start: true
+    - slot: know
+      cat: knowledge_verb
+    - opt:
+      - slot: owner
+        cat: possessive_determiner
+    - slot: actor
+      cat: demand_participant
+      uncounted: true
+    - slot: activity
+      cat: reference_output_activity
+    - slot: output
+      cat: measured_output_container
+      attributive_counted: true
+      qualified: true
+      qualifier_cat: specification_unit
+    - lit: of
+    - slot: output_item
+      cat: specification_resource
+      bare: true
+      uncounted: true
+    - lit: and
+    - slot: use
+      cat: specification_requirement_verb
+    - slot: input
+      cat: specification_unit
+      counted: true
+      bare: true
+    - lit: of
+    - slot: input_item
+      cat: specification_resource
+      bare: true
+      uncounted: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: specification_evidence
+    kind: reference
+    position: '{input.span_start}'
+    entity: '{who}'
+    output_item: '{output_item}'
+    input_item: '{input_item}'
+    measure: '{input}'
+    value: input
+    output_measure: '{output.qualifier}'
+    output_value: output
+  consumes:
+  - input
+  - output
+- id: arithmetic/measured-output-input-requirement
+  phase: read
+  match:
+    sentence:
+    - slot: output
+      cat: measured_output_container
+      attributive_counted: true
+      qualified: true
+      qualifier_cat: specification_unit
+    - lit: of
+    - slot: output_item
+      cat: specification_resource
+      bare: true
+      uncounted: true
+    - slot: use
+      cat: specification_requirement_verb
+    - slot: input
+      cat: specification_unit
+      counted: true
+      bare: true
+    - lit: of
+    - slot: input_item
+      cat: specification_resource
+      bare: true
+      uncounted: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: specification_evidence
+    kind: reference
+    position: '{input.span_start}'
+    entity: ''
+    output_item: '{output_item}'
+    input_item: '{input_item}'
+    measure: '{input}'
+    value: input
+    output_measure: '{output.qualifier}'
+    output_value: output
+  consumes:
+  - input
+  - output
+- phase: read
+  match:
+    sentence:
+    - slot: who
+      type: name
+      at_start: true
+    - opt:
+      - slot: future
+        type: future_modal
+    - slot: use
+      cat: specification_application_verb
+    - slot: ratio
+      cat: proportional_relation_noun
+      qualifier_cat: same_ratio_descriptor
+      qualified: true
+    - lit: for
+    - slot: group
+      cat: universal_person_reference
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: specification_evidence
+    kind: reuse
+    position: '{who.span_start}'
+    entity: '{who}'
+    scope: $anaphor:population$
+  id: arithmetic/explicit-proportion-adoption-population
+  satisfies:
+    group:
+    - refers

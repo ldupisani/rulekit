@@ -51,13 +51,6 @@ entries:
         senses:
             - noun
         plural: taxis
-    tea:
-        senses:
-            - noun
-    team:
-        senses:
-            - noun
-        plural: teams
     teammate:
         senses:
             - noun
@@ -587,9 +580,6 @@ entries:
         senses:
             - noun
         plural: warehouses
-    washing:
-        senses:
-            - noun
     watch:
         senses:
             - verb
@@ -741,10 +731,6 @@ entries:
         senses:
             - noun
         plural: words
-    worker:
-        senses:
-            - noun
-        plural: workers
     workplace:
         senses:
             - noun

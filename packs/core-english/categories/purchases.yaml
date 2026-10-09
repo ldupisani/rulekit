@@ -1,5 +1,16 @@
 format: rulekit/categories@1
 categories:
+  price_at_marker: {parent: preposition}
+  price_for_marker: {parent: preposition}
+  price_quote_participle:
+    parent: verb
+    notes: Reduced-relative cost quotes; these do not assert payment.
+  marked_price_participle:
+    parent: verb
+    notes: A quoted asking price requires an explicit at complement; valuation is separate.
+  sale_offer_participle:
+    parent: verb
+    notes: A selling-for quote states the offered price, not a completed sale.
   purchase_lot_measure:
     parent: noun
     notes: A measured or packaged purchase can have one price for the whole lot.
@@ -21,10 +32,90 @@ categories:
   ingredient:
     parent: noun
     notes: Purchased food inputs, not a license to include unrelated purchases.
+  equal_division_verb:
+    parent: verb
+  equal_division_adverb:
+    parent: adverb
+  list_introduction_marker:
+    parent: adjective
+  itemized_acquisition_verb:
+    parent: verb
+    notes: Introduces an explicit priced list; ordering does not assert payment.
+  purchase_count_measure:
+    parent: noun
+    notes: Discrete counted packages or servings in an itemized price quote.
+    includes:
+    - serving_measure
+  purchase_item:
+    parent: noun
+    includes:
+    - ownable_quantity_object
+    - edible_quantity_object
+    notes: Goods or food named by a priced purchase line; the price remains explicit.
+  shared_cost_noun:
+    parent: noun
+  charge_record_noun:
+    parent: shared_cost_noun
+    notes: A document or account identifying charges in an explicit priced-list and sharing context. These words are not global synonyms and do not imply payment, settlement, or a known balance.
+  purchase_context_activity:
+    parent: verb
+    notes: A stated group activity preceding an explicit itemized acquisition.
+  purchase_context_site:
+    parent: noun
+    includes:
+    - quantity_interior_location
+    - organization
+    - nominal_location
 members:
+  price_at_marker: [at]
+  price_for_marker: [for]
+  price_quote_participle: [costing]
+  marked_price_participle: [priced, listed]
+  sale_offer_participle: [selling]
   clothes: [belt, coat, hat, pants, shirt, shoe, shorts, sock, suit, top]
   generic_purchase_collection_noun: [goods, item, merchandise, stuff, thing]
   ingredient: [apple, charcuterie, cheddar cheese, cheese, cold cut, cream cheese, sugar]
   mass_purchase_collection_noun: [merchandise, stuff]
   purchase_collection_noun: [clothes, ingredient]
   purchase_lot_measure: [bottle, box, gram, kilogram, pack, pound]
+  equal_division_verb:
+  - split
+  - share
+  - divide
+  equal_division_adverb:
+  - equally
+  list_introduction_marker:
+  - following
+  itemized_acquisition_verb:
+  - order
+  - orders
+  - ordered
+  - buy
+  - buys
+  - bought
+  - purchase
+  - purchases
+  - purchased
+  purchase_count_measure:
+  - bottle
+  - box
+  - pack
+  shared_cost_noun:
+  - cost
+  - expense
+  charge_record_noun:
+  - bill
+  - invoice
+  - statement
+  - check
+  - tab
+  - account
+  purchase_context_activity:
+  - arrive
+  - arrived
+  - work
+  - worked
+  - works
+adverb_verb_compatibility:
+  equal_division_adverb:
+  - equal_division_verb

@@ -1,0 +1,8 @@
+format: rulekit/categories@1
+categories:
+  education_cohort:
+    parent: population_cohort
+members:
+  education_cohort:
+  - grade
+  - level

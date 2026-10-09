@@ -7,7 +7,25 @@ categories:
     parent: conjunction
     notes: Contrasts two asserted clauses rather than offering alternatives.
   conditional_consequent_marker: {parent: adverb}
+  discovery_verb:
+    parent: verb
+  discovery_particle:
+    parent: adverb
+  contrast_discourse_adverb:
+    parent: adverb
+  knowledge_verb:
+    parent: verb
 members:
   additive_discourse_adverb: [also]
   conditional_consequent_marker: [then]
   contrastive_conjunction: [but]
+  discovery_verb:
+  - find
+  - found
+  discovery_particle:
+  - out
+  contrast_discourse_adverb:
+  - however
+  knowledge_verb:
+  - know
+  - knows

@@ -116,10 +116,6 @@ entries:
   government:
     senses:
     - noun
-  grade:
-    senses:
-    - noun
-    plural: grades
   grader:
     senses:
     - noun
@@ -439,15 +435,9 @@ entries:
   housed:
     senses:
     - verb
-  household:
-    senses:
-    - noun
   housewife:
     senses:
     - noun
-  however:
-    senses:
-    - adverb
   huge:
     senses:
     - adjective
@@ -930,10 +920,6 @@ entries:
   lettuce:
     senses:
     - noun
-  level:
-    senses:
-    - noun
-    plural: levels
   library:
     senses:
     - noun
@@ -990,9 +976,6 @@ entries:
   list:
     senses:
     - noun
-  listed:
-    senses:
-    - verb
   listen:
     senses:
     - noun
@@ -1106,11 +1089,6 @@ entries:
   makeup:
     senses:
     - noun
-  making:
-    senses:
-    - verb
-    verb:
-      lemma: make
   male:
     senses:
     - noun
@@ -1325,9 +1303,6 @@ entries:
     senses:
     - noun
   models:
-    senses:
-    - noun
-  mom:
     senses:
     - noun
   moment:

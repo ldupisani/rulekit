@@ -1,0 +1,321 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/named-joint-earnings
+  phase: read
+  match:
+    sentence:
+    - slot: people
+      span: true
+      enumeration_cat: name
+      enumeration_min_members: 2
+      at_start: true
+    - slot: earn
+      cat: wage_verb
+      finite_form: true
+    - slot: amount
+      cat: currency_measure
+      counted: true
+      bare: true
+    - opt:
+      - lit: from
+      - slot: service
+        cat: service_activity_verb
+        present_participle: true
+      - slot: object
+        cat: service_object
+        uncounted: true
+        bare: true
+    - opt:
+      - lit: all
+      - slot: period
+        cat: duration_measure
+        uncounted: true
+        bare: true
+    - &id001
+      lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: joint-total
+    entity: ''
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+    members: '{people.members}'
+    verb: '{earn}'
+  consumes:
+  - amount
+  satisfies:
+    earn:
+    - subject
+    service:
+    - subject
+- id: arithmetic/passive-share-of-stated-earnings
+  phase: read
+  match:
+    sentence:
+    - opt:
+      - slot: contrast
+        cat: contrast_discourse_adverb
+    - slot: share
+      type: fraction
+    - lit: of
+    - slot: amount
+      cat: currency_measure
+      counted: true
+      bare: true
+    - slot: cop
+      cat: singular_copula
+    - slot: earn
+      cat: wage_verb
+      past_participle: true
+    - lit: by
+    - slot: who
+      type: name
+    - *id001
+  emits:
+  - fact: batch_evidence
+    kind: joint-share
+    entity: '{who}'
+    measure: '{amount}'
+    value: share
+    position: '{share.span_start}'
+    subtotal: amount
+    verb: '{earn}'
+  consumes:
+  - share
+  - amount
+  satisfies:
+    earn:
+    - subject
+- id: arithmetic/active-share-of-stated-earnings
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: name
+      at_start: true
+    - slot: earn
+      cat: wage_verb
+      finite_form: true
+    - slot: share
+      type: fraction
+    - lit: of
+    - slot: amount
+      cat: currency_measure
+      counted: true
+      bare: true
+    - *id001
+  emits:
+  - fact: batch_evidence
+    kind: joint-share
+    entity: '{who}'
+    measure: '{amount}'
+    value: share
+    position: '{share.span_start}'
+    subtotal: amount
+    verb: '{earn}'
+  consumes:
+  - share
+  - amount
+- id: arithmetic/relative-share-of-earnings
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: name
+      at_start: true
+    - slot: earn
+      cat: wage_verb
+      finite_form: true
+    - slot: share
+      type: fraction
+    - lit: of
+    - lit: what
+    - slot: other
+      type: name
+    - slot: other_earn
+      cat: wage_verb
+      finite_form: true
+    - *id001
+  emits:
+  - fact: batch_evidence
+    kind: joint-relative
+    entity: '{who}'
+    measure: ''
+    value: share
+    position: '{share.span_start}'
+    container: '{other}'
+    verb: '{earn}'
+  consumes:
+  - share
+  where:
+  - distinct:
+    - who
+    - other
+  - same_lemma:
+    - earn
+    - other_earn
+
+- id: arithmetic/passive-share-of-referenced-earnings
+  phase: read
+  description: >
+    A fractional share of a previously stated joint amount. The account
+    consumer requires a unique, immediately preceding joint total; the
+    reference itself does not assert a new amount.
+  match:
+    sentence:
+    - opt:
+      - slot: contrast
+        cat: contrast_discourse_adverb
+    - slot: share
+      type: fraction
+    - slot: partitive
+      cat: partitive
+    - lit: [that, this, the]
+      consume_skipped: true
+    - slot: head
+      cat: quantity_anaphor
+      uncounted: true
+      bare: true
+    - slot: cop
+      cat: singular_copula
+    - slot: earn
+      cat: wage_verb
+      past_participle: true
+    - lit: by
+    - slot: who
+      type: name
+    - *id001
+  emits:
+  - fact: batch_evidence
+    kind: joint-share
+    entity: '{who}'
+    measure: ''
+    value: share
+    position: '{share.span_start}'
+    marker: anaphoric
+    verb: '{earn}'
+  consumes:
+  - share
+  satisfies:
+    partitive: [object]
+    earn:
+    - subject
+
+- id: arithmetic/active-share-of-referenced-earnings
+  phase: read
+  description: >
+    A fractional share of a previously stated joint amount. The account
+    consumer requires a unique, immediately preceding joint total; the
+    reference itself does not assert a new amount.
+  match:
+    sentence:
+    - slot: who
+      type: name
+      at_start: true
+    - slot: earn
+      cat: wage_verb
+      finite_form: true
+    - slot: share
+      type: fraction
+    - slot: partitive
+      cat: partitive
+    - lit: [that, this, the]
+      consume_skipped: true
+    - slot: head
+      cat: quantity_anaphor
+      uncounted: true
+      bare: true
+    - *id001
+  emits:
+  - fact: batch_evidence
+    kind: joint-share
+    entity: '{who}'
+    measure: ''
+    value: share
+    position: '{share.span_start}'
+    marker: anaphoric
+    verb: '{earn}'
+  consumes:
+  - share
+  satisfies:
+    partitive: [object]
+
+- id: arithmetic/passive-share-of-demonstrative-earnings
+  phase: read
+  description: >
+    A fractional share with an elided quantity head ("half of that"). The account
+    consumer requires a unique, immediately preceding joint total; the
+    reference itself does not assert a new amount.
+  match:
+    sentence:
+    - opt:
+      - slot: contrast
+        cat: contrast_discourse_adverb
+    - slot: share
+      type: fraction
+    - slot: partitive
+      cat: partitive
+    - lit: [that, this]
+      consume_skipped: true
+    - slot: cop
+      cat: singular_copula
+    - slot: earn
+      cat: wage_verb
+      past_participle: true
+    - lit: by
+    - slot: who
+      type: name
+    - *id001
+  emits:
+  - fact: batch_evidence
+    kind: joint-share
+    entity: '{who}'
+    measure: ''
+    value: share
+    position: '{share.span_start}'
+    marker: anaphoric
+    verb: '{earn}'
+  consumes:
+  - share
+  satisfies:
+    cop: [subject]
+    partitive: [object]
+    earn:
+    - subject
+
+- id: arithmetic/active-share-of-demonstrative-earnings
+  phase: read
+  description: >
+    A fractional share with an elided quantity head ("half of that"). The account
+    consumer requires a unique, immediately preceding joint total; the
+    reference itself does not assert a new amount.
+  match:
+    sentence:
+    - slot: who
+      type: name
+      at_start: true
+    - slot: earn
+      cat: wage_verb
+      finite_form: true
+    - slot: share
+      type: fraction
+    - slot: partitive
+      cat: partitive
+    - lit: [that, this]
+      consume_skipped: true
+    - *id001
+  emits:
+  - fact: batch_evidence
+    kind: joint-share
+    entity: '{who}'
+    measure: ''
+    value: share
+    position: '{share.span_start}'
+    marker: anaphoric
+    verb: '{earn}'
+  consumes:
+  - share
+  satisfies:
+    partitive: [object]

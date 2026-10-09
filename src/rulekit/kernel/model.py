@@ -1356,6 +1356,62 @@ class ResourceAllocation(Fact):
 
 
 @dataclass(frozen=True)
+class PopulationEvidence(Fact):
+    """A scoped population count or a classified share at an exact boundary.
+
+    Numeric boundaries remain source operands; categorical boundaries retain
+    their labels without inventing an ordering or converting them to counts.
+    """
+    kind: str
+    position: int
+    entity: str = ""
+    member: str = ""
+    scope: str = ""
+    value: float = 0.0
+    assessment: str = ""
+    operator: str = ""
+    boundary_label: str = ""
+    boundary_value: float | None = None
+
+    def key(self):
+        return ("population-evidence", self.provenance.sentence, self.position, self.kind)
+
+    def value_part(self):
+        return (self.entity, self.member, self.scope, self.value, self.assessment,
+                self.operator, self.boundary_label, self.boundary_value)
+
+
+@dataclass(frozen=True)
+class SpecificationEvidence(Fact):
+    """Input/output roles of a specification and its explicitly stated application.
+
+    Identical substance names and unit names do not collapse input into output.
+    Values remain raw until one explicit ratio reuse and event are validated.
+    """
+    kind: str
+    position: int
+    entity: str = ""
+    output_item: str = ""
+    input_item: str = ""
+    measure: str = ""
+    value: float = 0.0
+    output_measure: str = ""
+    output_value: float = 0.0
+    scope: str = ""
+    population: float = 0.0
+    scope_ref: ReferenceIdentity | None = field(default=None, metadata={"reference_for": "scope"})
+    population_item: str = ""
+
+    def key(self):
+        return ("specification-evidence", self.provenance.sentence, self.position, self.kind)
+
+    def value_part(self):
+        return (self.entity, self.output_item, self.input_item, self.measure, self.value,
+                self.output_measure, self.output_value, self.scope, self.population,
+                self.scope_ref.key() if self.scope_ref else None, self.population_item)
+
+
+@dataclass(frozen=True)
 class BatchEvidence(Fact):
     """An opening population, independent acquisition, or local batch evidence.
 
@@ -1378,6 +1434,7 @@ class BatchEvidence(Fact):
     attribute: str = ""
     sign: float = 0.0
     acquisition: str = ""
+    acquisition_ref: ReferenceIdentity | None = field(default=None, metadata={"reference_for": "acquisition"})
     per_member: float = 0.0
     subtotal: float = 0.0
     members: tuple[str, ...] = ()
@@ -1390,7 +1447,8 @@ class BatchEvidence(Fact):
         return (self.entity, self.measure, self.value, self.verb,
                 self.marker, self.fraction, self.container, self.attribute,
                 self.sign, self.acquisition, self.per_member, self.subtotal, self.members,
-                self.entity_ref.key() if self.entity_ref else None)
+                self.entity_ref.key() if self.entity_ref else None,
+                self.acquisition_ref.key() if self.acquisition_ref else None)
 
 
 @dataclass(frozen=True)

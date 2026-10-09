@@ -1105,29 +1105,12 @@ def _matching_adposition_roles(
 ) -> list[str]:
     """Return every declarative role licensed by this exact PP frame."""
 
-    roles = []
-    verb_fold = verb.features.get("fold", "")
-    for role, frames in reg.adposition_roles.items():
-        for (
-            preposition_category,
-            object_category,
-            verb_category,
-            allow_name_object,
-        ) in frames:
-            if not reg.word_in_category(marker, preposition_category):
-                continue
-            if not reg.word_in_category(verb_fold, verb_category):
-                continue
-            if obj.sense() == "name":
-                if not allow_name_object:
-                    continue
-            elif obj.sense() != "noun" or not reg.word_in_category(
-                _lemma(obj), object_category
-            ):
-                continue
-            roles.append(role)
-            break
-    return roles
+    if obj.sense() not in {"noun", "name"}:
+        return []
+    return list(reg.matching_adposition_roles(
+        marker, _lemma(obj), verb.features.get("fold", ""),
+        name_object=obj.sense() == "name"))
+
 
 
 def _referential_adposition_object(

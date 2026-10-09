@@ -191,6 +191,7 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
     }
 
     assert adjectives == {
+        "fast-food", "french", "neighboring", "neighbouring",
         "certain", "other", "little", "further", "right-hand", "left-hand",
         "uneaten", "personal", "monthly", "current",
         "helpful", "useful", "relevant", "valuable", "irrelevant",
@@ -265,7 +266,7 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
     # Savings adds six pluralizable nouns; month reuses duration descriptors.
     # Batch acquisition adds eight plural nouns and relevance descriptors.
     # Indexed holders add houses/streets/gnomes and ordinal/terminal modifiers.
-    assert len(plural_nouns) == 262
+    assert len(plural_nouns) == 297
     assert {
         "boy",
         "day",
@@ -277,6 +278,8 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
         "purpose",
         "pizza",
         "piece",
+        "portion",
+        "serving",
         "slice",
         "topic",
         "university",
@@ -285,11 +288,12 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
     assert registry.attribute_applies_to("final", "weight")
     # The business descriptor follows the shared allocation-participant
     # family, adding fourteen compatible nouns without another word list.
+    # Three social-group holders also inherit nine ordinal/terminal modifiers each.
     assert sum(
         registry.attribute_applies_to(attribute, noun)
         for attribute in adjectives
         for noun in plural_nouns
-    ) == 1550
+    ) == 1688
 
 
 def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> None:
@@ -367,7 +371,7 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
 def test_compatibility_rule_remains_supported_after_g5j_expansion() -> None:
     availability = list_rule_availability(load_project(CURATED))
 
-    assert sum(item.supported for item in availability) == 361
+    assert sum(item.supported for item in availability) == 393
     target = next(item for item in availability if item.id == RULE_ID)
     assert target.supported
     assert target.blockers == ()

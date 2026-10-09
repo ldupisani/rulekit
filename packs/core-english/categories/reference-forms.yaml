@@ -1,5 +1,8 @@
 format: rulekit/categories@1
 categories:
+  universal_person_reference:
+    parent: pronoun
+    notes: All people in an independently established discourse scope; no population is inferred.
   group_possessive_determiner: {parent: possessive_determiner}
   anaphoric_person_subject:
     parent: pronoun
@@ -21,6 +24,7 @@ categories:
   person_title:
     parent: title
 members:
+  universal_person_reference: [everyone]
   group_possessive_determiner: [their]
   anaphoric_person_possessive: [her, his, their]
   anaphoric_person_subject: [he, she, they]
@@ -33,6 +37,6 @@ members:
   - mrs
   - ms
 attribute_compatibility:
-  holder_ordinal: [ordinal_quantity_holder, path_checkpoint]
+  holder_ordinal: [ordinal_quantity_holder, path_checkpoint, local_yield_site]
   holder_prefix_order: [ordinal_quantity_holder]
   holder_terminal_order: [ordinal_quantity_holder]

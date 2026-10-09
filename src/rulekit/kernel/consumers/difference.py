@@ -22,6 +22,10 @@ def difference(ctx: ConsumerContext):
     from ..measures import _measure_substance_guard, _resolve_measure
     from ..totals import _entity_total, _entity_total_convertible, _verb_total
 
+    from .joint_shares import has_joint_shares, difference as joint_difference
+    if has_joint_shares(ctx.store):
+        return joint_difference(ctx)
+
     measure = ctx.query["measure"]
     singular = _resolve_measure(measure, ctx.store, ctx.reg, journal=ctx.log.journal)
     if singular is None:

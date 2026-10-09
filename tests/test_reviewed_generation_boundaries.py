@@ -3995,10 +3995,11 @@ def test_animate_appositive_requires_a_compatible_possessor() -> None:
         predicate.bound_requires_category
         for predicate in rule.where
         if predicate.bound_requires_category is not None
-        and predicate.bound_requires_category.bound == "appos_role"
+        and predicate.bound_requires_category.bound == "appos_det"
         and predicate.bound_requires_category.slot == "who"
     )
     assert requirement.cat == "quantity_event_participant"
+    assert requirement.bound_cat == "third_person_possessive_determiner"
     assert requirement.allow_proper_name is True
 
     with pytest.raises(GenerationError, match="no filler for who"):

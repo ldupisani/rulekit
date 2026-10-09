@@ -76,6 +76,11 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
     }
 
     assert occurrences == {
+        "arithmetic/threshold-share-reported-numeric": ((2, 0), "particle", ((2,),)),
+        'arithmetic/explicit-equal-bill-division': ((4,), 'equal', ()),
+        'arithmetic/passive-share-of-stated-earnings': ((0, 0), 'contrast', ((0,),)),
+        'arithmetic/threshold-share-reported': ((2, 0), 'particle', ((2,),)),
+
         'arithmetic/path-gap-and-exit-numeric-numeric': ((12,), 'immediate', ()),
         'arithmetic/path-gap-and-exit-numeric-numeric-reference01': ((12,), 'immediate', ()),
         'arithmetic/path-gap-and-exit-numeric-numeric-reference10': ((12,), 'immediate', ()),
@@ -228,7 +233,7 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
         for word, entry in sorted(project.registry.lexicon.items())
         if "adverb" in entry.senses
     ] == [
-        "again", "ago", "also", "away", "back and forth", "completely", MOVED_WORD, "daily", "down", "far", "finally", "fully", "further", "immediately", "individually",
+        "again", "ago", "also", "away", "back and forth", "completely", MOVED_WORD, "daily", "down", "equally", "far", "finally", "fully", "further", "however", "immediately", "individually",
         "just", "next", "off", "once again", "online", "only", "out", "outside", "recently", "respectively", "safely", "still", "then", "up",
     ]
 
@@ -280,13 +285,18 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
     project = load_project(CURATED)
     availability = list_rule_availability(project)
 
-    assert len(availability) == 405
-    assert sum(item.supported for item in availability) == 361
-    assert sum(not item.supported for item in availability) == 44
+    assert len(availability) == 464
+    assert sum(item.supported for item in availability) == 416
+    assert sum(not item.supported for item in availability) == 48
     assert all(
         not item.blockers
         or item.id
         in {
+                'arithmetic/named-joint-earnings',
+                'arithmetic/threshold-share',
+            'arithmetic/threshold-share-unindexed',
+                'arithmetic/threshold-share-reported',
+
                 "arithmetic/named-individual-portions",
                 "arithmetic/named-portion-consumption",
                 "arithmetic/prior-habitual-income-share",
@@ -335,7 +345,7 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
             }
         for item in availability
     )
-    assert len(exploration_status(project)["fillers"]) == 742
+    assert len(exploration_status(project)["fillers"]) == 793
 
 
 def test_currently_generates_a_matcher_confirmed_anchor() -> None:
@@ -409,7 +419,7 @@ def test_combined_project_exposes_only_declared_holding_anchor_adverbs() -> None
         for item in exploration_status(project)["fillers"]
     }
 
-    assert len(adverbs) == 53
+    assert len(adverbs) == 54
     holding_anchor_adverbs = {
         word
         for word in adverbs

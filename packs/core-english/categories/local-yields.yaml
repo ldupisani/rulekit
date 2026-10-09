@@ -1,0 +1,40 @@
+format: rulekit/categories@1
+categories:
+  distinct_location_descriptor:
+    parent: adjective
+    notes: Marks a different site; it does not supply its population or location.
+  collection_outing:
+    parent: noun
+  nearby_location_descriptor:
+    parent: adjective
+  local_yield_site:
+    parent: geographic_area
+  local_yield_station:
+    parent: noun
+  outing_motion_verb:
+    parent: verb
+members:
+  distinct_location_descriptor: [different]
+  collection_outing:
+  - trick-or-treating
+  - trick-or-tricking
+  nearby_location_descriptor:
+  - neighboring
+  - neighbouring
+  local_yield_site:
+  - subdivision
+  - neighborhood
+  - neighbourhood
+  - street
+  - road
+  local_yield_station:
+  - house
+  - shop
+  outing_motion_verb:
+  - go
+  - goes
+  - went
+attribute_compatibility:
+  distinct_location_descriptor: [local_yield_site]
+  nearby_location_descriptor:
+  - local_yield_site

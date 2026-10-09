@@ -30,6 +30,9 @@ def test_adposition_role_table_is_declarative_and_source_indexed() -> None:
         "accompaniment",
         "allocation-context",
         "cause",
+        "delivery-goal",
+        "delivery-source",
+        "information-source",
         "instrument",
         "manner",
         "means",
@@ -50,7 +53,10 @@ def test_adposition_role_table_is_declarative_and_source_indexed() -> None:
     }
     assert {
         ref.path.resolve() for ref in project.source_index.adposition_roles.values()
-    } == {source, (ROOT / "packs/core-english/categories/resource-accounting.yaml").resolve()}
+    } == {source} | {
+        (ROOT / f"packs/core-english/categories/{name}.yaml").resolve()
+        for name in ("resource-accounting", "delivery", "information")
+    }
 
 
 @pytest.mark.parametrize(

@@ -886,6 +886,21 @@ def _raw_domain(
                 if reg.word_in_category(filler.identity, token.cat)
             ]
         root = reg.root_sense(token.cat)
+        if "numeric_index_head" in reg.cat_ancestors(token.cat):
+            # Mirror the reader's trailing index: it identifies a collection,
+            # rather than quantifying that collection or its following members.
+            return [
+                _Filler(
+                    surface=f"{head.surface} {index.surface}",
+                    identity=head.identity,
+                    number="singular",
+                    kind="noun",
+                    label=index.surface,
+                )
+                for head in _lexical_fillers(reg, sense="noun", category=token.cat)
+                for index in _number_fillers(reg)
+                if index.value is not None and index.value > 0
+            ]
         if root == "noun" and (
             token.number == "plural" or token.generation_all_numbers
         ):
@@ -1940,22 +1955,36 @@ def _rule_blockers(
             object_domain = (
                 safe_domain(object_token) if object_token is not None else [None]
             )
-            if not any(
-                (
-                    not reg.modifier_has_host_boundary(modifier.identity)
-                    or reg.modifier_applies_to_host(
-                        modifier.identity, host.identity
-                    )
-                )
-                and (
-                    object_ is None
-                    or reg.modifier_attaches_to(
-                        modifier.identity, object_.identity, host.identity
-                    )
-                )
+            nominal_name = pred.modifier_host_compatible.nominal_host
+            nominal_alternative = nominal_name is not None and any(
+                reg.modifier_frame_compatible(
+                    modifier.identity, nominal.identity,
+                    object_.identity if object_ is not None else None)
                 for modifier in modifier_domain
-                for host in host_domain
+                if reg.modifier_has_host_boundary(modifier.identity)
+                for nominal in safe_domain(tokens_by_slot[nominal_name])
+                if reg.modifier_applies_to_host(modifier.identity, nominal.identity)
                 for object_ in object_domain
+            )
+
+            def primary_has_object(modifier: _Filler, host: _Filler) -> bool:
+                if pred.modifier_host_compatible.host_type == "verb":
+                    return any(
+                        reg.word_in_category(object_.identity, category)
+                        for _, category, _ in reg.adposition_object_frames(modifier.identity, host.identity)
+                        for object_ in object_domain if object_ is not None
+                    )
+                if (reg.modifier_has_host_boundary(modifier.identity)
+                        and not reg.modifier_applies_to_host(modifier.identity, host.identity)):
+                    return False
+                return any(reg.modifier_frame_compatible(
+                    modifier.identity, host.identity,
+                    object_.identity if object_ is not None else None,
+                ) for object_ in object_domain)
+
+            if not nominal_alternative and not any(
+                primary_has_object(modifier, host)
+                for modifier in modifier_domain for host in host_domain
             ):
                 blockers.append(
                     "no project-backed modifier/host compatibility exists "
@@ -2347,11 +2376,11 @@ def _constraint_groups(
     list[set[str]],
     list[set[str]],
     list[tuple[str, str, str]],
-    list[tuple[str, str, str, bool]],
+    list[tuple[str, str, str, bool, str | None]],
     list[tuple[str, str, str]],
     list[set[str]],
     tuple[tuple[str, ...], ...],
-    list[tuple[str, str, str | None]],
+    list[tuple[str, str, str | None, str, str | None]],
     list[tuple[str, str]],
     list[
         tuple[
@@ -2379,14 +2408,14 @@ def _constraint_groups(
     category_containment: list[tuple[str, tuple[str, ...]]] = []
     distinct_owner: list[set[str]] = []
     bound_type_requirements: list[tuple[str, str, str]] = []
-    bound_category_requirements: list[tuple[str, str, str, bool]] = []
+    bound_category_requirements: list[tuple[str, str, str, bool, str | None]] = []
     bound_category_exclusions: list[tuple[str, str, str]] = []
     category_bound_requirements: list[tuple[str, str, str]] = []
     bound_form_requirements: list[tuple[str, str, str]] = []
     same_presence: list[set[str]] = []
     attribute_pairs: list[tuple[str, str]] = []
     adverb_verb_pairs: list[tuple[str, str]] = []
-    modifier_host_pairs: list[tuple[str, str, str | None]] = []
+    modifier_host_pairs: list[tuple[str, str, str | None, str, str | None]] = []
     verb_role_requirements: list[
         tuple[
             str,
@@ -2459,6 +2488,7 @@ def _constraint_groups(
                     pred.bound_requires_category.slot,
                     pred.bound_requires_category.cat,
                     pred.bound_requires_category.allow_proper_name,
+                    pred.bound_requires_category.bound_cat,
                 )
             )
         if pred.category_requires_bound is not None:
@@ -2507,6 +2537,8 @@ def _constraint_groups(
                     pred.modifier_host_compatible.modifier,
                     pred.modifier_host_compatible.host,
                     pred.modifier_host_compatible.object,
+                    pred.modifier_host_compatible.host_type,
+                    pred.modifier_host_compatible.nominal_host,
                 )
             )
         if pred.verb_role_compatible is not None:
@@ -2588,8 +2620,9 @@ def _allowed_fillers(
     slot_category_exclusions: list[tuple[str, str]],
     absent_categories: tuple[str, ...],
     modifier_host_pairs: (
-        list[tuple[str, str, str | None]]
-        | tuple[tuple[str, str, str | None], ...]
+        list[tuple[str, str, str | None, str, str | None]]
+        | list[tuple[str, str, str | None]]
+        | tuple[tuple[str, str, str | None, str, str | None] | tuple[str, str, str | None], ...]
     ) = (),
     proportional_delta_requirements: tuple[tuple[str, str, str], ...] = (),
     number_compatible_groups: list[set[str]] | tuple[set[str], ...] = (),
@@ -2601,8 +2634,9 @@ def _allowed_fillers(
         list[tuple[str, str, str]] | tuple[tuple[str, str, str], ...]
     ) = (),
     bound_category_requirements: (
-        list[tuple[str, str, str, bool]]
-        | tuple[tuple[str, str, str, bool], ...]
+        list[tuple[str, str, str, bool, str | None]]
+        | list[tuple[str, str, str, bool]]
+        | tuple[tuple[str, str, str, bool, str | None] | tuple[str, str, str, bool], ...]
     ) = (),
     bound_category_exclusions: (
         list[tuple[str, str, str]] | tuple[tuple[str, str, str], ...]
@@ -2826,14 +2860,22 @@ def _allowed_fillers(
             return filler.kind == "name"
         if required_type in {"noun", "common_noun"}:
             return filler.kind == "noun"
+        if required_type in {"multiplier", "nonunit_multiplier"}:
+            value = reg.multipliers.get(filler.identity)
+            return value is not None and (
+                required_type == "multiplier" or float(value) != 1.0
+            )
         return True
 
     required_types = {
         required_type
         for bound_slot, target_slot, required_type
         in bound_type_requirements
-        if token.slot == target_slot and bound_slot in chosen
+        if token.slot == target_slot and (bound_slot in chosen or bound_slot == token.slot)
     }
+
+    identity_domains: dict[str, set[str]] = {}
+    verbal_object_frames: dict[tuple[str, str], tuple[tuple[str, str, bool], ...]] = {}
 
     def compatible(filler: _Filler) -> bool:
         def known_filler(name: str) -> _Filler | None:
@@ -2855,13 +2897,15 @@ def _allowed_fillers(
             )
 
         def possible_identities(name: str) -> set[str]:
+            if name in identity_domains:
+                return identity_domains[name]
             known = known_identity(name)
             if known is not None:
                 return {known}
             other = tokens_by_slot.get(name)
             if other is None or name not in active_slots:
                 return set()
-            return {
+            identities = {
                 candidate.identity
                 for candidate in candidate_domain(other)
                 if _outside_categories(candidate, absent_categories, reg)
@@ -2872,6 +2916,8 @@ def _allowed_fillers(
                     reg,
                 )
             }
+            identity_domains[name] = identities
+            return identities
 
         # Surface agreement must be feasible in every still-unfilled sibling
         # domain, not merely checked after an earlier random choice. Without
@@ -3094,7 +3140,9 @@ def _allowed_fillers(
                 )
             ):
                 return False
-        for modifier_name, host_name, object_name in modifier_host_pairs:
+        for modifier_name, host_name, object_name, *host_types in modifier_host_pairs:
+            host_type = host_types[0] if host_types else "noun"
+            nominal_name = host_types[1] if len(host_types) > 1 else None
             modifier = known_identity(modifier_name)
             host = known_identity(host_name)
             object_ = known_identity(object_name) if object_name is not None else None
@@ -3104,25 +3152,41 @@ def _allowed_fillers(
                 host_identity: str,
                 object_identity: str | None,
             ) -> bool:
-                return (
-                    (
-                        not reg.modifier_has_host_boundary(modifier_identity)
-                        or reg.modifier_applies_to_host(
-                            modifier_identity, host_identity
-                        )
-                    )
-                    and (
-                        object_identity is None
-                        or reg.modifier_attaches_to(
-                            modifier_identity, object_identity, host_identity
-                        )
-                    )
+                objects = [object_identity]
+                if host_type == "verb" and object_identity is None:
+                    if object_name not in active_slots:
+                        return False
+                    objects = possible_identities(object_name)
+                if host_type == "verb":
+                    frame_key = (modifier_identity, host_identity)
+                    if frame_key not in verbal_object_frames:
+                        verbal_object_frames[frame_key] = reg.adposition_object_frames(*frame_key)
+                    if any(
+                        reg.word_in_category(obj, category)
+                        for _, category, _ in verbal_object_frames[frame_key]
+                        for obj in objects if obj is not None
+                    ):
+                        return True
+                elif any(reg.modifier_frame_compatible(
+                    modifier_identity, host_identity, obj, host_type=host_type
+                ) for obj in objects):
+                    return True
+                if (nominal_name is None or nominal_name not in active_slots
+                        or not reg.modifier_has_host_boundary(modifier_identity)):
+                    return False
+                nominal = filler.identity if token.slot == nominal_name else known_identity(nominal_name)
+                nominals = [nominal] if nominal is not None else possible_identities(nominal_name)
+                return any(
+                    reg.modifier_frame_compatible(modifier_identity, noun, obj)
+                    for noun in nominals
+                    if reg.modifier_applies_to_host(modifier_identity, noun)
+                    for obj in objects
                 )
 
             if (
                 token.slot == modifier_name
                 and host is not None
-                and (object_name is None or object_ is not None)
+                and (host_type == "verb" or object_name is None or object_ is not None)
             ):
                 if not modifier_host_ok(filler.identity, host, object_):
                     return False
@@ -3139,7 +3203,7 @@ def _allowed_fillers(
             if (
                 token.slot == host_name
                 and modifier is not None
-                and (object_name is None or object_ is not None)
+                and (host_type == "verb" or object_name is None or object_ is not None)
             ):
                 if not modifier_host_ok(modifier, filler.identity, object_):
                     return False
@@ -3159,6 +3223,12 @@ def _allowed_fillers(
                 and modifier is not None
                 and host is not None
                 and not modifier_host_ok(modifier, host, filler.identity)
+            ):
+                return False
+            if (
+                token.slot == nominal_name
+                and modifier is not None and host is not None
+                and not modifier_host_ok(modifier, host, object_)
             ):
                 return False
         for fraction_name, direction_name, direction_category in (
@@ -3492,27 +3562,26 @@ def _allowed_fillers(
                 or reg.word_in_category(candidate.identity, category)
             )
 
-        for (
-            bound_slot,
-            target_slot,
-            category,
-            allow_proper_name,
-        ) in bound_category_requirements:
-            if (
-                token.slot == target_slot
-                and bound_slot in active_slots
-                and not in_category(
-                    filler, category, allow_proper_name
-                )
-            ):
-                return False
-            if token.slot == bound_slot:
-                target = chosen.get(target_slot) or locked_fillers.get(
-                    target_slot
-                )
-                if target is not None and not in_category(
-                    target, category, allow_proper_name
+        for bound_slot, target_slot, category, allow_proper_name, *trigger_categories in bound_category_requirements:
+            trigger_category = trigger_categories[0] if trigger_categories else None
+            def triggered(candidate: _Filler) -> bool:
+                return trigger_category is None or in_category(candidate, trigger_category, False)
+
+            if token.slot == target_slot and bound_slot in active_slots and not in_category(filler, category, allow_proper_name):
+                trigger = chosen.get(bound_slot) or locked_fillers.get(bound_slot)
+                if bound_slot == token.slot:
+                    trigger = filler
+                if trigger is not None:
+                    if triggered(trigger):
+                        return False
+                elif trigger_category is None or not any(
+                    not triggered(candidate)
+                    for candidate in candidate_domain(tokens_by_slot[bound_slot])
                 ):
+                    return False
+            if token.slot == bound_slot and triggered(filler):
+                target = chosen.get(target_slot) or locked_fillers.get(target_slot)
+                if target is not None and not in_category(target, category, allow_proper_name):
                     return False
         for bound_slot, target_slot, category in bound_category_exclusions:
             if (
@@ -5001,6 +5070,9 @@ def _where_expression(rule: PatternRule, index: int) -> tuple[str, tuple[str, ..
         rendered = f"modifier={value.modifier!r}, host={value.host!r}"
         if value.object is not None:
             rendered += f", object={value.object!r}"
+        if value.nominal_host is not None:
+            names = (*names, value.nominal_host)
+            rendered += f", nominal_host={value.nominal_host!r}"
     elif kind == "adverb_verb_compatible":
         names = (value.adverb, value.verb)
         rendered = f"adverb={value.adverb!r}, verb={value.verb!r}"
@@ -5022,6 +5094,8 @@ def _where_expression(rule: PatternRule, index: int) -> tuple[str, tuple[str, ..
             f"cat={value.cat!r}, "
             f"allow_proper_name={value.allow_proper_name!r}"
         )
+        if value.bound_cat is not None:
+            rendered += f", bound_cat={value.bound_cat!r}"
     elif kind == "bound_rejects_category":
         names = (value.bound, value.slot)
         rendered = (
@@ -5143,6 +5217,10 @@ def _where_reason(
                 f"{requirement.bound!r} was unbound, so no category "
                 f"restriction applied to {requirement.slot!r}"
             )
+        if requirement.bound_cat is not None:
+            trigger_units = _slot_units(slots.get(requirement.bound))
+            if not trigger_units or not reg.word_in_category(trigger_units[0].surface.casefold(), requirement.bound_cat):
+                return f"{requirement.bound!r} was outside {requirement.bound_cat!r}, so no category restriction applied"
         units = _slot_units(slots.get(requirement.slot))
         if not units:
             return (
@@ -5487,6 +5565,14 @@ def _where_reason(
             return "the target match did not expose the modifier host"
         modifier = _unit_lemma(modifier_units[0], reg)
         host = _unit_lemma(host_units[0], reg)
+        if pred.modifier_host_compatible.host_type == "verb":
+            if not object_units:
+                return "the target match did not expose the modifier object"
+            roles = reg.matching_adposition_roles(modifier, _unit_lemma(object_units[0], reg),
+                                                  host_units[0].surface.casefold())
+            if roles:
+                return f"{modifier_name}/{object_name} licensed by {host_name} as {', '.join(roles)}"
+            return f"{modifier_name}/{object_name} licensed by nominal host {pred.modifier_host_compatible.nominal_host!r}"
         pairs = reg.modifier_host_compatibility_pairs(modifier, host)
         rendered = ", ".join(
             f"{modifier_category} → {host_category}"
@@ -5938,6 +6024,13 @@ def _explain_candidate(
             if modifier_units and host_units:
                 modifier = _unit_lemma(modifier_units[0], project.registry)
                 host = _unit_lemma(host_units[0], project.registry)
+                nominal_name = predicate.modifier_host_compatible.nominal_host
+                nominal_units = _slot_units(slots.get(nominal_name)) if nominal_name else ()
+                if nominal_units:
+                    for pair in project.registry.modifier_host_compatibility_pairs(
+                        modifier, _unit_lemma(nominal_units[0], project.registry)
+                    ):
+                        where_sources.append(project.source_index.modifier_host_compatibility.get(pair))
                 for pair in project.registry.modifier_host_compatibility_pairs(
                     modifier, host
                 ):
@@ -5946,6 +6039,10 @@ def _explain_candidate(
                     )
                 if object_units:
                     object_ = _unit_lemma(object_units[0], project.registry)
+                    if predicate.modifier_host_compatible.host_type == "verb":
+                        for role in project.registry.matching_adposition_roles(
+                                modifier, object_, host_units[0].surface.casefold()):
+                            where_sources.append(project.source_index.adposition_roles.get(role))
                     for frame in project.registry.modifier_attachment_frames(
                         modifier, object_
                     ):
@@ -5972,6 +6069,8 @@ def _explain_candidate(
                 project.source_index.categories.get(predicate.absent["cat"])
             )
         if predicate.bound_requires_category is not None:
+            if predicate.bound_requires_category.bound_cat is not None:
+                where_sources.append(project.source_index.categories.get(predicate.bound_requires_category.bound_cat))
             where_sources.append(
                 project.source_index.categories.get(
                     predicate.bound_requires_category.cat

@@ -251,6 +251,31 @@ def _nominal_pass(reading: Reading, reg: Registry) -> bool:
                 f"{a.surface!r} owns {c.surface!r} — one owner-attributed noun",
             )
             return True
+    # Explicit class indices precede member nouns: "level 4 students".
+    # Unlike calendar years, the following noun does not claim this number.
+    for i in range(len(units) - 1):
+        a, b = units[i], units[i + 1]
+        if (a.sense() == "noun" and a.features.get("number") != "plural"
+                and reg.word_in_category(a.features.get("lemma", ""), "numeric_index_head")
+                and b.sense() == "value" and b.features.get("value_kind") == "count"
+                and b.features["value"] > 0 and float(b.features["value"]).is_integer()):
+            _merge(reading, i, a, "merge-class-index", "a trailing class index identifies rather than counts",
+                   {"label": str(int(b.features["value"]))})
+            return True
+    # An uppercase letter after an ordered assessment and boundary marker is
+    # a scale label, just as a letter after a container is an instance label.
+    # Its ordering is NOT inferred; consumers can only compare equal bounds.
+    for i in range(2, len(units)):
+        head, prep, label = units[i-2:i+1]
+        if (reg.word_in_category(head.features.get("lemma", ""), "ordered_assessment")
+                and prep.sense() == "preposition"
+                and len(label.surface) == 1 and label.surface.isupper()
+                and label.surface.isalpha() and label.features.get("value_kind") != "scale_label"):
+            reading.record("recognize-scale-label", label,
+                           {"senses": ["noun"], "lemma": label.surface, "unknown": False,
+                            "value_kind": "scale_label", "label": label.surface},
+                           "uppercase index in an explicit ordered assessment")
+            return True
     # noun + trailing single-capital-letter INDEX -> one label-distinguished
     # noun ("Jar A", "Class B", "Machine C") — the same entity-identity
     # problem merge-possessive/merge-attribute already solve for possessive

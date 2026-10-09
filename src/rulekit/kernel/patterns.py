@@ -31,6 +31,8 @@ from .model import (
     ResourceBalance,
     AccountEntry,
     BatchEvidence,
+    SpecificationEvidence,
+    PopulationEvidence,
     ProportionalBaseEvidence,
     Expenditure,
     BoundedActivityInquiry,
@@ -125,6 +127,8 @@ _FACT_CLASSES = {
     "indexed_path_evidence": IndexedPathEvidence,
     "measured_component": MeasuredComponent,
     "batch_evidence": BatchEvidence,
+    "specification_evidence": SpecificationEvidence,
+    "population_evidence": PopulationEvidence,
     "proportional_base_evidence": ProportionalBaseEvidence,
     "account_entry": AccountEntry,
     "text_value": TextValue,
@@ -458,6 +462,8 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
         t = token.type
         sense = unit.sense()
         kind = unit.features.get("value_kind")
+        if t == "scale_label":
+            return kind == "scale_label"
         if t == "ordinal":
             return kind == "ordinal"
         if t == "number":
@@ -998,8 +1004,10 @@ def _try_match_at(
             rest = tokens[k + 1:]
             for end in range(len(units), i, -1):
                 captured = tuple(units[i:end])
-                if token.enumeration_cat and _category_enumeration(captured, token.enumeration_cat, reg) is None:
-                    continue
+                if token.enumeration_cat:
+                    members = _category_enumeration(captured, token.enumeration_cat, reg)
+                    if members is None or len(members) < token.enumeration_min_members:
+                        continue
                 if not any(u.sense() not in SKIPPABLE_SENSES for u in captured):
                     continue  # a span must capture something meaningful
                 if not rest and any(
@@ -1528,6 +1536,12 @@ def _check_where(
             requirement = pred.bound_requires_category
             if requirement.bound not in slots:
                 continue
+            if requirement.bound_cat is not None:
+                trigger = slots[requirement.bound]
+                if isinstance(trigger, tuple):
+                    return False
+                if not _slot_ok(trigger, MatchToken(slot=requirement.bound, cat=requirement.bound_cat), reg):
+                    continue
             unit = slots.get(requirement.slot)
             if unit is None or isinstance(unit, tuple):
                 return False
@@ -1673,22 +1687,20 @@ def _check_where(
                 or isinstance(host, tuple)
             ):
                 return False
-            modifier_lemma = _lemma_of(modifier)
-            host_lemma = _lemma_of(host)
-            if (
-                reg.modifier_has_host_boundary(modifier_lemma)
-                and not reg.modifier_applies_to_host(
-                    modifier_lemma, host_lemma
-                )
-            ):
+            if object_name is not None and (object_ is None or isinstance(object_, tuple)):
                 return False
-            if object_name is not None:
-                if object_ is None or isinstance(object_, tuple):
-                    return False
-                if not reg.modifier_attaches_to(
-                    modifier_lemma, _lemma_of(object_), host_lemma
-                ):
-                    return False
+            nominal_name = pred.modifier_host_compatible.nominal_host
+            nominal = slots.get(nominal_name) if nominal_name else None
+            if nominal_name is not None and (nominal is None or isinstance(nominal, tuple)):
+                return False
+            if not reg.modifier_frame_compatible(
+                    _lemma_of(modifier),
+                    host.surface.casefold() if pred.modifier_host_compatible.host_type == "verb" else _lemma_of(host),
+                    _lemma_of(object_) if object_ is not None else None,
+                    host_type=pred.modifier_host_compatible.host_type,
+                    name_object=object_ is not None and object_.sense() == "name",
+                    nominal_host=_lemma_of(nominal) if nominal is not None else None):
+                return False
         if pred.adverb_verb_compatible is not None:
             adverb_name = pred.adverb_verb_compatible.adverb
             verb_name = pred.adverb_verb_compatible.verb
@@ -2301,7 +2313,7 @@ def _resolve_field(
 
 
 _NUMERIC_FIELDS = {
-    "lot_quantity", "per_member", "subtotal",
+    "unit_price", "lot_quantity", "per_member", "subtotal", "output_value", "population", "boundary_value",
     "group_size",
     "value", "year", "factor", "offset", "fraction", "numerator", "denominator",
     "elapsed",
@@ -2351,8 +2363,11 @@ def _build_fact(
         )
     kwargs = {}
     for key, raw in emit_fields.items():
-        kwargs[key] = _resolve_field(raw, slots, reg, key in _NUMERIC_FIELDS, log, rule_id)
-    if cls in (Expenditure, AccountEntry, BatchEvidence):
+        # Quantity is numeric for a priced expenditure, but names a dimension
+        # in other fact contracts (for example physics).
+        numeric = key in _NUMERIC_FIELDS or (cls is Expenditure and key == "quantity")
+        kwargs[key] = _resolve_field(raw, slots, reg, numeric, log, rule_id)
+    if cls in (Expenditure, AccountEntry, BatchEvidence, SpecificationEvidence, PopulationEvidence):
         # Source positions are identifiers, not arithmetic operands.
         for key in ("position", "event", "lot_position", "quantity_position", "cost_factor_position"):
             if key in kwargs:

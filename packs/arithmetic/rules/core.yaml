@@ -1340,11 +1340,11 @@ rules:
     phase: read
     description: >
       "Deka has three times as many pencils as her sister" — the ratio
-      standard is a complete possessive-determiner + animate-noun phrase,
+      standard is a complete possessive-determiner + personal-relation-noun phrase,
       with no trailing name. The noun head remains `sister` and its owner is
       preserved separately, so it joins only the same owned sister elsewhere.
       A following name ("as her sister Gigi") belongs to the longer
-      appositive rule, which wins by consuming the complete span.
+      appositive rule; the shorter rule requires a sentence boundary.
     match:
       sentence:
         - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true, bare_reference_category: bare_entity_reference}
@@ -1360,8 +1360,12 @@ rules:
             - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
         - {lit: as}
         - {slot: std_det, cat: possessive_determiner}
-        - {slot: std, cat: animate}
+        - {slot: std, cat: personal_relation_role}
+        - {lit: ".", consume_skipped: true}
     where:
+      - bound_requires_category: {bound: std_det, bound_cat: third_person_possessive_determiner, slot: who, cat: quantity_event_participant, allow_proper_name: true}
+      - modifier_host_compatible: {modifier: pp_prep, host: verb, object: pp_obj, host_type: verb, nominal_host: item}
+      - modifier_host_compatible: {modifier: pp_prep, host: item, object: pp_obj}
       - number_compatible: [who, verb]
       - slot_not_category: {slot: k, cat: predeterminer_multiplier}
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}

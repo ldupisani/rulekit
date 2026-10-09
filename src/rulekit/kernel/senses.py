@@ -120,6 +120,11 @@ def annotate_senses(reading: Reading, reg: Registry) -> Reading:
             # its preceding subject as a multiword name.
             and set(entry.senses) != {"verb"}
             and not reg.word_in_category(fold, "timeperiod")
+            and not reg.word_in_category(fold, "conventionally_capitalized_modifier")
+            and not (reg.word_in_category(fold, "numeric_index_head")
+                     and any(next_u.words[0].index == unit.words[-1].index + 1
+                             and next_u.features.get("value_kind") == "count"
+                             for next_u in reading.units))
             # a QUANTIFIER's capital is never a naming signal: an embedded
             # clause keeps its sentence-initial capital ("Is it true that No
             # plants are mushrooms?" — the FOLIO wrapper construction), and a

@@ -125,6 +125,10 @@ def consumer(name: str, *, time_scoped: bool = False,
 
 from . import (  # noqa: E402,F401  (import registers each handler)
     batch_outcomes as _batch_outcomes,
+    shared_account as _shared_account,
+    located_yield as _located_yield,
+    specification_scale as _specification_scale,
+    threshold_complement as _threshold_complement,
     holder_remainder as _holder_remainder,
     portion_remainder as _portion_remainder,
     proportional_base as _proportional_base,

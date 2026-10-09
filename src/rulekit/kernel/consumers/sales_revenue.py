@@ -4,7 +4,7 @@ from math import isfinite
 from . import consumer
 from .production_profit import compatible_products
 from ..answer import Answer, AnswerProof, ProofStep, SemanticNode
-from ..model import Atom, CommercialTerm, Membership, Predication
+from ..model import Atom, CommercialTerm, Membership, Predication, VerbalRelation
 from ..numeric_evidence import audit_numeric_mentions
 from ..source_coverage import membership_source_units, uncovered_units
 from ..evaluate import evaluate
@@ -43,6 +43,18 @@ def consume(ctx):
             if ctx.reg.word_in_category(word,'commercial_product'):
                 if unit.features.get('owner') or len(unit.features.get('reference_qualifiers',())) > 1:
                     return decline("product restrictions must be preserved by the complete price key")
+    def production_context(f):
+        return (isinstance(f, Predication) and f.subject == scale.entity and f.polarity
+                and ctx.reg.word_in_category(f.verb, 'commercial_production_verb')
+                and compatible_products(ctx.reg, [f.dobj] + [p.item for p in prices]))
+
+    # A location may elaborate an already licensed production/sale context.
+    # It must not excuse a separate event, actor, or unread condition.
+    context_sentences = {
+        f.provenance.sentence for f in ctx.store.facts
+        if production_context(f) and f.provenance.source != 'fold'
+        and not f.provenance.assumption
+    }
     background_coverage = defaultdict(set)
     for f in ctx.store.facts:
         if isinstance(f,CommercialTerm):
@@ -56,9 +68,14 @@ def consume(ctx):
             if reading is not None:
                 background_coverage[reading.sentence_index].update(membership_source_units(reading, f, ctx.reg))
             continue
-        if (isinstance(f,Predication) and f.subject == scale.entity and f.polarity
-                and ctx.reg.word_in_category(f.verb,'commercial_production_verb')
-                and compatible_products(ctx.reg,[f.dobj]+[p.item for p in prices])):
+        if production_context(f):
+            continue
+        if (isinstance(f, VerbalRelation) and f.entity == scale.entity and f.polarity
+                and f.role == 'spatial-location' and not f.provenance.assumption
+                and f.provenance.sentence in context_sentences
+                and ctx.reg.word_in_category(f.verb, 'sell')
+                and ctx.reg.word_in_category(f.prep, 'quantity_site_preposition')
+                and ctx.reg.word_in_category(f.obj, 'quantity_site_location')):
             continue
         return decline("the sales account contains an additional event or incompatible context")
     expected=defaultdict(Counter)

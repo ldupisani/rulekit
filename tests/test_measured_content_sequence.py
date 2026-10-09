@@ -83,7 +83,6 @@ def test_container_and_instrument_asks_select_the_same_stream(registry, ending):
 
 @pytest.mark.parametrize("ending", [
     "What was the final weight of the bucket in pounds?",
-    "What was the final weight of the jar in kilograms?",
     "What was the final weight of the jar in liters?",
     "What was the final weight of the jar of brownies in pounds?",
 ])
@@ -423,11 +422,18 @@ def test_water_density_does_not_convert_an_unrelated_substance(registry) -> None
     assert registry.substance_conversions[("water", "kilogram", "liter")] == 1
 
 
-def test_container_mass_needs_a_declared_conversion_to_the_anchor_unit(registry) -> None:
+def test_container_mass_uses_declared_conversion_to_the_anchor_unit(registry) -> None:
     result = solve(_content_amount_story(tare="2 pounds"), registry)
 
-    assert not result.answer.committed
-    assert "no known conversion" in result.answer.reason
+    assert result.answer.kind == "number"
+    assert result.answer.value == pytest.approx(4 - 2 * 0.45359237)
+
+
+def test_container_weight_uses_declared_pounds_to_kilograms(registry) -> None:
+    text = _paraphrased_story().rsplit("What", 1)[0] + "What was the final weight of the jar in kilograms?"
+    result = solve(text, registry)
+    assert result.answer.kind == "number"
+    assert result.answer.value == pytest.approx(38 * 0.45359237)
 
 
 def test_misspelled_mass_verb_does_not_create_a_tare_fact(registry) -> None:

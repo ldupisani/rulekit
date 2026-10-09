@@ -18,6 +18,7 @@ templates:
         tokens: []
         value: 0.0
         consumes: []
+        satisfies: {}
       layout:
         item: {slot: item, type: plural}
         item_tail:
@@ -37,6 +38,9 @@ templates:
         standard_qualifier: null
         guards:
           - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+          - bound_requires_category: {bound: appos_det, bound_cat: third_person_possessive_determiner, slot: who, cat: quantity_event_participant, allow_proper_name: true}
+          - modifier_host_compatible: {modifier: pp_prep, host: verb, object: pp_obj, host_type: verb, nominal_host: item}
+          - modifier_host_compatible: {modifier: pp_prep, host: item, object: pp_obj}
           - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
           - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
           - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
@@ -52,9 +56,10 @@ templates:
       apposition:
         - opt:
             - {slot: appos_det, cat: possessive_determiner}
-            - {slot: appos_role, cat: animate}
+            - {slot: appos_role, cat: personal_relation_role}
       plural_classes: []
       extra_guards: []
+      generation_guards: []
     rule:
       phase: read
       match:
@@ -87,9 +92,12 @@ templates:
         - {parameter: layout.guards}
         - {parameter: ratio.guards}
         - {parameter: extra_guards}
+      generation_where:
+        - {parameter: generation_guards}
       consumes:
         - {parameter: offset.consumes}
         - {parameter: ratio.consumes}
+      satisfies: {parameter: offset.satisfies}
       emits:
         - fact: relation
           subject: "{who}"
@@ -110,8 +118,7 @@ variants:
     template: as-many
     description: Two holders have equal counts of the same item.
     arguments:
-      extra_guards: &apposition_actor
-        - bound_requires_category: {bound: appos_role, slot: who, cat: quantity_event_participant, allow_proper_name: true}
+      extra_guards: &apposition_actor []
 
   - id: arithmetic/times-as-many
     template: as-many
@@ -146,7 +153,7 @@ variants:
       apposition: &animate_apposition
         - opt:
             - {slot: appos_det, cat: animate_possessive_determiner}
-            - {slot: appos_role, cat: animate}
+            - {slot: appos_role, cat: personal_relation_role}
       extra_guards:
         - verb_role_compatible: {verb: verb, roles: [who], verb_cat: spend_verb, role_cat: animate}
         - verb_role_compatible: {verb: verb, roles: [std], verb_cat: spend_verb, role_cat: animate, allow_plural_class: true}
@@ -156,17 +163,21 @@ variants:
     template: as-many
     description: >
       Two holders compare counts with an offset after multiplication.
-      This older form retains its established double/triple compatibility.
+      Reading retains established multiplier compatibility; generation uses nonunit adverbial multipliers.
     arguments:
       subject: *referential_holder
       verb: &finite_verb {slot: verb, type: verb, finite_form: true}
       offset: &signed_offset
         tokens:
-          - {slot: n, type: number}
+          - {slot: n, type: number, standalone: true}
           - {slot: dir, cat: quantity_delta}
           - {lit: than}
         value: n * sign(dir)
         consumes: [n]
+        satisfies: {n: [quantifies]}
+      generation_guards:
+        - slot_not_category: {slot: k, cat: predeterminer_multiplier}
+        - bound_requires_type: {bound: k, slot: k, type: nonunit_multiplier}
       ratio:
         tokens: [{slot: k, type: multiplier}]
         factor: k
@@ -281,11 +292,12 @@ variants:
       ratio: *adverbial_ratio
       offset: &nonnegative_offset
         tokens:
-          - {slot: n, type: number, value_min: 0}
+          - {slot: n, type: number, value_min: 0, standalone: true}
           - {slot: dir, cat: quantity_delta}
           - {lit: than}
         value: n * sign(dir)
         consumes: [n]
+        satisfies: {n: [quantifies]}
 
   - id: arithmetic/affine-fraction-qualified-measures
     template: as-many

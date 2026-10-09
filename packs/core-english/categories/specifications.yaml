@@ -1,0 +1,103 @@
+format: rulekit/categories@1
+categories:
+  specification_noun:
+    parent: noun
+    notes: A named plan or specification; the noun alone never licenses proportionality.
+  specification_resource:
+    parent: noun
+    includes:
+    - ownable_quantity_object
+    - edible_quantity_object
+    - quantity_container
+    - mixture_component
+  specification_unit:
+    parent: noun
+    includes:
+    - mass_unit
+    - volume_measure
+  specification_requirement_verb:
+    parent: verb
+  specification_application_verb:
+    parent: verb
+  specification_production_verb:
+    parent: verb
+  specification_scope:
+    parent: noun
+    includes: [social_group]
+    notes: The event, project or task to which an explicit specification is applied.
+  specification_preparation_verb:
+    parent: verb
+  reference_output_activity:
+    parent: verb
+    notes: The stated output side of an observed input/output ratio; no ratio is inferred without explicit 
+      adoption.
+  specification_demand_verb:
+    parent: verb
+  demand_participant:
+    parent: noun
+    includes:
+    - intentional_agent
+    - production_device
+  measured_output_container:
+    parent: noun
+    includes:
+    - quantity_container
+    notes: A container or portion whose numeric size states the output amount.
+  same_ratio_descriptor:
+    parent: adjective
+  proportional_relation_noun:
+    parent: noun
+members:
+  specification_noun:
+  - blueprint
+  - formula
+  - method
+  - plan
+  - prescription
+  - procedure
+  - recipe
+  specification_requirement_verb:
+  - require
+  - requires
+  - need
+  - needs
+  - use
+  - uses
+  specification_application_verb:
+  - use
+  - uses
+  - follow
+  - follows
+  specification_production_verb:
+  - make
+  - makes
+  specification_scope:
+  - project
+  - job
+  - task
+  specification_preparation_verb:
+  - make
+  - makes
+  - making
+  reference_output_activity:
+  - make
+  - makes
+  - produce
+  - produces
+  specification_demand_verb:
+  - want
+  - wants
+  - need
+  - needs
+  same_ratio_descriptor:
+  - same
+  proportional_relation_noun:
+  - ratio
+attribute_compatibility:
+  specification_unit:
+  - measured_output_container
+  same_ratio_descriptor:
+  - proportional_relation_noun
+measure_holder_compatibility:
+  specification_unit:
+  - measured_output_container

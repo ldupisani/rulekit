@@ -1,0 +1,37 @@
+format: rulekit/categories@1
+categories:
+  dining_venue:
+    parent: purchase_context_site
+  dining_venue_descriptor:
+    parent: adjective
+  food_origin_descriptor:
+    parent: conventionally_capitalized_modifier
+  serving_measure:
+    parent: measured_output_container
+  dining_activity:
+    parent: purchase_context_activity
+members:
+  dining_venue:
+  - chain
+  - restaurant
+  dining_venue_descriptor:
+  - fast-food
+  food_origin_descriptor:
+  - french
+  serving_measure:
+  - portion
+  - serving
+  - piece
+  - set
+  - cup
+  - platter
+  - plate
+  - bowl
+  dining_activity:
+  - eat
+  - eats
+attribute_compatibility:
+  dining_venue_descriptor:
+  - dining_venue
+  food_origin_descriptor:
+  - edible_quantity_object

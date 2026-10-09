@@ -1,0 +1,273 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/located-per-station-yield-outing
+  phase: read
+  match:
+    sentence:
+    - opt:
+      - slot: owner
+        cat: possessive_determiner
+      - slot: kin
+        cat: kinship_description
+        uncounted: true
+    - slot: who
+      type: name
+    - slot: go
+      cat: outing_motion_verb
+    - slot: activity
+      cat: collection_outing
+    - lit: in
+    - opt:
+      - slot: place_owner
+        cat: possessive_determiner
+    - slot: place
+      cat: local_yield_site
+      uncounted: true
+    - lit: where
+    - slot: ref
+      type: pronoun
+    - slot: get
+      cat: acquire
+    - slot: amount
+      cat: component_quantity_measure
+      counted: true
+      bare: true
+    - lit: of
+    - slot: item
+      cat: droppable_quantity_object
+      uncounted: true
+      bare: true
+    - lit: per
+    - slot: station
+      cat: local_yield_station
+      uncounted: true
+      bare: true
+    - &id001
+      lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: located-yield
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+    container: '{station}'
+    attribute: '{item}'
+    acquisition: '{place}'
+    marker: '{place.qualifier}'
+    verb: '{get}'
+  consumes:
+  - amount
+  satisfies:
+    ref:
+    - refers
+- id: arithmetic/located-per-station-yield
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: name
+      at_start: true
+    - slot: get
+      cat: acquire
+    - slot: amount
+      cat: component_quantity_measure
+      counted: true
+      bare: true
+    - lit: of
+    - slot: item
+      cat: droppable_quantity_object
+      uncounted: true
+      bare: true
+    - lit: per
+    - slot: station
+      cat: local_yield_station
+      uncounted: true
+      bare: true
+    - lit: in
+    - opt:
+      - slot: place_owner
+        cat: possessive_determiner
+    - slot: place
+      cat: local_yield_site
+      uncounted: true
+    - *id001
+  emits:
+  - fact: batch_evidence
+    kind: located-yield
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+    container: '{station}'
+    attribute: '{item}'
+    acquisition: '{place}'
+    marker: '{place.qualifier}'
+    verb: '{get}'
+  consumes:
+  - amount
+  satisfies: {}
+- id: arithmetic/indexed-site-population
+  phase: read
+  match:
+    sentence:
+    - opt:
+      - lit: and
+    - slot: place
+      cat: local_yield_site
+      qualified: true
+      qualifier_cat: holder_ordinal
+      uncounted: true
+    - slot: have
+      cat: possession_state
+    - slot: stations
+      cat: local_yield_station
+      counted: true
+      bare: true
+  emits:
+  - fact: batch_evidence
+    kind: site-population
+    entity: '{place}'
+    measure: '{stations}'
+    value: stations
+    position: '{stations.span_start}'
+    marker: '{place.qualifier}'
+  consumes:
+  - stations
+- id: arithmetic/located-collection-context
+  phase: read
+  match:
+    sentence:
+    - opt:
+      - slot: owner
+        cat: possessive_determiner
+      - slot: kin
+        cat: kinship_description
+        uncounted: true
+    - slot: who
+      type: name
+    - slot: go
+      cat: outing_motion_verb
+    - slot: activity
+      cat: collection_outing
+    - lit: in
+    - opt:
+      - slot: place_owner
+        cat: possessive_determiner
+    - slot: place
+      cat: local_yield_site
+      uncounted: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: located-context
+    entity: '{who}'
+    measure: ''
+    value: 0
+    position: '{who.span_start}'
+    acquisition: '{place}'
+    marker: '{place.qualifier}'
+- id: arithmetic/contextual-per-station-yield
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: name
+      at_start: true
+    - slot: get
+      cat: acquire
+    - slot: amount
+      cat: component_quantity_measure
+      counted: true
+      bare: true
+    - lit: of
+    - slot: item
+      cat: droppable_quantity_object
+      uncounted: true
+      bare: true
+    - lit: per
+    - slot: station
+      cat: local_yield_station
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: located-yield
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+    container: '{station}'
+    attribute: '{item}'
+    acquisition: ''
+    marker: ''
+    verb: '{get}'
+  consumes:
+  - amount
+  satisfies: {}
+- id: arithmetic/elliptical-indexed-site-population
+  phase: read
+  match:
+    sentence:
+    - opt:
+      - lit: and
+    - slot: ordinal
+      cat: holder_ordinal
+    - slot: have
+      cat: possession_state
+    - slot: stations
+      cat: local_yield_station
+      counted: true
+      bare: true
+  emits:
+  - fact: batch_evidence
+    kind: site-population
+    entity: ''
+    measure: '{stations}'
+    value: stations
+    position: '{stations.span_start}'
+    marker: '{ordinal}'
+  consumes:
+  - stations
+asks:
+- id: ask/located-yield-difference
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: many
+    - slot: dir
+      cat: count_quantity_delta
+    - slot: unit
+      cat: component_quantity_measure
+      uncounted: true
+      bare: true
+    - lit: of
+    - slot: item
+      cat: droppable_quantity_object
+      uncounted: true
+      bare: true
+    - slot: aux
+      type: auxiliary
+    - slot: who
+      type: name
+    - slot: get
+      cat: acquire
+    - opt:
+      - lit: than
+      - slot: other
+        type: name
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: located-yield-difference
+    entity: '{who}'
+    other: '{other.optional}'
+    measure: '{unit}'
+    item: '{item}'
+    verb: '{get}'
+    direction: '{dir}'

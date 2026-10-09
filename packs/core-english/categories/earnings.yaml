@@ -58,11 +58,10 @@ members:
   - salary
   periodic_income_verb: [earn, earned, earns, get, gets, got, receive, received, receives]
   resource_accumulation_verb: [save, saved, saves, saving]
-  service_activity_verb: [mow, mowed, mowing, mows, paint, painted, paints, shovel, shoveled, shovelled,
-      shovels, wash, washed, washes]
-  service_object: [driveway, gate, lawn, window]
+  service_activity_verb: ["mow", "mowed", "mowing", "mows", "paint", "painted", "paints", "shovel", "shoveled", "shovelled", "shovels", "wash", "washed", "washes", "washing"]
+  service_object: ["car", "driveway", "gate", "lawn", "window"]
   service_tariff_verb: [charge, charged, charges]
   surface_clearing_service: [shovel, shoveled, shovelled, shovels]
   surface_coating_service: [paint, painted, paints]
-  surface_washing_service: [wash, washed, washes]
-  washable_surface: [driveway, gate, window]
+  surface_washing_service: ["wash", "washed", "washes", "washing"]
+  washable_surface: ["car", "driveway", "gate", "window"]

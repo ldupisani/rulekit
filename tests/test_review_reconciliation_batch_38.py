@@ -332,7 +332,7 @@ def test_generator_enforces_the_same_modifier_host_boundary(project) -> None:
     )
     assert valid.target_status == "matched"
 
-    with pytest.raises(GenerationError, match="no filler for item"):
+    with pytest.raises(GenerationError, match="no filler for (item|verb)"):
         generate_candidate(
             project,
             rule_id=RULE_ID,

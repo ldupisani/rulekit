@@ -45,9 +45,6 @@ entries:
     senses:
     - noun
     plural: neighbors
-  neighborhood:
-    senses:
-    - noun
   neither:
     senses:
     - adjective
@@ -277,10 +274,6 @@ entries:
   otherwise:
     senses:
     - adverb
-  ounce:
-    senses:
-    - noun
-    plural: ounces
   out-of-pocket:
     senses:
     - adjective
@@ -569,10 +562,6 @@ entries:
   pixels:
     senses:
     - noun
-  plan:
-    senses:
-    - noun
-    plural: plans
   plane:
     senses:
     - noun
@@ -586,10 +575,6 @@ entries:
   plantation:
     senses:
     - noun
-  plate:
-    senses:
-    - noun
-    plural: plates
   player:
     senses:
     - noun
@@ -660,10 +645,6 @@ entries:
   pork:
     senses:
     - noun
-  portion:
-    senses:
-    - noun
-    plural: portions
   portraits:
     senses:
     - noun
@@ -711,9 +692,6 @@ entries:
   preparing:
     senses:
     - verb
-  prescription:
-    senses:
-    - noun
   present:
     senses:
     - noun
@@ -722,9 +700,6 @@ entries:
     senses:
     - noun
     plural: pretzels
-  priced:
-    senses:
-    - verb
   primary:
     senses:
     - adjective
@@ -937,10 +912,6 @@ entries:
   recharges:
     senses:
     - verb
-  recipe:
-    senses:
-    - noun
-    plural: recipes
   recommend:
     senses:
     - verb
@@ -1104,10 +1075,6 @@ entries:
   responds:
     senses:
     - verb
-  restaurant:
-    senses:
-    - noun
-    plural: restaurants
   rests:
     senses:
     - verb
@@ -1374,11 +1341,6 @@ entries:
   seller:
     senses:
     - noun
-  selling:
-    senses:
-    - verb
-    verb:
-      lemma: sell
   semester:
     senses:
     - noun
@@ -1405,10 +1367,6 @@ entries:
   service:
     senses:
     - adjective
-  serving:
-    senses:
-    - noun
-    plural: servings
   session:
     senses:
     - noun
@@ -1571,10 +1529,6 @@ entries:
   sir:
     senses:
     - title
-  sister:
-    senses:
-    - noun
-    plural: sisters
   sit:
     senses:
     - verb
@@ -1687,10 +1641,6 @@ entries:
   soccer:
     senses:
     - noun
-  soda:
-    senses:
-    - noun
-    plural: sodas
   sofa:
     senses:
     - noun
@@ -1723,9 +1673,6 @@ entries:
     senses:
     - noun
     plural: spaces
-  spaghetti:
-    senses:
-    - noun
   sparrow:
     senses:
     - noun
@@ -1758,9 +1705,6 @@ entries:
     senses:
     - noun
   spit:
-    senses:
-    - verb
-  split:
     senses:
     - verb
   splits:

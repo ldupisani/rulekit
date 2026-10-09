@@ -15,6 +15,12 @@ categories:
   depiction_bearing_noun:
     parent: noun
     notes: A representation or surface that can carry a depicted subject.
+  numeric_index_head:
+    parent: noun
+    notes: A trailing integer identifies a collection rather than counting its following members.
+  conventionally_capitalized_modifier:
+    parent: adjective
+    notes: Common modifiers whose conventional capitalization does not introduce a person name.
 members:
   depictable_noun: [flower, rose, snowflake, tree, truck]
   depiction_bearing_noun: [card, design, pattern, stamp]

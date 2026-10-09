@@ -1,0 +1,432 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/threshold-share-reported
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: name
+      at_start: true
+    - slot: discover
+      cat: discovery_verb
+    - opt:
+      - slot: particle
+        cat: discovery_particle
+    - lit: that
+    - slot: share
+      type: fraction
+    - lit: of
+    - opt:
+      - slot: owner
+        cat: possessive_determiner
+    - slot: cohort
+      cat: population_cohort
+      uncounted: true
+    - slot: members
+      cat: population_member
+      uncounted: true
+      bare: true
+    - slot: get
+      cat: assessment_receipt_verb
+    - slot: assessment
+      cat: ordered_assessment
+      uncounted: true
+    - slot: bound
+      cat: threshold_operator
+    - slot: label
+      type: scale_label
+    - &id001
+      lit: .
+      consume_skipped: true
+  emits:
+  - fact: population_evidence
+    kind: share
+    entity: '{who}'
+    value: share
+    position: '{share.span_start}'
+    member: '{members}'
+    scope: '{cohort}:{cohort.label}'
+    boundary_label: '{label.label}'
+    assessment: '{assessment.qualified}'
+    operator: '{bound}'
+  consumes:
+  - share
+  satisfies:
+    owner:
+    - refers
+- id: arithmetic/indexed-population-count
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: name
+      at_start: true
+    - slot: have
+      cat: possession_state
+    - slot: members
+      cat: population_member
+      counted: true
+      bare: true
+    - lit: in
+    - slot: cohort
+      cat: population_cohort
+      uncounted: true
+    - *id001
+  emits:
+  - fact: population_evidence
+    kind: population
+    entity: '{who}'
+    value: members
+    position: '{members.span_start}'
+    member: '{members}'
+    scope: '{cohort}:{cohort.label}'
+  consumes:
+  - members
+- id: arithmetic/threshold-share-reported-numeric
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: name
+      at_start: true
+    - slot: discover
+      cat: discovery_verb
+    - opt:
+      - slot: particle
+        cat: discovery_particle
+    - lit: that
+    - slot: share
+      type: fraction
+    - lit: of
+    - opt:
+      - slot: owner
+        cat: possessive_determiner
+    - slot: cohort
+      cat: population_cohort
+      uncounted: true
+    - slot: members
+      cat: population_member
+      uncounted: true
+      bare: true
+    - slot: get
+      cat: assessment_receipt_verb
+    - slot: assessment
+      cat: ordered_assessment
+      uncounted: true
+    - slot: bound
+      cat: threshold_operator
+    - slot: label
+      type: number
+      standalone: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: population_evidence
+    kind: share
+    entity: '{who}'
+    value: share
+    position: '{share.span_start}'
+    member: '{members}'
+    scope: '{cohort}:{cohort.label}'
+    assessment: '{assessment.qualified}'
+    operator: '{bound}'
+    boundary_value: label
+  consumes:
+  - share
+  - label
+  satisfies:
+    owner:
+    - refers
+    label:
+    - quantifies
+asks:
+- id: ask/threshold-population-count-inclusive
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: many
+    - opt:
+      - lit: of
+    - opt:
+      - slot: owner
+        cat: possessive_determiner
+    - slot: members
+      cat: population_member
+      uncounted: true
+    - slot: get
+      cat: assessment_receipt_verb
+    - slot: assessment
+      cat: ordered_assessment
+      uncounted: true
+    - lit: of
+    - slot: label
+      type: scale_label
+    - lit: and
+    - slot: bound
+      cat: threshold_operator
+    - &id002
+      lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: threshold-complement
+    entity: '{members.owner_identity}'
+    assessment: '{assessment.qualified}'
+    operator: '{bound}'
+    inclusive: 'true'
+    member: '{members}'
+    boundary_label: '{label.label}'
+  satisfies:
+    owner:
+    - refers
+    bound:
+    - object
+- id: ask/threshold-population-count-strict
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: many
+    - opt:
+      - lit: of
+    - opt:
+      - slot: owner
+        cat: possessive_determiner
+    - slot: members
+      cat: population_member
+      uncounted: true
+    - slot: get
+      cat: assessment_receipt_verb
+    - slot: assessment
+      cat: ordered_assessment
+      uncounted: true
+    - slot: bound
+      cat: threshold_operator
+    - slot: label
+      type: scale_label
+    - *id002
+  resolves:
+    consumer: threshold-complement
+    entity: '{members.owner_identity}'
+    assessment: '{assessment.qualified}'
+    operator: '{bound}'
+    inclusive: 'false'
+    member: '{members}'
+    boundary_label: '{label.label}'
+  satisfies:
+    owner:
+    - refers
+    bound:
+    - object
+- id: ask/threshold-population-count-inclusive-numeric
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: many
+    - opt:
+      - lit: of
+    - opt:
+      - slot: owner
+        cat: possessive_determiner
+    - slot: members
+      cat: population_member
+      uncounted: true
+    - slot: get
+      cat: assessment_receipt_verb
+    - slot: assessment
+      cat: ordered_assessment
+      uncounted: true
+    - lit: of
+    - slot: label
+      type: number
+      standalone: true
+    - lit: and
+    - slot: bound
+      cat: threshold_operator
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: threshold-complement
+    entity: '{members.owner_identity}'
+    assessment: '{assessment.qualified}'
+    operator: '{bound}'
+    inclusive: 'true'
+    member: '{members}'
+    boundary_value: '{label.value}'
+  satisfies:
+    owner:
+    - refers
+    bound:
+    - object
+    label:
+    - quantifies
+- id: ask/threshold-population-count-strict-numeric
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: many
+    - opt:
+      - lit: of
+    - opt:
+      - slot: owner
+        cat: possessive_determiner
+    - slot: members
+      cat: population_member
+      uncounted: true
+    - slot: get
+      cat: assessment_receipt_verb
+    - slot: assessment
+      cat: ordered_assessment
+      uncounted: true
+    - slot: bound
+      cat: threshold_operator
+    - slot: label
+      type: number
+      standalone: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: threshold-complement
+    entity: '{members.owner_identity}'
+    assessment: '{assessment.qualified}'
+    operator: '{bound}'
+    inclusive: 'false'
+    member: '{members}'
+    boundary_value: '{label.value}'
+  satisfies:
+    owner:
+    - refers
+    bound:
+    - object
+    label:
+    - quantifies
+templates:
+  population-share:
+    parameters:
+      collection:
+      - slot: cohort
+        cat: population_cohort
+        uncounted: true
+      - slot: members
+        cat: population_member
+        uncounted: true
+        bare: true
+      entity: '{cohort.owner_identity}'
+      scope: '{cohort}:{cohort.label}'
+    rule:
+      phase: read
+      match:
+        sentence:
+        - slot: share
+          type: fraction
+        - lit: of
+        - opt:
+          - slot: owner
+            cat: possessive_determiner
+        - parameter: collection
+        - slot: get
+          cat: assessment_receipt_verb
+        - slot: assessment
+          cat: ordered_assessment
+          uncounted: true
+        - slot: bound
+          cat: threshold_operator
+        - slot: label
+          type: scale_label
+        - lit: .
+          consume_skipped: true
+      emits:
+      - fact: population_evidence
+        kind: share
+        entity:
+          parameter: entity
+        value: share
+        position: '{share.span_start}'
+        member: '{members}'
+        scope:
+          parameter: scope
+        boundary_label: '{label.label}'
+        assessment: '{assessment.qualified}'
+        operator: '{bound}'
+      consumes:
+      - share
+      satisfies: {}
+  population-share-numeric:
+    parameters:
+      collection:
+      - slot: cohort
+        cat: population_cohort
+        uncounted: true
+      - slot: members
+        cat: population_member
+        uncounted: true
+        bare: true
+      entity: '{cohort.owner_identity}'
+      scope: '{cohort}:{cohort.label}'
+    rule:
+      phase: read
+      match:
+        sentence:
+        - slot: share
+          type: fraction
+        - lit: of
+        - opt:
+          - slot: owner
+            cat: possessive_determiner
+        - parameter: collection
+        - slot: get
+          cat: assessment_receipt_verb
+        - slot: assessment
+          cat: ordered_assessment
+          uncounted: true
+        - slot: bound
+          cat: threshold_operator
+        - slot: label
+          type: number
+          standalone: true
+        - lit: .
+          consume_skipped: true
+      emits:
+      - fact: population_evidence
+        kind: share
+        entity:
+          parameter: entity
+        value: share
+        position: '{share.span_start}'
+        member: '{members}'
+        scope:
+          parameter: scope
+        assessment: '{assessment.qualified}'
+        operator: '{bound}'
+        boundary_value: label
+      consumes:
+      - share
+      - label
+      satisfies:
+        label:
+        - quantifies
+variants:
+- id: arithmetic/threshold-share
+  template: population-share
+- id: arithmetic/threshold-share-unindexed
+  template: population-share
+  arguments:
+    collection:
+    - slot: members
+      cat: population_member
+      uncounted: true
+    entity: '{members.owner_identity}'
+    scope: ''
+- id: arithmetic/threshold-share-numeric
+  template: population-share-numeric
+- id: arithmetic/threshold-share-numeric-unindexed
+  template: population-share-numeric
+  arguments:
+    collection:
+    - slot: members
+      cat: population_member
+      uncounted: true
+    entity: '{members.owner_identity}'
+    scope: ''

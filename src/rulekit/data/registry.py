@@ -378,6 +378,37 @@ class Registry:
     def modifier_applies_to_host(self, modifier: str, host: str) -> bool:
         return bool(self.modifier_host_compatibility_pairs(modifier, host))
 
+    def adposition_object_frames(self, marker: str, verb: str) -> tuple[tuple[str, str, bool], ...]:
+        """Role/object-category alternatives licensed by this marker and verb."""
+        return tuple(
+            (role, object_category, allow_name)
+            for role, frames in self.adposition_roles.items()
+            for prep, object_category, host, allow_name in frames
+            if self.word_in_category(marker, prep) and self.word_in_category(verb, host)
+        )
+
+    def matching_adposition_roles(self, marker: str, object_: str, verb: str,
+                                  *, name_object: bool = False) -> tuple[str, ...]:
+        """Shared lexical PP licences for learning, matching and generation."""
+        return tuple(dict.fromkeys(
+            role for role, object_category, allow_name in self.adposition_object_frames(marker, verb)
+            if (allow_name if name_object else self.word_in_category(object_, object_category))
+        ))
+
+    def modifier_frame_compatible(self, modifier: str, host: str, object_: str | None,
+                                  *, host_type: str = "noun", name_object: bool = False,
+                                  nominal_host: str | None = None) -> bool:
+        if host_type == "verb":
+            return object_ is not None and (
+                bool(self.matching_adposition_roles(modifier, object_, host, name_object=name_object))
+                or (nominal_host is not None
+                    and self.modifier_has_host_boundary(modifier)
+                    and self.modifier_frame_compatible(modifier, nominal_host, object_))
+            )
+        return ((not self.modifier_has_host_boundary(modifier)
+                 or self.modifier_applies_to_host(modifier, host))
+                and (object_ is None or self.modifier_attaches_to(modifier, object_, host)))
+
     def modifier_attachment_frames(
         self, modifier: str, object_: str
     ) -> tuple[tuple[str, str, str], ...]:
@@ -1591,11 +1622,15 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                         f"{modifier_compatibility.modifier!r} is not "
                         "preposition-rooted"
                     )
-                if _slot_root(host) != "noun":
+                if _slot_root(host) != modifier_compatibility.host_type:
                     raise CompileError(
                         f"rule {rule.id!r} modifier-host host slot "
-                        f"{modifier_compatibility.host!r} is not noun-rooted"
+                        f"{modifier_compatibility.host!r} is not {modifier_compatibility.host_type}-rooted"
                     )
+                if modifier_compatibility.nominal_host is not None:
+                    nominal = slots.get(modifier_compatibility.nominal_host)
+                    if nominal is None or _slot_root(nominal) != "noun":
+                        raise CompileError(f"rule {rule.id!r} nominal alternative must name a noun-rooted slot")
                 if modifier_compatibility.object is not None:
                     object_ = slots.get(modifier_compatibility.object)
                     if object_ is None:
@@ -1647,6 +1682,8 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                         f"rule {rule.id!r} conditional category names "
                         f"unknown category {conditional.cat!r}"
                     )
+                if conditional.bound_cat is not None and conditional.bound_cat not in valid_gates:
+                    raise CompileError(f"rule {rule.id!r} conditional trigger names unknown category {conditional.bound_cat!r}")
             conditional_form = predicate.bound_requires_form
             if conditional_form is not None:
                 for slot_name in (
@@ -2049,6 +2086,8 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                         f"ask {ask.id!r} conditional category names "
                         f"unknown category {conditional.cat!r}"
                     )
+                if conditional.bound_cat is not None and conditional.bound_cat not in valid_gates:
+                    raise CompileError(f"ask {ask.id!r} conditional trigger names unknown category {conditional.bound_cat!r}")
             conditional_type = predicate.bound_requires_type
             if conditional_type is not None:
                 for slot_name in (

@@ -155,7 +155,7 @@ def collect_gaps(readings: list[Reading]) -> list[Gap]:
 
 
 def _discourse_candidates(
-    readings: list[Reading], upto: int
+    readings: list[Reading], upto: int, reg: Registry | None
 ) -> dict[ReferenceIdentity, tuple[int, Unit]]:
     """Name units introduced before `upto`, keyed by full identity.
 
@@ -166,10 +166,24 @@ def _discourse_candidates(
     for reading in readings:
         if reading.sentence_index >= upto:
             continue
-        for unit in reading.units:
+        subjects = {id(ob.target) for verb in reading.units if verb.sense() == "verb"
+                    for ob in verb.obligations() if ob.need == "subject" and ob.met}
+        for index, unit in enumerate(reading.units):
             if unit.sense() == "name":
                 lemma = unit.features.get("lemma", unit.features["fold"])
                 out[reference_from_unit(unit)] = (reading.sentence_index, unit)
+            # An owned plural subject, or its preceding indexed collection, preserves
+            # its explicit named owner: condensation must not erase that
+            # discourse participant. Keep all competing names in the pool.
+            owner = unit.features.get("owner_antecedent")
+            if (reg is not None and isinstance(owner, Unit) and owner.sense() == "name"
+                    and ((id(unit) in subjects and unit.features.get("number") == "plural")
+                         or (unit.features.get("label")
+                             and reg.word_in_category(unit.features.get("lemma", ""), "numeric_index_head")
+                             and index + 1 < len(reading.units)
+                             and id(reading.units[index + 1]) in subjects
+                             and reading.units[index + 1].features.get("number") == "plural"))):
+                out[reference_from_unit(owner)] = (reading.sentence_index, owner)
     return out
 
 
@@ -669,7 +683,7 @@ def _bind_discourse(
                         local_subjects
                         or prior_owner
                         or _discourse_candidates(
-                            readings, reading.sentence_index
+                            readings, reading.sentence_index, reg
                         )
                     )
                 # THE ZERO-NAME FALLBACK. Common nouns are considered ONLY

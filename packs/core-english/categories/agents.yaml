@@ -1,5 +1,8 @@
 format: rulekit/categories@1
 categories:
+  social_group:
+    parent: quantity_holder
+    notes: A collective group of people; the noun does not assert its members or their count.
   person:
     parent: quantity_event_participant
     includes: [animate]
@@ -31,9 +34,11 @@ categories:
     parent: quantity_holder
     notes: A geographic scope that can contain a stated institutional population.
 members:
+  social_group: [family, household, team]
   educational_institution: [university]
-  geographic_area: [area]
+  geographic_area: ["area", "neighborhood", "subdivision"]
   production_device: [machine]
   person:
   - painter
   - son
+  - worker

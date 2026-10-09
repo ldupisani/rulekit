@@ -116,9 +116,10 @@ def test_sales_single_product(reg):
     assert result.answer.value == 120, result.answer
 
 
-def test_sales_background(reg):
+@pytest.mark.parametrize("place", ["park", "garden", "university"])
+def test_sales_background(reg, place):
     q = sales().replace("Mira charges", "She charges")
-    result = solve("Mira is a painter. She paints pictures and sells them at the park. " + q, reg)
+    result = solve(f"Mira is a painter. She paints pictures and sells them at the {place}. " + q, reg)
     assert result.answer.value == 336, result.answer
 
 
@@ -214,3 +215,13 @@ def test_modified_foods_are_compositional_not_atomic_products(reg):
     assert set(ref.qualifiers) == {"personal", "pan"}
     cheese = next(u for u in analyze("personal cheese pizzas", reg).units if u.features.get("lemma") == "pizza")
     assert reference_from_unit(cheese) != ref
+
+
+@pytest.mark.parametrize('background', [
+    'Tess paints pictures and sells them at the park.',
+    'Mira sells them at the park.',
+    'Mira paints pictures and buys them at the park.',
+    'Mira paints pictures and sells them at the park. She sells them at the garden.',
+])
+def test_sales_location_does_not_excuse_an_unrelated_event(reg, background):
+    assert solve(background + ' ' + sales(), reg).answer.kind == 'decline'

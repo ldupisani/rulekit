@@ -2465,10 +2465,16 @@ modifier_attachment_compatibility:
   host_category: tree_borne_quantity
 adposition_roles:
   spatial-location:
-    preposition_category: spatial_location_preposition
+  - preposition_category: spatial_location_preposition
     object_category: spatial_reference_noun
     verb_category: spatial_relation_verb
     allow_name_object: true
+  - preposition_category: spatial_location_preposition
+    object_category: quantity_location
+    verb_category: quantity_comparison_verb
+  - preposition_category: spatial_location_preposition
+    object_category: quantity_location
+    verb_category: past_departure_quantity_verb
   spatial-source:
     preposition_category: spatial_source_preposition
     object_category: spatial_reference_noun
@@ -2574,8 +2580,22 @@ members:
   aggregate_contents_label: [content, contents, goodie]
   aggregate_noun: [amount, number]
   animal: [alpaca, beetle, bird, cat, dog, fish, hamster, jaguar, rabbit, snake]
-  animate: [brother, child, friend, gardener, grandparent, guardian, librarian, parent, partner, person,
-      shopper, student, teacher, violinist]
+  animate:
+  - brother
+  - child
+  - friend
+  - gardener
+  - grandparent
+  - guardian
+  - librarian
+  - mom
+  - parent
+  - partner
+  - person
+  - shopper
+  - student
+  - teacher
+  - violinist
   animate_object_pronoun: [her, him, them]
   animate_object_verb: [taught, teach, teaches]
   animate_possessive_determiner: [her, his, my, their, your]
@@ -2658,6 +2678,7 @@ members:
   - ball
   - book
   - cake
+  - candy
   - card
   - charcuterie
   - cheddar cheese
@@ -2671,6 +2692,7 @@ members:
   - egg
   - envelope
   - grape
+  - hamburger
   - key
   - marble
   - pack
@@ -2698,15 +2720,20 @@ members:
   - beetle
   - bird
   - cake
+  - candy
   - charcuterie
   - cheddar cheese
   - cheese
+  - coffee
   - cold cut
   - cookie
   - cream cheese
   - egg
   - fish
+  - food
+  - fries
   - grape
+  - hamburger
   - pear
   - pickle
   - piece
@@ -2715,7 +2742,10 @@ members:
   - rabbit
   - slice
   - snake
+  - soda
+  - spaghetti
   - sugar
+  - tea
   - tomato
   enrollment_quantity_object: [course, student]
   enrollment_quantity_verb: [enroll, enrolled, enrolling, enrolls]
@@ -2776,7 +2806,7 @@ members:
   mass_measure: [gram, kilogram, pound, weight]
   mass_quantity_delta: [less, more]
   mass_quantity_noun: [clay, litter, money, paper, rest, sand, sugar, vinegar, water, wool]
-  mass_unit: [gram, kilogram, pound]
+  mass_unit: ["gram", "kilogram", "ounce", "pound"]
   material_addition_quantity_verb: [add, added, adding, adds]
   means_compatible_verb: [jumped, ran, travel, traveled, travels, walked]
   means_preposition: [aboard, by, via]
@@ -2882,9 +2912,34 @@ members:
   quantity_event_participant: [animal, dragon, monster]
   quantity_event_verb: [leave, leaves, leaving]
   quantity_holder: [book, head]
-  quantity_interior_location: [area, bag, barrel, beaker, bottle, bowl, box, bucket, canister, container,
-      cupboard, flask, forest, fridge, garden, jar, jug, pantry, store, storeroom, tank, truck, university,
-      vessel, vial]
+  quantity_interior_location:
+  - area
+  - bag
+  - barrel
+  - beaker
+  - bottle
+  - bowl
+  - box
+  - bucket
+  - canister
+  - container
+  - cupboard
+  - flask
+  - forest
+  - fridge
+  - garden
+  - jar
+  - jug
+  - neighborhood
+  - pantry
+  - store
+  - storeroom
+  - subdivision
+  - tank
+  - truck
+  - university
+  - vessel
+  - vial
   quantity_location:
   - area
   - bench

@@ -1,0 +1,35 @@
+format: rulekit/categories@1
+categories:
+  information_quantity_object:
+    parent: ownable_quantity_object
+  computing_device:
+    parent: quantity_holder
+  information_operator:
+    parent: noun
+    includes:
+    - intentional_agent
+    - computing_device
+  information_deletion_verb:
+    parent: quantity_comparison_verb
+    selectional_roles:
+      actor: information_operator
+      theme: information_quantity_object
+members:
+  information_quantity_object:
+  - document
+  - file
+  - image
+  - photo
+  - photograph
+  computing_device:
+  - computer
+  information_deletion_verb:
+  - delete
+  - deleted
+  - deletes
+  - deleting
+adposition_roles:
+  information-source:
+    preposition_category: spatial_source_preposition
+    object_category: computing_device
+    verb_category: information_deletion_verb

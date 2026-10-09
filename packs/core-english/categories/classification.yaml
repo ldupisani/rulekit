@@ -1,0 +1,47 @@
+format: rulekit/categories@1
+categories:
+  ordered_assessment:
+    parent: noun
+  assessment_descriptor:
+    parent: adjective
+  threshold_operator:
+    parent: preposition
+  threshold_lower:
+    parent: threshold_operator
+  threshold_upper:
+    parent: threshold_operator
+  assessment_receipt_verb:
+    parent: verb
+  population_cohort:
+    parent: numeric_index_head
+    notes: An indexed collection identifies the population whose members are classified.
+  population_member:
+    parent: noun
+    includes:
+    - person
+    - ownable_quantity_object
+    - edible_quantity_object
+    - quantity_container
+    notes: Countable members of a scoped population, including people, products and containers.
+members:
+  ordered_assessment:
+  - grade
+  - rating
+  assessment_descriptor:
+  - final
+  threshold_lower:
+  - below
+  threshold_upper:
+  - above
+  assessment_receipt_verb:
+  - get
+  - got
+  - gets
+  - receive
+  - received
+  - receives
+  population_cohort:
+  - batch
+attribute_compatibility:
+  assessment_descriptor:
+  - ordered_assessment

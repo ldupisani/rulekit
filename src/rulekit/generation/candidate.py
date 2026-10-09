@@ -151,8 +151,17 @@ class GenerationCandidate:
     context_after: tuple[str, ...] = ()
     target_sentence_index: int = 0
 
+    @property
+    def clean_reading(self) -> bool:
+        """Structural completeness, not a human judgment of meaning."""
+        return (self.generation_mode == "strict"
+                and self.target_status in {"matched", "shadowed"}
+                and not self.collisions and not self.deficiencies
+                and not self.lexical_relaxations)
+
     def to_json(self) -> dict[str, Any]:
         payload = asdict(self)
+        payload["clean_reading"] = self.clean_reading
         payload["text"] = " ".join(
             (*self.context_before, self.sentence, *self.context_after)
         )

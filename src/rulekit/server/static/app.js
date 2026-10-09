@@ -3859,7 +3859,9 @@ function renderGenerationCandidate(
     sentenceBox.append(el("div", "generation-context-sentence", context));
   }
   const status = $("generation-status");
-  status.textContent = candidate.target_status;
+  status.textContent = candidate.generation_mode === "strict" && candidate.clean_reading === false && ["matched", "shadowed"].includes(candidate.target_status)
+    ? `${candidate.target_status} · incomplete evidence`
+    : candidate.target_status;
   status.className = `generation-status ${candidate.target_status}`;
   $("generation-meta").textContent =
     `${candidate.origin || "generated"} · ${candidate.generator_version} · ` +

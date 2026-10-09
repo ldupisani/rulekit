@@ -49,7 +49,7 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
     assert any("antecedent discourse group" in blocker for blocker in contextual.blockers)
     # The reusable physics pack adds the independently generatable
     # ask/physics-quantity surface to curated.
-    assert sum(item.supported for item in availability.values()) == 238
+    assert sum(item.supported for item in availability.values()) == 248
     assert availability["ask/how-many-of-collection-are-label"].supported
     assert availability["ask/how-many-of-collection-are-label"].supported_modes == (
         "ask_only",
@@ -73,10 +73,12 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
     assert availability["ask/measured-content-in-container-unit"].blockers == (
         "ask requires generated premise evidence; standalone realization is disabled",
     )
-    assert len(availability) == 263
+    assert len(availability) == 275
     assert {
         item.id for item in availability.values() if not item.supported
     } == {
+        "ask/threshold-population-count-inclusive",
+        "ask/threshold-population-count-strict",
         "ask/how-much-credit-need-pay",
         "ask/path-distance-after-numeric",
         "ask/path-distance-after-numeric-reference",
@@ -115,11 +117,15 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
                    "no project-backed ask filler exists for point_index",
                )
                for ask_id in unfilled_ordinals)
+    unfilled_scale_labels = {"ask/threshold-population-count-inclusive", "ask/threshold-population-count-strict"}
+    assert all(availability[ask_id].supported_modes == ()
+               and availability[ask_id].blockers == ("no project-backed ask filler exists for label",)
+               for ask_id in unfilled_scale_labels)
     assert all(
         "answerable" in item.supported_modes
         for item in availability.values()
         if not item.supported and not item.id.startswith("ask/chem-")
-        and item.id not in unfilled_deadlines | unfilled_ordinals
+        and item.id not in unfilled_deadlines | unfilled_ordinals | unfilled_scale_labels
     )
     for ask_id in unfilled_deadlines:
         assert availability[ask_id].supported_modes == ()

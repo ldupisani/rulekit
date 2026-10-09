@@ -50,10 +50,6 @@ entries:
   accommodate:
     senses:
     - verb
-  account:
-    senses:
-    - noun
-    plural: accounts
   activity:
     senses:
     - noun
@@ -526,10 +522,6 @@ entries:
     - verb
     verb:
       lemma: bike
-  bill:
-    senses:
-    - noun
-    plural: bills
   billion:
     senses:
     - value
@@ -851,10 +843,6 @@ entries:
     senses:
     - noun
     plural: candles
-  candy:
-    senses:
-    - noun
-    plural: candies
   cannoneer:
     senses:
     - noun
@@ -1147,9 +1135,6 @@ entries:
   cobbler:
     senses:
     - noun
-  coffee:
-    senses:
-    - noun
   collecting:
     senses:
     - verb
@@ -1377,9 +1362,6 @@ entries:
   correctly:
     senses:
     - adverb
-  costing:
-    senses:
-    - verb
   costly:
     senses:
     - adjective
@@ -1739,9 +1721,6 @@ entries:
     - verb
     verb:
       lemma: distribute
-  divide:
-    senses:
-    - verb
   divided:
     senses:
     - operator
@@ -1848,20 +1827,9 @@ entries:
     senses:
     - noun
     plural: dresses
-  drink:
-    senses:
-    - noun
-    - verb
-    plural: drinks
   drinking:
     senses:
     - verb
-    verb:
-      lemma: drink
-  drinks:
-    senses:
-    - verb
-    number: singular
     verb:
       lemma: drink
   drips:
@@ -2049,9 +2017,6 @@ entries:
   equal:
     senses:
     - adjective
-  equally:
-    senses:
-    - manner
   equally-sized:
     senses:
     - adjective
@@ -2178,10 +2143,6 @@ entries:
   falling:
     senses:
     - verb
-  family:
-    senses:
-    - noun
-    plural: families
   fan:
     senses:
     - noun
@@ -2329,9 +2290,6 @@ entries:
   fond:
     senses:
     - adjective
-  food:
-    senses:
-    - noun
   foot:
     senses:
     - noun
@@ -2365,9 +2323,6 @@ entries:
     senses:
     - verb
   former:
-    senses:
-    - noun
-  formula:
     senses:
     - noun
   forth:
@@ -2421,9 +2376,6 @@ entries:
   fresh:
     senses:
     - adjective
-  fries:
-    senses:
-    - noun
   frisbee:
     senses:
     - noun

@@ -1,0 +1,25 @@
+format: rulekit/categories@1
+categories:
+  delivery_destination:
+    parent: noun
+    includes: [quantity_interior_location, spatial_reference_noun]
+  delivery_verb:
+    parent: quantity_comparison_verb
+    selectional_roles:
+      actor: intentional_agent
+      theme: transferable_quantity_object
+      destination: delivery_destination
+members:
+  delivery_verb:
+  - deliver
+  - delivered
+  - delivers
+adposition_roles:
+  delivery-goal:
+    preposition_category: spatial_goal_preposition
+    object_category: delivery_destination
+    verb_category: delivery_verb
+  delivery-source:
+    preposition_category: spatial_source_preposition
+    object_category: delivery_destination
+    verb_category: delivery_verb

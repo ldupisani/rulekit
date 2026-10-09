@@ -16,6 +16,7 @@ entries:
   aboard: {senses: [preposition]}
   about: {senses: [preposition]}
   above: {senses: [preposition]}
+  account: {senses: [noun], plural: accounts}
   across: {senses: [preposition]}
   action: {senses: [noun], plural: actions}
   add: {senses: [verb], number: plural}
@@ -144,8 +145,10 @@ entries:
   bike ride: {senses: [noun], plural: bike rides, lexical_phrase: true}
   bikes: {senses: [noun, verb], verb: {lemma: bike}}
   biking: {senses: [verb], verb: {lemma: bike}}
+  bill: {"senses": ["noun"], "plural": "bills"}
   bird: {senses: [noun], plural: birds}
   blue: {senses: [adjective]}
+  blueprint: {senses: [noun], plural: blueprints}
   boarding school: {senses: [noun], plural: boarding schools, lexical_phrase: true}
   bonus: {senses: [noun], plural: bonuses}
   book: {senses: [noun], plural: books}
@@ -190,6 +193,7 @@ entries:
     plural: cakes
   calculate: {senses: [verb, imperative]}
   can: {senses: [modal, noun], plural: cans}
+  candy: {"senses": ["noun"], "plural": "candies"}
   canister: {senses: [noun], plural: canisters}
   capacity: {senses: [noun], plural: capacities}
   car:
@@ -210,16 +214,17 @@ entries:
   certain:
     senses:
     - adjective
+  chain: {"senses": ["noun"], "plural": "chains"}
   change: {senses: [noun, verb]}
   charcuterie: {senses: [noun]}
   charge: {senses: [verb]}
   charged: {senses: [verb], verb: {lemma: charge}}
   charges: {senses: [verb], number: singular, verb: {lemma: charge}}
   charging: {senses: [verb], verb: {lemma: charge}}
-  check: {senses: [verb], number: plural}
+  check: {senses: [noun, verb], plural: checks, number: plural}
   checked: {senses: [verb], verb: {lemma: check}}
   checking: {senses: [verb], verb: {lemma: check}}
-  checks: {senses: [verb], number: singular, verb: {lemma: check}}
+  checks: {senses: [noun, verb], number: singular, verb: {lemma: check}}
   cheddar cheese: {senses: [noun], lexical_phrase: true}
   cheese: {senses: [noun]}
   child: {senses: [noun], plural: children}
@@ -237,6 +242,7 @@ entries:
     - noun
     plural: coats
   coconut: {senses: [noun], plural: coconuts}
+  coffee: {"senses": ["noun"]}
   coin: {senses: [noun], plural: coins}
   cold cut: {senses: [noun], plural: cold cuts, lexical_phrase: true}
   collect:
@@ -327,6 +333,7 @@ entries:
   delete:
     senses:
     - verb
+    number: plural
   deleted:
     senses:
     - verb
@@ -335,6 +342,7 @@ entries:
   deletes:
     senses:
     - verb
+    number: singular
     verb:
       lemma: delete
   deleting:
@@ -342,7 +350,7 @@ entries:
     - verb
     verb:
       lemma: delete
-  deliver: {senses: [verb]}
+  deliver: {senses: [verb], number: plural}
   delivered: {senses: [verb], verb: {lemma: deliver}}
   delivers: {senses: [verb], number: singular, verb: {lemma: deliver}}
   delivery: {senses: [noun], plural: deliveries}
@@ -367,6 +375,7 @@ entries:
   discard:
     senses:
     - verb
+    number: plural
   discarded:
     senses:
     - verb
@@ -380,9 +389,11 @@ entries:
   discards:
     senses:
     - verb
+    number: singular
     verb:
       lemma: discard
   discount: {senses: [noun], plural: discounts}
+  divide: {"senses": ["verb"], "verb": {"lemma": "divide"}}
   do: {senses: [auxiliary], number: plural}
   document:
     senses:
@@ -416,6 +427,8 @@ entries:
     senses:
     - title
   dragon: {senses: [noun], plural: dragons}
+  drink: {"senses": ["noun", "verb"], "plural": "drinks", "verb": {"lemma": "drink"}}
+  drinks: {"senses": ["noun", "verb"], "number": "singular", "verb": {"lemma": "drink"}}
   drive:
     senses:
     - verb
@@ -458,6 +471,7 @@ entries:
   enrolls: {senses: [verb], number: singular, verb: {lemma: enroll}}
   entire: {senses: [adjective]}
   envelope: {senses: [noun], plural: envelopes}
+  equally: {"senses": ["adverb"]}
   ethanol:
     senses:
     - noun
@@ -492,6 +506,7 @@ entries:
   failing: {senses: [preposition]}
   far: {senses: [adverb]}
   farm: {senses: [noun], plural: farms}
+  fast-food: {"senses": ["adjective"]}
   faster: {senses: [comparative]}
   favorite: {senses: [adjective]}
   favourite: {senses: [adjective]}
@@ -531,16 +546,22 @@ entries:
     senses:
     - noun
   flower: {senses: [noun], plural: flowers}
+  follow: {senses: [verb], number: plural}
   following: {senses: [adjective, preposition]}
+  follows: {senses: [verb], number: singular, verb: {lemma: follow}}
+  food: {"senses": ["noun"]}
   for: {senses: [preposition]}
   forest: {senses: [noun], plural: forests}
+  formula: {senses: [noun], plural: formulas}
   found: {senses: [verb], verb: {lemma: find}}
   fourth:
     senses:
     - adjective
+  french: {"senses": ["adjective"]}
   friday: {senses: [noun]}
   fridge: {senses: [noun], plural: fridges}
   friend: {senses: [noun], plural: friends}
+  fries: {"senses": ["noun"], "number": "plural"}
   from: {senses: [preposition]}
   full: {senses: [adjective]}
   full name: {senses: [noun], plural: full names, lexical_phrase: true}
@@ -579,6 +600,7 @@ entries:
   goodie: {senses: [noun], plural: goodies}
   goods: {senses: [noun], number: plural}
   got: {senses: [verb], verb: {lemma: get}}
+  grade: {"senses": ["noun"], "plural": "grades"}
   gram: {senses: [noun], plural: grams}
   grandparent: {senses: [noun], plural: grandparents}
   grape: {senses: [noun], plural: grapes}
@@ -588,6 +610,7 @@ entries:
   gummy worm: {senses: [noun], plural: gummy worms, lexical_phrase: true}
   had: {senses: [verb], verb: {lemma: have}}
   had been: {senses: [verb], verb: {lemma: be}}
+  hamburger: {"senses": ["noun"], "plural": "hamburgers"}
   hamster: {senses: [noun], plural: hamsters}
   hard hat: {senses: [noun], plural: hard hats, lexical_phrase: true}
   has: {senses: [verb], number: singular, verb: {lemma: have}}
@@ -633,6 +656,7 @@ entries:
     - noun
     plural: houses
   how: {senses: [interrogative]}
+  however: {"senses": ["adverb"]}
   humanities: {senses: [noun, adjective]}
   hunger: {senses: [noun]}
   i:
@@ -693,6 +717,7 @@ entries:
     - noun
   interview: {senses: [noun], plural: interviews}
   into: {senses: [preposition]}
+  invoice: {senses: [noun], plural: invoices}
   irrelevant:
     senses:
     - adjective
@@ -753,6 +778,7 @@ entries:
   length: {senses: [noun], plural: lengths}
   less: {senses: [comparative]}
   letter: {senses: [noun], plural: letters}
+  level: {"senses": ["noun"], "plural": "levels"}
   librarian: {senses: [noun], plural: librarians}
   lighter: {senses: [comparative]}
   like: {senses: [preposition]}
@@ -782,6 +808,7 @@ entries:
   made: {senses: [verb], verb: {lemma: make}}
   make: {senses: [verb], number: plural, verb: {lemma: make}}
   makes: {senses: [verb], number: singular, verb: {lemma: make}}
+  making: {"senses": ["verb"], "verb": {"lemma": "make"}}
   manage: {senses: [verb]}
   managed: {senses: [verb], verb: {lemma: manage}}
   manages: {senses: [verb], verb: {lemma: manage}}
@@ -804,6 +831,7 @@ entries:
     plural:
     - m
     - meters
+  method: {senses: [noun], plural: methods}
   might: {senses: [modal]}
   mile: {senses: [noun], plural: miles}
   milliliter:
@@ -840,6 +868,7 @@ entries:
     senses:
     - noun
   moles: {senses: [noun], plural: moles}
+  mom: {"senses": ["noun"], "plural": "moms"}
   monday: {senses: [noun]}
   money: {senses: [noun]}
   monster: {senses: [noun], plural: monsters}
@@ -870,6 +899,10 @@ entries:
   need: {senses: [verb], number: plural}
   needed: {senses: [verb], verb: {lemma: need}}
   needs: {senses: [verb], verb: {lemma: need}}
+  neighbourhood: {senses: [noun], plural: neighbourhoods}
+  neighborhood: {"senses": ["noun"], "plural": "neighborhoods"}
+  neighboring: {"senses": ["adjective"]}
+  neighbouring: {"senses": ["adjective"]}
   new: {senses: [adjective]}
   next: {senses: [adjective, adverb]}
   next to: {senses: [preposition]}
@@ -919,6 +952,7 @@ entries:
   other:
     senses:
     - adjective
+  ounce: {"senses": ["noun"], "plural": ["ounces", "oz"]}
   out: {senses: [adverb]}
   out of: {senses: [preposition]}
   outside: {senses: [adverb, preposition]}
@@ -1017,6 +1051,7 @@ entries:
   placed: {senses: [verb], verb: {lemma: place}}
   places: {senses: [verb], number: singular, verb: {lemma: place}}
   placing: {senses: [verb], verb: {lemma: place}}
+  plan: {senses: [noun], plural: plans}
   plant: {senses: [noun, verb], plural: plants}
   planted: {senses: [verb], verb: {lemma: plant}}
   planting: {senses: [verb], verb: {lemma: plant}}
@@ -1026,6 +1061,9 @@ entries:
     - noun
     plural: plastic beads
     lexical_phrase: true
+  plate: {"senses": ["noun"], "plural": "plates"}
+  portion: {senses: [noun], plural: portions}
+  platter: {"senses": ["noun"], "plural": "platters"}
   play: {senses: [verb]}
   played: {senses: [verb], verb: {lemma: play}}
   playing: {senses: [verb], verb: {lemma: play}}
@@ -1040,9 +1078,11 @@ entries:
   pours: {senses: [verb], number: singular, verb: {lemma: pour}}
   practice: {senses: [noun, verb], plural: practices}
   practicing: {senses: [verb], verb: {lemma: practice}}
+  prescription: {senses: [noun], plural: prescriptions}
   previous: {senses: [adjective]}
   price: {senses: [noun], plural: prices}
   prize: {senses: [noun], plural: prizes}
+  procedure: {senses: [noun], plural: procedures}
   produce: {senses: [verb]}
   produced: {senses: [verb], verb: {lemma: produce}}
   produces: {senses: [verb], number: singular, verb: {lemma: produce}}
@@ -1088,6 +1128,7 @@ entries:
     plural: raisins
   raising: {senses: [verb], verb: {lemma: raise}}
   ran: {senses: [verb], verb: {lemma: run}}
+  rating: {"senses": ["noun"], "plural": "ratings"}
   ratio: {senses: [noun], plural: ratios}
   read: {senses: [verb]}
   reading: {senses: [verb], verb: {lemma: read}}
@@ -1112,6 +1153,7 @@ entries:
   recently:
     senses:
     - adverb
+  recipe: {senses: [noun], plural: recipes}
   red: {senses: [adjective]}
   reference:
     senses:
@@ -1121,6 +1163,7 @@ entries:
   reject:
     senses:
     - verb
+    number: plural
   rejected:
     senses:
     - verb
@@ -1134,6 +1177,7 @@ entries:
   rejects:
     senses:
     - verb
+    number: singular
     verb:
       lemma: reject
   relevant:
@@ -1186,6 +1230,7 @@ entries:
   respecting: {senses: [preposition]}
   respectively: {senses: [adverb]}
   rest: {senses: [noun]}
+  restaurant: {"senses": ["noun"], "plural": "restaurants"}
   retailer: {senses: [noun], plural: retailers}
   return: {senses: [verb]}
   returned: {senses: [verb], verb: {lemma: return}}
@@ -1276,6 +1321,7 @@ entries:
   serve: {senses: [verb]}
   served: {senses: [verb], verb: {lemma: serve}}
   serves: {senses: [verb], verb: {lemma: serve}}
+  serving: {senses: [noun], plural: servings}
   set:
     senses:
     - noun
@@ -1307,6 +1353,7 @@ entries:
   shovelled: {senses: [verb], verb: {lemma: shovel}}
   shovels: {senses: [verb], number: singular, verb: {lemma: shovel}}
   since: {senses: [conjunction, preposition]}
+  sister: {"senses": ["noun"], "plural": "sisters"}
   sixth:
     senses:
     - adjective
@@ -1318,6 +1365,7 @@ entries:
   snowflake: {senses: [noun], plural: snowflakes}
   so: {senses: [conjunction]}
   sock: {senses: [noun], plural: socks}
+  soda: {"senses": ["noun"]}
   sold: {senses: [verb], verb: {lemma: sell}}
   solution:
     senses:
@@ -1329,16 +1377,19 @@ entries:
     senses:
     - noun
     plural: sons
+  spaghetti: {"senses": ["noun"]}
   specific: {senses: [adjective]}
   spend: {senses: [verb], number: plural, verb: {lemma: spend}}
   spending: {senses: [verb], verb: {lemma: spend}}
   spends: {senses: [verb], number: singular, verb: {lemma: spend}}
   spent: {senses: [verb], verb: {lemma: spend}}
+  split: {"senses": ["verb"], "verb": {"lemma": "split"}}
   stamp: {senses: [noun], plural: stamps}
   start: {senses: [verb], number: plural}
   started: {senses: [verb], verb: {lemma: start}}
   starting: {senses: [verb], verb: {lemma: start}}
   starts: {senses: [verb], number: singular, verb: {lemma: start}}
+  statement: {senses: [noun], plural: statements}
   sticker: {senses: [noun], plural: stickers}
   still: {senses: [adverb]}
   store:
@@ -1357,6 +1408,7 @@ entries:
   study: {senses: [verb], number: plural}
   studying: {senses: [noun, verb], verb: {lemma: study}}
   stuff: {senses: [noun]}
+  subdivision: {"senses": ["noun"], "plural": "subdivisions"}
   sugar: {senses: [noun]}
   sugar water: {senses: [noun], lexical_phrase: true}
   suit: {senses: [noun], plural: suits}
@@ -1367,6 +1419,7 @@ entries:
     - noun
     lexical_phrase: true
   surname: {senses: [noun], plural: surnames}
+  tab: {senses: [noun], plural: tabs}
   take: {senses: [verb], number: plural}
   takes: {senses: [verb], verb: {lemma: take}}
   tall: {senses: [adjective]}
@@ -1375,6 +1428,7 @@ entries:
   task: {senses: [noun]}
   taught: {senses: [verb], verb: {lemma: teach}}
   tax: {senses: [noun], plural: taxes}
+  tea: {"senses": ["noun"]}
   teach: {senses: [verb], number: plural}
   teacher: {senses: [noun], plural: teachers}
   teaches: {senses: [verb], number: singular, verb: {lemma: teach}}
@@ -1428,6 +1482,8 @@ entries:
   traveled: {senses: [verb], verb: {lemma: travel}}
   travels: {senses: [verb], number: singular, verb: {lemma: travel}}
   tree: {senses: [noun], plural: trees}
+  trick-or-treating: {"senses": ["noun"]}
+  trick-or-tricking: {"senses": ["noun"], "notes": "Attested misspelling of the Halloween activity; kept explicit, never a general spelling correction."}
   trip: {senses: [noun], plural: trips}
   triple: {senses: [quantifier, verb]}
   truck: {senses: [noun], plural: trucks}
@@ -1468,7 +1524,7 @@ entries:
   until: {senses: [preposition]}
   up: {senses: [adverb]}
   upon: {senses: [preposition]}
-  use: {senses: [verb]}
+  use: {senses: [verb], number: plural}
   used: {senses: [verb], verb: {lemma: use}}
   useful:
     senses:
@@ -1476,7 +1532,7 @@ entries:
   useless:
     senses:
     - adjective
-  uses: {senses: [verb], verb: {lemma: use}}
+  uses: {senses: [verb], number: singular, verb: {lemma: use}}
   using: {senses: [verb], verb: {lemma: use}}
   utilities:
     senses:
@@ -1507,6 +1563,7 @@ entries:
   wash: {senses: [verb]}
   washed: {senses: [verb], verb: {lemma: wash}}
   washes: {senses: [verb], number: singular, verb: {lemma: wash}}
+  washing: {"senses": ["verb"], "verb": {"lemma": "wash"}}
   water: {senses: [noun]}
   waters: {senses: [noun], number: plural}
   we: {senses: [pronoun], number: plural}
@@ -1548,6 +1605,7 @@ entries:
   work: {senses: [verb, noun]}
   workday: {senses: [noun], plural: workdays}
   worked: {senses: [verb], verb: {lemma: work}}
+  worker: {senses: [noun], plural: workers}
   working: {senses: [verb], verb: {lemma: work}}
   works: {senses: [verb], number: singular, verb: {lemma: work}}
   would: {senses: [modal]}
@@ -1560,3 +1618,10 @@ entries:
   you: {senses: [pronoun]}
   younger: {senses: [comparative]}
   your: {senses: [pronoun]}
+  costing: {senses: [verb], verb: {lemma: cost}}
+  priced: {senses: [verb], verb: {lemma: price}}
+  listed: {senses: [verb], verb: {lemma: list}}
+  selling: {senses: [verb], verb: {lemma: sell}}
+  family: {senses: [noun], plural: families}
+  household: {senses: [noun], plural: households}
+  team: {senses: [noun], plural: teams}

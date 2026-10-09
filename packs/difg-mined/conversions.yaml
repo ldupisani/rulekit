@@ -30,9 +30,6 @@ conversions:
 - from: minute
   to: second
   factor: 60
-- from: pound
-  to: ounce
-  factor: 16.0
 # --- difg unit_conversion pairs (added with the unit-convert ask family) ------
 # Metric<->imperial and metric-prefix factors difg's unit_conversion domain asks
 # for. DATA, like every pair above. The registry stores both directions and
@@ -62,9 +59,6 @@ conversions:
 - from: gallon
   to: liter
   factor: 3.785411784
-- from: pound
-  to: kilogram
-  factor: 0.45359237
 # scibench thermo: 'kJ' (lexicon kilojoule) reaches the canonical 'joule' of
 # formulas.yaml's energy dimension through this pair at physics bind time
 - from: kilojoule

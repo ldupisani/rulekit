@@ -1,0 +1,30 @@
+format: rulekit/categories@1
+categories:
+  recipe_product:
+    parent: specification_resource
+  recipe_ingredient:
+    parent: specification_resource
+  culinary_output_activity:
+    parent: reference_output_activity
+  culinary_occasion:
+    parent: specification_scope
+members:
+  recipe_product:
+  - tea
+  - coffee
+  - cake
+  - pizza
+  recipe_ingredient:
+  - tea
+  - coffee
+  - water
+  - flour
+  - sugar
+  - salt
+  culinary_output_activity:
+  - drink
+  - drinks
+  - eat
+  - eats
+  culinary_occasion:
+  - party

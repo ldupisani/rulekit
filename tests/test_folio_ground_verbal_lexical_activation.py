@@ -25,7 +25,7 @@ def _facts(text: str) -> list[Atom]:
     ("surface", "expected"),
     [
         ("Ada supported the local artists.", ("ada", "support local artist", True)),
-        ("Grace researched numerical methods.", ("grace", "research numerical methods", True)),
+        ("Grace researched numerical methods.", ("grace", "research numerical method", True)),
     ],
 )
 def test_regular_past_forms_preserve_tense_normalized_keys(

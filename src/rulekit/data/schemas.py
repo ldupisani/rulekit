@@ -414,7 +414,7 @@ class ObligationsDoc(StrictModel):
 # ---------------------------------------------------------------------------
 
 SLOT_TYPES = (
-    "number", "ordinal", "fraction", "multiplier", "nonunit_multiplier",
+    "number", "ordinal", "scale_label", "fraction", "multiplier", "nonunit_multiplier",
     "name", "noun", "plural", "counted",
     "entity", "verb", "auxiliary", "modal", "future_modal",
     "pronoun", "word",
@@ -635,6 +635,7 @@ class MatchToken(StrictModel):
     # binds exactly one unit, byte-identical.
     span: bool = False
     enumeration_cat: str | None = None
+    enumeration_min_members: int = Field(default=1, ge=1)
     # OPT-IN, span-only: name a CATEGORY whose members may never be swallowed
     # into the captured phrase (e.g. packs/logic's `negation`) — a polarity
     # word hidden inside a phrase key would bury the negation where no
@@ -899,6 +900,8 @@ class MatchToken(StrictModel):
             raise ValueError(
                 "`determinerless_category` requires `referential: true`"
             )
+        if self.enumeration_min_members != 1 and self.enumeration_cat is None:
+            raise ValueError("enumeration_min_members requires enumeration_cat")
         if self.enumeration_cat is not None and not self.span:
             raise ValueError("enumeration_cat requires a span")
         if self.span_blocks is not None and not self.span:
@@ -948,15 +951,23 @@ class AttributeCompatibilityPredicate(StrictModel):
 
 
 class ModifierHostCompatibilityPredicate(StrictModel):
-    """Relate an optional prepositional modifier to its modified noun."""
+    """Relate an optional PP to a nominal or verbal host."""
 
     modifier: str
     host: str
     object: str | None = None
+    host_type: Literal["noun", "verb"] = "noun"
+    nominal_host: str | None = None
 
     @model_validator(mode="after")
     def _different_slots(self) -> "ModifierHostCompatibilityPredicate":
+        if self.host_type == "verb" and self.object is None:
+            raise ValueError("a verbal modifier requires its object slot")
         slots = [self.modifier, self.host]
+        if self.nominal_host is not None:
+            if self.host_type != "verb":
+                raise ValueError("nominal_host is an alternative to a verbal host")
+            slots.append(self.nominal_host)
         if self.object is not None:
             slots.append(self.object)
         if len(slots) != len(set(slots)):
@@ -1001,6 +1012,7 @@ class BoundRequiresCategoryPredicate(StrictModel):
     bound: str
     slot: str
     cat: str
+    bound_cat: str | None = None
     # Semantic entity roles commonly license open proper names alongside a
     # positive common-noun category. This stays opt-in so existing conditional
     # category predicates retain their exact membership-only behavior.
@@ -1549,7 +1561,7 @@ class WherePredicate(StrictModel):
 
 class FactEmit(StrictModel):
     fact: Literal[
-        "batch_evidence", "mixture_evidence", "proportional_base_evidence",
+        "batch_evidence", "specification_evidence", "population_evidence", "mixture_evidence", "proportional_base_evidence",
         "account_entry",
         "text_value", "text_prefix_split",
         "commercial_term",
