@@ -76,6 +76,8 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
     }
 
     assert occurrences == {
+        "arithmetic/passive-share-of-demonstrative-earnings": ((0, 0), "contrast", ((0,),)),
+        "arithmetic/passive-share-of-referenced-earnings": ((0, 0), "contrast", ((0,),)),
         "arithmetic/threshold-share-reported-numeric": ((2, 0), "particle", ((2,),)),
         'arithmetic/explicit-equal-bill-division': ((4,), 'equal', ()),
         'arithmetic/passive-share-of-stated-earnings': ((0, 0), 'contrast', ((0,),)),
@@ -285,13 +287,15 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
     project = load_project(CURATED)
     availability = list_rule_availability(project)
 
-    assert len(availability) == 464
-    assert sum(item.supported for item in availability) == 416
-    assert sum(not item.supported for item in availability) == 48
+    assert len(availability) == 493
+    assert sum(item.supported for item in availability) == 443
+    assert sum(not item.supported for item in availability) == 50
     assert all(
         not item.blockers
         or item.id
         in {
+                "arithmetic/collected-qualified-nested-population",
+                "arithmetic/group-attendance-intention",
                 'arithmetic/named-joint-earnings',
                 'arithmetic/threshold-share',
             'arithmetic/threshold-share-unindexed',
@@ -345,7 +349,7 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
             }
         for item in availability
     )
-    assert len(exploration_status(project)["fillers"]) == 793
+    assert len(exploration_status(project)["fillers"]) == 823
 
 
 def test_currently_generates_a_matcher_confirmed_anchor() -> None:

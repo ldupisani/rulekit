@@ -1,0 +1,17 @@
+format: rulekit/categories@1
+categories:
+  attendance_verb:
+    parent: verb
+  public_competition:
+    parent: noun
+  competition_subject:
+    parent: noun
+members:
+  attendance_verb:
+  - attend
+  public_competition:
+  - contest
+  competition_subject:
+  - beauty
+  - modeling
+  - modelling

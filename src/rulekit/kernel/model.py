@@ -1436,6 +1436,8 @@ class BatchEvidence(Fact):
     acquisition: str = ""
     acquisition_ref: ReferenceIdentity | None = field(default=None, metadata={"reference_for": "acquisition"})
     per_member: float = 0.0
+    # Contents of each inner unit in an explicitly nested collection.
+    content_count: float = 0.0
     subtotal: float = 0.0
     members: tuple[str, ...] = ()
     entity_ref: ReferenceIdentity | None = field(default=None, metadata={"reference_for": "entity"})
@@ -1448,7 +1450,7 @@ class BatchEvidence(Fact):
                 self.marker, self.fraction, self.container, self.attribute,
                 self.sign, self.acquisition, self.per_member, self.subtotal, self.members,
                 self.entity_ref.key() if self.entity_ref else None,
-                self.acquisition_ref.key() if self.acquisition_ref else None)
+                self.acquisition_ref.key() if self.acquisition_ref else None, self.content_count)
 
 
 @dataclass(frozen=True)

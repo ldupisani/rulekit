@@ -1,0 +1,50 @@
+format: rulekit/categories@1
+categories:
+  repeating_event:
+    parent: noun
+  event_result_object:
+    parent: noun
+  event_effect_verb:
+    parent: verb
+  event_effect_descriptor:
+    parent: adjective
+  forecast_verb:
+    parent: verb
+  forecast_agent:
+    parent: noun
+  stability_component:
+    parent: noun
+  stability_attribute:
+    parent: adjective
+  causation_verb:
+    parent: verb
+members:
+  repeating_event:
+  - earthquake
+  - storm
+  - round
+  event_result_object:
+  - building
+  - house
+  - tree
+  event_effect_verb:
+  - collapse
+  - collapsed
+  event_effect_descriptor:
+  - collapsing
+  forecast_verb:
+  - predict
+  - predicted
+  forecast_agent:
+  - expert
+  stability_component:
+  - foundation
+  stability_attribute:
+  - stable
+  causation_verb:
+  - cause
+  - caused
+  - causes
+attribute_compatibility:
+  event_effect_descriptor:
+  - event_result_object

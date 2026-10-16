@@ -1,0 +1,214 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/budget-allocation-opening
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: name
+      at_start: true
+    - slot: have
+      cat: possession_state
+    - slot: budget
+      cat: resource_budget_noun
+      uncounted: true
+      bare: true
+    - lit: of
+    - slot: amount
+      cat: currency_measure
+      counted: true
+      bare: true
+    - opt:
+      - lit: per
+      - slot: period
+        cat: duration_measure
+        uncounted: true
+        bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: resource_allocation
+    account: '{budget}'
+    owner: '{budget.owner}'
+    qualifier: '{budget.qualifier}'
+    head_span: '{budget.span_start}'
+    amount_span: '{amount.span_start}'
+    measure: '{amount}'
+    value: amount
+  consumes:
+  - amount
+- id: arithmetic/budget-purpose-fraction
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: name
+      at_start: true
+    - slot: spend
+      cat: spend_verb
+      finite_form: true
+    - slot: fraction
+      type: fraction
+    - slot: on
+      cat: spend_target_prep
+    - slot: purpose
+      cat: budget_purpose
+      uncounted: true
+  emits:
+  - fact: batch_evidence
+    kind: budget-share
+    entity: '{who}'
+    measure: '{purpose}'
+    value: fraction
+    position: '{fraction.span_start}'
+    attribute: '{purpose.qualifier}'
+    verb: '{spend}'
+  consumes:
+  - fraction
+- id: arithmetic/budget-purpose-fraction-continuation
+  phase: read
+  match:
+    sentence:
+    - slot: fraction
+      type: fraction
+    - slot: on
+      cat: spend_target_prep
+    - slot: purpose
+      cat: budget_purpose
+      uncounted: true
+  emits:
+  - fact: batch_evidence
+    kind: budget-share
+    entity: ''
+    measure: '{purpose}'
+    value: fraction
+    position: '{fraction.span_start}'
+    attribute: '{purpose.qualifier}'
+  consumes:
+  - fraction
+- id: arithmetic/budget-purpose-remainder
+  phase: read
+  match:
+    sentence:
+    - opt:
+      - lit: and
+    - slot: rest
+      cat: partition_remnant
+      uncounted: true
+      bare: true
+    - slot: on
+      cat: spend_target_prep
+    - slot: purpose
+      cat: budget_purpose
+      uncounted: true
+    - {lit: ., consume_skipped: true}
+  emits:
+  - fact: batch_evidence
+    kind: budget-remainder
+    entity: ''
+    measure: '{purpose}'
+    value: 0
+    position: '{rest.span_start}'
+    attribute: '{purpose.qualifier}'
+- id: arithmetic/budget-purpose-fraction-owned-money
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: name
+      at_start: true
+    - slot: spend
+      cat: spend_verb
+      finite_form: true
+    - slot: fraction
+      type: fraction
+    - lit: of
+    - opt:
+      - slot: owner
+        cat: possessive_determiner
+    - slot: money
+      cat: currency
+      uncounted: true
+      possessed: true
+    - slot: on
+      cat: spend_target_prep
+    - slot: purpose
+      cat: budget_purpose
+      uncounted: true
+  emits:
+  - fact: batch_evidence
+    kind: budget-share
+    entity: '{who}'
+    measure: '{purpose}'
+    value: fraction
+    position: '{fraction.span_start}'
+    attribute: '{purpose.qualifier}'
+    verb: '{spend}'
+  consumes:
+  - fraction
+  where:
+  - owner_matches:
+      owner: who
+      possessed: money
+- id: arithmetic/budget-purpose-fraction-money
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: name
+      at_start: true
+    - slot: spend
+      cat: spend_verb
+      finite_form: true
+    - slot: fraction
+      type: fraction
+    - lit: of
+    - slot: money
+      cat: currency
+      uncounted: true
+      bare: true
+    - slot: on
+      cat: spend_target_prep
+    - slot: purpose
+      cat: budget_purpose
+      uncounted: true
+  emits:
+  - fact: batch_evidence
+    kind: budget-share
+    entity: '{who}'
+    measure: '{purpose}'
+    value: fraction
+    position: '{fraction.span_start}'
+    attribute: '{purpose.qualifier}'
+    verb: '{spend}'
+  consumes:
+  - fraction
+asks:
+- id: ask/budget-purpose-amount
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: much
+    - opt:
+      - slot: money
+        cat: currency
+        uncounted: true
+    - slot: aux
+      type: auxiliary
+    - slot: who
+      type: name
+    - slot: spend
+      cat: spend_verb
+    - slot: on
+      cat: spend_target_prep
+    - slot: purpose
+      cat: budget_purpose
+      uncounted: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: budget-purpose-amount
+    entity: '{who}'
+    purpose: '{purpose}'
+    qualifier: '{purpose.qualifier}'

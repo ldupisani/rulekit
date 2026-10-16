@@ -1,0 +1,359 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/relative-priced-item
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: name
+      at_start: true
+    - slot: buy
+      cat: purchase
+      finite_form: true
+    - slot: item
+      cat: purchase_item
+      uncounted: true
+      bare: true
+    - lit:
+      - which
+      - that
+    - slot: cost
+      cat: price_verb
+      finite_form: true
+    - slot: amount
+      cat: currency_measure
+      counted: true
+      bare: true
+  emits:
+  - fact: expenditure
+    entity: '{who}'
+    item: '{item}'
+    value: amount
+    measure: '{amount}'
+    verb: '{buy}'
+    basis: purchase
+    position: '{amount.uid}'
+    event: '{item.uid}'
+    lot_measure: '{item}'
+  consumes:
+  - amount
+  satisfies:
+    cost:
+    - subject
+- id: arithmetic/relative-priced-item-continuation
+  phase: read
+  match:
+    sentence:
+    - lit: and
+    - {slot: item, cat: purchase_item, uncounted: true, bare: true}
+    - lit:
+      - which
+      - that
+    - slot: cost
+      cat: price_verb
+      finite_form: true
+    - slot: amount
+      cat: currency_measure
+      counted: true
+      bare: true
+  emits:
+  - fact: expenditure
+    entity: ''
+    item: '{item}'
+    value: amount
+    measure: '{amount}'
+    verb: buy
+    basis: purchase
+    position: '{amount.uid}'
+    event: '{item.uid}'
+    lot_measure: '{item}'
+  consumes:
+  - amount
+  satisfies:
+    cost:
+    - subject
+- id: arithmetic/relative-priced-pair
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: name
+      at_start: true
+    - slot: buy
+      cat: purchase
+      finite_form: true
+    - slot: lot
+      cat: partitive_pair_measure
+      uncounted: true
+      number: singular
+    - lit: of
+    - slot: item
+      cat: pairable_partitive_substance
+      uncounted: true
+      bare: true
+    - lit:
+      - which
+      - that
+    - slot: cost
+      cat: price_verb
+      finite_form: true
+    - slot: amount
+      cat: currency_measure
+      counted: true
+      bare: true
+  emits:
+  - fact: expenditure
+    entity: '{who}'
+    item: '{item}'
+    value: amount
+    measure: '{amount}'
+    verb: '{buy}'
+    basis: purchase
+    position: '{amount.uid}'
+    event: '{item.uid}'
+    lot_measure: '{lot}'
+  consumes:
+  - amount
+  satisfies:
+    cost:
+    - subject
+- id: arithmetic/relative-priced-pair-continuation
+  phase: read
+  match:
+    sentence:
+    - lit: and
+    - {slot: lot, cat: partitive_pair_measure, uncounted: true, number: singular}
+    - {lit: of}
+    - {slot: item, cat: pairable_partitive_substance, uncounted: true, bare: true}
+    - lit:
+      - which
+      - that
+    - slot: cost
+      cat: price_verb
+      finite_form: true
+    - slot: amount
+      cat: currency_measure
+      counted: true
+      bare: true
+  emits:
+  - fact: expenditure
+    entity: ''
+    item: '{item}'
+    value: amount
+    measure: '{amount}'
+    verb: buy
+    basis: purchase
+    position: '{amount.uid}'
+    event: '{item.uid}'
+    lot_measure: '{lot}'
+  consumes:
+  - amount
+  satisfies:
+    cost:
+    - subject
+- id: arithmetic/group-attendance-intention
+  phase: read
+  match:
+    sentence:
+    - slot: people
+      span: true
+      enumeration_cat: name
+      enumeration_min_members: 2
+      at_start: true
+    - slot: want
+      cat: finite_infinitival_goal_predicate
+    - lit: to
+    - slot: attend
+      cat: attendance_verb
+    - slot: subject
+      cat: competition_subject
+      uncounted: true
+      bare: true
+    - opt:
+      - lit: and
+      - slot: subject2
+        cat: competition_subject
+        uncounted: true
+        bare: true
+    - lit: and
+    - slot: event
+      cat: public_competition
+      uncounted: true
+      qualified: true
+      qualifier_cat: competition_subject
+  emits:
+  - fact: batch_evidence
+    kind: shopping-context
+    entity: ''
+    measure: ''
+    value: 0
+    position: '{people.span_start}'
+    members: '{people.members}'
+  satisfies:
+    want:
+    - subject
+    attend:
+    - subject
+- id: arithmetic/group-shopping-intention
+  phase: read
+  match:
+    sentence:
+    - slot: people
+      cat: discourse_subject_group_pronoun
+      at_start: true
+    - opt:
+      - lit: both
+    - slot: want
+      cat: finite_infinitival_goal_predicate
+    - lit: to
+    - slot: buy
+      cat: purchase
+    - opt:
+      - lit: new
+    - slot: lot
+      cat: partitive_pair_measure
+      uncounted: true
+    - lit: of
+    - slot: item
+      cat: pairable_partitive_substance
+      uncounted: true
+      bare: true
+    - lit: and
+    - slot: other
+      cat: clothes
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: shopping-intent
+    entity: ''
+    measure: '{item}'
+    value: 0
+    position: '{people.span_start}'
+    attribute: '{other}'
+  satisfies:
+    people:
+    - refers
+    want:
+    - subject
+    buy:
+    - subject
+asks:
+- id: ask/relative-purchase-budget-conditional
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: much
+    - slot: modal
+      type: modal
+    - slot: who
+      type: name
+    - slot: budget
+      cat: budget_action
+    - lit: if
+    - slot: ref
+      cat: animate_pronoun
+    - slot: want
+      cat: finite_infinitival_goal_predicate
+    - lit: to
+    - slot: spend
+      cat: spend_verb
+    - slot: factor
+      type: multiplier
+    - lit: as
+    - lit: much
+    - lit: as
+    - opt:
+      - lit: what
+    - slot: other
+      type: name
+    - slot: spent
+      cat: spend_verb
+    - opt:
+      - slot: on
+        cat: spend_target_prep
+      - opt:
+        - slot: lot
+          cat: partitive_pair_measure
+        - lit: of
+      - slot: first
+        cat: purchase_item
+        uncounted: true
+        bare: true
+      - lit: and
+      - slot: second
+        cat: purchase_item
+        uncounted: true
+        bare: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: relative-purchase-budget
+    entity: '{who}'
+    other: '{other}'
+    factor: '{factor.value}'
+    first: '{first.optional}'
+    second: '{second.optional}'
+  satisfies:
+    ref:
+    - refers
+    want:
+    - subject
+    spend:
+    - subject
+  where:
+  - distinct:
+    - who
+    - other
+- id: ask/relative-purchase-budget
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - {slot: modal, type: modal}
+    - {slot: who, type: name}
+    - {slot: budget, cat: budget_action}
+    - lit: to
+    - slot: spend
+      cat: spend_verb
+    - {slot: factor, type: multiplier}
+    - {lit: as}
+    - {lit: much}
+    - {lit: as}
+    - {opt: [lit: what]}
+    - {slot: other, type: name}
+    - {slot: spent, cat: spend_verb}
+    - opt:
+      - slot: on
+        cat: spend_target_prep
+      - opt:
+        - slot: lot
+          cat: partitive_pair_measure
+        - lit: of
+      - slot: first
+        cat: purchase_item
+        uncounted: true
+        bare: true
+      - lit: and
+      - slot: second
+        cat: purchase_item
+        uncounted: true
+        bare: true
+    - {lit: '?', consume_skipped: true}
+  resolves:
+    consumer: relative-purchase-budget
+    entity: '{who}'
+    other: '{other}'
+    factor: '{factor.value}'
+    first: '{first.optional}'
+    second: '{second.optional}'
+  satisfies:
+    spend:
+    - subject
+  where:
+  - distinct:
+    - who
+    - other

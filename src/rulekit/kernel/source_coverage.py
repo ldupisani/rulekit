@@ -72,3 +72,37 @@ def quantity_source_units(reading, fact, reg):
             or amount.features.get("value") != fact.value):
         return ()
     return tuple(u.uid for u in uncovered_units(reading))
+
+
+def price_source_units(reading, fact, reg):
+    """Complete simple item-price clause for a Price already read by the fold."""
+    from .reference_identity import reference_from_unit
+
+    units = [u for u in reading.units if u.sense() not in {"article", "punct"}]
+    if (
+        fact.provenance.source != "fold"
+        or fact.provenance.sentence != reading.sentence_index
+        or len(units) not in (3, 4)
+    ):
+        return ()
+    item, verb, amount = units[:3]
+    ref = reference_from_unit(item)
+    if (
+        not ref.resolved
+        or ref.owner
+        or ref.label
+        or ref.head != fact.item
+        or (item.features.get("qualifier") or None) != fact.qualifier
+        or not reg.word_in_category(verb.features.get("lemma", ""), "price_verb")
+        or not reg.word_in_category(
+            amount.features.get("lemma", ""), "currency_measure"
+        )
+        or amount.features.get("value") != fact.value
+        or item.features.get("value_kind") is not None
+        or len(units) == 4
+        and not reg.word_in_category(
+            units[3].features.get("lemma", ""), "postpositive_distributive_quantifier"
+        )
+    ):
+        return ()
+    return tuple(u.uid for u in units)

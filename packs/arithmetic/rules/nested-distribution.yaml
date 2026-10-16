@@ -1,0 +1,229 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/collected-nested-population
+  phase: read
+  match:
+    sentence:
+    - opt:
+      - slot: group
+        cat: collection_group_noun
+        uncounted: true
+      - lit: of
+    - slot: people
+      cat: nested_allocation_recipient
+      counted: true
+      bare: true
+    - slot: collect
+      cat: acquire
+    - slot: outer
+      cat: nested_content_container
+      counted: true
+    - lit: of
+    - slot: item
+      cat: droppable_quantity_object
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: nested-population
+    entity: '{people}'
+    measure: '{item}'
+    value: people
+    position: '{people.span_start}'
+  - fact: batch_evidence
+    kind: nested-total
+    entity: '{outer}'
+    measure: '{item}'
+    value: outer
+    position: '{outer.span_start}'
+  consumes:
+  - people
+  - outer
+- id: arithmetic/collected-qualified-nested-population
+  phase: read
+  match:
+    sentence:
+    - {opt: [{slot: group, cat: collection_group_noun, uncounted: true}, lit: of]}
+    - {slot: people, cat: nested_allocation_recipient, counted: true, bare: true}
+    - {slot: collect, cat: acquire}
+    - slot: outer
+      cat: nested_content_container
+      counted: true
+      qualified: true
+      qualifier_cat: droppable_quantity_object
+    - {lit: ., consume_skipped: true}
+  emits:
+  - fact: batch_evidence
+    kind: nested-population
+    entity: '{people}'
+    measure: '{outer.qualifier}'
+    value: people
+    position: '{people.span_start}'
+  - fact: batch_evidence
+    kind: nested-total
+    entity: '{outer}'
+    measure: '{outer.qualifier}'
+    value: outer
+    position: '{outer.span_start}'
+  consumes:
+  - people
+  - outer
+- id: arithmetic/nested-content-subset
+  phase: read
+  match:
+    sentence:
+    - opt:
+      - lit: while
+    - opt:
+      - lit: and
+    - slot: outer
+      cat: nested_content_container
+      counted: true
+      bare: true
+    - slot: have
+      cat: content_holding_verb
+    - slot: inner
+      cat: nested_content_container
+      counted: true
+      bare: true
+    - lit: with
+    - lit: each
+    - slot: unit
+      cat: nested_content_container
+      uncounted: true
+      bare: true
+    - slot: having
+      cat: content_holding_verb
+    - slot: items
+      cat: droppable_quantity_object
+      counted: true
+      bare: true
+  emits:
+  - fact: batch_evidence
+    kind: nested-subset
+    entity: '{outer}'
+    measure: '{items}'
+    value: outer
+    position: '{outer.span_start}'
+    container: '{inner}'
+    per_member: inner
+    content_count: items
+    marker: counted
+  consumes:
+  - outer
+  - inner
+  - items
+  satisfies:
+    having:
+    - subject
+  where:
+  - same_lemma:
+    - inner
+    - unit
+- id: arithmetic/nested-content-remainder
+  phase: read
+  match:
+    sentence:
+    - opt:
+      - lit: while
+    - opt:
+      - lit: and
+    - slot: outer
+      cat: nested_content_container
+      qualified: true
+      qualifier_cat: remaining_partition_attribute
+      uncounted: true
+    - slot: have
+      cat: content_holding_verb
+    - slot: inner
+      cat: nested_content_container
+      counted: true
+      bare: true
+    - lit: with
+    - lit: each
+    - slot: unit
+      cat: nested_content_container
+      uncounted: true
+      bare: true
+    - slot: having
+      cat: content_holding_verb
+    - slot: items
+      cat: droppable_quantity_object
+      counted: true
+      bare: true
+  emits:
+  - fact: batch_evidence
+    kind: nested-subset
+    entity: '{outer}'
+    measure: '{items}'
+    value: 0
+    position: '{outer.span_start}'
+    container: '{inner}'
+    per_member: inner
+    content_count: items
+    marker: remainder
+  consumes:
+  - inner
+  - items
+  satisfies:
+    having:
+    - subject
+  where:
+  - same_lemma:
+    - inner
+    - unit
+asks:
+- id: ask/nested-equal-distribution
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: many
+    - slot: item
+      cat: droppable_quantity_object
+      uncounted: true
+      bare: true
+    - slot: modal
+      type: future_modal
+    - lit: each
+    - slot: person
+      cat: nested_allocation_recipient
+      uncounted: true
+      bare: true
+    - slot: get
+      cat: acquire
+    - lit: if
+    - slot: group
+      cat: discourse_subject_group_pronoun
+    - slot: divide
+      cat: equal_division_verb
+    - slot: again
+      cat: droppable_quantity_object
+      uncounted: true
+      bare: true
+    - slot: equal
+      cat: equal_division_adverb
+    - opt:
+      - slot: among
+        cat: allocation_distribution_preposition
+      - slot: self
+        cat: reflexive_group_pronoun
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: nested-content-share
+    item: '{item}'
+    person: '{person}'
+  where:
+  - same_lemma:
+    - item
+    - again
+  satisfies:
+    group:
+    - refers
+    self:
+    - refers
+    get:
+    - subject

@@ -24,7 +24,7 @@ categories:
     parent: noun
 members:
   allocatable_resource: [money, prize, profit]
-  allocation_distribution_preposition: [among, between]
+  allocation_distribution_preposition: [among, between, amongst]
   allocation_order_marker: [respectively]
   allocation_ratio_noun: [ratio]
   allocation_share_noun: [share]

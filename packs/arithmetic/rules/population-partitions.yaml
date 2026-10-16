@@ -35,8 +35,7 @@ rules:
       cat: threshold_operator
     - slot: label
       type: scale_label
-    - &id001
-      lit: .
+    - lit: .
       consume_skipped: true
   emits:
   - fact: population_evidence
@@ -71,7 +70,7 @@ rules:
     - slot: cohort
       cat: population_cohort
       uncounted: true
-    - *id001
+    - {lit: ., consume_skipped: true}
   emits:
   - fact: population_evidence
     kind: population
@@ -165,8 +164,7 @@ asks:
     - lit: and
     - slot: bound
       cat: threshold_operator
-    - &id002
-      lit: '?'
+    - lit: '?'
       consume_skipped: true
   resolves:
     consumer: threshold-complement
@@ -204,7 +202,7 @@ asks:
       cat: threshold_operator
     - slot: label
       type: scale_label
-    - *id002
+    - {lit: '?', consume_skipped: true}
   resolves:
     consumer: threshold-complement
     entity: '{members.owner_identity}'

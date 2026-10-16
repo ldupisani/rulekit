@@ -19,6 +19,12 @@ categories:
   educational_institution:
     parent: organization
     notes: An educational organization; a stated student count is an association.
+  role_location:
+    parent: noun
+    includes: [organization, spatial_reference_noun]
+    notes: A location associated with a stated personal role; no employment or organizational membership is implied.
+  role_location_preposition:
+    parent: preposition
   intentional_agent:
     parent: noun
     includes: [person, organization]
@@ -33,12 +39,17 @@ categories:
   geographic_area:
     parent: quantity_holder
     notes: A geographic scope that can contain a stated institutional population.
+  named_city:
+    parent: geographic_area
 members:
+  role_location_preposition: [at]
   social_group: [family, household, team]
-  educational_institution: [university]
-  geographic_area: ["area", "neighborhood", "subdivision"]
+  educational_institution: [university, school]
+  geographic_area: [area, neighborhood, subdivision, town]
   production_device: [machine]
   person:
   - painter
   - son
   - worker
+  named_city:
+  - chicago

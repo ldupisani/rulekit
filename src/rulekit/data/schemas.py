@@ -1580,7 +1580,7 @@ class FactEmit(StrictModel):
         "sequential_partition", "sequential_partition_prefix",
         "sequential_partition_remainder", "sequential_partition_initial_share",
         "sequential_partition_remaining_share", "ratio_quantity", "goal",
-        "group_total", "rate", "discount",
+        "group_total", "rate", "price", "discount",
         "percent_change", "atom", "quantified", "quantified_quantity",
         "quantified_adjustment",
         "class_refinement", "conditional",

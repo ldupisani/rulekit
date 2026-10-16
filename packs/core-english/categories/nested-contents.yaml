@@ -1,0 +1,40 @@
+format: rulekit/categories@1
+categories:
+  nested_content_container:
+    parent: noun
+    includes:
+    - quantity_container
+  nested_allocation_recipient:
+    parent: noun
+    includes:
+    - person
+    - animal
+  collection_group_noun:
+    parent: noun
+    includes:
+    - social_group
+  remaining_partition_attribute:
+    parent: adjective
+  content_holding_verb:
+    parent: verb
+  reflexive_group_pronoun:
+    parent: pronoun
+members:
+  remaining_partition_attribute: [remaining]
+  nested_content_container:
+  - pile
+  - hand
+  - box
+  - bag
+  - pack
+  collection_group_noun:
+  - group
+  content_holding_verb:
+  - has
+  - have
+  - had
+  - having
+  - contains
+  - contain
+  reflexive_group_pronoun:
+  - themselves

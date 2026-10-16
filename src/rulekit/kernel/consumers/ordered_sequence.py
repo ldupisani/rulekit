@@ -20,6 +20,33 @@ from ..predicate_compatibility import predicate_concepts
 MAX_TERMS = 1000
 
 
+def affine_terms_from_first(first, count, factor, offset, log):
+    """Bounded forward counterpart of the inverse affine sequence calculation."""
+    if (
+        not isinstance(count, int)
+        or not 1 <= count <= MAX_TERMS
+        or not all(isfinite(v) for v in (first, factor, offset))
+        or first < 0
+        or factor <= 0
+    ):
+        return None
+    terms = [first]
+    try:
+        for _ in range(1, count):
+            value = evaluate(
+                "previous * factor + offset",
+                {"previous": terms[-1], "factor": factor, "offset": offset},
+                log,
+                source="affine-sequence-term",
+            )
+            if not isfinite(value) or value < 0:
+                return None
+            terms.append(value)
+    except (ArithmeticError, EvaluationError):
+        return None
+    return terms
+
+
 def affine_terms_from_total(total, count, factor, offset, log):
     """Represent each term as a*x+b, sum coefficients, then solve once.
 

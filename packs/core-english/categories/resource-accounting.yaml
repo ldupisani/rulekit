@@ -1,5 +1,9 @@
 format: rulekit/categories@1
 categories:
+  monetary_amount_head:
+    parent: noun
+    includes: [resource_budget_noun]
+    notes: A nominal amount may modify this head, as in an explicitly priced allocation.
   resource_budget_noun:
     parent: noun
     notes: An explicitly bounded allocation, not an ordinary current holding.

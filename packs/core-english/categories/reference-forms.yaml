@@ -1,5 +1,7 @@
 format: rulekit/categories@1
 categories:
+  generic_addressee_pronoun:
+    parent: pronoun
   universal_person_reference:
     parent: pronoun
     notes: All people in an independently established discourse scope; no population is inferred.
@@ -24,6 +26,7 @@ categories:
   person_title:
     parent: title
 members:
+  generic_addressee_pronoun: [you]
   universal_person_reference: [everyone]
   group_possessive_determiner: [their]
   anaphoric_person_possessive: [her, his, their]

@@ -1,0 +1,33 @@
+format: rulekit/categories@1
+categories:
+  marginal_unit_attribute:
+    parent: adjective
+  price_threshold_verb:
+    parent: verb
+  price_threshold_marker:
+    parent: preposition
+  price_discount_noun:
+    parent: noun
+  admission_product:
+    parent: ownable_quantity_object
+  admission_event:
+    parent: noun
+members:
+  marginal_unit_attribute: [additional]
+  price_threshold_verb:
+  - exceed
+  - exceeds
+  - exceeding
+  price_threshold_marker:
+  - above
+  - beyond
+  price_discount_noun:
+  - discount
+  admission_product:
+  - ticket
+  admission_event:
+  - concert
+attribute_compatibility:
+  marginal_unit_attribute: [purchase_item]
+  admission_event:
+  - admission_product

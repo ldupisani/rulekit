@@ -1,0 +1,433 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/purchase-with-excess-discount
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: name
+      at_start: true
+    - slot: buy
+      cat: purchase
+      finite_form: true
+    - slot: items
+      cat: purchase_item
+      counted: true
+      bare: true
+    - lit: and
+    - slot: get
+      cat: acquire
+      finite_form: true
+    - slot: fraction
+      type: fraction
+    - slot: discount
+      cat: price_discount_noun
+    - lit: for
+    - lit: every
+    - slot: item
+      cat: purchase_item
+      uncounted: true
+      bare: true
+    - opt:
+      - slot: bought
+        cat: purchase
+      - lit: that
+    - slot: exceed
+      cat: price_threshold_verb
+      finite_form: true
+    - slot: threshold
+      type: number
+      standalone: true
+    - {lit: ., consume_skipped: true}
+  emits:
+  - &marginal_discount_evidence
+    fact: batch_evidence
+    kind: marginal-discount
+    entity: '{who}'
+    measure: '{items}'
+    value: items
+    position: '{items.span_start}'
+    fraction: fraction
+    subtotal: threshold
+    attribute: '{item}'
+  consumes:
+  - items
+  - fraction
+  - threshold
+  satisfies:
+    threshold:
+    - quantifies
+    exceed:
+    - subject
+  where:
+  - same_lemma:
+    - items
+    - item
+  description: A percentage reduction applies only to purchased units above an explicit threshold.
+- id: arithmetic/purchase-discount-above-threshold
+  phase: read
+  match:
+    sentence:
+    - {slot: who, type: name, at_start: true}
+    - {slot: buy, cat: purchase, finite_form: true}
+    - {slot: items, cat: purchase_item, counted: true, bare: true}
+    - lit: and
+    - slot: get
+      cat: acquire
+    - slot: fraction
+      type: fraction
+    - slot: discount
+      cat: price_discount_noun
+    - lit: on
+    - lit: each
+    - slot: item
+      cat: purchase_item
+      uncounted: true
+      bare: true
+    - slot: boundary
+      cat: price_threshold_marker
+    - slot: threshold
+      type: number
+      standalone: true
+    - {lit: ., consume_skipped: true}
+  emits:
+  - *marginal_discount_evidence
+  consumes:
+  - items
+  - fraction
+  - threshold
+  satisfies:
+    threshold:
+    - quantifies
+    boundary:
+    - object
+  where:
+  - same_lemma:
+    - items
+    - item
+- id: arithmetic/postpositive-unit-price
+  phase: read
+  match:
+    sentence:
+    - slot: item
+      cat: purchase_item
+      uncounted: true
+      bare: true
+      at_start: true
+    - slot: cost
+      cat: price_verb
+      finite_form: true
+    - slot: amount
+      cat: currency_measure
+      counted: true
+      bare: true
+    - slot: each
+      cat: postpositive_distributive_quantifier
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: price
+    item: '{item}'
+    value: amount
+    verb: '{cost}'
+  consumes:
+  - amount
+  satisfies:
+    each:
+    - collection
+- id: arithmetic/conditional-marginal-discount-policy
+  phase: read
+  description: A general discount policy applies only to additional units beyond a purchase threshold.
+  match:
+    sentence:
+    - {lit: there, at_start: true}
+    - {slot: copula, cat: singular_copula}
+    - {slot: discount, cat: price_discount_noun, uncounted: true, bare: true}
+    - {lit: of}
+    - {slot: fraction, type: fraction}
+    - {lit: on}
+    - {slot: item, cat: purchase_item, uncounted: true, qualified: true, qualifier_cat: marginal_unit_attribute}
+    - {lit: if}
+    - {slot: generic, cat: generic_addressee_pronoun}
+    - {slot: buy, cat: purchase, finite_form: true}
+    - {lit: more}
+    - {lit: than}
+    - {slot: threshold, type: number, standalone: true}
+    - {lit: ., consume_skipped: true}
+  emits:
+  - fact: batch_evidence
+    kind: marginal-discount-policy
+    entity: ""
+    value: 0
+    measure: '{item}'
+    attribute: '{item}'
+    fraction: fraction
+    subtotal: threshold
+    position: '{item.span_start}'
+  consumes: [fraction, threshold]
+  satisfies:
+    copula: [subject]
+    generic: [refers]
+    threshold: [quantifies]
+- id: arithmetic/conditional-percent-marginal-discount-policy
+  phase: read
+  description: A general discount policy applies only to additional units beyond a purchase threshold.
+  match:
+    sentence:
+    - {lit: there, at_start: true}
+    - {slot: copula, cat: singular_copula}
+    - {slot: fraction, type: fraction}
+    - {slot: discount, cat: price_discount_noun, uncounted: true, bare: true}
+    - {lit: on}
+    - {slot: item, cat: purchase_item, uncounted: true, qualified: true, qualifier_cat: marginal_unit_attribute}
+    - {lit: if}
+    - {slot: generic, cat: generic_addressee_pronoun}
+    - {slot: buy, cat: purchase, finite_form: true}
+    - {lit: more}
+    - {lit: than}
+    - {slot: threshold, type: number, standalone: true}
+    - {lit: ., consume_skipped: true}
+  emits:
+  - fact: batch_evidence
+    kind: marginal-discount-policy
+    entity: ""
+    value: 0
+    measure: '{item}'
+    attribute: '{item}'
+    fraction: fraction
+    subtotal: threshold
+    position: '{item.span_start}'
+  consumes: [fraction, threshold]
+  satisfies:
+    copula: [subject]
+    generic: [refers]
+    threshold: [quantifies]
+- id: arithmetic/conditional-all-units-discount-policy
+  phase: read
+  description: A threshold-triggered discount applies to every purchased unit, not just the excess.
+  match:
+    sentence:
+    - {lit: there, at_start: true}
+    - {slot: copula, cat: singular_copula}
+    - {slot: discount, cat: price_discount_noun, uncounted: true, bare: true}
+    - {lit: of}
+    - {slot: fraction, type: fraction}
+    - {lit: on}
+    - {slot: totality, cat: group_total_quantifier}
+    - {slot: item, cat: purchase_item, uncounted: true, bare: true}
+    - {lit: if}
+    - {slot: generic, cat: generic_addressee_pronoun}
+    - {slot: buy, cat: purchase, finite_form: true}
+    - {lit: more}
+    - {lit: than}
+    - {slot: threshold, type: number, standalone: true}
+    - {lit: ., consume_skipped: true}
+  emits:
+  - fact: batch_evidence
+    kind: all-units-discount-policy
+    entity: ""
+    value: 0
+    measure: '{item}'
+    attribute: '{item}'
+    fraction: fraction
+    subtotal: threshold
+    position: '{item.span_start}'
+  consumes: [fraction, threshold]
+  satisfies:
+    totality: [collection]
+    copula: [subject]
+    generic: [refers]
+    threshold: [quantifies]
+- id: arithmetic/conditional-percent-all-units-discount-policy
+  phase: read
+  description: A threshold-triggered discount applies to every purchased unit, not just the excess.
+  match:
+    sentence:
+    - {lit: there, at_start: true}
+    - {slot: copula, cat: singular_copula}
+    - {slot: fraction, type: fraction}
+    - {slot: discount, cat: price_discount_noun, uncounted: true, bare: true}
+    - {lit: on}
+    - {slot: totality, cat: group_total_quantifier}
+    - {slot: item, cat: purchase_item, uncounted: true, bare: true}
+    - {lit: if}
+    - {slot: generic, cat: generic_addressee_pronoun}
+    - {slot: buy, cat: purchase, finite_form: true}
+    - {lit: more}
+    - {lit: than}
+    - {slot: threshold, type: number, standalone: true}
+    - {lit: ., consume_skipped: true}
+  emits:
+  - fact: batch_evidence
+    kind: all-units-discount-policy
+    entity: ""
+    value: 0
+    measure: '{item}'
+    attribute: '{item}'
+    fraction: fraction
+    subtotal: threshold
+    position: '{item.span_start}'
+  consumes: [fraction, threshold]
+  satisfies:
+    totality: [collection]
+    copula: [subject]
+    generic: [refers]
+    threshold: [quantifies]
+asks:
+- id: ask/marginal-discount-total-0
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: much
+    - slot: aux
+      type: auxiliary
+    - slot: who
+      type: name
+    - slot: pay
+      cat: payment_verb
+    - slot: prep
+      cat: group_total_preposition
+    - slot: total
+      cat: group_total_quantifier
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: marginal-discount-cost
+    entity: '{who}'
+  satisfies:
+    pay:
+    - subject
+    prep:
+    - object
+    total:
+    - collection
+- id: ask/marginal-discount-total-1
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: much
+    - slot: aux
+      type: auxiliary
+    - slot: who
+      type: name
+    - slot: pay
+      cat: payment_verb
+    - slot: prep
+      cat: group_total_preposition
+    - lit: total
+    - {lit: '?', consume_skipped: true}
+  resolves:
+    consumer: marginal-discount-cost
+    entity: '{who}'
+  satisfies:
+    pay:
+    - subject
+    prep:
+    - object
+- id: ask/marginal-discount-total-2
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: much
+    - slot: aux
+      type: auxiliary
+    - slot: who
+      type: name
+    - slot: pay
+      cat: payment_verb
+    - {lit: '?', consume_skipped: true}
+  resolves:
+    consumer: marginal-discount-cost
+    entity: '{who}'
+  satisfies:
+    pay:
+    - subject
+
+- id: ask/threshold-discount-unit-price
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - {slot: aux, type: auxiliary}
+    - {slot: who, type: name}
+    - {slot: pay, cat: payment_verb}
+    - {lit: per}
+    - {slot: item, cat: purchase_item, uncounted: true, bare: true, number: singular}
+    - {lit: '?', consume_skipped: true}
+  resolves:
+    consumer: marginal-discount-cost
+    entity: '{who}'
+    item: '{item}'
+    output: unit
+  satisfies:
+    pay: [subject]
+
+- id: ask/threshold-discount-each-price
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - {slot: aux, type: auxiliary}
+    - {slot: who, type: name}
+    - {slot: pay, cat: payment_verb}
+    - {lit: for}
+    - {slot: each, cat: distributive_quantifier}
+    - {slot: item, cat: purchase_item, uncounted: true, bare: true, number: singular}
+    - {lit: '?', consume_skipped: true}
+  resolves:
+    consumer: marginal-discount-cost
+    entity: '{who}'
+    item: '{item}'
+    output: unit
+  satisfies:
+    pay: [subject]
+    each: [collection]
+
+- id: ask/threshold-discount-average-unit-price
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - {slot: aux, type: auxiliary}
+    - {slot: who, type: name}
+    - {slot: pay, cat: payment_verb}
+    - {lit: per}
+    - {slot: item, cat: purchase_item, uncounted: true, bare: true, number: singular}
+    - {slot: prep, cat: mean_context_preposition}
+    - {slot: mean, cat: mean_aggregate}
+    - {lit: '?', consume_skipped: true}
+  resolves:
+    consumer: marginal-discount-cost
+    entity: '{who}'
+    item: '{item}'
+    output: average-unit
+  satisfies:
+    pay: [subject]
+    prep: [object]
+    mean: [collection]
+
+- id: ask/threshold-discount-average-before-unit-price
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - {slot: aux, type: auxiliary}
+    - {slot: who, type: name}
+    - {slot: pay, cat: payment_verb}
+    - {slot: prep, cat: mean_context_preposition}
+    - {slot: mean, cat: mean_aggregate}
+    - {lit: per}
+    - {slot: item, cat: purchase_item, uncounted: true, bare: true, number: singular}
+    - {lit: '?', consume_skipped: true}
+  resolves:
+    consumer: marginal-discount-cost
+    entity: '{who}'
+    item: '{item}'
+    output: average-unit
+  satisfies:
+    pay: [subject]
+    prep: [object]
+    mean: [collection]

@@ -1,0 +1,20 @@
+format: rulekit/categories@1
+categories:
+  budget_purpose:
+    parent: noun
+  budget_action:
+    parent: verb
+members:
+  budget_purpose:
+  - food
+  - accommodation
+  - entertainment
+  - material
+  - rent
+  - book
+  - clothing
+  budget_action:
+  - budget
+attribute_compatibility:
+  budget_purpose:
+  - resource_budget_noun

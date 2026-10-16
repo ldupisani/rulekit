@@ -2,7 +2,22 @@ format: rulekit/categories@1
 categories:
   education_cohort:
     parent: population_cohort
+  academic_period:
+    parent: duration_measure
+  academic_material_descriptor:
+    parent: noun
+  material_resource:
+    parent: noun
 members:
   education_cohort:
   - grade
   - level
+  academic_period:
+  - semester
+  academic_material_descriptor:
+  - coursework
+  material_resource:
+  - material
+attribute_compatibility:
+  academic_material_descriptor:
+  - material_resource

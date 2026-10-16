@@ -50,6 +50,7 @@ from .model import (
     ContainerContent,
     Contribution,
     Discount,
+    Price,
     Disjunction,
     DisjunctiveConditional,
     EnumeratedDisjunction,
@@ -197,6 +198,7 @@ _FACT_CLASSES = {
     "group_total": GroupTotal,
     "rate": Rate,
     "rate_scope": RateScope,
+    "price": Price,
     "discount": Discount,
     "percent_change": PercentChange,
     "verbal_relation": VerbalRelation,
@@ -2313,7 +2315,7 @@ def _resolve_field(
 
 
 _NUMERIC_FIELDS = {
-    "unit_price", "lot_quantity", "per_member", "subtotal", "output_value", "population", "boundary_value",
+    "unit_price", "lot_quantity", "per_member", "content_count", "subtotal", "output_value", "population", "boundary_value",
     "group_size",
     "value", "year", "factor", "offset", "fraction", "numerator", "denominator",
     "elapsed",

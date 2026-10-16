@@ -137,7 +137,7 @@ def test_sequential_percentage_ask_names_a_qualified_plural_destination(
     }
     assert candidate.question.endswith("courses?")
     # Vocabulary growth can change the seeded search's first viable scaffold.
-    # Complete, initial-share and remaining-share scaffolds can all answer
+    # Complete, partial-share and contextual completion scaffolds can all answer
     # the named partition; retain the semantic contract rather than one
     # historical search result.
     assert len(candidate.premises) == 1
@@ -145,4 +145,5 @@ def test_sequential_percentage_ask_names_a_qualified_plural_destination(
         "arithmetic/sequential-percent-remainder-partition",
         "arithmetic/sequential-percent-remainder-partition-initial-share",
         "arithmetic/sequential-percent-remainder-partition-remaining-share",
+        "arithmetic/sequential-percent-remainder-partition-completion",
     }

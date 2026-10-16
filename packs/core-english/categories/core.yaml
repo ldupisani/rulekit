@@ -1831,6 +1831,11 @@ categories:
       'additional' (an 'adjective'-sensed synonym) is NOT folded into this
       same category rather than widening the root; it would need its own
       sibling category, out of scope until a second proven pair needs it.
+  mean_context_preposition:
+    parent: preposition
+  mean_aggregate:
+    parent: aggregate
+    notes: Explicit arithmetic mean of an established collection.
   aggregate_noun:
     parent: noun
     notes: >
@@ -2567,6 +2572,8 @@ temporal_offsets:
   today: 0
   tomorrow: 1
 members:
+  mean_aggregate: [average]
+  mean_context_preposition: [on]
   a_article_membership_predicate: [bird, book, cat, child, coin, dog, fish, friend, hamster, student, teacher]
   academic_course_modifier: [business, humanities, science]
   accompaniment_compatible_verb: [jumped, ran, taught, teach, teaches, travel, traveled, travels, walked]
@@ -2579,7 +2586,7 @@ members:
   age_projection_preposition: [after, in]
   aggregate_contents_label: [content, contents, goodie]
   aggregate_noun: [amount, number]
-  animal: [alpaca, beetle, bird, cat, dog, fish, hamster, jaguar, rabbit, snake]
+  animal: [monkey, alpaca, beetle, bird, cat, dog, fish, hamster, jaguar, rabbit, snake]
   animate:
   - brother
   - child
@@ -2673,6 +2680,7 @@ members:
   distributive_quantifier: [each, every]
   drop_quantity_verb: [dropped, drops]
   droppable_quantity_object:
+  - banana
   - apple
   - apricot
   - ball
@@ -2715,6 +2723,7 @@ members:
   earning_quantity_verb: [earn, earned, earns]
   eating_quantity_verb: [ate, eat, eats]
   edible_quantity_object:
+  - banana
   - apple
   - apricot
   - beetle
@@ -2846,7 +2855,7 @@ members:
   output_quantity_measure: [page]
   output_quantity_product: [book]
   output_quantity_verb: [write, writes, wrote]
-  ownable_quantity_object: [business, hard hat, money, shoe, wallet]
+  ownable_quantity_object: [dress, business, hard hat, money, shoe, wallet]
   owned_collection_location: [cupboard, garden, pantry, storeroom]
   ownership_state: [own, owns]
   package_content_preposition: [of, with]

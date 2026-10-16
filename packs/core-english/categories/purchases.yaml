@@ -72,7 +72,7 @@ members:
   price_quote_participle: [costing]
   marked_price_participle: [priced, listed]
   sale_offer_participle: [selling]
-  clothes: [belt, coat, hat, pants, shirt, shoe, shorts, sock, suit, top]
+  clothes: [belt, coat, dress, hat, pants, shirt, shoe, shorts, sock, suit, top]
   generic_purchase_collection_noun: [goods, item, merchandise, stuff, thing]
   ingredient: [apple, charcuterie, cheddar cheese, cheese, cold cut, cream cheese, sugar]
   mass_purchase_collection_noun: [merchandise, stuff]

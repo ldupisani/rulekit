@@ -53,9 +53,6 @@ entries:
   activity:
     senses:
     - noun
-  additional:
-    senses:
-    - adjective
   administration:
     senses:
     - noun
@@ -274,9 +271,6 @@ entries:
   attempted:
     senses:
     - verb
-  attend:
-    senses:
-    - verb
   attended:
     senses:
     - verb
@@ -389,10 +383,6 @@ entries:
   bamboo:
     senses:
     - noun
-  banana:
-    senses:
-    - noun
-    plural: bananas
   band:
     senses:
     - noun
@@ -473,9 +463,6 @@ entries:
     - verb
     verb:
       lemma: beat
-  beauty:
-    senses:
-    - noun
   become:
     senses:
     - verb
@@ -706,13 +693,6 @@ entries:
   build:
     senses:
     - verb
-  building:
-    senses:
-    - noun
-    - verb
-    plural: buildings
-    verb:
-      lemma: build
   builds:
     senses:
     - verb
@@ -1225,10 +1205,6 @@ entries:
   completing:
     senses:
     - verb
-  concert:
-    senses:
-    - noun
-    plural: concerts
   conch:
     senses:
     - noun
@@ -1268,10 +1244,6 @@ entries:
   contact:
     senses:
     - noun
-  contest:
-    senses:
-    - noun
-    plural: contests
   contestant:
     senses:
     - noun
@@ -1823,10 +1795,6 @@ entries:
     senses:
     - noun
     plural: dreams
-  dress:
-    senses:
-    - noun
-    plural: dresses
   drinking:
     senses:
     - verb

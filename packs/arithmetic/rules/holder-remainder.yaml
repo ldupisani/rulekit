@@ -63,14 +63,14 @@ rules:
     - {lit: of}
     - {slot: holders, cat: ordinal_quantity_holder, counted: true, qualified: true, qualifier_cat: holder_prefix_order}
     - {slot: verb, cat: possession_state, finite_form: true}
-    - &id001 {slot: contents, cat: ownable_quantity_object, counted: true, bare: true}
+    -  {slot: contents, cat: ownable_quantity_object, counted: true, bare: true}
     - opt:
       - {slot: local_prep, cat: spatial_location_preposition}
       - {slot: local, cat: spatial_reference_noun, bare: true}
-    - &id002 {lit: ., consume_skipped: true}
+    -  {lit: ., consume_skipped: true}
   consumes: [holders, contents]
   emits:
-  - &id003 {fact: batch_evidence, kind: holder-share, entity: '{holders}', measure: '{contents}', value: holders, position: '{holders.span_start}',
+  - &holder_share_evidence {fact: batch_evidence, kind: holder-share, entity: '{holders}', measure: '{contents}', value: holders, position: '{holders.span_start}',
     marker: '{holders.qualifier}', per_member: contents}
 - id: arithmetic/holder-prefix-combined-1-bare
   phase: read
@@ -133,14 +133,14 @@ rules:
         true}
     - {lit: each}
     - {slot: verb, cat: possession_state, finite_form: true}
-    - *id001
+    - {slot: contents, cat: ownable_quantity_object, counted: true, bare: true}
     - opt:
       - {slot: local_prep, cat: spatial_location_preposition}
       - {slot: local, cat: spatial_reference_noun, bare: true}
-    - *id002
+    - {lit: ., consume_skipped: true}
   consumes: [holders, contents]
   emits:
-  - *id003
+  - *holder_share_evidence
 - id: arithmetic/holder-prefix-combined-2-bare
   phase: read
   description: An exhaustive holder population and an equal-content initial group.
@@ -201,15 +201,15 @@ rules:
     - {slot: holders, cat: ordinal_quantity_holder, counted: true, qualified: true, qualifier_cat: holder_prefix_order, at_start:
         true}
     - {slot: verb, cat: possession_state, finite_form: true}
-    - *id001
+    - {slot: contents, cat: ownable_quantity_object, counted: true, bare: true}
     - {lit: each}
     - opt:
       - {slot: local_prep, cat: spatial_location_preposition}
       - {slot: local, cat: spatial_reference_noun, bare: true}
-    - *id002
+    - {lit: ., consume_skipped: true}
   consumes: [holders, contents]
   emits:
-  - *id003
+  - *holder_share_evidence
 - id: arithmetic/holder-population-bare
   phase: read
   description: An explicitly counted holder population, scoped to its location.

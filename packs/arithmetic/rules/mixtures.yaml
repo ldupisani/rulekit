@@ -182,17 +182,14 @@ templates:
       - slot: removal
         cat: inventory_withdrawal_verb
         past_participle: true
-      - &id001
-        lit: without
-      - &id002
-        slot: loss
+      - lit: without
+      - slot: loss
         cat: mixture_loss_verb
         present_participle: true
       - opt:
         - lit: any
           consume_skipped: true
-      - &id003
-        slot: retained
+      - slot: retained
         cat: mixture_component
         uncounted: true
     rule:
@@ -463,12 +460,12 @@ rules:
       - slot: holder
         cat: measurement_container
         referential: true
-    - *id001
-    - *id002
+    - {lit: without}
+    - {slot: loss, cat: mixture_loss_verb, present_participle: true}
     - opt:
       - lit: any
         consume_skipped: true
-    - *id003
+    - {slot: retained, cat: mixture_component, uncounted: true}
     - lit: .
       consume_skipped: true
   emits:
@@ -511,12 +508,12 @@ rules:
       - slot: holder
         cat: measurement_container
         referential: true
-    - *id001
-    - *id002
+    - {lit: without}
+    - {slot: loss, cat: mixture_loss_verb, present_participle: true}
     - opt:
       - lit: any
         consume_skipped: true
-    - *id003
+    - {slot: retained, cat: mixture_component, uncounted: true}
     - lit: .
       consume_skipped: true
   emits:
@@ -1166,7 +1163,7 @@ ask_variants:
 - id: ask/mixture-much-remain-in-sample
   template: mixture-state-ask
   arguments:
-    head: &id004
+    head: &component_amount_question_prefix
     - lit: how
       at_start: true
     - lit: much
@@ -1177,7 +1174,7 @@ ask_variants:
 - id: ask/mixture-much-left-in-sample
   template: mixture-state-ask
   arguments:
-    head: *id004
+    head: *component_amount_question_prefix
     target: ''
     tail:
     - slot: copula
@@ -1196,7 +1193,7 @@ ask_variants:
 - id: ask/mixture-quantity-remain-in-sample
   template: mixture-state-ask
   arguments:
-    head: &id005
+    head: &component_volume_question_prefix
     - lit: what
       at_start: true
     - slot: volume
@@ -1210,7 +1207,7 @@ ask_variants:
 - id: ask/mixture-quantity-left-in-sample
   template: mixture-state-ask
   arguments:
-    head: *id005
+    head: *component_volume_question_prefix
     target: ''
     tail:
     - slot: copula

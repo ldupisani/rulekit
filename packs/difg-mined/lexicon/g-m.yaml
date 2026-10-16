@@ -178,10 +178,6 @@ entries:
   grounded:
     senses:
     - verb
-  group:
-    senses:
-    - noun
-    plural: groups
   grove:
     senses:
     - noun
@@ -255,10 +251,6 @@ entries:
   halves:
     senses:
     - noun
-  hand:
-    senses:
-    - noun
-    plural: hands
   hand-crank:
     senses:
     - adjective
@@ -1157,10 +1149,6 @@ entries:
   matchday:
     senses:
     - noun
-  material:
-    senses:
-    - noun
-    plural: materials
   maximum:
     senses:
     - adjective
@@ -1299,9 +1287,6 @@ entries:
   model:
     senses:
     - adjective
-  modeling:
-    senses:
-    - noun
   models:
     senses:
     - noun
@@ -1312,10 +1297,6 @@ entries:
     senses:
     - noun
     plural: monitors
-  monkey:
-    senses:
-    - noun
-    plural: monkeys
   morning:
     senses:
     - noun

@@ -45,11 +45,19 @@ sequential integration gates.
    consumers; the constitution still forbids question-specific solvers.
 2. Implement the reusable change and add invented analogues, paraphrases, and
    relevant ambiguity/decline boundaries. Keep benchmark prose out of tests.
-3. Run focused affected tests, the curated suite, and relevant lint. Expand
+3. After implementation, review every new or changed rule for unnecessary
+   specificity: its ID, file placement, category gates, facts and consumer.
+   Name the general language/reasoning capability, reuse existing machinery,
+   and keep domain vocabulary in subcategories. For domain-neutral behavior,
+   verify invented examples from at least two distinct contexts, plus cases
+   where broadening would infer an unstated relationship. Fix avoidable
+   example-specific restrictions before reporting completion; explain any
+   domain restriction that remains necessary.
+4. Run focused affected tests, the curated suite, and relevant lint. Expand
    validation according to the change's reach: shared kernel changes warrant
    the full synthetic suite and relevant DEV regression comparisons. Do not
    automatically run the entire mining matrix or repeat unchanged gates.
-4. Check the supplied question locally and report the result, limitations, and
+5. Check the supplied question locally and report the result, limitations, and
    checks performed. Do not claim independent benchmark generalization from it.
 
 Protected TEST/generalization looks, committing, and pushing remain separate

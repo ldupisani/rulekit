@@ -1,27 +1,6 @@
 format: rulekit/rules@1
 rules:
-  # Exact one-PP named class membership for the quantitative bridge. Simple
-  # nominal membership already has the generic Membership fact; this narrower
-  # rule exists only where that fact would lose a class restriction. The
-  # explicit article and declared preposition/place compatibility keep
-  # arbitrary bare roles and arbitrary noun pairs out.
-  - id: logic-arithmetic/ground-copular-nominal-pp
-    phase: read
-    match:
-      sentence:
-        - {slot: subj, type: name, at_start: true, blocks_skipped: indefinite_article}
-        - {lit: is}
-        - {lit: a, consume_skipped: true}
-        - {slot: cls, cat: a_predicative_role}
-        - {slot: prep, cat: class_restriction_preposition}
-        - {lit: the, consume_skipped: true}
-        - {slot: restriction, cat: class_restriction_place}
-        - {lit: ".", consume_skipped: true}
-    where:
-      - attribute_compatible: {attribute: prep, noun: restriction}
-    emits:
-      - {fact: atom, entity: "{subj}", pred: "{cls} {prep} {restriction}", polarity: true}
-
+  # Personal role-at-place premises live in arithmetic/rules/role-locations.yaml.
   # Numeric possessive universals stay structured instead of becoming an
   # opaque predicate phrase. The bare-plural slot supplies the grammatical
   # evidence for singularizing the class key.

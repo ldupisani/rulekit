@@ -187,6 +187,34 @@ def _discourse_candidates(
     return out
 
 
+def _only_geographic_location_mentions(identity, readings, upto, reg):
+    """Semantic location typing requires a locative use at every mention."""
+    if not reg.word_in_category(identity.head, "geographic_area"):
+        return False
+    mentions = [
+        (r, u)
+        for r in readings
+        if r.sentence_index < upto
+        for u in r.units
+        if u.sense() == "name" and reference_from_unit(u) == identity
+    ]
+    return bool(mentions) and all(
+        any(
+            reg.word_in_category(
+                p.features.get("lemma", ""), "spatial_location_preposition"
+            )
+            and any(ob.need == "object" and ob.target is u for ob in p.obligations())
+            for p in r.units
+        )
+        and not any(
+            v.sense() == "verb"
+            and any(ob.need == "subject" and ob.target is u for ob in v.obligations())
+            for v in r.units
+        )
+        for r, u in mentions
+    )
+
+
 def _named_possessor_candidates(
     readings: list[Reading], upto: int
 ) -> dict[ReferenceIdentity, tuple[int, Unit]]:
@@ -709,6 +737,16 @@ def _bind_discourse(
                         candidates = _named_possessor_candidates(
                             readings, reading.sentence_index
                         )
+                # Only a declared geographic name used exclusively as a
+                # locative object can be removed from personal antecedents.
+                # An independent subject mention remains a live competitor.
+                if reg is not None and reg.word_in_category(
+                    unit.features.get("lemma", unit.features["fold"]), "animate_pronoun"
+                ):
+                    candidates = {
+                        key: candidate for key, candidate in candidates.items()
+                        if not _only_geographic_location_mentions(key, readings, reading.sentence_index, reg)
+                    }
                 # A possessive determiner cannot resolve to the head it
                 # governs: in "her child", choosing an earlier `child` as
                 # the owner would assert self-ownership and, worse, change a

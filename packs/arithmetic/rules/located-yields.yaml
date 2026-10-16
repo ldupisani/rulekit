@@ -42,8 +42,7 @@ rules:
       cat: local_yield_station
       uncounted: true
       bare: true
-    - &id001
-      lit: .
+    - lit: .
       consume_skipped: true
   emits:
   - fact: batch_evidence
@@ -92,7 +91,7 @@ rules:
     - slot: place
       cat: local_yield_site
       uncounted: true
-    - *id001
+    - {lit: ., consume_skipped: true}
   emits:
   - fact: batch_evidence
     kind: located-yield

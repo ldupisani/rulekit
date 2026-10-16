@@ -1,0 +1,238 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/event-result-seed
+  phase: read
+  match:
+    sentence:
+    - slot: event
+      cat: repeating_event
+      uncounted: true
+      bare: true
+      at_start: true
+    - slot: cause
+      cat: causation_verb
+    - slot: objects
+      cat: event_result_object
+      counted: true
+      bare: true
+    - slot: infinitive
+      cat: infinitival_marker
+    - slot: effect
+      cat: event_effect_verb
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: event-seed
+    entity: '{event}'
+    measure: '{objects}'
+    value: objects
+    position: '{objects.span_start}'
+    verb: '{effect}'
+  consumes:
+  - objects
+  satisfies:
+    effect:
+    - subject
+    infinitive:
+    - object
+- id: arithmetic/event-multiplier-step
+  phase: read
+  match:
+    sentence:
+    - &forecast_context
+      opt:
+      - slot: expert
+        cat: forecast_agent
+        uncounted: true
+        bare: true
+      - slot: predict
+        cat: forecast_verb
+      - opt:
+        - lit: that
+    - lit: each
+    - lit: following
+    - slot: event
+      cat: repeating_event
+      uncounted: true
+      bare: true
+    - opt:
+      - slot: modal
+        type: future_modal
+    - slot: have
+      cat: possession_state
+    - slot: factor
+      type: multiplier
+    - lit: the
+      consume_skipped: true
+    - lit: number
+    - lit: of
+    - slot: objects
+      cat: event_result_object
+      uncounted: true
+      qualified: true
+      qualifier_cat: event_effect_descriptor
+    - lit: as
+    - lit: the
+      consume_skipped: true
+    - lit: previous
+    - slot: reference1
+      type: number
+      value_min: 1
+      value_max: 1
+      standalone: true
+    - {lit: ., consume_skipped: true}
+  emits:
+  - fact: batch_evidence
+    kind: event-step
+    entity: '{event}'
+    measure: '{objects}'
+    value: factor
+    position: '{factor.span_start}'
+    attribute: '{objects.qualifier}'
+  - fact: batch_evidence
+    kind: event-reference
+    entity: '{event}'
+    measure: '{objects}'
+    value: reference1
+    position: '{reference1.span_start}'
+  consumes:
+  - factor
+  - reference1
+  satisfies:
+    have:
+    - subject
+    reference1:
+    - quantifies
+  description: An explicitly projected adjacent-event multiplier; an optional qualitative stability
+    explanation adds no numeric growth.
+- id: arithmetic/event-multiplier-step-motive
+  phase: read
+  match:
+    sentence:
+    - *forecast_context
+    - {lit: each}
+    - {lit: following}
+    - {slot: event, cat: repeating_event, uncounted: true, bare: true}
+    - {opt: [{slot: modal, type: future_modal}]}
+    - {slot: have, cat: possession_state}
+    - {slot: factor, type: multiplier}
+    - {lit: the, consume_skipped: true}
+    - {lit: number}
+    - {lit: of}
+    - {slot: objects, cat: event_result_object, uncounted: true, qualified: true, qualifier_cat: event_effect_descriptor}
+    - {lit: as}
+    - {lit: the, consume_skipped: true}
+    - {lit: previous}
+    - slot: reference1
+      type: number
+      value_min: 1
+      value_max: 1
+      standalone: true
+    - lit: since
+    - lit: each
+    - slot: reference2
+      type: number
+      value_min: 1
+      value_max: 1
+      standalone: true
+    - slot: future
+      type: future_modal
+    - slot: make
+      cat: specification_production_verb
+    - slot: foundation
+      cat: stability_component
+      uncounted: true
+      bare: true
+    - slot: less
+      cat: less_dir
+    - slot: stable
+      cat: stability_attribute
+    - {lit: ., consume_skipped: true}
+  emits:
+  - fact: batch_evidence
+    kind: event-step
+    entity: '{event}'
+    measure: '{objects}'
+    value: factor
+    position: '{factor.span_start}'
+    attribute: '{objects.qualifier}'
+  - fact: batch_evidence
+    kind: event-reference
+    entity: '{event}'
+    measure: '{objects}'
+    value: reference1
+    position: '{reference1.span_start}'
+  - fact: batch_evidence
+    kind: event-reference
+    entity: '{event}'
+    measure: '{objects}'
+    value: reference2
+    position: '{reference2.span_start}'
+  consumes:
+  - factor
+  - reference1
+  - reference2
+  satisfies:
+    have:
+    - subject
+    make:
+    - subject
+    reference1:
+    - quantifies
+    reference2:
+    - quantifies
+    less:
+    - standard
+  description: An explicitly projected adjacent-event multiplier; an optional qualitative stability
+    explanation adds no numeric growth.
+asks:
+- id: ask/projected-event-total
+  match:
+    question:
+    - lit: after
+      at_start: true
+    - slot: count
+      type: number
+      standalone: true
+    - lit: more
+    - slot: event
+      cat: repeating_event
+      uncounted: true
+      bare: true
+    - lit: how
+    - lit: many
+    - slot: objects
+      cat: event_result_object
+      uncounted: true
+      bare: true
+    - slot: effect
+      cat: event_effect_verb
+    - lit: including
+    - lit: those
+      consume_skipped: true
+    - lit: from
+    - lit: the
+      consume_skipped: true
+    - slot: initial
+      cat: repeating_event
+      uncounted: true
+      qualified: true
+      qualifier_cat: holder_prefix_order
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: event-sequence-total
+    event: '{event}'
+    item: '{objects}'
+    count: '{count.value}'
+    effect: '{effect}'
+  where:
+  - same_lemma:
+    - event
+    - initial
+  satisfies:
+    count:
+    - quantifies
+    effect:
+    - subject

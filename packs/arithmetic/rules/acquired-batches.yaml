@@ -6,7 +6,7 @@ templates:
       attribute: ''
       sign: '0'
       satisfaction:
-        them: &id005
+        them:
         - refers
     rule:
       phase: read
@@ -21,8 +21,7 @@ templates:
         - slot: acquire
           cat: batch_acquisition_verb
           finite_form: true
-        - &id001
-          slot: item
+        - slot: item
           cat: ownable_quantity_object
           counted: true
           value_min: 1
@@ -88,7 +87,7 @@ templates:
         - slot: acquire
           cat: batch_acquisition_verb
           finite_form: true
-        - *id001
+        - {slot: item, cat: ownable_quantity_object, counted: true, value_min: 1, bare: true}
         - slot: join
           cat: batch_continuation_conjunction
         - opt:
@@ -138,11 +137,11 @@ templates:
       attribute: ''
       sign: '0'
       satisfaction:
-        them: &id006
+        them:
         - refers
-        n: &id007
+        n:
         - quantifies
-        more: &id008
+        more:
         - standard
     rule:
       phase: read
@@ -157,15 +156,12 @@ templates:
         - slot: acquire
           cat: batch_acquisition_verb
           finite_form: true
-        - &id002
-          slot: n
+        - slot: n
           type: number
           value_min: 1
-        - &id003
-          slot: more
+        - slot: more
           cat: batch_additional_marker
-        - &id004
-          slot: item
+        - slot: item
           cat: ownable_quantity_object
           number: plural
           uncounted: true
@@ -235,9 +231,9 @@ templates:
         - slot: acquire
           cat: batch_acquisition_verb
           finite_form: true
-        - *id002
-        - *id003
-        - *id004
+        - {slot: n, type: number, value_min: 1}
+        - {slot: more, cat: batch_additional_marker}
+        - {slot: item, cat: ownable_quantity_object, number: plural, uncounted: true, bare: true}
         - slot: join
           cat: batch_continuation_conjunction
         - opt:
@@ -287,9 +283,9 @@ templates:
       attribute: ''
       sign: '0'
       satisfaction:
-        them: &id009
+        them:
         - refers
-        acquire: &id010
+        acquire:
         - subject
     rule:
       phase: read
@@ -432,7 +428,7 @@ variants:
     attribute: '{quality}'
     sign: sign(quality)
     satisfaction:
-      them: *id005
+      them: [refers]
       they:
       - refers
 - id: arithmetic/acquired-batch-counted-discard-negative-reason
@@ -450,7 +446,7 @@ variants:
     attribute: '{quality}'
     sign: -sign(quality)
     satisfaction:
-      them: *id005
+      them: [refers]
       they:
       - refers
 - id: arithmetic/acquired-batch-counted-classify
@@ -486,9 +482,9 @@ variants:
     attribute: '{quality}'
     sign: sign(quality)
     satisfaction:
-      them: *id006
-      n: *id007
-      more: *id008
+      them: [refers]
+      n: [quantifies]
+      more: [standard]
       they:
       - refers
 - id: arithmetic/acquired-batch-more-discard-negative-reason
@@ -506,9 +502,9 @@ variants:
     attribute: '{quality}'
     sign: -sign(quality)
     satisfaction:
-      them: *id006
-      n: *id007
-      more: *id008
+      them: [refers]
+      n: [quantifies]
+      more: [standard]
       they:
       - refers
 - id: arithmetic/acquired-batch-more-classify
@@ -545,8 +541,8 @@ variants:
     attribute: '{quality}'
     sign: sign(quality)
     satisfaction:
-      them: *id009
-      acquire: *id010
+      them: [refers]
+      acquire: [subject]
       they:
       - refers
 - id: arithmetic/after-acquisition-discard-negative-reason
@@ -564,8 +560,8 @@ variants:
     attribute: '{quality}'
     sign: -sign(quality)
     satisfaction:
-      them: *id009
-      acquire: *id010
+      them: [refers]
+      acquire: [subject]
       they:
       - refers
 rules:
@@ -861,7 +857,7 @@ ask_variants:
 - id: ask/acquired-batch-qualified-left-with-plain
   template: acquired-batch-ask
   arguments:
-    body: &id011
+    body: &remaining_with_question_tail
     - slot: copula
       cat: singular_copula
     - slot: who
@@ -876,16 +872,13 @@ ask_variants:
 - id: ask/acquired-batch-qualified-left-with-after-removal
   template: acquired-batch-ask
   arguments:
-    body: *id011
-    tail: &id016
-    - &id012
-      lit: after
-    - &id013
-      slot: disposal
+    body: *remaining_with_question_tail
+    tail: &after_disposal_clause
+    - lit: after
+    - slot: disposal
       cat: batch_disposal_verb
       present_participle: true
-    - &id014
-      slot: removed
+    - slot: removed
       cat: ownable_quantity_object
       number: plural
       uncounted: true
@@ -895,11 +888,11 @@ ask_variants:
 - id: ask/acquired-batch-qualified-left-with-round-removal
   template: acquired-batch-ask
   arguments:
-    body: *id011
+    body: *remaining_with_question_tail
     tail:
-    - *id012
-    - *id013
-    - *id014
+    - {lit: after}
+    - {slot: disposal, cat: batch_disposal_verb, present_participle: true}
+    - {slot: removed, cat: ownable_quantity_object, number: plural, uncounted: true, qualified: true, qualifier_cat: batch_quality, class_only: true}
     - slot: again_who
       type: entity
       common_noun_cat: quantity_event_participant
@@ -918,7 +911,7 @@ ask_variants:
 - id: ask/acquired-batch-qualified-have-left-plain
   template: acquired-batch-ask
   arguments:
-    body: &id015
+    body: &remaining_have_question_tail
     - slot: aux
       type: auxiliary
     - slot: who
@@ -935,16 +928,16 @@ ask_variants:
 - id: ask/acquired-batch-qualified-have-left-after-removal
   template: acquired-batch-ask
   arguments:
-    body: *id015
-    tail: *id016
+    body: *remaining_have_question_tail
+    tail: *after_disposal_clause
 - id: ask/acquired-batch-qualified-have-left-round-removal
   template: acquired-batch-ask
   arguments:
-    body: *id015
+    body: *remaining_have_question_tail
     tail:
-    - *id012
-    - *id013
-    - *id014
+    - {lit: after}
+    - {slot: disposal, cat: batch_disposal_verb, present_participle: true}
+    - {slot: removed, cat: ownable_quantity_object, number: plural, uncounted: true, qualified: true, qualifier_cat: batch_quality, class_only: true}
     - slot: again_who
       type: entity
       common_noun_cat: quantity_event_participant
@@ -963,7 +956,7 @@ ask_variants:
 - id: ask/acquired-batch-qualified-remain-plain
   template: acquired-batch-ask
   arguments:
-    body: &id017
+    body:
     - slot: remain
       cat: inventory_remainder_verb
       finite_form: true
@@ -971,16 +964,16 @@ ask_variants:
 - id: ask/acquired-batch-qualified-remain-after-removal
   template: acquired-batch-ask
   arguments:
-    body: *id017
-    tail: *id016
+    body: [{slot: remain, cat: inventory_remainder_verb, finite_form: true}]
+    tail: *after_disposal_clause
 - id: ask/acquired-batch-qualified-remain-round-removal
   template: acquired-batch-ask
   arguments:
-    body: *id017
+    body: [{slot: remain, cat: inventory_remainder_verb, finite_form: true}]
     tail:
-    - *id012
-    - *id013
-    - *id014
+    - {lit: after}
+    - {slot: disposal, cat: batch_disposal_verb, present_participle: true}
+    - {slot: removed, cat: ownable_quantity_object, number: plural, uncounted: true, qualified: true, qualifier_cat: batch_quality, class_only: true}
     - slot: again_who
       type: entity
       common_noun_cat: quantity_event_participant
@@ -999,21 +992,21 @@ ask_variants:
 - id: ask/acquired-batch-bare-left-with-plain
   template: acquired-batch-bare-ask
   arguments:
-    body: *id011
+    body: *remaining_with_question_tail
     tail: []
 - id: ask/acquired-batch-bare-left-with-after-removal
   template: acquired-batch-bare-ask
   arguments:
-    body: *id011
-    tail: *id016
+    body: *remaining_with_question_tail
+    tail: *after_disposal_clause
 - id: ask/acquired-batch-bare-left-with-round-removal
   template: acquired-batch-bare-ask
   arguments:
-    body: *id011
+    body: *remaining_with_question_tail
     tail:
-    - *id012
-    - *id013
-    - *id014
+    - {lit: after}
+    - {slot: disposal, cat: batch_disposal_verb, present_participle: true}
+    - {slot: removed, cat: ownable_quantity_object, number: plural, uncounted: true, qualified: true, qualifier_cat: batch_quality, class_only: true}
     - slot: again_who
       type: entity
       common_noun_cat: quantity_event_participant
@@ -1032,16 +1025,16 @@ ask_variants:
 - id: ask/acquired-batch-bare-have-left-after-removal
   template: acquired-batch-bare-ask
   arguments:
-    body: *id015
-    tail: *id016
+    body: *remaining_have_question_tail
+    tail: *after_disposal_clause
 - id: ask/acquired-batch-bare-have-left-round-removal
   template: acquired-batch-bare-ask
   arguments:
-    body: *id015
+    body: *remaining_have_question_tail
     tail:
-    - *id012
-    - *id013
-    - *id014
+    - {lit: after}
+    - {slot: disposal, cat: batch_disposal_verb, present_participle: true}
+    - {slot: removed, cat: ownable_quantity_object, number: plural, uncounted: true, qualified: true, qualifier_cat: batch_quality, class_only: true}
     - slot: again_who
       type: entity
       common_noun_cat: quantity_event_participant
@@ -1060,21 +1053,21 @@ ask_variants:
 - id: ask/acquired-batch-bare-remain-plain
   template: acquired-batch-bare-ask
   arguments:
-    body: *id017
+    body: [{slot: remain, cat: inventory_remainder_verb, finite_form: true}]
     tail: []
 - id: ask/acquired-batch-bare-remain-after-removal
   template: acquired-batch-bare-ask
   arguments:
-    body: *id017
-    tail: *id016
+    body: [{slot: remain, cat: inventory_remainder_verb, finite_form: true}]
+    tail: *after_disposal_clause
 - id: ask/acquired-batch-bare-remain-round-removal
   template: acquired-batch-bare-ask
   arguments:
-    body: *id017
+    body: [{slot: remain, cat: inventory_remainder_verb, finite_form: true}]
     tail:
-    - *id012
-    - *id013
-    - *id014
+    - {lit: after}
+    - {slot: disposal, cat: batch_disposal_verb, present_participle: true}
+    - {slot: removed, cat: ownable_quantity_object, number: plural, uncounted: true, qualified: true, qualifier_cat: batch_quality, class_only: true}
     - slot: again_who
       type: entity
       common_noun_cat: quantity_event_participant

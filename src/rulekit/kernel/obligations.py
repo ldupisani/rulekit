@@ -424,6 +424,13 @@ def _article_licenses_noun(reading: Reading, unit: Unit, reg: Registry | None = 
                 reg.plural_to_singular.get(unit.features.get("fold", ""), unit.features.get("fold", "")),
             )
         )
+        if (reg is not None and prev.features.get("value_kind") == "count"
+                and reg.word_in_category(prev.features.get("lemma", ""), "currency_measure")
+                and reg.word_in_category(unit.features.get("lemma", ""), "monetary_amount_head")):
+            # A declared monetary head can retain its amount modifier while
+            # seeking the article/possessive that licenses this nominal use.
+            crossed_modifier = True
+            continue
         if sense in {"adjective", "ordinal"} or (
             reg is not None and "adjective" in prev.senses()
             and reg.attribute_applies_to(
@@ -436,6 +443,14 @@ def _article_licenses_noun(reading: Reading, unit: Unit, reg: Registry | None = 
         # A bare quantifier can itself be a subject ("toys that each cost
         # ..."). Only its explicit adjective makes this a determined noun
         # phrase; do not turn the following finite predicate into a noun.
+        # A possessive following an adposition heads its nominal object,
+        # even when the head is also a verb ("from her budget"). This does
+        # not force object-pronoun + verb complements such as "saw her dress".
+        previous_index = reading.units.index(prev)
+        if (reg is not None and previous_index > 0
+                and reg.word_in_category(prev.features.get("fold", ""), "possessive_determiner")
+                and reading.units[previous_index - 1].sense() == "preposition"):
+            return True
         return sense == "article" or (
             reg is not None and sense == "quantifier" and crossed_modifier
         )
@@ -827,6 +842,15 @@ def disambiguate(reading: Reading, reg: Registry) -> Reading:
     options = []
     for u in ambiguous:
         senses = u.senses()
+        index = reading.units.index(u)
+        if ("interrogative" in senses and "quantifier" in senses and index == 1
+                and reading.units[0].sense() == "interrogative"
+                and index + 1 < len(reading.units)
+                and reading.units[index + 1].sense() in {"auxiliary", "modal"}):
+            # An inverted quantity question has no nominal for the quantifier
+            # here: the auxiliary introduces its subject and predicate.
+            options.append(["interrogative"])
+            continue
         if u.uid in nominal_list:
             options.append(["noun"])
             continue

@@ -31,8 +31,7 @@ rules:
         cat: duration_measure
         uncounted: true
         bare: true
-    - &id001
-      lit: .
+    - lit: .
       consume_skipped: true
   emits:
   - fact: batch_evidence
@@ -72,7 +71,7 @@ rules:
     - lit: by
     - slot: who
       type: name
-    - *id001
+    - {lit: ., consume_skipped: true}
   emits:
   - fact: batch_evidence
     kind: joint-share
@@ -105,7 +104,7 @@ rules:
       cat: currency_measure
       counted: true
       bare: true
-    - *id001
+    - {lit: ., consume_skipped: true}
   emits:
   - fact: batch_evidence
     kind: joint-share
@@ -137,7 +136,7 @@ rules:
     - slot: other_earn
       cat: wage_verb
       finite_form: true
-    - *id001
+    - {lit: ., consume_skipped: true}
   emits:
   - fact: batch_evidence
     kind: joint-relative
@@ -186,7 +185,7 @@ rules:
     - lit: by
     - slot: who
       type: name
-    - *id001
+    - {lit: ., consume_skipped: true}
   emits:
   - fact: batch_evidence
     kind: joint-share
@@ -227,7 +226,7 @@ rules:
       cat: quantity_anaphor
       uncounted: true
       bare: true
-    - *id001
+    - {lit: ., consume_skipped: true}
   emits:
   - fact: batch_evidence
     kind: joint-share
@@ -267,7 +266,7 @@ rules:
     - lit: by
     - slot: who
       type: name
-    - *id001
+    - {lit: ., consume_skipped: true}
   emits:
   - fact: batch_evidence
     kind: joint-share
@@ -305,7 +304,7 @@ rules:
       cat: partitive
     - lit: [that, this]
       consume_skipped: true
-    - *id001
+    - {lit: ., consume_skipped: true}
   emits:
   - fact: batch_evidence
     kind: joint-share

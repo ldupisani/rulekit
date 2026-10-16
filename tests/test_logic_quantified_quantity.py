@@ -106,7 +106,7 @@ def test_quantified_quantity_rules_are_available_to_human_review():
     }
 
     for rule_id in (
-        "logic-arithmetic/ground-copular-nominal-pp",
+        "arithmetic/personal-role-at-definite-location",
         "logic-arithmetic/universal-all-have-quantity",
         "logic-arithmetic/universal-all-have-quantity-pp",
     ):
@@ -121,7 +121,7 @@ def test_quantified_quantity_rules_are_available_to_human_review():
 def test_reviewed_logic_pp_surfaces_are_absent() -> None:
     project = load_project(ROOT / "projects/curated")
     reviewed = {
-        "logic-arithmetic/ground-copular-nominal-pp": (
+        "arithmetic/personal-role-at-definite-location": (
             "Fia is violinist on cookie."
         ),
         "logic-arithmetic/universal-all-have-quantity-pp": (
@@ -146,7 +146,7 @@ def test_reviewed_logic_pp_surfaces_are_absent() -> None:
 def test_logic_pp_rules_keep_declared_spatial_role_surfaces() -> None:
     registry = _registry()
     expected = {
-        "logic-arithmetic/ground-copular-nominal-pp": (
+        "arithmetic/personal-role-at-definite-location": (
             "Fia is a violinist at the university."
         ),
         "logic-arithmetic/universal-all-have-quantity-pp": (

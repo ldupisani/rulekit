@@ -812,3 +812,41 @@ Scoped proportional calculations also retain their population and role evidence:
   references resolve against the order of the two introduced sites; each rate
   uses its own population. A missing comparison standard is licensed only when
   precisely two compatible collectors are established.
+
+- Threshold purchase discounts combine ordinary unit prices (`price` facts) with
+  an explicit quantity threshold. Marginal policies reduce only excess units;
+  whole-purchase policies reduce all units once the threshold is exceeded.
+  Counts, threshold, buyer, item and discount scope must agree. Per-unit asks
+  return a uniform paid price; mixed prices require an explicit average ask.
+  Zero-unit purchases have no paid per-unit price.
+- Comparative purchase budgets reuse `expenditure` pricing and resource totals.
+  A stated pair price covers the pair. A requested item list must identify the
+  complete referenced basket before a multiplier is applied.
+- Nested collection partitions retain outer counts, inner units per container,
+  and `batch_evidence.content_count` per inner unit. An explicit remainder uses
+  the total minus the counted partitions. Equal sharing preserves fractional
+  results instead of silently rounding physical items.
+- Event totals reuse bounded affine-sequence arithmetic from an initial term.
+  An initial event plus N further events means N+1 terms. Nominal references
+  remain source evidence and do not contribute additional terms.
+- Named budget allocations retain fractional destinations and an explicit
+  remainder. Every fraction applies to the original, independently bound
+  `resource_allocation`; a different owner, overlapping destinations or an
+  over-allocation declines. Ordinary accounting establishes the opening balance.
+
+
+### Personal roles at locations
+
+`arithmetic/rules/role-locations.yaml` owns the general “person is a role at
+place [in area]” family. It replaces the education-only budget context and
+the separate logic bridge reader. `person`, `role_location` and
+`geographic_area` supply the semantic domains; schools remain an organization
+subcategory alongside commercial organizations, and ordinary spatial places
+are also eligible. These gates describe the stated relationship, not employment.
+
+The rules emit qualified `Membership` for the role and an exact `Atom` for
+the complete role/location phrase. Indefinite locations retain their article
+in the predicate key and set `indef_obj`, preventing inheritance from a class
+restricted to a particular place. A stated area remains in that key rather
+than being silently discarded. Existing declared role refinements remain
+responsible for deriving a broader role, such as teacher from head teacher.

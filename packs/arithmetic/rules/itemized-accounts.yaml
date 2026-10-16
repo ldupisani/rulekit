@@ -116,8 +116,7 @@ asks:
       cat: shared_cost_noun
     - slot: equal
       cat: equal_division_adverb
-    - &id001
-      lit: '?'
+    - lit: '?'
       consume_skipped: true
   resolves:
     consumer: shared-account-cost
@@ -156,7 +155,7 @@ asks:
       cat: shared_cost_noun
     - slot: equal
       cat: equal_division_adverb
-    - *id001
+    - {lit: '?', consume_skipped: true}
   resolves:
     consumer: shared-account-cost
     person: '{person}'
@@ -180,8 +179,7 @@ asks:
       cat: discourse_group_pronoun
     - slot: pay
       cat: payment_verb
-    - &id002
-      lit: '?'
+    - lit: '?'
       consume_skipped: true
   resolves:
     consumer: shared-account-cost
@@ -228,7 +226,7 @@ asks:
       bare: true
     - slot: pay
       cat: payment_verb
-    - *id002
+    - {lit: '?', consume_skipped: true}
   resolves:
     consumer: shared-account-cost
     person: '{person}'
