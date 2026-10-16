@@ -18,7 +18,8 @@ rules:
     - slot: infinitive
       cat: infinitival_marker
     - slot: effect
-      cat: event_effect_verb
+      cat: event_intransitive_effect_verb
+      bare_form: true
     - lit: .
       consume_skipped: true
   emits:
@@ -36,12 +37,45 @@ rules:
     - subject
     infinitive:
     - object
-- id: arithmetic/event-multiplier-step
+- id: arithmetic/event-nominal-result-seed
   phase: read
   match:
     sentence:
-    - &forecast_context
-      opt:
+    - slot: event
+      cat: repeating_event
+      uncounted: true
+      bare: true
+      at_start: true
+    - slot: cause
+      cat: causation_verb
+    - slot: effect
+      cat: event_effect_noun
+      uncounted: true
+      bare: true
+    - lit: of
+    - slot: objects
+      cat: event_result_object
+      counted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: event-seed
+    entity: '{event}'
+    measure: '{objects}'
+    value: objects
+    position: '{objects.span_start}'
+    verb: '{effect}'
+  consumes:
+  - objects
+- id: arithmetic/event-relative-increase-step
+  phase: read
+  description: An adjacent-event proportional increase, retaining the stated
+    fraction for the numeric audit.
+  match:
+    sentence:
+    - opt:
       - slot: expert
         cat: forecast_agent
         uncounted: true
@@ -59,133 +93,41 @@ rules:
     - opt:
       - slot: modal
         type: future_modal
-    - slot: have
-      cat: possession_state
-    - slot: factor
-      type: multiplier
-    - lit: the
-      consume_skipped: true
-    - lit: number
-    - lit: of
+    - slot: cause
+      cat: causation_verb
+    - slot: share
+      type: fraction
+    - lit: more
     - slot: objects
       cat: event_result_object
-      uncounted: true
-      qualified: true
-      qualifier_cat: event_effect_descriptor
-    - lit: as
-    - lit: the
-      consume_skipped: true
-    - lit: previous
-    - slot: reference1
-      type: number
-      value_min: 1
-      value_max: 1
-      standalone: true
-    - {lit: ., consume_skipped: true}
-  emits:
-  - fact: batch_evidence
-    kind: event-step
-    entity: '{event}'
-    measure: '{objects}'
-    value: factor
-    position: '{factor.span_start}'
-    attribute: '{objects.qualifier}'
-  - fact: batch_evidence
-    kind: event-reference
-    entity: '{event}'
-    measure: '{objects}'
-    value: reference1
-    position: '{reference1.span_start}'
-  consumes:
-  - factor
-  - reference1
-  satisfies:
-    have:
-    - subject
-    reference1:
-    - quantifies
-  description: An explicitly projected adjacent-event multiplier; an optional qualitative stability
-    explanation adds no numeric growth.
-- id: arithmetic/event-multiplier-step-motive
-  phase: read
-  match:
-    sentence:
-    - *forecast_context
-    - {lit: each}
-    - {lit: following}
-    - {slot: event, cat: repeating_event, uncounted: true, bare: true}
-    - {opt: [{slot: modal, type: future_modal}]}
-    - {slot: have, cat: possession_state}
-    - {slot: factor, type: multiplier}
-    - {lit: the, consume_skipped: true}
-    - {lit: number}
-    - {lit: of}
-    - {slot: objects, cat: event_result_object, uncounted: true, qualified: true, qualifier_cat: event_effect_descriptor}
-    - {lit: as}
-    - {lit: the, consume_skipped: true}
-    - {lit: previous}
-    - slot: reference1
-      type: number
-      value_min: 1
-      value_max: 1
-      standalone: true
-    - lit: since
-    - lit: each
-    - slot: reference2
-      type: number
-      value_min: 1
-      value_max: 1
-      standalone: true
-    - slot: future
-      type: future_modal
-    - slot: make
-      cat: specification_production_verb
-    - slot: foundation
-      cat: stability_component
+      number: plural
       uncounted: true
       bare: true
-    - slot: less
-      cat: less_dir
-    - slot: stable
-      cat: stability_attribute
-    - {lit: ., consume_skipped: true}
+    - slot: infinitive
+      cat: infinitival_marker
+    - slot: effect
+      cat: event_intransitive_effect_verb
+      bare_form: true
+    - lit: .
+      consume_skipped: true
   emits:
   - fact: batch_evidence
-    kind: event-step
+    kind: event-percent-step
     entity: '{event}'
     measure: '{objects}'
-    value: factor
-    position: '{factor.span_start}'
-    attribute: '{objects.qualifier}'
-  - fact: batch_evidence
-    kind: event-reference
-    entity: '{event}'
-    measure: '{objects}'
-    value: reference1
-    position: '{reference1.span_start}'
-  - fact: batch_evidence
-    kind: event-reference
-    entity: '{event}'
-    measure: '{objects}'
-    value: reference2
-    position: '{reference2.span_start}'
+    value: share
+    position: '{share.span_start}'
+    verb: '{effect}'
+    marker: '{predict.optional} {modal.optional}'
   consumes:
-  - factor
-  - reference1
-  - reference2
+  - share
   satisfies:
-    have:
+    cause:
     - subject
-    make:
+    infinitive:
+    - object
+    effect:
     - subject
-    reference1:
-    - quantifies
-    reference2:
-    - quantifies
-    less:
-    - standard
-  description: An explicitly projected adjacent-event multiplier; an optional qualitative stability
-    explanation adds no numeric growth.
 asks:
 - id: ask/projected-event-total
   match:
@@ -206,6 +148,9 @@ asks:
       cat: event_result_object
       uncounted: true
       bare: true
+    - opt:
+      - slot: passive
+        cat: sequence_passive_auxiliary
     - slot: effect
       cat: event_effect_verb
     - lit: including
@@ -228,6 +173,8 @@ asks:
     count: '{count.value}'
     effect: '{effect}'
   where:
+  - category_requires_bound: {slot: effect, cat: event_transitive_effect_verb, bound: passive}
+  - bound_requires_category: {bound: passive, slot: effect, cat: event_result_participle}
   - same_lemma:
     - event
     - initial
@@ -236,3 +183,245 @@ asks:
     - quantifies
     effect:
     - subject
+    passive:
+    - subject
+templates:
+  event-multiplier-step:
+    parameters:
+      result_objects:
+      - slot: objects
+        cat: event_result_object
+        uncounted: true
+        qualified: true
+        qualifier_cat: event_effect_descriptor
+      result_attribute: '{objects.qualifier}'
+      satisfactions:
+        have:
+        - subject
+        reference1:
+        - quantifies
+    rule:
+      phase: read
+      match:
+        sentence:
+        - opt:
+          - slot: expert
+            cat: forecast_agent
+            uncounted: true
+            bare: true
+          - slot: predict
+            cat: forecast_verb
+          - opt:
+            - lit: that
+        - lit: each
+        - lit: following
+        - slot: event
+          cat: repeating_event
+          uncounted: true
+          bare: true
+        - opt:
+          - slot: modal
+            type: future_modal
+        - slot: have
+          cat: projected_result_verb
+        - slot: factor
+          type: multiplier
+        - lit: the
+          consume_skipped: true
+        - slot: aggregate
+          cat: count_aggregate_noun
+        - lit: of
+        - parameter: result_objects
+        - lit: as
+        - lit: the
+          consume_skipped: true
+        - lit: previous
+        - slot: reference1
+          type: number
+          value_min: 1
+          value_max: 1
+          standalone: true
+        - lit: .
+          consume_skipped: true
+      emits:
+      - fact: batch_evidence
+        kind: event-step
+        entity: '{event}'
+        measure: '{objects}'
+        value: factor
+        position: '{factor.span_start}'
+        attribute:
+          parameter: result_attribute
+        marker: '{predict.optional} {modal.optional}'
+      - fact: batch_evidence
+        kind: event-reference
+        entity: '{event}'
+        measure: '{objects}'
+        value: reference1
+        position: '{reference1.span_start}'
+      consumes:
+      - factor
+      - reference1
+      satisfies:
+        parameter: satisfactions
+      description: An explicitly projected adjacent-event multiplier; an
+        optional qualitative stability explanation adds no numeric growth.
+  event-multiplier-step-motive:
+    parameters:
+      result_objects:
+      - slot: objects
+        cat: event_result_object
+        uncounted: true
+        qualified: true
+        qualifier_cat: event_effect_descriptor
+      result_attribute: '{objects.qualifier}'
+      satisfactions:
+        have:
+        - subject
+        make:
+        - subject
+        reference1:
+        - quantifies
+        reference2:
+        - quantifies
+        less:
+        - standard
+    rule:
+      phase: read
+      match:
+        sentence:
+        - opt:
+          - slot: expert
+            cat: forecast_agent
+            uncounted: true
+            bare: true
+          - slot: predict
+            cat: forecast_verb
+          - opt:
+            - lit: that
+        - lit: each
+        - lit: following
+        - slot: event
+          cat: repeating_event
+          uncounted: true
+          bare: true
+        - opt:
+          - slot: modal
+            type: future_modal
+        - slot: have
+          cat: projected_result_verb
+        - slot: factor
+          type: multiplier
+        - lit: the
+          consume_skipped: true
+        - slot: aggregate
+          cat: count_aggregate_noun
+        - lit: of
+        - parameter: result_objects
+        - lit: as
+        - lit: the
+          consume_skipped: true
+        - lit: previous
+        - slot: reference1
+          type: number
+          value_min: 1
+          value_max: 1
+          standalone: true
+        - lit: since
+        - lit: each
+        - slot: reference2
+          type: number
+          value_min: 1
+          value_max: 1
+          standalone: true
+        - slot: future
+          type: future_modal
+        - slot: make
+          cat: specification_production_verb
+        - slot: foundation
+          cat: stability_component
+          uncounted: true
+          bare: true
+        - slot: less
+          cat: less_dir
+        - slot: stable
+          cat: stability_attribute
+        - lit: .
+          consume_skipped: true
+      emits:
+      - fact: batch_evidence
+        kind: event-step
+        entity: '{event}'
+        measure: '{objects}'
+        value: factor
+        position: '{factor.span_start}'
+        attribute:
+          parameter: result_attribute
+        marker: '{predict.optional} {modal.optional}'
+      - fact: batch_evidence
+        kind: event-reference
+        entity: '{event}'
+        measure: '{objects}'
+        value: reference1
+        position: '{reference1.span_start}'
+      - fact: batch_evidence
+        kind: event-reference
+        entity: '{event}'
+        measure: '{objects}'
+        value: reference2
+        position: '{reference2.span_start}'
+      consumes:
+      - factor
+      - reference1
+      - reference2
+      satisfies:
+        parameter: satisfactions
+      description: An explicitly projected adjacent-event multiplier; an
+        optional qualitative stability explanation adds no numeric growth.
+variants:
+- id: arithmetic/event-multiplier-step
+  template: event-multiplier-step
+- id: arithmetic/event-multiplier-step-participle
+  template: event-multiplier-step
+  arguments:
+    result_objects:
+    - slot: effect
+      cat: event_result_participle
+    - slot: objects
+      cat: event_result_object
+      uncounted: true
+      bare: true
+    result_attribute: '{effect}'
+    satisfactions:
+      have:
+      - subject
+      reference1:
+      - quantifies
+      effect:
+      - subject
+- id: arithmetic/event-multiplier-step-motive
+  template: event-multiplier-step-motive
+- id: arithmetic/event-multiplier-step-motive-participle
+  template: event-multiplier-step-motive
+  arguments:
+    result_objects:
+    - slot: effect
+      cat: event_result_participle
+    - slot: objects
+      cat: event_result_object
+      uncounted: true
+      bare: true
+    result_attribute: '{effect}'
+    satisfactions:
+      have:
+      - subject
+      make:
+      - subject
+      reference1:
+      - quantifies
+      reference2:
+      - quantifies
+      less:
+      - standard
+      effect:
+      - subject

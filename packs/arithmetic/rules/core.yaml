@@ -7882,6 +7882,7 @@ asks:
             - {slot: p, cat: group_total_preposition}
         - {slot: agg, cat: group_total_marker}
     where:
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - bound_requires_category: {bound: p, slot: agg, cat: prepositional_group_total_marker}
     resolves:
       consumer: combined

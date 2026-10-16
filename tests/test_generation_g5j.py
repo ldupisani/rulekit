@@ -99,7 +99,7 @@ def test_g5j_profiles_the_complete_comparative_category_class() -> None:
     )
 
     assert occurrences == {
-        "less_dir": 1,
+        "less_dir": 2,
         "delta": 6,
         "quantity_delta": 5,
         "count_quantity_delta": 20,
@@ -120,8 +120,8 @@ def test_g5j_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 505
-    assert sum(item.supported for item in availability.values()) == 450
+    assert len(availability) == 509
+    assert sum(item.supported for item in availability.values()) == 454
     assert sum(not item.supported for item in availability.values()) == 55
     assert availability[
         "arithmetic/dangling-comparative-safety"
@@ -135,7 +135,7 @@ def test_g5j_unlocks_exactly_the_preregistered_frontier() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 827
+    assert len(exploration_status(project)["fillers"]) == 830
 
 
 def test_owned_comparative_categories_have_project_backed_fillers() -> None:

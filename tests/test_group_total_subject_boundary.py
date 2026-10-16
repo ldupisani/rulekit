@@ -174,8 +174,8 @@ def test_scope_split_rules_remain_realisable_after_g5j_expansion() -> None:
         for item in list_rule_availability(load_project(CURATED))
     }
 
-    assert len(availability) == 505
-    assert sum(item.supported for item in availability.values()) == 450
+    assert len(availability) == 509
+    assert sum(item.supported for item in availability.values()) == 454
     assert all(availability[rule_id].supported for rule_id in BOUNDARY_RULES)
 
 

@@ -34,6 +34,9 @@ FUTURE_RULES = {
     "arithmetic/temporal-offset-times-as-old-as-future",
 }
 EXPECTED_OCCURRENCES = {
+    "arithmetic/event-multiplier-step-participle": ((4, 0), "future_modal", ((4,),)),
+    "arithmetic/event-multiplier-step-motive-participle": ((19,), "future_modal", ()),
+    "arithmetic/event-relative-increase-step": ((4, 0), "future_modal", ((4,),)),
     "arithmetic/event-multiplier-step": ((4, 0), "future_modal", ((4,),)),
     "arithmetic/event-multiplier-step-motive": ((18,), "future_modal", ()),
     "arithmetic/explicit-proportion-adoption-owned-scope": ((1, 0), "future_modal", ((1,),)),
@@ -221,8 +224,8 @@ def test_g5s_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 505
-    assert sum(item.supported for item in availability.values()) == 450
+    assert len(availability) == 509
+    assert sum(item.supported for item in availability.values()) == 454
     assert sum(not item.supported for item in availability.values()) == 55
     assert availability["arithmetic/periodic-rate-every-span"].supported
     assert all(availability[rule_id].supported for rule_id in FUTURE_RULES)
@@ -234,7 +237,7 @@ def test_g5s_unlocks_exactly_the_preregistered_frontier() -> None:
     assert availability[
         "arithmetic/anchored-relation-conjoined-anchor"
     ].supported
-    assert len(exploration_status(project)["fillers"]) == 827
+    assert len(exploration_status(project)["fillers"]) == 830
 
 
 @pytest.mark.parametrize("modal", sorted(MOVED_WORDS))

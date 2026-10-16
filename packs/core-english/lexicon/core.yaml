@@ -273,6 +273,7 @@ entries:
   collapse:
     senses:
     - verb
+    - noun
   collapsed:
     senses:
     - verb
@@ -414,6 +415,9 @@ entries:
   designed: {senses: [verb], verb: {lemma: design}}
   designs: {senses: [noun, verb], verb: {lemma: design}}
   despite: {senses: [preposition]}
+  destroy: {senses: [verb]}
+  destroyed: {senses: [verb], verb: {lemma: destroy}}
+  destruction: {senses: [noun]}
   determine:
     senses:
     - verb
@@ -1611,6 +1615,7 @@ entries:
   took: {senses: [verb], verb: {lemma: take}}
   top: {senses: [noun], plural: tops}
   topic: {senses: [noun], plural: topics}
+  tornado: {senses: [noun], plural: [tornadoes, tornados]}
   total: {senses: [aggregate]}
   toward: {senses: [noun, preposition]}
   towards: {senses: [preposition]}

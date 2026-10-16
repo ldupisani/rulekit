@@ -2301,8 +2301,12 @@ def _resolve_field(
                          for segment in _enumeration_segments(span))
         return _slot_value(slots[name], attr)
     if not numeric:
-        # a string with embedded templates
-        return _TEMPLATE.sub(lambda mm: _slot_value(slots[mm.group(1)], mm.group(2)), raw)
+        # Embedded placeholders obey the same explicit optionality contract
+        # as a standalone placeholder; ordinary missing bindings stay errors.
+        return _TEMPLATE.sub(
+            lambda mm: str(_resolve_field(mm.group(0), slots, reg, False, log, rule_id)),
+            raw,
+        )
     # numeric expression: slot names are variables; sign(x) precomputed
     expr = _SIGN.sub(lambda mm: str(_polarity_of(slots[mm.group(1)], reg)), raw)
     expr = _TEMPLATE.sub(lambda mm: mm.group(1), expr)  # allow {n} in expressions too

@@ -4,8 +4,18 @@ categories:
     parent: noun
   event_result_object:
     parent: noun
+  event_result_participle:
+    parent: verb
+  event_effect_noun:
+    parent: noun
+  projected_result_verb:
+    parent: verb
   event_effect_verb:
     parent: verb
+  event_transitive_effect_verb:
+    parent: event_effect_verb
+  event_intransitive_effect_verb:
+    parent: event_effect_verb
   event_effect_descriptor:
     parent: adjective
   forecast_verb:
@@ -19,17 +29,20 @@ categories:
   causation_verb:
     parent: verb
 members:
+  event_result_participle: [collapsed, destroyed]
+  event_effect_noun: [collapse, destruction]
+  projected_result_verb: [have, has, had, cause, causes, caused]
   repeating_event:
   - earthquake
+  - tornado
   - storm
   - round
   event_result_object:
   - building
   - house
   - tree
-  event_effect_verb:
-  - collapse
-  - collapsed
+  event_transitive_effect_verb: [destroy, destroyed]
+  event_intransitive_effect_verb: [collapse, collapsed]
   event_effect_descriptor:
   - collapsing
   forecast_verb:
@@ -48,3 +61,8 @@ members:
 attribute_compatibility:
   event_effect_descriptor:
   - event_result_object
+
+context_synonyms:
+  structural_event_loss:
+    gate: event_result_object
+    forms: [collapse, collapsing, destruction, destroy]

@@ -9,6 +9,7 @@ from ..model import BatchEvidence
 from ..evaluate import evaluate
 from ..numeric_evidence import audit_numeric_mentions
 from ..source_coverage import uncovered_document_units
+from ..predicate_compatibility import predicates_compatible
 
 
 @consumer(
@@ -20,7 +21,10 @@ def consume(ctx):
         return Answer("decline", None, reason)
 
     rows = list(ctx.store.by_kind(BatchEvidence))
-    by = {k: [r for r in rows if r.kind == k] for k in ("event-seed", "event-step")}
+    by = {
+        "event-seed": [r for r in rows if r.kind == "event-seed"],
+        "event-step": [r for r in rows if r.kind in {"event-step", "event-percent-step"}],
+    }
     references = [r for r in rows if r.kind == "event-reference"]
     if (
         len(rows) != 2 + len(references)
@@ -39,7 +43,8 @@ def consume(ctx):
             b.entity != ctx.query["event"] or b.measure != ctx.query["item"]
             for b in rows
         )
-        or first.verb != ctx.query["effect"]
+        or not predicates_compatible(first.verb, ctx.query["effect"], first.measure, ctx.reg)
+        or not predicates_compatible(first.verb, step.verb or step.attribute, first.measure, ctx.reg)
         or not isfinite(count)
         or count < 0
         or not count.is_integer()
@@ -74,8 +79,15 @@ def consume(ctx):
         return decline(
             "the sequence must account for every condition and source number"
         )
-    terms = affine_terms_from_first(first.value, int(count) + 1, step.value, 0, ctx.log)
-    if terms is None or any(not float(v).is_integer() for v in terms):
+    factor = step.value
+    if step.kind == "event-percent-step":
+        if not isfinite(step.value) or step.value < 0:
+            return decline("a proportional increase must be finite and nonnegative")
+        factor = evaluate("1 + increase", {"increase": step.value}, ctx.log,
+                          source="event-relative-increase-factor")
+    terms = affine_terms_from_first(first.value, int(count) + 1, factor, 0, ctx.log)
+    projected = bool(step.marker.strip())
+    if terms is None or (not projected and any(not float(v).is_integer() for v in terms)):
         return decline("the recurrence must produce finite whole-number event results")
     value = evaluate(
         " + ".join(str(v) for v in terms), {}, ctx.log, source="event-sequence-total"
@@ -84,5 +96,6 @@ def consume(ctx):
     return Answer(
         "number",
         value,
-        "Sum the initial event and every explicitly requested subsequent event.",
+        ("Sum the initial event and every explicitly projected subsequent event without rounding."
+         if projected else "Sum the initial event and every explicitly requested subsequent event."),
     )

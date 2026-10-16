@@ -872,3 +872,15 @@ Review-driven semantic boundaries also apply to generated premises:
   size, or ripeness), and require distinct subtypes. Sequence and remainder
   descriptors are not independent inventory classes. The overlap linter
   respects modifier-category gates as well as head-noun gates.
+
+Event progressions retain the source fraction in `event-percent-step` evidence;
+`25% more` becomes a recurrence factor of `1 + 0.25` only in the consumer, after
+source-number auditing. A forecast verb or future modal marks a projection.
+Projected terms may be fractional and are summed without rounding; unmarked
+actual counts must remain whole numbers. Initial, recurring, and queried effects
+must agree through the existing object-gated `context_synonyms` contract. The
+structural-event vocabulary groups collapse and destruction only for declared
+event-result objects, rather than making them unrestricted verb synonyms.
+
+Explicit `.optional` string placeholders work both alone and inside a larger
+string. Omitting an ordinary required placeholder remains an error.

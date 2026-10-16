@@ -1,6 +1,7 @@
 """Review batch 66: grammatical generation and positive semantic roles."""
 
 from pathlib import Path
+import re
 
 import pytest
 
@@ -170,9 +171,12 @@ def test_package_totality_generation_supplies_matching_package_context(
     assert package in candidate.context_before[0].casefold()
     assert candidate.target_status in {"matched", "shadowed"}
     if "item" in candidate.requested_bindings:
-        assert (
-            candidate.requested_bindings["item"].casefold()
-            in candidate.context_before[0].casefold()
+        item = candidate.requested_bindings["item"].casefold()
+        lemma = curated.registry.plural_to_singular.get(item, item)
+        forms = {lemma, *curated.registry.lexicon[lemma].plurals()}
+        assert any(
+            re.search(rf"(?<!\w){re.escape(form)}(?!\w)", candidate.context_before[0].casefold())
+            for form in forms
         )
 
 

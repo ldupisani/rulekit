@@ -238,6 +238,9 @@ def test_optional_string_emission_does_not_relax_required_bindings(reg):
     from rulekit.kernel.patterns import _resolve_field
 
     assert _resolve_field("{day.optional}", {}, reg, False, None, "synthetic") == ""
+    assert _resolve_field("before {day.optional} after", {}, reg, False, None, "synthetic") == "before  after"
+    with pytest.raises(EvaluationError, match="unbound slot"):
+        _resolve_field("before {day} after", {}, reg, False, None, "synthetic")
     with pytest.raises(EvaluationError, match="unbound slot"):
         _resolve_field("{day}", {}, reg, False, None, "synthetic")
 
