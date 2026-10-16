@@ -2706,6 +2706,7 @@ members:
   - marble
   - pack
   - paper
+  - peach
   - pear
   - pencil
   - pickle
@@ -2993,7 +2994,7 @@ members:
   remnant_adj: [left]
   resource_raising_quantity_verb: [raise, raised, raises, raising]
   restrictive_focus_adverb: [just, only]
-  ripenable_noun: [apple, apricot, grape, pear, plum, tomato]
+  ripenable_noun: [apple, apricot, grape, peach, pear, plum, tomato]
   sell: [sell, sells, sold]
   sequential_partition_context: [university]
   sequential_partition_destination: [course]
@@ -3007,7 +3008,7 @@ members:
   size_attribute: [large, small]
   sized_content_bearing_whole: [bag, barrel, beaker, bottle, bowl, box, bucket, canister, container, flask,
       jar, jug, tank, vessel, vial]
-  sized_quantity_container: [bag, barrel, beaker, bottle, bowl, box, bucket, canister, container, flask, jar,
+  sized_quantity_container: [bag, barrel, basket, beaker, bottle, bowl, box, bucket, canister, container, flask, jar,
       jug, tank, vessel, vial]
   span_preposition: [in]
   spatial_copular_verb: [are, is, was, were]

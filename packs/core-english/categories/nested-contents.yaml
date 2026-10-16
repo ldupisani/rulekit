@@ -15,11 +15,15 @@ categories:
     - social_group
   remaining_partition_attribute:
     parent: adjective
-  content_holding_verb:
+  nested_container_relation_verb:
     parent: verb
+    notes: Actual container contents or packing requirements in a nested collection.
+  content_holding_verb:
+    parent: nested_container_relation_verb
   reflexive_group_pronoun:
     parent: pronoun
 members:
+  nested_container_relation_verb: [take, takes, took]
   remaining_partition_attribute: [remaining]
   nested_content_container:
   - pile

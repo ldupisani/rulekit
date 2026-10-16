@@ -287,8 +287,8 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
     project = load_project(CURATED)
     availability = list_rule_availability(project)
 
-    assert len(availability) == 504
-    assert sum(item.supported for item in availability) == 449
+    assert len(availability) == 505
+    assert sum(item.supported for item in availability) == 450
     assert sum(not item.supported for item in availability) == 55
     assert all(
         not item.blockers
@@ -354,7 +354,7 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
             }
         for item in availability
     )
-    assert len(exploration_status(project)["fillers"]) == 826
+    assert len(exploration_status(project)["fillers"]) == 827
 
 
 def test_currently_generates_a_matcher_confirmed_anchor() -> None:

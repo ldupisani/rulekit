@@ -1126,6 +1126,7 @@ entries:
     - verb
     verb:
       lemma: pay
+  peach: {senses: [noun], plural: peaches}
   pear: {senses: [noun], plural: pears}
   pencil: {senses: [noun], plural: pencils}
   pending: {senses: [preposition]}

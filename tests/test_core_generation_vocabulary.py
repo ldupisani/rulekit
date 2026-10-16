@@ -108,7 +108,7 @@ def test_new_core_words_are_reachable_generator_fillers() -> None:
     status = exploration_status(project)
     identities = {item["identity"] for item in status["fillers"]}
 
-    assert len(identities) == 826
+    assert len(identities) == 827
     assert {"neighborhood", "neighbourhood"} <= identities
     assert {"family", "household", "team"} <= identities
     assert {"portion", "serving"} <= identities

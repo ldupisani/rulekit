@@ -12,7 +12,6 @@ rules:
     - slot: people
       cat: nested_allocation_recipient
       counted: true
-      bare: true
     - slot: collect
       cat: acquire
     - slot: outer
@@ -41,12 +40,53 @@ rules:
   consumes:
   - people
   - outer
+- id: arithmetic/collected-items-in-nested-containers
+  phase: read
+  match:
+    sentence:
+    - opt:
+      - slot: group
+        cat: collection_group_noun
+        uncounted: true
+      - lit: of
+    - slot: people
+      cat: nested_allocation_recipient
+      counted: true
+    - slot: collect
+      cat: acquire
+    - slot: item
+      cat: droppable_quantity_object
+      uncounted: true
+      bare: true
+    - lit: in
+    - slot: outer
+      cat: nested_content_container
+      counted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: nested-population
+    entity: '{people}'
+    measure: '{item}'
+    value: people
+    position: '{people.span_start}'
+  - fact: batch_evidence
+    kind: nested-total
+    entity: '{outer}'
+    measure: '{item}'
+    value: outer
+    position: '{outer.span_start}'
+  consumes:
+  - people
+  - outer
 - id: arithmetic/collected-qualified-nested-population
   phase: read
   match:
     sentence:
     - {opt: [{slot: group, cat: collection_group_noun, uncounted: true}, lit: of]}
-    - {slot: people, cat: nested_allocation_recipient, counted: true, bare: true}
+    - {slot: people, cat: nested_allocation_recipient, counted: true}
     - {slot: collect, cat: acquire}
     - slot: outer
       cat: nested_content_container
@@ -83,15 +123,18 @@ rules:
       counted: true
       bare: true
     - slot: have
-      cat: content_holding_verb
+      cat: nested_container_relation_verb
     - slot: inner
       cat: nested_content_container
       counted: true
       bare: true
     - lit: with
-    - lit: each
+    # A generic singular container gives a per-container rate in this clause.
+    - lit: [each, every, a, an]
+      consume_skipped: true
     - slot: unit
       cat: nested_content_container
+      number: singular
       uncounted: true
       bare: true
     - slot: having
@@ -136,15 +179,18 @@ rules:
       qualifier_cat: remaining_partition_attribute
       uncounted: true
     - slot: have
-      cat: content_holding_verb
+      cat: nested_container_relation_verb
     - slot: inner
       cat: nested_content_container
       counted: true
       bare: true
     - lit: with
-    - lit: each
+    # A generic singular container gives a per-container rate in this clause.
+    - lit: [each, every, a, an]
+      consume_skipped: true
     - slot: unit
       cat: nested_content_container
+      number: singular
       uncounted: true
       bare: true
     - slot: having
@@ -174,56 +220,67 @@ rules:
   - same_lemma:
     - inner
     - unit
-asks:
+templates:
+  nested-equal-distribution:
+    parameters:
+      object:
+      - {slot: again, cat: droppable_quantity_object, uncounted: true, bare: true}
+      object_guards:
+      - same_lemma: [item, again]
+    rule:
+      match:
+        question:
+        - lit: how
+          at_start: true
+        - lit: many
+        - slot: item
+          cat: droppable_quantity_object
+          uncounted: true
+          bare: true
+        - slot: modal
+          type: future_modal
+        - lit: each
+        - slot: person
+          cat: nested_allocation_recipient
+          uncounted: true
+          bare: true
+        - slot: get
+          cat: acquire
+        - lit: if
+        - slot: group
+          cat: discourse_subject_group_pronoun
+        - slot: divide
+          cat: equal_division_verb
+        - parameter: object
+        - slot: equal
+          cat: equal_division_adverb
+        - opt:
+          - slot: among
+            cat: allocation_distribution_preposition
+          - slot: self
+            cat: reflexive_group_pronoun
+        - lit: '?'
+          consume_skipped: true
+      resolves:
+        consumer: nested-content-share
+        item: '{item}'
+        person: '{person}'
+      where:
+      - parameter: object_guards
+      satisfies:
+        group:
+        - refers
+        self:
+        - refers
+        get:
+        - subject
+        again:
+        - refers
+ask_variants:
 - id: ask/nested-equal-distribution
-  match:
-    question:
-    - lit: how
-      at_start: true
-    - lit: many
-    - slot: item
-      cat: droppable_quantity_object
-      uncounted: true
-      bare: true
-    - slot: modal
-      type: future_modal
-    - lit: each
-    - slot: person
-      cat: nested_allocation_recipient
-      uncounted: true
-      bare: true
-    - slot: get
-      cat: acquire
-    - lit: if
-    - slot: group
-      cat: discourse_subject_group_pronoun
-    - slot: divide
-      cat: equal_division_verb
-    - slot: again
-      cat: droppable_quantity_object
-      uncounted: true
-      bare: true
-    - slot: equal
-      cat: equal_division_adverb
-    - opt:
-      - slot: among
-        cat: allocation_distribution_preposition
-      - slot: self
-        cat: reflexive_group_pronoun
-    - lit: '?'
-      consume_skipped: true
-  resolves:
-    consumer: nested-content-share
-    item: '{item}'
-    person: '{person}'
-  where:
-  - same_lemma:
-    - item
-    - again
-  satisfies:
-    group:
-    - refers
-    self:
-    - refers
-    get:
-    - subject
+  template: nested-equal-distribution
+- id: ask/nested-equal-distribution-pronoun
+  template: nested-equal-distribution
+  arguments:
+    object: [{slot: again, cat: discourse_group_pronoun}]
+    object_guards: []

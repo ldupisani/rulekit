@@ -82,7 +82,7 @@ def test_g5i_profiles_the_complete_recursive_optional_class() -> None:
     # Mixture frames retain optional holders, solvents, bases and retention
     # quantifiers without increasing the maximum optional nesting depth.
     # Amount references and itemized quote variants add flat optional groups.
-    assert _optional_profile(project) == (239, 404, 50, 3)
+    assert _optional_profile(project) == (240, 405, 50, 3)
 
 
 def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
@@ -91,8 +91,8 @@ def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
         for item in list_rule_availability(load_project(CURATED))
     }
 
-    assert len(availability) == 504
-    assert sum(item.supported for item in availability.values()) == 449
+    assert len(availability) == 505
+    assert sum(item.supported for item in availability.values()) == 450
     assert sum(not item.supported for item in availability.values()) == 55
     assert all(availability[rule_id].supported for rule_id in NEWLY_SUPPORTED)
     assert all(
