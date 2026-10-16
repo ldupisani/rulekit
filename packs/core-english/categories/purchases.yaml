@@ -1,5 +1,8 @@
 format: rulekit/categories@1
 categories:
+  new_purchase_condition:
+    parent: adjective
+    notes: New condition requested for an intended purchase.
   price_at_marker: {parent: preposition}
   price_for_marker: {parent: preposition}
   price_quote_participle:
@@ -67,6 +70,7 @@ categories:
     - organization
     - nominal_location
 members:
+  new_purchase_condition: [new]
   price_at_marker: [at]
   price_for_marker: [for]
   price_quote_participle: [costing]

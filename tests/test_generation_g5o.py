@@ -18,6 +18,11 @@ ROOT = Path(__file__).resolve().parents[1]
 CURATED = ROOT / "projects" / "curated"
 
 EXPECTED_OCCURRENCES = {
+    "arithmetic/named-group-shopping-intention": ((1, 0), "both"),
+    "arithmetic/named-group-item-shopping-intention": ((1, 0), "both"),
+    "arithmetic/named-group-new-item-shopping-intention": ((1, 0), "both"),
+    "arithmetic/named-group-collection-shopping-intention": ((1, 0), "both"),
+    "arithmetic/named-group-new-collection-shopping-intention": ((1, 0), "both"),
     "arithmetic/conditional-all-units-discount-policy": ((6,), "totality"),
     "arithmetic/conditional-percent-all-units-discount-policy": ((5,), "totality"),
     "arithmetic/postpositive-unit-price": ((3,), "each"),
@@ -147,9 +152,9 @@ def test_g5o_unlocks_only_the_preregistered_rule() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 493
-    assert sum(item.supported for item in availability.values()) == 443
-    assert sum(not item.supported for item in availability.values()) == 50
+    assert len(availability) == 504
+    assert sum(item.supported for item in availability.values()) == 449
+    assert sum(not item.supported for item in availability.values()) == 55
     assert availability[
         "arithmetic/existential-premise-distributive"
     ].supported
@@ -159,7 +164,7 @@ def test_g5o_unlocks_only_the_preregistered_rule() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 823
+    assert len(exploration_status(project)["fillers"]) == 826
 
 
 @pytest.mark.parametrize("quantifier", sorted(EXPECTED_DISTRIBUTIVE_FILLERS))

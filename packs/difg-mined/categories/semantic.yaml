@@ -131,7 +131,6 @@ members:
   # boundary used by partition-attribute-of-noun.
   color_attribute: [black, black-and-white, gold, grey, pink, purple, white, yellow]
   colorable_noun: [ticket]
-  ripeness_attribute: [ripe]
   ripenable_noun: [peach]
   capacity_attribute: [full]
   capacity_noun: [box]

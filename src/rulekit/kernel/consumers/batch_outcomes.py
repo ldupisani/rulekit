@@ -156,6 +156,21 @@ def _acquired_batches(ctx):
     if (not entity or not measure or ctx.query.get("entity", entity) != entity
             or ctx.query.get("item") != measure or any(r.entity != entity for r in rows)):
         return decline("all acquired batches must identify the same participant and item")
+    # Explicit objects are checked by the grammar. Pronoun disposal and
+    # question-local completion need the same frames after item resolution.
+    def accepts_item(verb):
+        if not verb:
+            return True
+        frames = [(category, frame) for category, frame in ctx.reg.selectional_frames(verb)
+                  if any(root in ctx.reg.cat_ancestors(category)
+                         for root in ("batch_acquisition_verb", "batch_disposal_verb"))]
+        return any("theme" in frame and ctx.reg.word_in_category(measure, frame["theme"])
+                   for _, frame in frames)
+
+    if any(not accepts_item(verb) for row in rows
+           for verb in (row.acquisition, row.verb)) or not accepts_item(
+               ctx.query.get("completion_disposal")):
+        return decline("the acquisition or disposal verb does not accept this item type")
     expected = defaultdict(Counter)
     batches = []
     for row in rows:

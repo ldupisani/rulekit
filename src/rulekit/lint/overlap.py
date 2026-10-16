@@ -84,6 +84,14 @@ def _tokens_intersect(a: MatchToken, b: MatchToken, reg: Registry) -> bool:
     if ((a.bare and (b.qualified or b.possessed or b.qualifier_cat or b.type in {"qualified", "possessed"}))
             or (b.bare and (a.qualified or a.possessed or a.qualifier_cat or a.type in {"qualified", "possessed"}))):
         return False
+    if a.qualifier_cat is not None and b.qualifier_cat is not None:
+        # Modifier categories constrain the condensed unit independently of
+        # the head noun. Keep ancestor and shared-member intersections, just
+        # as for noun categories below; disjoint modifiers cannot overlap.
+        qa, qb = a.qualifier_cat, b.qualifier_cat
+        if (qa not in reg.cat_ancestors(qb) and qb not in reg.cat_ancestors(qa)
+                and not set(reg.cat_members_deep(qa)) & set(reg.cat_members_deep(qb))):
+            return False
     if a.number is not None and b.number is not None and a.number != b.number:
         return False
     if a.lit is not None and b.lit is not None:

@@ -1,7 +1,8 @@
 format: rulekit/rules@1
 templates:
   located-inventory:
-    parameters: {middle_tokens: [], middle_emits: [], counted_slots: [first, last], item_slots: [first, last]}
+    parameters: {middle_tokens: [], middle_emits: [], counted_slots: [first,
+          last], item_slots: [first, last], subtype_family: color_attribute}
     rule:
       phase: read
       description: >
@@ -10,25 +11,32 @@ templates:
         as the opening state for later withdrawals, not a world-wide total.
       match:
         sentence:
-          - {lit: in, at_start: true}
-          - {slot: place, cat: quantity_interior_location, referential: true, bare: true}
-          - {lit: there}
-          - {slot: aux, cat: copula}
-          - {slot: first, cat: ownable_quantity_object, counted: true, qualified: true}
-          - {parameter: middle_tokens}
-          - {lit: and}
-          - {slot: last, cat: ownable_quantity_object, counted: true, qualified: true}
-          - {lit: '.', consume_skipped: true}
+        - {lit: in, at_start: true}
+        - {slot: place, cat: quantity_interior_location, referential: true, bare:
+            true}
+        - {lit: there}
+        - {slot: aux, cat: copula}
+        - {slot: first, cat: ownable_quantity_object, counted: true, qualified:
+            true, qualifier_cat: {parameter: subtype_family}}
+        - {parameter: middle_tokens}
+        - {lit: and}
+        - {slot: last, cat: ownable_quantity_object, counted: true, qualified:
+            true, qualifier_cat: {parameter: subtype_family}}
+        - {lit: ., consume_skipped: true}
       where:
-        - same_lemma: {parameter: item_slots}
-        - number_compatible: [first, aux]
+      - same_lemma: {parameter: item_slots}
+      - number_compatible: [first, aux]
+      - distinct_measure:
+          parameter: item_slots
       satisfies: {aux: [subject]}
       consumes: {parameter: counted_slots}
       emits:
-        - {fact: inventory_scope, container: '{place}', item: '{first}'}
-        - {fact: quantity, entity: '{place}', measure: '{first}', measure_qualifier: '{first.qualifier}', value: first, verb: have}
-        - {parameter: middle_emits}
-        - {fact: quantity, entity: '{place}', measure: '{last}', measure_qualifier: '{last.qualifier}', value: last, verb: have}
+      - {fact: inventory_scope, container: '{place}', item: '{first}'}
+      - {fact: quantity, entity: '{place}', measure: '{first}',
+          measure_qualifier: '{first.qualifier}', value: first, verb: have}
+      - {parameter: middle_emits}
+      - {fact: quantity, entity: '{place}', measure: '{last}', measure_qualifier: '{last.qualifier}',
+        value: last, verb: have}
   inventory-withdrawal:
     parameters:
       relative_tokens: []
@@ -36,7 +44,8 @@ templates:
       satisfaction: {}
       counted_slots: [item]
       item_slots: [item]
-      verb_tokens: [{slot: verb, cat: inventory_withdrawal_verb, finite_form: true}]
+      verb_tokens: [{slot: verb, cat: inventory_withdrawal_verb, finite_form:
+            true}]
     rule:
       phase: read
       description: >
@@ -46,79 +55,99 @@ templates:
         the ratio never borrows another participant's removal.
       match:
         sentence:
-          - opt: [{lit: and}]
-          - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true}
-          - {parameter: verb_tokens}
-          - {slot: item, cat: ownable_quantity_object, counted: true, qualified: true}
-          - {parameter: relative_tokens}
+        - opt: [lit: and]
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true,
+            bare: true}
+        - {parameter: verb_tokens}
+        - {slot: item, cat: ownable_quantity_object, counted: true, qualified:
+            true, qualifier_cat: intrinsic_attribute}
+        - {parameter: relative_tokens}
       where:
-        - number_compatible: [who, verb]
-        - same_lemma: {parameter: item_slots}
+      - number_compatible: [who, verb]
+      - same_lemma: {parameter: item_slots}
       satisfies: {parameter: satisfaction}
       consumes: {parameter: counted_slots}
       emits:
-        - {fact: inventory_withdrawal, actor: '{who}', item: '{item}', qualifier: '{item.qualifier}', value: item}
-        - {parameter: relative_emits}
+      - {fact: inventory_withdrawal, actor: '{who}', item: '{item}', qualifier: '{item.qualifier}',
+        value: item}
+      - {parameter: relative_emits}
 variants:
-  - id: arithmetic/located-inventory-two-subtypes
-    template: located-inventory
-  - id: arithmetic/located-inventory-three-subtypes
-    template: located-inventory
-    arguments:
-      counted_slots: [first, middle, last]
-      item_slots: [first, middle, last]
-      middle_tokens:
-        - {slot: middle, cat: ownable_quantity_object, counted: true, qualified: true}
-      middle_emits:
-        - {fact: quantity, entity: '{place}', measure: '{middle}', measure_qualifier: '{middle.qualifier}', value: middle, verb: have}
-  - id: arithmetic/inventory-subtype-withdrawal
-    template: inventory-withdrawal
-  - id: arithmetic/inventory-subtype-withdrawal-and-proportion
-    template: inventory-withdrawal
-    arguments: &proportional
-      counted_slots: [item, factor]
-      item_slots: [item, other, standard]
-      satisfaction: {ref: [refers], removed: [subject, object]}
-      relative_tokens:
-        - {lit: and}
-        - {slot: factor, type: multiplier}
-        - {lit: as}
-        - {lit: many}
-        - {slot: other, cat: ownable_quantity_object, qualified: true, uncounted: true, number: plural}
-        - {lit: as}
-        - {slot: frame, cat: count_aggregate_noun}
-        - {lit: of}
-        - {slot: standard, cat: ownable_quantity_object, qualified: true, uncounted: true, number: plural}
-        - {lit: that}
-        - {slot: ref, cat: animate_pronoun}
-        - {slot: removed, cat: inventory_withdrawal_verb, finite_form: true}
-      relative_emits:
-        - {fact: inventory_withdrawal, actor: '{who}', item: '{other}', qualifier: '{other.qualifier}', factor: factor, standard_actor: '{who}', standard_item: '{standard}', standard_qualifier: '{standard.qualifier}'}
-  - id: arithmetic/inventory-subtype-particle-withdrawal
-    template: inventory-withdrawal
-    arguments:
-      verb_tokens: &particle_verb
-        - {slot: verb, cat: inventory_withdrawal_particle_head, finite_form: true}
-        - {slot: particle, cat: inventory_withdrawal_particle}
-  - id: arithmetic/inventory-subtype-particle-withdrawal-and-proportion
-    template: inventory-withdrawal
-    arguments:
-      <<: *proportional
-      verb_tokens: *particle_verb
+- id: arithmetic/located-inventory-two-subtypes
+  template: located-inventory
+- id: arithmetic/located-inventory-three-subtypes
+  template: located-inventory
+  arguments:
+    counted_slots: [first, middle, last]
+    item_slots: [first, middle, last]
+    middle_tokens:
+    - {slot: middle, cat: ownable_quantity_object, counted: true, qualified:
+        true, qualifier_cat: color_attribute}
+    middle_emits:
+    - {fact: quantity, entity: '{place}', measure: '{middle}', measure_qualifier: '{middle.qualifier}',
+      value: middle, verb: have}
+- id: arithmetic/inventory-subtype-withdrawal
+  template: inventory-withdrawal
+- id: arithmetic/inventory-subtype-withdrawal-and-proportion
+  template: inventory-withdrawal
+  arguments: &proportional
+    counted_slots: [item, factor]
+    item_slots: [item, other, standard]
+    satisfaction: {ref: [refers], removed: [subject, object]}
+    relative_tokens:
+    - {lit: and}
+    - {slot: factor, type: multiplier}
+    - {lit: as}
+    - {lit: many}
+    - {slot: other, cat: ownable_quantity_object, qualified: true, uncounted:
+        true, number: plural, qualifier_cat: intrinsic_attribute}
+    - {lit: as}
+    - {slot: frame, cat: count_aggregate_noun}
+    - {lit: of}
+    - {slot: standard, cat: ownable_quantity_object, qualified: true, uncounted:
+        true, number: plural, qualifier_cat: intrinsic_attribute}
+    - {lit: that}
+    - {slot: ref, cat: animate_pronoun}
+    - {slot: removed, cat: inventory_withdrawal_verb, finite_form: true}
+    relative_emits:
+    - {fact: inventory_withdrawal, actor: '{who}', item: '{other}', qualifier: '{other.qualifier}',
+      factor: factor, standard_actor: '{who}', standard_item: '{standard}',
+        standard_qualifier: '{standard.qualifier}'}
+- id: arithmetic/inventory-subtype-particle-withdrawal
+  template: inventory-withdrawal
+  arguments:
+    verb_tokens: &particle_verb
+    - {slot: verb, cat: inventory_withdrawal_particle_head, finite_form: true}
+    - {slot: particle, cat: inventory_withdrawal_particle}
+- id: arithmetic/inventory-subtype-particle-withdrawal-and-proportion
+  template: inventory-withdrawal
+  arguments:
+    <<: *proportional
+    verb_tokens: *particle_verb
+- id: arithmetic/located-inventory-two-subtypes-size
+  template: located-inventory
+  arguments:
+    subtype_family: size_attribute
+- id: arithmetic/located-inventory-two-subtypes-ripeness
+  template: located-inventory
+  arguments:
+    subtype_family: ripeness_attribute
 asks:
-  - id: ask/located-inventory-remainder-imperative
-    match:
-      question:
-        - opt: [{slot: consequent, cat: conditional_consequent_marker, at_start: true}]
-        - {slot: compute, cat: compute_verb}
-        - {slot: total, cat: group_total_marker}
-        - {slot: frame, cat: count_aggregate_noun}
-        - {lit: of}
-        - {slot: item, cat: ownable_quantity_object, number: plural, uncounted: true, bare: true}
-        - {lit: that}
-        - {slot: remaining, cat: inventory_remainder_verb, finite_form: true}
-        - {lit: in}
-        - {slot: place, cat: quantity_interior_location, referential: true, bare: true}
-        - {lit: '.', consume_skipped: true}
-    satisfies: {remaining: [subject]}
-    resolves: {consumer: inventory-remainder, container: '{place}', item: '{item}'}
+- id: ask/located-inventory-remainder-imperative
+  match:
+    question:
+    - opt: [{slot: consequent, cat: conditional_consequent_marker, at_start:
+            true}]
+    - {slot: compute, cat: compute_verb}
+    - {slot: total, cat: group_total_marker}
+    - {slot: frame, cat: count_aggregate_noun}
+    - {lit: of}
+    - {slot: item, cat: ownable_quantity_object, number: plural, uncounted: true,
+      bare: true}
+    - {lit: that}
+    - {slot: remaining, cat: inventory_remainder_verb, finite_form: true}
+    - {lit: in}
+    - {slot: place, cat: quantity_interior_location, referential: true, bare:
+        true}
+    - {lit: ., consume_skipped: true}
+  satisfies: {remaining: [subject]}
+  resolves: {consumer: inventory-remainder, container: '{place}', item: '{item}'}

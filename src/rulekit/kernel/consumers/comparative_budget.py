@@ -9,6 +9,7 @@ from ..model import Expenditure, BatchEvidence
 from ..pricing import resolve_expenditure_prices, expenditure_mentions
 from ..evaluate import evaluate
 from ..resource_equations import resource_residual
+from ..resource_accounting import purchase_collection_contains
 from ..numeric_evidence import audit_numeric_mentions
 from ..source_coverage import uncovered_document_units
 
@@ -62,8 +63,13 @@ def consume(ctx):
         or set(requested) != {e.item for e in expenses}
     ):
         return decline("the referenced item list must identify the whole priced basket")
+    collection = ctx.query.get("collection")
+    if collection and not all(
+        purchase_collection_contains(collection, e.item, ctx.reg) for e in expenses
+    ):
+        return decline("the referenced collection must contain the whole priced basket")
     contexts = [r for r in rows if r.kind == "shopping-context"]
-    intents = [r for r in rows if r.kind == "shopping-intent"]
+    intents = [r for r in rows if r.kind in {"shopping-intent", "shopping-collection-intent"}]
     if (
         len(rows) != len(contexts) + len(intents)
         or len(contexts) > 1
@@ -73,20 +79,28 @@ def consume(ctx):
             "additional quantitative context is outside the budget comparison"
         )
     if rows:
-        if len(contexts) != 1 or not {who, other}.issubset(contexts[0].members):
-            return decline(
-                "the introductory group must include both budget participants"
-            )
-        if intents and (
-            set((intents[0].measure, intents[0].attribute))
-            != {e.item for e in expenses}
-            or not contexts[0].provenance.sentence
-            < intents[0].provenance.sentence
-            < min(e.provenance.sentence for e in expenses)
+        intent = intents[0] if intents else None
+        context = contexts[0] if contexts else None
+        participants = intent.members if intent and intent.members else (
+            context.members if context else ()
+        )
+        if not {who, other}.issubset(participants):
+            return decline("the introductory group must include both budget participants")
+        if intent and intent.marker and len(set(participants)) != 2:
+            return decline("the two-member group marker requires exactly two participants")
+        if context and intent and (
+            context.provenance.sentence >= intent.provenance.sentence
+            or intent.members and set(intent.members) != set(context.members)
         ):
-            return decline(
-                "the shopping intention must describe the actual priced items"
-            )
+            return decline("the stated intention must retain the preceding group")
+        if intent and (
+            (not all(purchase_collection_contains(intent.measure, e.item, ctx.reg)
+                     for e in expenses)
+             if intent.kind == "shopping-collection-intent"
+             else set((intent.measure, intent.attribute)) != {e.item for e in expenses})
+            or intent.provenance.sentence >= min(e.provenance.sentence for e in expenses)
+        ):
+            return decline("the shopping intention must describe the actual priced items")
     resolved, error = resolve_expenditure_prices(normalized, ctx.log)
     if error:
         return decline(error)

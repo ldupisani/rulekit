@@ -12,6 +12,9 @@ categories:
     parent: ownable_quantity_object
   admission_event:
     parent: noun
+  benefit_receipt_verb:
+    parent: verb
+    notes: Receiving or obtaining a benefit, without asserting its purchase.
 members:
   marginal_unit_attribute: [additional]
   price_threshold_verb:
@@ -27,6 +30,19 @@ members:
   - ticket
   admission_event:
   - concert
+  benefit_receipt_verb:
+  - get
+  - gets
+  - got
+  - receive
+  - received
+  - receives
+  - obtain
+  - obtained
+  - obtains
+  - earn
+  - earned
+  - earns
 attribute_compatibility:
   marginal_unit_attribute: [purchase_item]
   admission_event:

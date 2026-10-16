@@ -220,7 +220,7 @@ rules:
       bare: true
     - lit: and
     - slot: other
-      cat: clothes
+      cat: purchase_item
       uncounted: true
       bare: true
     - lit: .
@@ -236,6 +236,224 @@ rules:
   satisfies:
     people:
     - refers
+    want:
+    - subject
+    buy:
+    - subject
+- id: arithmetic/named-group-shopping-intention
+  phase: read
+  match:
+    sentence:
+    - slot: people
+      span: true
+      enumeration_cat: name
+      enumeration_min_members: 2
+      at_start: true
+    - opt:
+      - {slot: both, cat: package_group_total_quantifier}
+    - slot: want
+      cat: finite_infinitival_goal_predicate
+    - lit: to
+    - slot: buy
+      cat: purchase
+    - opt:
+      - lit: new
+    - slot: lot
+      cat: partitive_pair_measure
+      uncounted: true
+    - lit: of
+    - slot: item
+      cat: pairable_partitive_substance
+      uncounted: true
+      bare: true
+    - lit: and
+    - slot: other
+      cat: purchase_item
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: shopping-intent
+    entity: ''
+    measure: '{item}'
+    value: 0
+    position: '{people.span_start}'
+    attribute: '{other}'
+    members: '{people.members}'
+    marker: '{both.optional}'
+  satisfies:
+    both: [collection]
+    want:
+    - subject
+    buy:
+    - subject
+- id: arithmetic/named-group-item-shopping-intention
+  phase: read
+  match:
+    sentence:
+    - slot: people
+      span: true
+      enumeration_cat: name
+      enumeration_min_members: 2
+      at_start: true
+    - opt:
+      - {slot: both, cat: package_group_total_quantifier}
+    - slot: want
+      cat: finite_infinitival_goal_predicate
+    - lit: to
+    - slot: buy
+      cat: purchase
+    - opt:
+      - lit: new
+    - slot: item
+      cat: purchase_item
+      uncounted: true
+      bare: true
+    - lit: and
+    - slot: other
+      cat: purchase_item
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: shopping-intent
+    entity: ''
+    measure: '{item}'
+    value: 0
+    position: '{people.span_start}'
+    attribute: '{other}'
+    members: '{people.members}'
+    marker: '{both.optional}'
+  satisfies:
+    both: [collection]
+    want:
+    - subject
+    buy:
+    - subject
+- id: arithmetic/named-group-new-item-shopping-intention
+  phase: read
+  match:
+    sentence:
+    - slot: people
+      span: true
+      enumeration_cat: name
+      enumeration_min_members: 2
+      at_start: true
+    - opt:
+      - {slot: both, cat: package_group_total_quantifier}
+    - slot: want
+      cat: finite_infinitival_goal_predicate
+    - lit: to
+    - slot: buy
+      cat: purchase
+    - slot: item
+      cat: purchase_item
+      uncounted: true
+      qualified: true
+      qualifier_cat: new_purchase_condition
+    - lit: and
+    - slot: other
+      cat: purchase_item
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: shopping-intent
+    entity: ''
+    measure: '{item}'
+    value: 0
+    position: '{people.span_start}'
+    attribute: '{other}'
+    members: '{people.members}'
+    marker: '{both.optional}'
+  satisfies:
+    both: [collection]
+    want:
+    - subject
+    buy:
+    - subject
+- id: arithmetic/named-group-collection-shopping-intention
+  phase: read
+  match:
+    sentence:
+    - slot: people
+      span: true
+      enumeration_cat: name
+      enumeration_min_members: 2
+      at_start: true
+    - opt:
+      - slot: both
+        cat: package_group_total_quantifier
+    - slot: want
+      cat: finite_infinitival_goal_predicate
+    - lit: to
+    - slot: buy
+      cat: purchase
+    - slot: collection
+      cat: purchase_collection_noun
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: shopping-collection-intent
+    entity: ''
+    measure: '{collection}'
+    value: 0
+    position: '{people.span_start}'
+    members: '{people.members}'
+    marker: '{both.optional}'
+  satisfies:
+    both:
+    - collection
+    want:
+    - subject
+    buy:
+    - subject
+- id: arithmetic/named-group-new-collection-shopping-intention
+  phase: read
+  match:
+    sentence:
+    - slot: people
+      span: true
+      enumeration_cat: name
+      enumeration_min_members: 2
+      at_start: true
+    - opt:
+      - slot: both
+        cat: package_group_total_quantifier
+    - slot: want
+      cat: finite_infinitival_goal_predicate
+    - lit: to
+    - slot: buy
+      cat: purchase
+    - slot: collection
+      cat: purchase_collection_noun
+      uncounted: true
+      class_only: true
+      qualified: true
+      qualifier_cat: new_purchase_condition
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: shopping-collection-intent
+    entity: ''
+    measure: '{collection}'
+    value: 0
+    position: '{people.span_start}'
+    members: '{people.members}'
+    marker: '{both.optional}'
+  satisfies:
+    both:
+    - collection
     want:
     - subject
     buy:
@@ -350,6 +568,216 @@ asks:
     factor: '{factor.value}'
     first: '{first.optional}'
     second: '{second.optional}'
+  satisfies:
+    spend:
+    - subject
+  where:
+  - distinct:
+    - who
+    - other
+- id: ask/relative-purchase-budget-conditional-collection
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: much
+    - slot: modal
+      type: modal
+    - slot: who
+      type: name
+    - slot: budget
+      cat: budget_action
+    - lit: if
+    - slot: ref
+      cat: animate_pronoun
+    - slot: want
+      cat: finite_infinitival_goal_predicate
+    - lit: to
+    - slot: spend
+      cat: spend_verb
+    - slot: factor
+      type: multiplier
+    - lit: as
+    - lit: much
+    - lit: as
+    - opt:
+      - lit: what
+    - slot: other
+      type: name
+    - slot: spent
+      cat: spend_verb
+    - slot: on
+      cat: spend_target_prep
+    - slot: collection
+      cat: purchase_collection_noun
+      uncounted: true
+      bare: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: relative-purchase-budget
+    entity: '{who}'
+    other: '{other}'
+    factor: '{factor.value}'
+    collection: '{collection}'
+  satisfies:
+    ref:
+    - refers
+    want:
+    - subject
+    spend:
+    - subject
+  where:
+  - distinct:
+    - who
+    - other
+- id: ask/relative-purchase-budget-collection
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: much
+    - slot: modal
+      type: modal
+    - slot: who
+      type: name
+    - slot: budget
+      cat: budget_action
+    - lit: to
+    - slot: spend
+      cat: spend_verb
+    - slot: factor
+      type: multiplier
+    - lit: as
+    - lit: much
+    - lit: as
+    - opt:
+      - lit: what
+    - slot: other
+      type: name
+    - slot: spent
+      cat: spend_verb
+    - slot: on
+      cat: spend_target_prep
+    - slot: collection
+      cat: purchase_collection_noun
+      uncounted: true
+      bare: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: relative-purchase-budget
+    entity: '{who}'
+    other: '{other}'
+    factor: '{factor.value}'
+    collection: '{collection}'
+  satisfies:
+    spend:
+    - subject
+  where:
+  - distinct:
+    - who
+    - other
+- id: ask/relative-purchase-budget-conditional-new-collection
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: much
+    - slot: modal
+      type: modal
+    - slot: who
+      type: name
+    - slot: budget
+      cat: budget_action
+    - lit: if
+    - slot: ref
+      cat: animate_pronoun
+    - slot: want
+      cat: finite_infinitival_goal_predicate
+    - lit: to
+    - slot: spend
+      cat: spend_verb
+    - slot: factor
+      type: multiplier
+    - lit: as
+    - lit: much
+    - lit: as
+    - opt:
+      - lit: what
+    - slot: other
+      type: name
+    - slot: spent
+      cat: spend_verb
+    - slot: on
+      cat: spend_target_prep
+    - slot: collection
+      cat: purchase_collection_noun
+      uncounted: true
+      class_only: true
+      qualified: true
+      qualifier_cat: new_purchase_condition
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: relative-purchase-budget
+    entity: '{who}'
+    other: '{other}'
+    factor: '{factor.value}'
+    collection: '{collection}'
+  satisfies:
+    ref:
+    - refers
+    want:
+    - subject
+    spend:
+    - subject
+  where:
+  - distinct:
+    - who
+    - other
+- id: ask/relative-purchase-budget-new-collection
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: much
+    - slot: modal
+      type: modal
+    - slot: who
+      type: name
+    - slot: budget
+      cat: budget_action
+    - lit: to
+    - slot: spend
+      cat: spend_verb
+    - slot: factor
+      type: multiplier
+    - lit: as
+    - lit: much
+    - lit: as
+    - opt:
+      - lit: what
+    - slot: other
+      type: name
+    - slot: spent
+      cat: spend_verb
+    - slot: on
+      cat: spend_target_prep
+    - slot: collection
+      cat: purchase_collection_noun
+      uncounted: true
+      class_only: true
+      qualified: true
+      qualifier_cat: new_purchase_condition
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: relative-purchase-budget
+    entity: '{who}'
+    other: '{other}'
+    factor: '{factor.value}'
+    collection: '{collection}'
   satisfies:
     spend:
     - subject

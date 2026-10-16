@@ -2,7 +2,8 @@ format: rulekit/categories@1
 categories:
   social_group:
     parent: quantity_holder
-    notes: A collective group of people; the noun does not assert its members or their count.
+    notes: A collective group of people; the noun does not assert its members or
+      their count.
   person:
     parent: quantity_event_participant
     includes: [animate]
@@ -18,11 +19,15 @@ categories:
       productive activity. Membership is not personal-pronoun eligibility.
   educational_institution:
     parent: organization
-    notes: An educational organization; a stated student count is an association.
+    notes: An educational organization; a stated student count is an
+      association.
   role_location:
     parent: noun
-    includes: [organization, spatial_reference_noun]
-    notes: A location associated with a stated personal role; no employment or organizational membership is implied.
+    includes:
+    - organization
+    - activity_site
+    notes: A location associated with a stated personal role; no employment or
+      organizational membership is implied.
   role_location_preposition:
     parent: preposition
   intentional_agent:
@@ -38,9 +43,21 @@ categories:
       Production capability does not imply earning, intention, or personhood.
   geographic_area:
     parent: quantity_holder
-    notes: A geographic scope that can contain a stated institutional population.
+    notes: A geographic scope that can contain a stated institutional
+      population.
   named_city:
     parent: geographic_area
+  situated_role:
+    parent: person
+    notes: A stated occupational, educational or organizational role; kinship is
+      relational and excluded.
+  office_role:
+    parent: situated_role
+    notes: An office title also licensed without an indefinite article after a
+      copula.
+  activity_site:
+    parent: noun
+    notes: A physical site at which a person can carry out a stated role.
 members:
   role_location_preposition: [at]
   social_group: [family, household, team]
@@ -53,3 +70,18 @@ members:
   - worker
   named_city:
   - chicago
+  situated_role:
+  - student
+  - teacher
+  - worker
+  - painter
+  - gardener
+  - librarian
+  - violinist
+  office_role:
+  - president
+  activity_site:
+  - park
+  - garden
+  - restaurant
+  - store

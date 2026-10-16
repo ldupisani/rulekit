@@ -1361,7 +1361,7 @@ categories:
       stated standard. The consume-only dangling rule uses this union to
       expose every supported form without emitting a semantic fact.
   dimension_adjective:
-    parent: adjective
+    parent: intrinsic_attribute
     notes: >
       mining candidate dimension-comparatives: the POSITIVE (base) form of
       a physical-dimension adjective ('tall', 'long', 'heavy', 'wide',
@@ -1390,16 +1390,16 @@ categories:
       to more than one noun category without making those noun categories
       interchangeable.
   color_attribute:
-    parent: adjective
+    parent: intrinsic_attribute
     notes: >
       Color adjectives used in explicit-noun partition predicates. Membership
       is extensible by packs; applicability is licensed independently through
       `attribute_compatibility`.
   ripeness_attribute:
-    parent: adjective
+    parent: intrinsic_attribute
     notes: >
-      Ripeness predicates. Core declares the reusable category boundary while
-      corpus-backed packs own their adjective members.
+      Ripeness predicates. Core owns common states; extension packs may add
+      more specific states and compatible produce.
   colorable_noun:
     parent: noun
     notes: Nouns for which a color partition is an ordinary reading.
@@ -2626,6 +2626,7 @@ members:
   clause_subject_personal_pronoun: [he, it, she, they]
   clause_subject_possessive_determiner: [her, his, its, their]
   collection_addition_quantity_verb: [add, added, adding, adds]
+  ripeness_attribute: [ripe, unripe]
   color_attribute: [beige, blue, green, pink, purple, red, turquoise, violet, yellow]
   colorable_noun: [alpaca, apple, apricot, ball, bench, bird, book, card, cat, coin, cookie, cupboard, dog,
       dollar, drum, egg, envelope, fish, flower, garden, grape, hamster, hard hat, hat, key, marble, pantry,

@@ -287,15 +287,20 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
     project = load_project(CURATED)
     availability = list_rule_availability(project)
 
-    assert len(availability) == 493
-    assert sum(item.supported for item in availability) == 443
-    assert sum(not item.supported for item in availability) == 50
+    assert len(availability) == 504
+    assert sum(item.supported for item in availability) == 449
+    assert sum(not item.supported for item in availability) == 55
     assert all(
         not item.blockers
         or item.id
         in {
                 "arithmetic/collected-qualified-nested-population",
                 "arithmetic/group-attendance-intention",
+            "arithmetic/named-group-shopping-intention",
+            "arithmetic/named-group-item-shopping-intention",
+            "arithmetic/named-group-new-item-shopping-intention",
+            "arithmetic/named-group-collection-shopping-intention",
+            "arithmetic/named-group-new-collection-shopping-intention",
                 'arithmetic/named-joint-earnings',
                 'arithmetic/threshold-share',
             'arithmetic/threshold-share-unindexed',
@@ -349,7 +354,7 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
             }
         for item in availability
     )
-    assert len(exploration_status(project)["fillers"]) == 823
+    assert len(exploration_status(project)["fillers"]) == 826
 
 
 def test_currently_generates_a_matcher_confirmed_anchor() -> None:

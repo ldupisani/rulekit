@@ -2,8 +2,16 @@ format: rulekit/categories@1
 categories:
   batch_acquisition_verb:
     parent: acquire
+    # Acquisition also occurs with money and other measured resources outside
+    # this batch grammar; the batch item slot supplies its own goods boundary.
+    selectional_roles:
+      actor: quantity_event_participant
+      theme: noun
   batch_disposal_verb:
     parent: verb
+    selectional_roles:
+      actor: intentional_agent
+      theme: ownable_quantity_object
   batch_realization_verb:
     parent: verb
   batch_quality:
@@ -29,13 +37,21 @@ categories:
     parent: conjunction
   reviewable_quantity_object:
     parent: transferable_quantity_object
+  information_acquisition_verb:
+    parent: batch_acquisition_verb
+    selectional_roles:
+      theme: information_quantity_object
+  information_batch_disposal_verb:
+    parent: batch_disposal_verb
+    selectional_roles:
+      theme: information_quantity_object
 members:
-  batch_acquisition_verb: [collect, collected, collects, download, downloaded, downloading, downloads, receive,
-    received, receives]
+  batch_acquisition_verb: [collect, collected, collects, download, downloaded,
+      downloading, downloads, receive, received, receives]
   batch_additional_marker: [more]
   batch_continuation_conjunction: [and, but]
-  batch_disposal_verb: [delete, deleted, deletes, deleting, discard, discarded, discarding, discards, reject,
-      rejected, rejecting, rejects]
+  batch_disposal_verb: [delete, deleted, deletes, deleting, discard, discarded,
+      discarding, discards, reject, rejected, rejecting, rejects]
   batch_left_verb: [left]
   batch_realization_verb: [realize, realized, realizes]
   batch_relevance_negative: [irrelevant, unhelpful, unrelated, useless]
@@ -43,7 +59,18 @@ members:
   batch_repetition_adverb: [again]
   batch_round_noun: [batch, round]
   batch_round_ordinal: [first, last, second, third]
-  reviewable_quantity_object: [book, document, file, image, letter, page, photo, photograph]
+  reviewable_quantity_object: [book, document, file, image, letter, page, photo,
+      photograph]
+  information_acquisition_verb:
+  - download
+  - downloaded
+  - downloading
+  - downloads
+  information_batch_disposal_verb:
+  - delete
+  - deleted
+  - deletes
+  - deleting
 attribute_compatibility:
   batch_quality: [reviewable_quantity_object]
   batch_round_ordinal: [batch_round_noun]

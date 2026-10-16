@@ -9,14 +9,24 @@ templates:
       location: []
       predicate: ''
       indefinite: false
+      role_article:
+      - lit:
+        - a
+        - an
+        - the
+        consume_skipped: true
+      role_category: situated_role
     rule:
       phase: read
-      description: A stated personal role at a place, optionally geographically restricted.
+      description: A stated personal role at a place, optionally geographically
+        restricted.
       match:
         sentence:
-        - {slot: who, type: name, at_start: true, blocks_skipped: indefinite_article}
+        - {slot: who, type: name, at_start: true, blocks_skipped:
+            indefinite_article}
         - {slot: copula, cat: singular_copula}
-        - {slot: role, cat: person, uncounted: true}
+        - parameter: role_article
+        - {slot: role, cat: {parameter: role_category}, uncounted: true}
         - {slot: prep, cat: role_location_preposition}
         - {parameter: determiner}
         - {slot: place, cat: role_location, uncounted: true, bare: true}
@@ -48,7 +58,8 @@ variants:
     determiner: [{lit: the, consume_skipped: true}]
     location:
     - {lit: in}
-    - {slot: area, cat: geographic_area, uncounted: true, bare: true, blocks_skipped: indefinite_article}
+    - {slot: area, cat: geographic_area, uncounted: true, bare: true,
+        blocks_skipped: indefinite_article}
     predicate: '{role.qualified} {prep} {place.qualified} in {area.qualified}'
 - id: arithmetic/personal-role-at-indefinite-location-in-area
   template: personal-role-at-location
@@ -56,6 +67,47 @@ variants:
     determiner: [{lit: [a, an], consume_skipped: true}]
     location:
     - {lit: in}
-    - {slot: area, cat: geographic_area, uncounted: true, bare: true, blocks_skipped: indefinite_article}
+    - {slot: area, cat: geographic_area, uncounted: true, bare: true,
+        blocks_skipped: indefinite_article}
     predicate: '{role.qualified} {prep} a {place.qualified} in {area.qualified}'
     indefinite: true
+- id: arithmetic/office-role-at-definite-location
+  template: personal-role-at-location
+  arguments:
+    determiner: [{lit: the, consume_skipped: true}]
+    predicate: '{role.qualified} {prep} {place.qualified}'
+    role_article: []
+    role_category: office_role
+- id: arithmetic/office-role-at-indefinite-location
+  template: personal-role-at-location
+  arguments:
+    determiner: [{lit: [a, an], consume_skipped: true}]
+    # Preserve the indefinite article in the class key as well as its flag:
+    # it must not inherit quantities restricted to a particular institution.
+    predicate: '{role.qualified} {prep} a {place.qualified}'
+    indefinite: true
+    role_article: []
+    role_category: office_role
+- id: arithmetic/office-role-at-definite-location-in-area
+  template: personal-role-at-location
+  arguments:
+    determiner: [{lit: the, consume_skipped: true}]
+    location:
+    - {lit: in}
+    - {slot: area, cat: geographic_area, uncounted: true, bare: true,
+        blocks_skipped: indefinite_article}
+    predicate: '{role.qualified} {prep} {place.qualified} in {area.qualified}'
+    role_article: []
+    role_category: office_role
+- id: arithmetic/office-role-at-indefinite-location-in-area
+  template: personal-role-at-location
+  arguments:
+    determiner: [{lit: [a, an], consume_skipped: true}]
+    location:
+    - {lit: in}
+    - {slot: area, cat: geographic_area, uncounted: true, bare: true,
+        blocks_skipped: indefinite_article}
+    predicate: '{role.qualified} {prep} a {place.qualified} in {area.qualified}'
+    indefinite: true
+    role_article: []
+    role_category: office_role

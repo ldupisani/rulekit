@@ -821,7 +821,13 @@ Scoped proportional calculations also retain their population and role evidence:
   Zero-unit purchases have no paid per-unit price.
 - Comparative purchase budgets reuse `expenditure` pricing and resource totals.
   A stated pair price covers the pair. A requested item list must identify the
-  complete referenced basket before a multiplier is applied.
+  complete referenced basket before a multiplier is applied. Category references
+  use `purchase_collection_noun` and the shared `purchase_collection_contains`
+  check: every priced item must belong to the requested category. Named group
+  intentions can introduce the same collection; they do not create purchases.
+  Clothes and ingredients use YAML category membership, while generic goods
+  use the existing ownable-object gate. Mixed baskets outside the referenced
+  category decline; partial-category subtotals are not inferred.
 - Nested collection partitions retain outer counts, inner units per container,
   and `batch_evidence.content_count` per inner unit. An explicit remainder uses
   the total minus the counted partitions. Equal sharing preserves fractional
@@ -850,3 +856,19 @@ in the predicate key and set `indef_obj`, preventing inheritance from a class
 restricted to a particular place. A stated area remains in that key rather
 than being silently discarded. Existing declared role refinements remain
 responsible for deriving a broader role, such as teacher from head teacher.
+
+
+Review-driven semantic boundaries also apply to generated premises:
+
+- Benefit receipt uses its own verb category; buying a benefit is not inferred.
+  Discount fractions are bounded to one whole at the grammar boundary.
+- Acquisition and disposal use category-owned verb/theme frames. The acquired
+  batch consumer rechecks these frames after resolving pronouns and
+  question-local removal, using the same declared item categories.
+- Situated roles exclude kinship terms and use organizations or declared
+  activity sites. Ordinary role nouns require an article; office
+  titles have separate article-free variants of the same template.
+- Inventory opening templates bind one intrinsic attribute family (color,
+  size, or ripeness), and require distinct subtypes. Sequence and remainder
+  descriptors are not independent inventory classes. The overlap linter
+  respects modifier-category gates as well as head-noun gates.

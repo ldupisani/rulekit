@@ -47,6 +47,18 @@ templates:
       - number_compatible:
         - who
         - acquire
+      - verb_roles_compatible:
+          verb: acquire
+          roles:
+            theme:
+            - item
+          require_declared_frame: true
+      - verb_roles_compatible:
+          verb: verb
+          roles:
+            theme:
+            - item
+          require_declared_frame: true
       satisfies:
         parameter: satisfaction
       consumes:
@@ -87,7 +99,8 @@ templates:
         - slot: acquire
           cat: batch_acquisition_verb
           finite_form: true
-        - {slot: item, cat: ownable_quantity_object, counted: true, value_min: 1, bare: true}
+        - {slot: item, cat: ownable_quantity_object, counted: true, value_min: 1,
+          bare: true}
         - slot: join
           cat: batch_continuation_conjunction
         - opt:
@@ -112,6 +125,12 @@ templates:
       - number_compatible:
         - who
         - acquire
+      - verb_roles_compatible:
+          verb: acquire
+          roles:
+            theme:
+            - item
+          require_declared_frame: true
       satisfies:
         parameter: satisfaction
       consumes:
@@ -187,6 +206,18 @@ templates:
       - number_compatible:
         - who
         - acquire
+      - verb_roles_compatible:
+          verb: acquire
+          roles:
+            theme:
+            - item
+          require_declared_frame: true
+      - verb_roles_compatible:
+          verb: verb
+          roles:
+            theme:
+            - item
+          require_declared_frame: true
       satisfies:
         parameter: satisfaction
       consumes:
@@ -233,7 +264,8 @@ templates:
           finite_form: true
         - {slot: n, type: number, value_min: 1}
         - {slot: more, cat: batch_additional_marker}
-        - {slot: item, cat: ownable_quantity_object, number: plural, uncounted: true, bare: true}
+        - {slot: item, cat: ownable_quantity_object, number: plural, uncounted:
+            true, bare: true}
         - slot: join
           cat: batch_continuation_conjunction
         - opt:
@@ -258,6 +290,12 @@ templates:
       - number_compatible:
         - who
         - acquire
+      - verb_roles_compatible:
+          verb: acquire
+          roles:
+            theme:
+            - item
+          require_declared_frame: true
       satisfies:
         parameter: satisfaction
       consumes:
@@ -322,6 +360,18 @@ templates:
       - number_compatible:
         - who
         - verb
+      - verb_roles_compatible:
+          verb: acquire
+          roles:
+            theme:
+            - item
+          require_declared_frame: true
+      - verb_roles_compatible:
+          verb: verb
+          roles:
+            theme:
+            - item
+          require_declared_frame: true
       satisfies:
         parameter: satisfaction
       consumes:
@@ -377,6 +427,7 @@ templates:
         completion_acquisition: '{acquire}'
         completion_round: '{round.qualifier}'
         disposal_verb: '{verb}'
+        completion_disposal: '{disposal.optional}'
   acquired-batch-bare-ask:
     parameters:
       body: []
@@ -411,6 +462,7 @@ templates:
         completion_acquisition: '{acquire}'
         completion_round: '{round.qualifier}'
         disposal_verb: '{verb}'
+        completion_disposal: '{disposal.optional}'
 variants:
 - id: arithmetic/acquired-batch-counted-discard
   template: acquired-batch-counted-discard
@@ -589,6 +641,12 @@ rules:
   - number_compatible:
     - who
     - acquire
+  - verb_roles_compatible:
+      verb: acquire
+      roles:
+        theme:
+        - item
+      require_declared_frame: true
   satisfies: {}
   consumes:
   - item
@@ -627,6 +685,12 @@ rules:
   - number_compatible:
     - who
     - acquire
+  - verb_roles_compatible:
+      verb: acquire
+      roles:
+        theme:
+        - item
+      require_declared_frame: true
   satisfies:
     n:
     - quantifies
@@ -892,7 +956,8 @@ ask_variants:
     tail:
     - {lit: after}
     - {slot: disposal, cat: batch_disposal_verb, present_participle: true}
-    - {slot: removed, cat: ownable_quantity_object, number: plural, uncounted: true, qualified: true, qualifier_cat: batch_quality, class_only: true}
+    - {slot: removed, cat: ownable_quantity_object, number: plural, uncounted:
+        true, qualified: true, qualifier_cat: batch_quality, class_only: true}
     - slot: again_who
       type: entity
       common_noun_cat: quantity_event_participant
@@ -937,7 +1002,8 @@ ask_variants:
     tail:
     - {lit: after}
     - {slot: disposal, cat: batch_disposal_verb, present_participle: true}
-    - {slot: removed, cat: ownable_quantity_object, number: plural, uncounted: true, qualified: true, qualifier_cat: batch_quality, class_only: true}
+    - {slot: removed, cat: ownable_quantity_object, number: plural, uncounted:
+        true, qualified: true, qualifier_cat: batch_quality, class_only: true}
     - slot: again_who
       type: entity
       common_noun_cat: quantity_event_participant
@@ -973,7 +1039,8 @@ ask_variants:
     tail:
     - {lit: after}
     - {slot: disposal, cat: batch_disposal_verb, present_participle: true}
-    - {slot: removed, cat: ownable_quantity_object, number: plural, uncounted: true, qualified: true, qualifier_cat: batch_quality, class_only: true}
+    - {slot: removed, cat: ownable_quantity_object, number: plural, uncounted:
+        true, qualified: true, qualifier_cat: batch_quality, class_only: true}
     - slot: again_who
       type: entity
       common_noun_cat: quantity_event_participant
@@ -1006,7 +1073,8 @@ ask_variants:
     tail:
     - {lit: after}
     - {slot: disposal, cat: batch_disposal_verb, present_participle: true}
-    - {slot: removed, cat: ownable_quantity_object, number: plural, uncounted: true, qualified: true, qualifier_cat: batch_quality, class_only: true}
+    - {slot: removed, cat: ownable_quantity_object, number: plural, uncounted:
+        true, qualified: true, qualifier_cat: batch_quality, class_only: true}
     - slot: again_who
       type: entity
       common_noun_cat: quantity_event_participant
@@ -1034,7 +1102,8 @@ ask_variants:
     tail:
     - {lit: after}
     - {slot: disposal, cat: batch_disposal_verb, present_participle: true}
-    - {slot: removed, cat: ownable_quantity_object, number: plural, uncounted: true, qualified: true, qualifier_cat: batch_quality, class_only: true}
+    - {slot: removed, cat: ownable_quantity_object, number: plural, uncounted:
+        true, qualified: true, qualifier_cat: batch_quality, class_only: true}
     - slot: again_who
       type: entity
       common_noun_cat: quantity_event_participant
@@ -1067,7 +1136,8 @@ ask_variants:
     tail:
     - {lit: after}
     - {slot: disposal, cat: batch_disposal_verb, present_participle: true}
-    - {slot: removed, cat: ownable_quantity_object, number: plural, uncounted: true, qualified: true, qualifier_cat: batch_quality, class_only: true}
+    - {slot: removed, cat: ownable_quantity_object, number: plural, uncounted:
+        true, qualified: true, qualifier_cat: batch_quality, class_only: true}
     - slot: again_who
       type: entity
       common_noun_cat: quantity_event_participant

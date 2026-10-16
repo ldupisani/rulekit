@@ -509,3 +509,27 @@ def test_bare_and_described_slots_are_disjoint(tmp_path, gate):
               RULE_TMPL.format(rid="r/bare", gate="cat: animal, bare: true"),
               RULE_TMPL.format(rid="r/described", gate=(gate if gate.startswith("type:") else "cat: animal, " + gate)))
     assert lint_overlaps(reg) == []
+
+
+@pytest.mark.parametrize("other,overlaps", [
+    ("size", False), ("hue", True), ("dark_hue", True), ("warm_hue", True),
+])
+def test_qualified_slots_intersect_only_with_compatible_modifiers(tmp_path, other, overlaps):
+    lexicon = BASE_LEX + "  red: {senses: [adjective]}\n  big: {senses: [adjective]}\n"
+    categories = """format: rulekit/categories@1
+categories:
+  animal: {parent: noun}
+  hue: {parent: adjective}
+  dark_hue: {parent: hue}
+  warm_hue: {parent: adjective}
+  size: {parent: adjective}
+members:
+  animal: [dog, cat]
+  dark_hue: [red]
+  warm_hue: [red]
+  size: [big]
+"""
+    reg = _mk(tmp_path, lexicon, categories,
+              RULE_TMPL.format(rid="r/first", gate="cat: animal, counted: true, qualified: true, qualifier_cat: hue"),
+              RULE_TMPL.format(rid="r/second", gate=f"cat: animal, counted: true, qualified: true, qualifier_cat: {other}"))
+    assert bool(lint_overlaps(reg)) == overlaps

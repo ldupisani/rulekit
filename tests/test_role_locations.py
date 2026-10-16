@@ -20,7 +20,7 @@ def test_role_and_full_location_survive(reg, role, place, article, suffix):
     assert not list(result.store.by_kind(VerbalRelation))
     assert not any(m.collection == place for m in result.store.by_kind(Membership))
 
-@pytest.mark.parametrize("role,place", [("student", "school"), ("worker", "company"), ("painter", "park")])
+@pytest.mark.parametrize("role,place", [("student", "school"), ("worker", "company"), ("painter", "park"), ("gardener", "garden")])
 def test_role_context_composes_with_budget(reg, role, place):
     text = (f"Mira is a {role} at a {place} in Chicago. "
             "Mira has a budget of $900. She spends 20% on food, 10% on rent, and the rest on books. "
@@ -64,3 +64,9 @@ def test_role_location_variants_round_trip_through_generation():
         rule_id = "arithmetic/personal-role-at-" + suffix
         candidate = generate_candidate(project, rule_id=rule_id, seed=0)
         assert candidate.target_status == "matched", candidate
+
+
+def test_definite_role_determiner_keeps_the_role_location(reg):
+    result = solve("Mira is the teacher at the school. Is Mira a teacher?", reg)
+    assert result.answer.value == "yes"
+    assert any(a.pred == "teacher at school" for a in result.store.by_kind(Atom))

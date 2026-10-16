@@ -191,6 +191,7 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
     }
 
     assert adjectives == {
+        "ripe", "unripe",
         "additional", "collapsing", "stable",
         "fast-food", "french", "neighboring", "neighbouring",
         "certain", "other", "little", "further", "right-hand", "left-hand",
@@ -294,7 +295,7 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
         registry.attribute_applies_to(attribute, noun)
         for attribute in adjectives
         for noun in plural_nouns
-    ) == 1812
+    ) == 1824
 
 
 def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> None:
@@ -371,7 +372,7 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
 def test_compatibility_rule_remains_supported_after_g5j_expansion() -> None:
     availability = list_rule_availability(load_project(CURATED))
 
-    assert sum(item.supported for item in availability) == 443
+    assert sum(item.supported for item in availability) == 449
     target = next(item for item in availability if item.id == RULE_ID)
     assert target.supported
     assert target.blockers == ()

@@ -1197,6 +1197,7 @@ entries:
     verb:
       lemma: predict
   prescription: {senses: [noun], plural: prescriptions}
+  president: {senses: [noun]}
   previous: {senses: [adjective]}
   price: {senses: [noun], plural: prices}
   priced: {senses: [verb], verb: {lemma: price}}
@@ -1363,6 +1364,7 @@ entries:
     senses:
     - noun
     plural: rings
+  ripe: {senses: [adjective]}
   rise: {senses: [verb]}
   rises: {senses: [verb], number: singular, verb: {lemma: rise}}
   road:
@@ -1658,6 +1660,7 @@ entries:
   unrelated:
     senses:
     - adjective
+  unripe: {senses: [adjective]}
   until: {senses: [preposition]}
   up: {senses: [adverb]}
   upon: {senses: [preposition]}
