@@ -468,10 +468,6 @@ entries:
     senses:
     - noun
     plural: phrases
-  piano:
-    senses:
-    - noun
-    plural: pianos
   pick:
     senses:
     - verb
@@ -873,10 +869,6 @@ entries:
     # kilometer (that entry is the precedent).
     - rad
     - radians
-  rate:
-    senses:
-    - noun
-    plural: rates
   reach:
     senses:
     - verb
@@ -1304,10 +1296,6 @@ entries:
   seals:
     senses:
     - noun
-  seashell:
-    senses:
-    - noun
-    plural: seashells
   seat:
     senses:
     - noun
@@ -1420,10 +1408,6 @@ entries:
     senses:
     - noun
     plural: shelves
-  shell:
-    senses:
-    - noun
-    plural: shells
   shelter:
     senses:
     - noun
@@ -1550,10 +1534,6 @@ entries:
   sixty:
     senses:
     - value
-  size:
-    senses:
-    - noun
-    plural: sizes
   skateboard:
     senses:
     - noun

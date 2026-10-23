@@ -1,0 +1,326 @@
+format: rulekit/rules@1
+templates:
+  repeated-predicate-comparison:
+    parameters:
+      introduction: []
+      comparison: []
+      ending: {}
+      guards: []
+      operands: []
+      satisfaction: {}
+      measure: null
+      measure_qualifier: null
+      factor: 1
+      offset: 0
+    rule:
+      phase: read
+      description: Quantity comparisons preserve their standard, predicate and any explicit content
+        qualifier. An omitted standard predicate inherits the main predicate; an explicit repeat must agree.
+      match:
+        sentence:
+          - {slot: who, type: name, at_start: true}
+          - {parameter: introduction}
+          - {slot: verb, cat: quantity_comparison_verb, finite_form: true}
+          - {parameter: comparison}
+          - {slot: std, type: name}
+          - {parameter: ending}
+          - {lit: ., consume_skipped: true}
+      where:
+        - distinct: [who, std]
+        - {parameter: guards}
+      consumes: {parameter: operands}
+      satisfies: {parameter: satisfaction}
+      emits:
+        - fact: relation
+          subject: '{who}'
+          standard: '{std}'
+          measure: {parameter: measure}
+          measure_qualifier: {parameter: measure_qualifier}
+          factor: {parameter: factor}
+          offset: {parameter: offset}
+          verb: '{verb}'
+variants:
+  - id: arithmetic/comparison-repeated-predicate-difference
+    template: repeated-predicate-comparison
+    arguments:
+      introduction: []
+      comparison:
+        - {slot: n, type: number}
+        - {slot: dir, cat: quantity_delta}
+        - {slot: item, type: plural}
+        - {lit: than}
+      ending: {slot: tail, type: verb, finite_form: true}
+      guards:
+        - same_lemma: [verb, tail]
+        - slot_not_category: {slot: item, cat: many_incompatible_noun}
+        - verb_roles_compatible:
+            verb: verb
+            roles:
+              actor: [who, std]
+              theme: [item]
+            allow_proper_name: [who, std]
+      operands: [n]
+      satisfaction:
+        n: [quantifies]
+      measure: '{item}'
+      measure_qualifier: null
+      factor: 1
+      offset: n * sign(dir)
+  - id: arithmetic/comparison-repeated-predicate-multiple
+    template: repeated-predicate-comparison
+    arguments:
+      introduction: []
+      comparison:
+        - {slot: k, type: multiplier}
+        - {lit: as}
+        - {lit: many}
+        - {slot: item, type: plural}
+        - {lit: as}
+      ending: {slot: tail, type: verb, finite_form: true}
+      guards:
+        - same_lemma: [verb, tail]
+        - slot_not_category: {slot: item, cat: many_incompatible_noun}
+        - verb_roles_compatible:
+            verb: verb
+            roles:
+              actor: [who, std]
+              theme: [item]
+            allow_proper_name: [who, std]
+      operands: [k]
+      satisfaction: {}
+      measure: '{item}'
+      measure_qualifier: null
+      factor: k
+      offset: 0
+  - id: arithmetic/comparison-repeated-predicate-fraction
+    template: repeated-predicate-comparison
+    arguments:
+      introduction:
+        - opt:
+            - {slot: get, cat: acquire}
+            - {slot: start, cat: initiation_noun, qualified: true, qualifier_cat: initiation_timing}
+            - {lit: and}
+        - opt:
+            - {slot: only, cat: restriction_adverb}
+      comparison:
+        - {slot: share, type: fraction, fraction_positive: true, word_fraction_within_whole: true}
+        - {lit: of}
+        - {lit: what}
+      ending: {slot: tail, type: verb, finite_form: true}
+      guards:
+        - same_lemma: [verb, tail]
+      operands: [share]
+      satisfaction: {}
+      measure: null
+      measure_qualifier: null
+      factor: share
+      offset: 0
+  - id: arithmetic/comparison-repeated-predicate-difference-auxiliary
+    template: repeated-predicate-comparison
+    arguments:
+      introduction: []
+      comparison:
+        - {slot: n, type: number}
+        - {slot: dir, cat: quantity_delta}
+        - {slot: item, type: plural}
+        - {lit: than}
+      ending: {slot: tail, cat: do_support_auxiliary}
+      guards:
+        - slot_not_category: {slot: item, cat: many_incompatible_noun}
+        - verb_roles_compatible:
+            verb: verb
+            roles:
+              actor: [who, std]
+              theme: [item]
+            allow_proper_name: [who, std]
+      operands: [n]
+      satisfaction:
+        n: [quantifies]
+      measure: '{item}'
+      measure_qualifier: null
+      factor: 1
+      offset: n * sign(dir)
+  - id: arithmetic/comparison-repeated-predicate-multiple-auxiliary
+    template: repeated-predicate-comparison
+    arguments:
+      introduction: []
+      comparison:
+        - {slot: k, type: multiplier}
+        - {lit: as}
+        - {lit: many}
+        - {slot: item, type: plural}
+        - {lit: as}
+      ending: {slot: tail, cat: do_support_auxiliary}
+      guards:
+        - slot_not_category: {slot: item, cat: many_incompatible_noun}
+        - verb_roles_compatible:
+            verb: verb
+            roles:
+              actor: [who, std]
+              theme: [item]
+            allow_proper_name: [who, std]
+      operands: [k]
+      satisfaction: {}
+      measure: '{item}'
+      measure_qualifier: null
+      factor: k
+      offset: 0
+  - id: arithmetic/comparison-repeated-predicate-fraction-auxiliary
+    template: repeated-predicate-comparison
+    arguments:
+      introduction:
+        - opt:
+            - {slot: get, cat: acquire}
+            - {slot: start, cat: initiation_noun, qualified: true, qualifier_cat: initiation_timing}
+            - {lit: and}
+        - opt:
+            - {slot: only, cat: restriction_adverb}
+      comparison:
+        - {slot: share, type: fraction, fraction_positive: true, word_fraction_within_whole: true}
+        - {lit: of}
+        - {lit: what}
+      ending: {slot: tail, cat: do_support_auxiliary}
+      guards: []
+      operands: [share]
+      satisfaction: {}
+      measure: null
+      measure_qualifier: null
+      factor: share
+      offset: 0
+  - id: arithmetic/comparison-repeated-predicate-difference-content
+    template: repeated-predicate-comparison
+    arguments:
+      introduction: []
+      comparison:
+        - {slot: n, type: number}
+        - {slot: dir, cat: quantity_delta}
+        - {slot: item, type: plural}
+        - {lit: of}
+        - {slot: topic, cat: bare_pp_object, uncounted: true}
+        - {lit: than}
+      ending:
+        opt:
+          - {slot: tail, type: verb, finite_form: true}
+      guards:
+        - same_lemma: [verb, tail]
+        - slot_not_category: {slot: item, cat: many_incompatible_noun}
+        - verb_roles_compatible:
+            verb: verb
+            roles:
+              actor: [who, std]
+              theme: [item]
+            allow_proper_name: [who, std]
+      operands: [n]
+      satisfaction:
+        n: [quantifies]
+      measure: '{item}'
+      measure_qualifier: '{topic}'
+      factor: 1
+      offset: n * sign(dir)
+  - id: arithmetic/comparison-repeated-predicate-multiple-content
+    template: repeated-predicate-comparison
+    arguments:
+      introduction: []
+      comparison:
+        - {slot: k, type: multiplier}
+        - {lit: as}
+        - {lit: many}
+        - {slot: item, type: plural}
+        - {lit: of}
+        - {slot: topic, cat: bare_pp_object, uncounted: true}
+        - {lit: as}
+      ending:
+        opt:
+          - {slot: tail, type: verb, finite_form: true}
+      guards:
+        - same_lemma: [verb, tail]
+        - slot_not_category: {slot: item, cat: many_incompatible_noun}
+        - verb_roles_compatible:
+            verb: verb
+            roles:
+              actor: [who, std]
+              theme: [item]
+            allow_proper_name: [who, std]
+      operands: [k]
+      satisfaction: {}
+      measure: '{item}'
+      measure_qualifier: '{topic}'
+      factor: k
+      offset: 0
+  - id: arithmetic/comparison-repeated-predicate-difference-auxiliary-content
+    template: repeated-predicate-comparison
+    arguments:
+      introduction: []
+      comparison:
+        - {slot: n, type: number}
+        - {slot: dir, cat: quantity_delta}
+        - {slot: item, type: plural}
+        - {lit: of}
+        - {slot: topic, cat: bare_pp_object, uncounted: true}
+        - {lit: than}
+      ending: {slot: tail, cat: do_support_auxiliary}
+      guards:
+        - slot_not_category: {slot: item, cat: many_incompatible_noun}
+        - verb_roles_compatible:
+            verb: verb
+            roles:
+              actor: [who, std]
+              theme: [item]
+            allow_proper_name: [who, std]
+      operands: [n]
+      satisfaction:
+        n: [quantifies]
+      measure: '{item}'
+      measure_qualifier: '{topic}'
+      factor: 1
+      offset: n * sign(dir)
+  - id: arithmetic/comparison-repeated-predicate-multiple-auxiliary-content
+    template: repeated-predicate-comparison
+    arguments:
+      introduction: []
+      comparison:
+        - {slot: k, type: multiplier}
+        - {lit: as}
+        - {lit: many}
+        - {slot: item, type: plural}
+        - {lit: of}
+        - {slot: topic, cat: bare_pp_object, uncounted: true}
+        - {lit: as}
+      ending: {slot: tail, cat: do_support_auxiliary}
+      guards:
+        - slot_not_category: {slot: item, cat: many_incompatible_noun}
+        - verb_roles_compatible:
+            verb: verb
+            roles:
+              actor: [who, std]
+              theme: [item]
+            allow_proper_name: [who, std]
+      operands: [k]
+      satisfaction: {}
+      measure: '{item}'
+      measure_qualifier: '{topic}'
+      factor: k
+      offset: 0
+rules:
+  - id: arithmetic/located-group-activity-context
+    phase: read
+    description: An unquantified group activity on an excursion establishes context without inventing a count.
+    match:
+      sentence:
+        - {lit: on}
+        - {slot: occasion, cat: excursion_noun, uncounted: true}
+        - {lit: to}
+        - {slot: place, cat: quantity_site_location, uncounted: true}
+        - {lit: ',', consume_skipped: true}
+        - {slot: who, type: name, at_start: false}
+        - {lit: and}
+        - {slot: poss, cat: animate_possessive_determiner}
+        - {slot: peers, cat: personal_relation_role, number: plural, uncounted: true}
+        - {slot: verb, cat: quantity_comparison_verb, finite_form: true}
+        - {slot: item, cat: transferable_quantity_object, uncounted: true}
+        - {lit: ., consume_skipped: true}
+    satisfies:
+      poss: [refers]
+      verb: [subject]
+    emits:
+      - {fact: quantity_event_context, entity: '{who}', measure: '{item}', verb: '{verb}', place: '{place}'}

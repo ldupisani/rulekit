@@ -1,0 +1,253 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/bounded-process-rates
+  phase: read
+  description: An extent, a rate for its initial segment, and a rate for the 
+    exhaustive remainder. Preserve all source operands.
+  match:
+    sentence:
+    - slot: who
+      type: noun
+      at_start: true
+    - lit: ','
+      consume_skipped: true
+    - slot: total
+      cat: progress_measure
+      counted: true
+    - lit: in
+    - slot: extent
+      cat: process_extent_attribute
+    - lit: ','
+      consume_skipped: true
+    - slot: verb
+      cat: progressive_process_verb
+    - lit: at
+    - opt:
+      - lit: the
+        consume_skipped: true
+      - slot: rate
+        cat: rate_frame_noun
+      - lit: of
+    - slot: rate1
+      cat: progress_measure
+      counted: true
+    - lit: per
+    - slot: time1
+      cat: duration_measure
+      uncounted: true
+    - lit: for
+    - opt:
+      - slot: poss
+        cat: possessive_determiner
+    - slot: first
+      cat: progress_measure
+      counted: true
+      qualified: true
+      qualifier_cat: initial_sequence_ordinal
+    - lit: ','
+      consume_skipped: true
+    - lit: and
+    - lit: then
+    - slot: rate2
+      cat: progress_measure
+      counted: true
+    - lit: per
+    - slot: time2
+      cat: duration_measure
+      uncounted: true
+    - slot: rest
+      cat: process_remainder_adverb
+    - lit: .
+      consume_skipped: true
+  where:
+  - same_lemma:
+    - total
+    - rate1
+    - first
+    - rate2
+  - same_lemma:
+    - time1
+    - time2
+  - verb_roles_compatible:
+      verb: verb
+      roles:
+        actor:
+        - who
+        theme:
+        - total
+      require_declared_frame: true
+  satisfies:
+    poss:
+    - refers
+  consumes:
+  - total
+  - rate1
+  - rate2
+  - first
+  emits:
+  - fact: batch_evidence
+    kind: bounded-process
+    position: '{who.span_start}'
+    entity: '{who}'
+    measure: '{total}'
+    value: total
+    per_member: rate1
+    subtotal: first
+    content_count: rate2
+    container: '{time1}'
+    verb: '{verb}'
+- id: arithmetic/bounded-process-rates-compact
+  phase: read
+  description: An extent, a rate for its initial segment, and a rate for the 
+    exhaustive remainder. Preserve all source operands.
+  match:
+    sentence:
+    - slot: who
+      type: noun
+      at_start: true
+    - lit: of
+    - slot: total
+      cat: progress_measure
+      counted: true
+    - slot: verb
+      cat: progressive_process_verb
+    - lit: at
+    - opt:
+      - lit: the
+        consume_skipped: true
+      - slot: rate
+        cat: rate_frame_noun
+      - lit: of
+    - slot: rate1
+      cat: progress_measure
+      counted: true
+    - lit: per
+    - slot: time1
+      cat: duration_measure
+      uncounted: true
+    - lit: for
+    - opt:
+      - slot: poss
+        cat: possessive_determiner
+    - slot: first
+      cat: progress_measure
+      counted: true
+      qualified: true
+      qualifier_cat: initial_sequence_ordinal
+    - lit: ','
+      consume_skipped: true
+    - lit: and
+    - lit: then
+    - slot: rate2
+      cat: progress_measure
+      counted: true
+    - lit: per
+    - slot: time2
+      cat: duration_measure
+      uncounted: true
+    - slot: rest
+      cat: process_remainder_adverb
+    - lit: .
+      consume_skipped: true
+  where:
+  - same_lemma:
+    - total
+    - rate1
+    - first
+    - rate2
+  - same_lemma:
+    - time1
+    - time2
+  - verb_roles_compatible:
+      verb: verb
+      roles:
+        actor:
+        - who
+        theme:
+        - total
+      require_declared_frame: true
+  satisfies:
+    poss:
+    - refers
+  consumes:
+  - total
+  - rate1
+  - rate2
+  - first
+  emits:
+  - fact: batch_evidence
+    kind: bounded-process
+    position: '{who.span_start}'
+    entity: '{who}'
+    measure: '{total}'
+    value: total
+    per_member: rate1
+    subtotal: first
+    content_count: rate2
+    container: '{time1}'
+    verb: '{verb}'
+asks:
+- id: ask/complete-process-duration
+  match:
+    question:
+    - lit: how
+    - slot: long
+      cat: elapsed_extent_adjective
+    - lit: ','
+      consume_skipped: true
+    - lit: in
+    - slot: unit
+      cat: duration_measure
+    - lit: ','
+      consume_skipped: true
+    - slot: aux
+      type: auxiliary
+    - slot: dummy
+      cat: impersonal_subject_pronoun
+    - slot: take
+      cat: elapsed_duration_verb
+    - slot: inf
+      cat: infinitival_marker
+    - slot: verb
+      cat: progressive_process_verb
+      bare_form: true
+    - slot: complete
+      cat: completion_adverb
+  resolves:
+    consumer: bounded-process-duration
+    measure: '{unit}'
+    verb: '{verb}'
+  satisfies:
+    dummy:
+    - refers
+    inf:
+    - object
+- id: ask/complete-process-duration-count
+  match:
+    question:
+    - lit: how
+    - lit: many
+    - slot: unit
+      cat: duration_measure
+    - slot: aux
+      type: auxiliary
+    - slot: dummy
+      cat: impersonal_subject_pronoun
+    - slot: take
+      cat: elapsed_duration_verb
+    - slot: inf
+      cat: infinitival_marker
+    - slot: verb
+      cat: progressive_process_verb
+      bare_form: true
+    - slot: complete
+      cat: completion_adverb
+  resolves:
+    consumer: bounded-process-duration
+    measure: '{unit}'
+    verb: '{verb}'
+  satisfies:
+    dummy:
+    - refers
+    inf:
+    - object

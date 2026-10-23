@@ -523,10 +523,6 @@ entries:
     senses:
     - noun
     plural: births
-  birthday:
-    senses:
-    - noun
-    plural: birthdays
   bite-size:
     senses:
     - adjective
@@ -1848,9 +1844,6 @@ entries:
   earlier:
     senses:
     - adverb
-  early:
-    senses:
-    - adjective
   earnings:
     senses:
     - noun
@@ -1963,9 +1956,6 @@ entries:
   entered:
     senses:
     - verb
-  entirely:
-    senses:
-    - adverb
   entrance:
     senses:
     - adjective

@@ -82,7 +82,8 @@ def test_g5i_profiles_the_complete_recursive_optional_class() -> None:
     # Mixture frames retain optional holders, solvents, bases and retention
     # quantifiers without increasing the maximum optional nesting depth.
     # Amount references and itemized quote variants add flat optional groups.
-    assert _optional_profile(project) == (243, 414, 53, 3)
+    # Content comparisons allow an omitted standard predicate in two forms.
+    assert _optional_profile(project) == (252, 432, 53, 3)
 
 
 def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
@@ -91,8 +92,8 @@ def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
         for item in list_rule_availability(load_project(CURATED))
     }
 
-    assert len(availability) == 509
-    assert sum(item.supported for item in availability.values()) == 454
+    assert len(availability) == 531
+    assert sum(item.supported for item in availability.values()) == 476
     assert sum(not item.supported for item in availability.values()) == 55
     assert all(availability[rule_id].supported for rule_id in NEWLY_SUPPORTED)
     assert all(
@@ -180,6 +181,26 @@ def test_included_and_omitted_branches_are_both_inspectable() -> None:
     assert omitted_item.binding is None
     assert included_item.sources[0]["label"].endswith("token 2.3")
     assert omitted_item.sources[0]["label"].endswith("token 2.3")
+
+
+@pytest.mark.parametrize('comparison', ['difference', 'multiple'])
+@pytest.mark.parametrize('branch', ['included', 'omitted'])
+def test_content_comparison_standard_predicate_generates_both_forms(comparison, branch):
+    from rulekit.generation.sample import _token_nodes
+
+    project = load_project(CURATED)
+    rule_id = f'arithmetic/comparison-repeated-predicate-{comparison}-content'
+    rule = next(rule for rule in project.registry.rules if rule.id == rule_id)
+    optional = next(index for index, (_, token, _) in enumerate(
+        _token_nodes(rule.match['sentence'])
+    ) if token.opt)
+    candidate = generate_candidate(
+        project, rule_id=rule_id, seed=0,
+        structural_target=f'optional:{optional}:{branch}',
+    )
+    assert candidate.target_status == 'matched'
+    assert next(row.binding for row in candidate.premises
+                if row.slot_type == 'optional') == branch
 
 
 def test_nested_omission_is_distinct_from_an_inactive_child_group() -> None:

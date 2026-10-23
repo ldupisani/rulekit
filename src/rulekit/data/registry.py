@@ -542,9 +542,9 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
     for pack in packs:
         for word in sorted(pack.lexicon):
             if pack.lexicon[word].lexical_phrase and (
-                len(word.split()) < 2 or word != " ".join(word.split())
+                (len(word.split()) < 2 and "'" not in word) or word != " ".join(word.split())
             ):
-                raise CompileError("a lexical phrase needs a normalized multiword key")
+                raise CompileError("a lexical phrase needs a normalized multiword or apostrophized key")
             if word in lexicon:
                 raise CompileError(
                     f"lexicon entry {word!r} defined in both pack "

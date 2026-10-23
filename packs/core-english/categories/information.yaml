@@ -9,13 +9,22 @@ categories:
     includes:
     - intentional_agent
     - computing_device
+  information_recall_verb:
+    parent: quantity_comparison_verb
+    selectional_roles:
+      actor: intentional_agent
+      theme: information_quantity_object
   information_deletion_verb:
     parent: quantity_comparison_verb
     selectional_roles:
       actor: information_operator
       theme: information_quantity_object
 members:
+  information_recall_verb: [memorize, memorized, memorizes, memorizing, memorise, memorised, memorises, memorising]
   information_quantity_object:
+  - digit
+  - poem
+  - word
   - document
   - file
   - image

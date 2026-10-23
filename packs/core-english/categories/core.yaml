@@ -2614,7 +2614,7 @@ members:
   attribute_class_diversity_adjective: [different]
   attribute_class_noun: [color]
   bare_possession_incompatible_noun: [number]
-  bare_pp_object: [town]
+  bare_pp_object: [town, pi]
   capacity_assessment_activity: [examine, examined, examines, examining, measure, measured, measures,
       measuring, studied, studies, study, studying]
   capacity_inquiry_activity: [check, checked, checking, checks]
@@ -2718,7 +2718,7 @@ members:
   - tomato
   - toy
   duration_dimension_comparative: [longer, shorter]
-  duration_measure: [day, hour, minute, month, week, year]
+  duration_measure: [day, hour, minute, month, week, year, second, seconds]
   duration_total_subject: [time]
   duration_verb: [takes, took]
   earnable_quantity_object: [dollar, money]
@@ -2758,6 +2758,7 @@ members:
   - sugar
   - tea
   - tomato
+  - treat
   enrollment_quantity_object: [course, student]
   enrollment_quantity_verb: [enroll, enrolled, enrolling, enrolls]
   epistemic_report_verb: [said, say, saying, says]
@@ -2918,7 +2919,7 @@ members:
   quantified_group_total_marker: [together]
   quantity_anaphor: [amount, number]
   quantity_ask_verb: [had, has, have]
-  quantity_container: [house]
+  quantity_container: [house, piñata]
   quantity_delta: [fewer, less, more]
   quantity_event_participant: [animal, dragon, monster]
   quantity_event_verb: [leave, leaves, leaving]
@@ -2977,6 +2978,7 @@ members:
   - post office
   - tree
   - university
+  - seashore
   quantity_site_preposition: [at]
   quantity_surface_location: [avenue, bench, boulevard, farm, lane, road, street, tree]
   quantity_surface_preposition: [on]
@@ -3069,7 +3071,7 @@ members:
   transfer_out: [gave, give, gives, sell, sells, sold]
   transferable_quantity_object: [alpaca, animal, belt, bird, box, can, cat, clay, clothes, coat, course, dog,
       dollar, fish, flower, gnome, hamster, hat, litter, money, number, page, pants, paper, rabbit, sand,
-      shirt, shorts, sock, sugar, suit, tennis ball, top, tree, vinegar, water, wool]
+      shirt, shorts, sock, sugar, suit, tennis ball, top, tree, vinegar, water, wool, piñata, shell, seashell]
   tree_borne_quantity: [apple, apricot, pear, plum]
   tree_quantity_surface_location: [tree]
   unit_recipient_output_product: [letter]
@@ -3084,6 +3086,7 @@ members:
   winnable_quantity_object: [dollar, money]
   written_production_verb: [write, writes, wrote]
 attribute_compatibility:
+  duration_measure: [duration_measure]
   academic_course_modifier: [sequential_partition_destination]
   age_comparative: [age_measure]
   attribute_class_diversity_adjective: [attribute_class_noun]
@@ -3120,7 +3123,7 @@ adverb_verb_compatibility:
   flexible_holding_anchor_adverb: [possession_state]
 measure_holder_compatibility:
   age_measure: [bare_entity_reference, quantity_event_participant]
-  duration_measure: [duration_holder]
+  duration_measure: [duration_holder, duration_measure]
   institution_quantity_measure: [institution_quantity_holder]
   length_measure: [linear_dimension_holder, motion_participant]
   mass_measure: [animate, mass_dimension_holder, measurement_container, physical_size_noun]

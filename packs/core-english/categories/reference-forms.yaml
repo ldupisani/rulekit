@@ -1,5 +1,12 @@
 format: rulekit/categories@1
 categories:
+  universal_item_reference:
+    parent: pronoun
+    notes: All items in an independently established domain; the consuming rule must establish completeness.
+  impersonal_subject_pronoun:
+    parent: pronoun
+  initial_sequence_ordinal:
+    parent: adjective
   generic_addressee_pronoun:
     parent: pronoun
   universal_person_reference:
@@ -26,6 +33,11 @@ categories:
   person_title:
     parent: title
 members:
+  universal_item_reference: [everything]
+  impersonal_subject_pronoun:
+  - it
+  initial_sequence_ordinal:
+  - first
   generic_addressee_pronoun: [you]
   universal_person_reference: [everyone]
   group_possessive_determiner: [their]
@@ -40,6 +52,7 @@ members:
   - mrs
   - ms
 attribute_compatibility:
+  initial_sequence_ordinal: [progress_measure]
   holder_ordinal: [ordinal_quantity_holder, path_checkpoint, local_yield_site]
   holder_prefix_order: [ordinal_quantity_holder]
   holder_terminal_order: [ordinal_quantity_holder]

@@ -253,10 +253,35 @@ def test_future_comparison_is_not_an_activated_boundary(project):
     assert not any(q.item_reference for q in result.store.by_kind(Quantity))
 
 
-def test_conditional_quantity_cannot_supply_actual_item_link(project):
-    result = checked(project, "Bira sold 3 more red cards than Aven. "
-        "If Aven sold 8 cards, how many red cards did Bira sell?", None)
-    assert any(q.provenance.assumption for q in result.store.by_kind(Quantity))
+@pytest.mark.parametrize('verb,ask', [('has', 'does {who} have'), ('sold', 'did {who} sell')])
+@pytest.mark.parametrize('inverse', [False, True])
+def test_conditional_quantity_retains_hypothetical_item_link(project, verb, ask, inverse):
+    target, answer_actor, stated, expected = ('Bira', 'Aven', 11, 8) if inverse else ('Aven', 'Bira', 8, 11)
+    result = checked(project, f'Bira {verb} 3 more red cards than Aven. '
+        f'If {target} {verb} {stated} cards, how many red cards {ask.format(who=answer_actor)}?', expected)
+    quantity = next(q for q in result.store.by_kind(Quantity) if q.item_reference)
+    assert quantity.measure_qualifier is None
+    assert quantity.provenance.assumption
+    assert quantity.item_reference.target.assumption
+    assert all(not source.assumption for source in quantity.item_reference.antecedents)
+    projected = project_item_reference(quantity, result.store)
+    assert projected.measure_qualifier == 'red' and projected.provenance.assumption
+    assert all(q.provenance.assumption for q in result.store.by_kind(Quantity))
+
+
+@pytest.mark.parametrize('rival,target', [
+    ('Cato sold 2 more blue cards than Aven. ', 'Aven sold 8 cards'),
+    ('Aven sold blue cards. ', 'Aven sold 8 cards'),
+    ('', 'Aven sold 8 cards in total'),
+    ('', 'Aven sold 8 cards yesterday'),
+    ('', 'Cato sold 8 cards'),
+    ('', 'Aven bought 8 cards'),
+    ('', 'Aven sold 8 apples'),
+    ('', 'Aven sold 8 blue cards'),
+])
+def test_hypothetical_item_link_preserves_scope_boundaries(project, rival, target):
+    result = checked(project, 'Bira sold 3 more red cards than Aven. ' + rival +
+        f'If {target}, how many red cards did Bira sell?', None)
     assert not any(q.item_reference for q in result.store.by_kind(Quantity))
 
 

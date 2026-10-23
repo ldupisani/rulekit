@@ -76,6 +76,10 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
     }
 
     assert occurrences == {
+        'arithmetic/bounded-process-rates': ((21,), 'rest', ()),
+        'arithmetic/bounded-process-rates-compact': ((18,), 'rest', ()),
+        'arithmetic/comparison-repeated-predicate-fraction': ((2, 0), 'only', ((2,),)),
+        'arithmetic/comparison-repeated-predicate-fraction-auxiliary': ((2, 0), 'only', ((2,),)),
         "arithmetic/passive-share-of-demonstrative-earnings": ((0, 0), "contrast", ((0,),)),
         "arithmetic/passive-share-of-referenced-earnings": ((0, 0), "contrast", ((0,),)),
         "arithmetic/threshold-share-reported-numeric": ((2, 0), "particle", ((2,),)),
@@ -235,8 +239,8 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
         for word, entry in sorted(project.registry.lexicon.items())
         if "adverb" in entry.senses
     ] == [
-        "again", "ago", "also", "away", "back and forth", "completely", MOVED_WORD, "daily", "down", "equally", "far", "finally", "fully", "further", "however", "immediately", "individually",
-        "just", "next", "off", "once again", "online", "only", "out", "outside", "recently", "respectively", "safely", "still", "then", "up",
+        "again", "ago", "also", "away", "back and forth", "completely", MOVED_WORD, "daily", "down", "entirely", "equally", "far", "finally", "fully", "further", "however", "immediately", "individually",
+        "just", "next", "off", "once again", "online", "only", "out", "outside", "recently", "respectively", "safely", "still", "then", "thereafter", "up",
     ]
 
 
@@ -287,8 +291,8 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
     project = load_project(CURATED)
     availability = list_rule_availability(project)
 
-    assert len(availability) == 509
-    assert sum(item.supported for item in availability) == 454
+    assert len(availability) == 531
+    assert sum(item.supported for item in availability) == 476
     assert sum(not item.supported for item in availability) == 55
     assert all(
         not item.blockers
@@ -354,7 +358,7 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
             }
         for item in availability
     )
-    assert len(exploration_status(project)["fillers"]) == 830
+    assert len(exploration_status(project)["fillers"]) == 859
 
 
 def test_currently_generates_a_matcher_confirmed_anchor() -> None:
@@ -428,7 +432,7 @@ def test_combined_project_exposes_only_declared_holding_anchor_adverbs() -> None
         for item in exploration_status(project)["fillers"]
     }
 
-    assert len(adverbs) == 54
+    assert len(adverbs) == 55
     holding_anchor_adverbs = {
         word
         for word in adverbs

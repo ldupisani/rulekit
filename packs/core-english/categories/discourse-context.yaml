@@ -1,5 +1,11 @@
 format: rulekit/categories@1
 categories:
+  do_support_auxiliary:
+    parent: auxiliary
+  restriction_adverb:
+    parent: adverb
+  contracted_copula_clitic:
+    parent: possessive
   additive_discourse_adverb:
     parent: adverb
     notes: Adds a parallel assertion without changing its amount or temporal perspective.
@@ -16,6 +22,14 @@ categories:
   knowledge_verb:
     parent: verb
 members:
+  do_support_auxiliary:
+  - did
+  - does
+  - do
+  restriction_adverb:
+  - only
+  contracted_copula_clitic:
+  - "'s"
   additive_discourse_adverb: [also]
   conditional_consequent_marker: [then]
   contrastive_conjunction: [but]

@@ -106,7 +106,7 @@ members:
   # Optional corpus-mined extensions to the core measurement vocabulary.
   measurement_container: [container, tray]
   measured_content_substance: [flour, milk, rice]
-  transferable_quantity_object: [bar, kite, orange, seashell, ticket]
+  transferable_quantity_object: [bar, kite, orange, ticket]
   edible_quantity_object: [berry, pie]
   # `project` is lexically owned here and is a conventional finishable task.
   # Extending the core role category here keeps minimal core-only registries

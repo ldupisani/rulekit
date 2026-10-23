@@ -534,6 +534,24 @@ def _check_number(
         matched = match_ask(question, reg, store=store)
         if matched is not None:
             _ask, query, _m = matched
+            from .measures import _resolve_measure_against
+            expense_measure = _resolve_measure_against(
+                query.get("measure", ""), {e.measure for e in store.by_kind(Expenditure)}, reg)
+            if (reg.word_in_category(query.get("verb", ""), "possession_state")
+                    and any(e.value is not None and e.entity == query.get("entity")
+                            and e.measure == expense_measure
+                            and e.key() not in log.consumed_expenditure_keys
+                            and not any(
+                                q.entity == e.entity and q.measure == e.measure
+                                and q.value == e.value and q.verb == e.verb
+                                and q.occurrence == e.event
+                                and q.provenance.sentence == e.provenance.sentence
+                                for q in store.by_kind(Quantity) if not q.is_state)
+                            for e in store.by_kind(Expenditure))):
+                # An expense may also be represented by an ordinary monetary
+                # event. The existing quantity-accounting check below audits
+                # that event; a price alone must never disappear from a balance.
+                return GuardVeto("answer-accounting", "a stated expense affecting this balance was not used")
             accounting_store = store
             if query.get("evidence_entity_reference") is not None:
                 from .reference_identity import scope_query_store

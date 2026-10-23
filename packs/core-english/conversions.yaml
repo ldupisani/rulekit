@@ -53,3 +53,10 @@ conversions:
 - from: ounce
   to: kilogram
   factor: 0.028349523125
+
+- from: second
+  to: seconds
+  factor: 1
+- from: minute
+  to: second
+  factor: 60

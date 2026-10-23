@@ -734,7 +734,10 @@ def _possessed_fillers(reg: Registry, fixtures: _Fixtures) -> list[_Filler]:
     ]
 
 
-def _qualified_fillers(reg: Registry) -> list[_Filler]:
+def _qualified_fillers(
+    reg: Registry, *, head_category: str | None = None,
+    modifier_category: str | None = None,
+) -> list[_Filler]:
     """Compose declared compatible modifiers with noun heads.
 
     ``type: qualified`` is structural: the ordinary analyzer must merge the
@@ -760,6 +763,13 @@ def _qualified_fillers(reg: Registry) -> list[_Filler]:
             if _is_atomic_noun_surface(surface, reg)
         ],
     ]
+    # Filter independent axes before the compatibility cross product. This
+    # preserves order and membership while keeping narrow qualified slots
+    # from enumerating every modifier/head pair in the project.
+    if modifier_category is not None:
+        modifiers = [m for m in modifiers if reg.word_in_category(m.identity, modifier_category)]
+    if head_category is not None:
+        heads = [h for h in heads if reg.word_in_category(h.identity, head_category)]
     return [
         _Filler(
             surface=f"{modifier.surface} {head.surface}",
@@ -775,7 +785,10 @@ def _qualified_fillers(reg: Registry) -> list[_Filler]:
     ]
 
 
-def _counted_qualified_fillers(reg: Registry) -> list[_Filler]:
+def _counted_qualified_fillers(
+    reg: Registry, *, head_category: str | None = None,
+    modifier_category: str | None = None,
+) -> list[_Filler]:
     """Compose a positive count with one declared qualified noun class."""
 
     counts = [
@@ -786,7 +799,8 @@ def _counted_qualified_fillers(reg: Registry) -> list[_Filler]:
     classes = sorted(
         {
             (filler.qualifier, filler.identity)
-            for filler in _qualified_fillers(reg)
+            for filler in _qualified_fillers(reg, head_category=head_category,
+                                            modifier_category=modifier_category)
             if filler.qualifier is not None
         }
     )
@@ -864,7 +878,8 @@ def _raw_domain(
         if token.counted and token.qualified:
             return [
                 filler
-                for filler in _counted_qualified_fillers(reg)
+                for filler in _counted_qualified_fillers(
+                    reg, head_category=token.cat, modifier_category=token.qualifier_cat)
                 if reg.word_in_category(filler.identity, token.cat)
             ]
         if token.counted:
@@ -882,7 +897,8 @@ def _raw_domain(
         if token.qualified:
             return [
                 filler
-                for filler in _qualified_fillers(reg)
+                for filler in _qualified_fillers(
+                    reg, head_category=token.cat, modifier_category=token.qualifier_cat)
                 if reg.word_in_category(filler.identity, token.cat)
             ]
         root = reg.root_sense(token.cat)

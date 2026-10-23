@@ -31,6 +31,11 @@ def condense_lexical_phrases(reading: Reading, reg: Registry) -> Reading:
     """
     phrases = []
     for phrase, entry in reg.lexicon.items():
+        if entry.lexical_phrase and "'" in phrase:
+            from .tokenize import tokenize
+            words = tuple(u.features["fold"] for u in tokenize(phrase, contractions=reg.contractions).units)
+            if len(words) > 1:
+                phrases.append((words, phrase, phrase, entry.number or "singular", entry))
         # A declared hyphenated lexeme is one dictionary word. Tokenization
         # keeps hyphen boundaries for productive measured compounds; merge
         # only this exact declared spelling, never its space-separated form.

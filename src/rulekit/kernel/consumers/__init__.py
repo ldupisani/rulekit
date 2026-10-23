@@ -160,6 +160,8 @@ from . import (  # noqa: E402,F401  (import registers each handler)
     money_left as _money_left,
     single_entity_elided_measure as _single_entity_elided_measure,
     combined_elided_measure as _combined_elided_measure,
+    purchase_basket as _purchase_basket,
+    composed_duration as _composed_duration,
     combined as _combined,
     per_holder as _per_holder,
     average as _average,

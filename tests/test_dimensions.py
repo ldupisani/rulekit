@@ -134,18 +134,17 @@ def test_qualifier_binds_when_the_noun_itself_is_not_a_unit(reg):
 
 
 def test_scale_to_canonical_reaches_the_dimension_through_declared_pairs(reg):
-    # 'seconds' is the canonical time unit AND the lemma the counted unit
-    # reaches the consumer with ('second' is the ordinal ADJECTIVE sense in
-    # the lexicon, so the noun form is plural — formulas.yaml's own note).
+    # Preserve the historical plural canonical time identity. The singular
+    # duration noun reaches it through an explicit conversion below.
     assert bind_count_to_dimension(
         reg, value=2.0, lemma="seconds", qualifier=None, label=None, read_names=READ,
     ) == ("time", 2.0)
-    # The SINGULAR surface is not a declared unit in this pack: the bind
-    # loop looks up the RAW lemma, so scale-to-canonical is by exact
-    # declared pair, never by inflection. Pin that boundary:
+    # The singular duration noun now has an explicit conversion to the
+    # historical plural canonical identity; no inflection is guessed.
     assert bind_count_to_dimension(
         reg, value=2.0, lemma="second", qualifier=None, label=None, read_names=READ,
-    ) is None
+    ) == ("time", 2.0)
+
 
 
 def test_a_singular_declared_pair_scales_a_singular_lemma(reg):

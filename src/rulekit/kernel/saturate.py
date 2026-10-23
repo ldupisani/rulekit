@@ -352,11 +352,12 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
 
     out: list[Fact] = []
 
-    def relation_provenance(rel: Relation) -> Provenance:
+    def relation_provenance(rel: Relation, anchor: Quantity) -> Provenance:
         return Provenance(
             source="synth/relation",
             sentence=rel.provenance.sentence,
             temporal_perspective=rel.provenance.temporal_perspective,
+            assumption=rel.provenance.assumption or anchor.provenance.assumption,
         )
 
     def compatible_anchor(rel: Relation, known: Quantity) -> bool:
@@ -818,7 +819,7 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
                     continue
                 out.append(
                     Quantity(
-                        provenance=relation_provenance(rel),
+                        provenance=relation_provenance(rel, known),
                         entity=rel.subject, entity_ref=rel.subject_ref, measure=measure, value=value, verb=rel.verb,
                         label=rel.subject_label or None,
                         owner=rel.subject_owner or None,
@@ -906,7 +907,7 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
             )
             out.append(
                 Quantity(
-                    provenance=relation_provenance(rel),
+                    provenance=relation_provenance(rel, subtype_known),
                     entity=rel.subject, entity_ref=rel.subject_ref, measure=derived_measure, value=value, verb=rel.verb,
                     measure_qualifier=rel.measure_qualifier or None,
                     owner=rel.subject_owner or None,
@@ -995,7 +996,7 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
             )
             out.append(
                 Quantity(
-                    provenance=relation_provenance(rel),
+                    provenance=relation_provenance(rel, subject_known),
                     entity=rel.subject, entity_ref=rel.subject_ref, measure=derived_standard_measure, value=value, verb=rel.verb,
                     measure_qualifier=rel.standard_qualifier or None,
                 )
@@ -1055,7 +1056,7 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
                     continue
                 out.append(
                     Quantity(
-                        provenance=relation_provenance(rel),
+                        provenance=relation_provenance(rel, known),
                         entity=rel.standard, entity_ref=rel.standard_ref, measure=measure, value=value, verb=rel.verb,
                         label=rel.standard_label or None,
                         owner=rel.standard_owner or None,

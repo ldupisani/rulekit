@@ -1,0 +1,455 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/relative-activity-durations
+  phase: read
+  description: Two named activities share one cadence; the second duration is 
+    relative to the first.
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      at_start: true
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: verb
+      cat: timed_activity_verb
+    - slot: first
+      cat: timed_activity_object
+      uncounted: true
+    - lit: for
+    - slot: duration
+      cat: duration_measure
+      counted: true
+    - lit:
+      - a
+      - per
+      - each
+      - every
+      consume_skipped: true
+    - slot: period
+      cat: duration_measure
+      uncounted: true
+    - lit: and
+    - slot: second
+      cat: timed_activity_object
+      uncounted: true
+    - lit: for
+    - slot: factor
+      type: multiplier
+    - lit: as
+    - slot: long
+      cat: elapsed_extent_adjective
+    - lit: .
+      consume_skipped: true
+  where:
+  - distinct:
+    - first
+    - second
+  - verb_roles_compatible:
+      verb: verb
+      roles:
+        actor:
+        - who
+        theme:
+        - first
+        - second
+      allow_proper_name:
+      - who
+  consumes:
+  - duration
+  - factor
+  emits:
+  - fact: batch_evidence
+    kind: activity-duration
+    position: '{who.span_start}'
+    entity: '{who}'
+    measure: '{duration}'
+    value: duration
+    fraction: factor
+    verb: '{verb}'
+    marker: '{period}'
+    container: '{first}'
+    attribute: '{second}'
+  generation_where:
+  - number_compatible:
+    - who
+    - verb
+- id: arithmetic/activity-active-cadence
+  phase: read
+  question_assumption: true
+  description: An explicit count of active subperiods per enclosing period, not 
+    a full-calendar assumption.
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      at_start: true
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: verb
+      cat: timed_activity_verb
+    - slot: active
+      cat: duration_measure
+      counted: true
+    - lit:
+      - a
+      - per
+      - each
+      - every
+      consume_skipped: true
+    - slot: period
+      cat: duration_measure
+      uncounted: true
+    - lit: .
+      consume_skipped: true
+  consumes:
+  - active
+  emits:
+  - fact: rate
+    entity: '{who}'
+    measure: '{active}'
+    value: active
+    per: '{period}'
+    verb: '{verb}'
+  where:
+  - verb_roles_compatible:
+      verb: verb
+      roles:
+        actor:
+        - who
+      allow_proper_name:
+      - who
+  generation_where:
+  - number_compatible:
+    - who
+    - verb
+asks:
+- id: ask/scheduled-activity-duration-enclosing-period
+  match:
+    question:
+    - lit: how
+    - lit: many
+    - slot: unit
+      cat: duration_measure
+    - slot: aux
+      type: auxiliary
+    - slot: who
+      type: entity
+    - slot: spend
+      cat: spend_verb
+    - slot: verb
+      cat: timed_activity_verb
+      present_participle: true
+    - lit: in
+    - lit: a
+      consume_skipped: true
+    - slot: outer
+      cat: duration_measure
+      uncounted: true
+    - lit: with
+    - slot: span
+      cat: duration_measure
+      counted: true
+  resolves:
+    consumer: scheduled-activity-duration
+    entity: '{who}'
+    verb: '{verb}'
+    measure: '{unit}'
+    span: '{span}'
+    span_value: '{span.value}'
+- id: ask/scheduled-activity-duration
+  match:
+    question:
+    - lit: how
+    - lit: many
+    - slot: unit
+      cat: duration_measure
+    - slot: aux
+      type: auxiliary
+    - slot: who
+      type: entity
+    - slot: spend
+      cat: spend_verb
+    - slot: verb
+      cat: timed_activity_verb
+      present_participle: true
+    - lit: in
+    - slot: span
+      cat: duration_measure
+      counted: true
+  resolves:
+    consumer: scheduled-activity-duration
+    entity: '{who}'
+    verb: '{verb}'
+    measure: '{unit}'
+    span: '{span}'
+    span_value: '{span.value}'
+- id: ask/scheduled-activity-duration-enclosing-period-nominal
+  match:
+    question:
+    - lit: how
+    - lit: many
+    - slot: unit
+      cat: duration_measure
+    - slot: aux
+      type: auxiliary
+    - slot: who
+      type: entity
+    - slot: spend
+      cat: spend_verb
+    - slot: verb
+      cat: timed_activity_nominal
+    - lit: in
+    - lit: a
+      consume_skipped: true
+    - slot: outer
+      cat: duration_measure
+      uncounted: true
+    - lit: with
+    - slot: span
+      cat: duration_measure
+      counted: true
+  resolves:
+    consumer: scheduled-activity-duration
+    entity: '{who}'
+    verb: '{verb}'
+    measure: '{unit}'
+    span: '{span}'
+    span_value: '{span.value}'
+- id: ask/scheduled-activity-duration-nominal
+  match:
+    question:
+    - lit: how
+    - lit: many
+    - slot: unit
+      cat: duration_measure
+    - slot: aux
+      type: auxiliary
+    - slot: who
+      type: entity
+    - slot: spend
+      cat: spend_verb
+    - slot: verb
+      cat: timed_activity_nominal
+    - lit: in
+    - slot: span
+      cat: duration_measure
+      counted: true
+  resolves:
+    consumer: scheduled-activity-duration
+    entity: '{who}'
+    verb: '{verb}'
+    measure: '{unit}'
+    span: '{span}'
+    span_value: '{span.value}'
+- id: ask/scheduled-activity-duration-direct
+  match:
+    question:
+    - lit: how
+    - lit: many
+    - slot: unit
+      cat: duration_measure
+    - slot: aux
+      type: auxiliary
+    - slot: who
+      type: entity
+    - slot: verb
+      cat: timed_activity_verb
+      bare_form: true
+    - lit: in
+    - slot: span
+      cat: duration_measure
+      counted: true
+  resolves:
+    consumer: scheduled-activity-duration
+    entity: '{who}'
+    verb: '{verb}'
+    measure: '{unit}'
+    span: '{span}'
+    span_value: '{span.value}'
+- id: ask/scheduled-activity-duration-measured-period
+  match:
+    question:
+    - lit: how
+    - lit: many
+    - slot: unit
+      cat: duration_measure
+    - slot: aux
+      type: auxiliary
+    - slot: who
+      type: entity
+    - slot: spend
+      cat: spend_verb
+    - slot: verb
+      cat: timed_activity_verb
+      present_participle: true
+    - lit: in
+    - lit: a
+      consume_skipped: true
+    - slot: span
+      cat: duration_measure
+      qualified: true
+      qualifier_cat: duration_measure
+      number: singular
+      counted: true
+  resolves:
+    consumer: scheduled-activity-duration
+    entity: '{who}'
+    verb: '{verb}'
+    measure: '{unit}'
+    span: '{span.qualifier}'
+    span_value: '{span.value}'
+- id: ask/scheduled-activity-duration-measured-period-hyphenated
+  match:
+    question:
+    - lit: how
+    - lit: many
+    - slot: unit
+      cat: duration_measure
+    - slot: aux
+      type: auxiliary
+    - slot: who
+      type: entity
+    - slot: spend
+      cat: spend_verb
+    - slot: verb
+      cat: timed_activity_verb
+      present_participle: true
+    - lit: in
+    - lit: a
+      consume_skipped: true
+    - slot: span
+      cat: duration_measure
+      qualified: true
+      qualifier_cat: duration_measure
+      number: singular
+      attributive_counted: true
+  resolves:
+    consumer: scheduled-activity-duration
+    entity: '{who}'
+    verb: '{verb}'
+    measure: '{unit}'
+    span: '{span.qualifier}'
+    span_value: '{span.value}'
+- id: ask/scheduled-activity-duration-measured-period-nominal
+  match:
+    question:
+    - lit: how
+    - lit: many
+    - slot: unit
+      cat: duration_measure
+    - slot: aux
+      type: auxiliary
+    - slot: who
+      type: entity
+    - slot: spend
+      cat: spend_verb
+    - slot: verb
+      cat: timed_activity_nominal
+    - lit: in
+    - lit: a
+      consume_skipped: true
+    - slot: span
+      cat: duration_measure
+      qualified: true
+      qualifier_cat: duration_measure
+      number: singular
+      counted: true
+  resolves:
+    consumer: scheduled-activity-duration
+    entity: '{who}'
+    verb: '{verb}'
+    measure: '{unit}'
+    span: '{span.qualifier}'
+    span_value: '{span.value}'
+- id: ask/scheduled-activity-duration-measured-period-nominal-hyphenated
+  match:
+    question:
+    - lit: how
+    - lit: many
+    - slot: unit
+      cat: duration_measure
+    - slot: aux
+      type: auxiliary
+    - slot: who
+      type: entity
+    - slot: spend
+      cat: spend_verb
+    - slot: verb
+      cat: timed_activity_nominal
+    - lit: in
+    - lit: a
+      consume_skipped: true
+    - slot: span
+      cat: duration_measure
+      qualified: true
+      qualifier_cat: duration_measure
+      number: singular
+      attributive_counted: true
+  resolves:
+    consumer: scheduled-activity-duration
+    entity: '{who}'
+    verb: '{verb}'
+    measure: '{unit}'
+    span: '{span.qualifier}'
+    span_value: '{span.value}'
+- id: ask/scheduled-activity-duration-measured-period-direct
+  match:
+    question:
+    - lit: how
+    - lit: many
+    - slot: unit
+      cat: duration_measure
+    - slot: aux
+      type: auxiliary
+    - slot: who
+      type: entity
+    - slot: verb
+      cat: timed_activity_verb
+      bare_form: true
+    - lit: in
+    - lit: a
+      consume_skipped: true
+    - slot: span
+      cat: duration_measure
+      qualified: true
+      qualifier_cat: duration_measure
+      number: singular
+      counted: true
+  resolves:
+    consumer: scheduled-activity-duration
+    entity: '{who}'
+    verb: '{verb}'
+    measure: '{unit}'
+    span: '{span.qualifier}'
+    span_value: '{span.value}'
+- id: ask/scheduled-activity-duration-measured-period-direct-hyphenated
+  match:
+    question:
+    - lit: how
+    - lit: many
+    - slot: unit
+      cat: duration_measure
+    - slot: aux
+      type: auxiliary
+    - slot: who
+      type: entity
+    - slot: verb
+      cat: timed_activity_verb
+      bare_form: true
+    - lit: in
+    - lit: a
+      consume_skipped: true
+    - slot: span
+      cat: duration_measure
+      qualified: true
+      qualifier_cat: duration_measure
+      number: singular
+      attributive_counted: true
+  resolves:
+    consumer: scheduled-activity-duration
+    entity: '{who}'
+    verb: '{verb}'
+    measure: '{unit}'
+    span: '{span.qualifier}'
+    span_value: '{span.value}'

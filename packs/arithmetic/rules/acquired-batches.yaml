@@ -618,6 +618,7 @@ variants:
       - refers
 rules:
 - id: arithmetic/acquired-batch-counted
+  question_assumption: true
   phase: read
   match:
     sentence:

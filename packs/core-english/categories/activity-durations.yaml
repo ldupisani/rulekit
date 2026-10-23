@@ -1,0 +1,69 @@
+format: rulekit/categories@1
+categories:
+  timed_activity_nominal:
+    parent: noun
+  timed_activity_verb:
+    parent: verb
+    selectional_roles:
+      actor: intentional_agent
+      theme: timed_activity_object
+  timed_activity_object:
+    parent: noun
+  musical_instrument:
+    parent: timed_activity_object
+  elapsed_extent_adjective:
+    parent: adjective
+  initiation_timing:
+    parent: adjective
+  initiation_noun:
+    parent: noun
+  elapsed_duration_verb:
+    parent: verb
+  instrument_performance_verb:
+    parent: timed_activity_verb
+    selectional_roles:
+      theme: musical_instrument
+members:
+  timed_activity_nominal:
+  - studying
+  timed_activity_verb:
+  - practice
+  - practices
+  - practicing
+  - play
+  - plays
+  - playing
+  - study
+  - studies
+  - studying
+  musical_instrument:
+  - piano
+  - violin
+  - guitar
+  timed_activity_object:
+  - book
+  - poem
+  - writing
+  elapsed_extent_adjective:
+  - long
+  initiation_timing:
+  - late
+  - early
+  initiation_noun:
+  - start
+  elapsed_duration_verb:
+  - take
+  - takes
+  instrument_performance_verb:
+  - play
+  - plays
+  - playing
+context_synonyms:
+  study_duration:
+    gate: duration_measure
+    forms:
+    - study
+    - studying
+attribute_compatibility:
+  initiation_timing:
+  - initiation_noun

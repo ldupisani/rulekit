@@ -1,0 +1,5 @@
+format: rulekit/categories@1
+categories:
+  treat: {parent: edible_quantity_object}
+members:
+  treat: [candy, "reese's", snickers, skittles]

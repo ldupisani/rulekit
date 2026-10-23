@@ -161,6 +161,10 @@ entries:
   biking: {senses: [verb], verb: {lemma: bike}}
   bill: {"senses": ["noun"], "plural": "bills"}
   bird: {senses: [noun], plural: birds}
+  birthday:
+    senses:
+    - noun
+    plural: birthdays
   blue: {senses: [adjective]}
   blueprint: {senses: [noun], plural: blueprints}
   boarding school: {senses: [noun], plural: boarding schools, lexical_phrase: true}
@@ -424,6 +428,7 @@ entries:
     - imperative
   did: {senses: [auxiliary]}
   different: {senses: [adjective]}
+  digit: {senses: [noun], plural: digits}
   dinner: {senses: [noun], plural: dinners}
   discard:
     senses:
@@ -509,6 +514,7 @@ entries:
   during: {senses: [preposition]}
   dvd: {senses: [noun], plural: dvds}
   each: {senses: [quantifier], notes: distributive; singular agreement}
+  early: {senses: [adjective]}
   earn: {senses: [verb], number: plural, verb: {lemma: earn}}
   earned: {senses: [verb], verb: {lemma: earn}}
   earning: {senses: [verb], verb: {lemma: earn}}
@@ -534,6 +540,9 @@ entries:
     senses:
     - noun
   entire: {senses: [adjective]}
+  entirely:
+    senses:
+    - adverb
   envelope: {senses: [noun], plural: envelopes}
   equally: {"senses": ["adverb"]}
   ethanol:
@@ -697,6 +706,7 @@ entries:
     - noun
     plural: groups
   guardian: {senses: [noun], plural: guardians}
+  guitar: {senses: [noun], plural: guitars}
   gummy worm: {senses: [noun], plural: gummy worms, lexical_phrase: true}
   had: {senses: [verb], verb: {lemma: have}}
   had been: {senses: [verb], verb: {lemma: be}}
@@ -844,6 +854,7 @@ entries:
   june: {senses: [noun]}
   just: {senses: [adverb]}
   key: {senses: [noun], plural: keys}
+  kilobyte: {senses: [noun], plural: kilobytes}
   kilogram: {senses: [noun], plural: [kg, kilograms]}
   kilometer: {senses: [noun], plural: [km, kilometers]}
   knew: {senses: [verb], verb: {lemma: know}}
@@ -858,6 +869,7 @@ entries:
   larger: {senses: [comparative]}
   last: {senses: [adjective, verb]}
   last name: {senses: [noun], plural: last names, lexical_phrase: true}
+  late: {senses: [adjective]}
   lawn: {senses: [noun], plural: lawns}
   leave: {senses: [verb], number: plural}
   leaves: {senses: [verb], number: singular, verb: {lemma: leave}}
@@ -891,6 +903,9 @@ entries:
   loaded: {senses: [verb], verb: {lemma: load}}
   loading: {senses: [verb], verb: {lemma: load}}
   loads: {senses: [noun, verb], verb: {lemma: load}}
+  long:
+    senses:
+    - adjective
   longer: {senses: [comparative]}
   lose: {senses: [verb], number: plural, verb: {lemma: lose}}
   loses: {senses: [verb], number: singular, verb: {lemma: lose}}
@@ -924,6 +939,15 @@ entries:
   measures: {senses: [verb], number: singular, verb: {lemma: measure}}
   measuring: {senses: [verb], verb: {lemma: measure}}
   media: {senses: [adjective]}
+  megabyte: {senses: [noun], plural: megabytes}
+  memorise: {senses: [verb], verb: {lemma: memorise}}
+  memorised: {senses: [verb], verb: {lemma: memorise}}
+  memorises: {senses: [verb], verb: {lemma: memorise}}
+  memorising: {senses: [verb], verb: {lemma: memorise}}
+  memorize: {senses: [verb], verb: {lemma: memorize}}
+  memorized: {senses: [verb], verb: {lemma: memorize}}
+  memorizes: {senses: [verb], verb: {lemma: memorize}}
+  memorizing: {senses: [verb], verb: {lemma: memorize}}
   merchandise: {senses: [noun]}
   meter:
     senses:
@@ -1148,6 +1172,11 @@ entries:
     senses:
     - noun
     plural: photographs
+  pi: {senses: [noun]}
+  piano:
+    senses:
+    - noun
+    plural: pianos
   pickle:
     senses: [noun]
     plural: pickles
@@ -1162,6 +1191,7 @@ entries:
     plural: piles
   pink: {senses: [adjective]}
   pizza: {senses: [noun], plural: pizzas}
+  piñata: {senses: [noun], plural: piñatas}
   place: {senses: [verb], number: plural}
   placed: {senses: [verb], verb: {lemma: place}}
   places: {senses: [verb], number: singular, verb: {lemma: place}}
@@ -1184,6 +1214,7 @@ entries:
   plays: {senses: [verb], verb: {lemma: play}}
   plum: {senses: [noun], plural: plums}
   plus: {senses: [operator]}
+  poem: {senses: [noun], plural: poems}
   portion: {senses: [noun], plural: portions}
   post office: {senses: [noun], plural: post offices, lexical_phrase: true}
   pound: {senses: [noun], plural: pounds}
@@ -1192,6 +1223,7 @@ entries:
   pouring: {senses: [verb], verb: {lemma: pour}}
   pours: {senses: [verb], number: singular, verb: {lemma: pour}}
   practice: {senses: [noun, verb], plural: practices}
+  practices: {senses: [noun, verb], number: singular, verb: {lemma: practice}}
   practicing: {senses: [verb], verb: {lemma: practice}}
   predict:
     senses:
@@ -1253,6 +1285,10 @@ entries:
     plural: raisins
   raising: {senses: [verb], verb: {lemma: raise}}
   ran: {senses: [verb], verb: {lemma: run}}
+  rate:
+    senses:
+    - noun
+    plural: rates
   rating: {"senses": ["noun"], "plural": "ratings"}
   ratio: {senses: [noun], plural: ratios}
   read: {senses: [verb]}
@@ -1280,6 +1316,10 @@ entries:
     - adverb
   recipe: {senses: [noun], plural: recipes}
   red: {senses: [adjective]}
+  reese's:
+    senses:
+    - noun
+    lexical_phrase: true
   reference:
     senses:
     - noun
@@ -1426,6 +1466,11 @@ entries:
     lexical_phrase: true
   science: {senses: [noun, adjective], plural: sciences}
   sea: {senses: [noun], plural: seas}
+  seashell:
+    senses:
+    - noun
+    plural: seashells
+  seashore: {senses: [noun], plural: seashores}
   season:
     senses:
     - noun
@@ -1434,6 +1479,8 @@ entries:
   second:
     senses:
     - adjective
+    - noun
+  seconds: {senses: [noun]}
   see: {senses: [verb], number: plural}
   seeing: {senses: [verb], verb: {lemma: see}}
   sees: {senses: [verb], number: singular, verb: {lemma: see}}
@@ -1460,6 +1507,10 @@ entries:
   share: {senses: [noun, verb]}
   shared: {senses: [verb], verb: {lemma: share}}
   she: {senses: [pronoun], number: singular, anaphoric_form: *feminine}
+  shell:
+    senses:
+    - noun
+    plural: shells
   shift: {senses: [noun], plural: shifts}
   ship: {senses: [noun, verb], plural: ships}
   shirt:
@@ -1488,11 +1539,21 @@ entries:
   sixth:
     senses:
     - adjective
+  size:
+    senses:
+    - noun
+    plural: sizes
+  skittles:
+    senses:
+    - noun
   slice: {senses: [noun], plural: slices}
   slower: {senses: [comparative]}
   small: {senses: [adjective]}
   smaller: {senses: [comparative]}
   snake: {senses: [noun], plural: snakes}
+  snickers:
+    senses:
+    - noun
   snowflake: {senses: [noun], plural: snowflakes}
   so: {senses: [conjunction]}
   sock: {senses: [noun], plural: socks}
@@ -1519,7 +1580,7 @@ entries:
     senses:
     - adjective
   stamp: {senses: [noun], plural: stamps}
-  start: {senses: [verb], number: plural}
+  start: {senses: [noun, verb], number: plural}
   started: {senses: [verb], verb: {lemma: start}}
   starting: {senses: [verb], verb: {lemma: start}}
   starts: {senses: [verb], number: singular, verb: {lemma: start}}
@@ -1588,6 +1649,7 @@ entries:
   themselves: {senses: [pronoun], anaphoric_form: *neutral}
   then: {senses: [adverb]}
   there: {senses: [existential]}
+  thereafter: {senses: [adverb]}
   they: {senses: [pronoun], number: plural, anaphoric_form: *neutral}
   thing: {senses: [noun], plural: things}
   third:
@@ -1625,6 +1687,7 @@ entries:
   travel: {senses: [verb], number: plural}
   traveled: {senses: [verb], verb: {lemma: travel}}
   travels: {senses: [verb], number: singular, verb: {lemma: travel}}
+  treat: {senses: [noun], plural: treats}
   tree: {senses: [noun], plural: trees}
   trick-or-treating: {"senses": ["noun"]}
   trick-or-tricking: {"senses": ["noun"], "notes": "Attested misspelling of the Halloween activity; kept explicit,
@@ -1658,6 +1721,7 @@ entries:
   unhelpful:
     senses:
     - adjective
+  unicorn: {senses: [noun], plural: unicorns}
   uniform:
     senses:
     - adjective
@@ -1692,6 +1756,7 @@ entries:
   vial: {senses: [noun], plural: vials}
   vinegar: {senses: [noun]}
   violet: {senses: [adjective]}
+  violin: {senses: [noun], plural: violins}
   violinist: {senses: [noun], plural: violinists}
   volume: {senses: [noun], plural: volumes}
   vs: {senses: [preposition]}
@@ -1747,6 +1812,7 @@ entries:
   wondering: {senses: [verb], verb: {lemma: wonder}}
   wonders: {senses: [verb], number: singular, verb: {lemma: wonder}}
   wool: {senses: [noun]}
+  word: {senses: [noun], plural: words}
   wore: {senses: [verb], verb: {lemma: wear}}
   work: {senses: [verb, noun]}
   workday: {senses: [noun], plural: workdays}
@@ -1757,6 +1823,7 @@ entries:
   would: {senses: [modal]}
   write: {senses: [verb], number: plural, verb: {lemma: write}}
   writes: {senses: [verb], number: singular, verb: {lemma: write}}
+  writing: {senses: [noun]}
   wrote: {senses: [verb], verb: {lemma: write}}
   year: {senses: [noun], plural: years}
   yellow: {senses: [adjective]}

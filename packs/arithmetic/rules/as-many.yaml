@@ -27,7 +27,8 @@ templates:
               - opt:
                   - {slot: pp_det, cat: possessive_determiner}
               - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
-        ending: []
+        ending:
+          - opt: [{slot: standard_tail_verb, type: verb, finite_form: true}]
         actors: [who, std]
         themes: [item]
         proper_names: [who, std]
@@ -37,6 +38,8 @@ templates:
         measure_qualifier: null
         standard_qualifier: null
         guards:
+          - same_lemma: [verb, standard_tail_verb]
+          - slot_not_category: {slot: standard_tail_verb, cat: non_quantity_object_verb}
           - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
           - bound_requires_category: {bound: appos_det, bound_cat: third_person_possessive_determiner, slot: who, cat: quantity_event_participant, allow_proper_name: true}
           - modifier_host_compatible: {modifier: pp_prep, host: verb, object: pp_obj, host_type: verb, nominal_host: item}

@@ -394,7 +394,22 @@ def _purchase_total(
     expr = purchase_total_expression(lines, discounts[0] if discounts else None)
     if expr is None:
         return None
-    return evaluate(expr, {}, log, source="purchase-total")
+    total = evaluate(expr, {}, log, source="purchase-total")
+    # A legacy quantity × price calculation can consume the same purchase
+    # represented by an explicit expense. Record only an exact event/item
+    # correspondence, never a globally matching numeric value.
+    from .model import Expenditure
+    for q in buys:
+        price = prices[q.measure]
+        matches = [e for e in store.by_kind(Expenditure)
+                   if e.entity == q.entity and e.item == q.measure
+                   and (e.qualifier or "") == (q.measure_qualifier or "")
+                   and e.provenance.sentence == q.provenance.sentence
+                   and e.event == q.occurrence
+                   and e.value == q.value * price.value]
+        if len(matches) == 1:
+            log.consumed_expenditure_keys.add(matches[0].key())
+    return total
 
 
 def _unit_price_from_total(

@@ -1,9 +1,11 @@
-"""Forward item-class anaphora in actual, comparison-connected clauses.
+"""Forward item-class anaphora in comparison-connected clauses.
 
 This is not universal noun coreference. A qualified comparison establishes an
 item class for its participants and predicate. A later bare counted object
 may refer to that class only when the prior context leaves one interpretation.
-No amount, nearest-mention choice, future qualifier, or ask supplies identity.
+Actual comparisons can also identify an item in a question assumption; its
+hypothetical provenance remains intact. No amount, nearest-mention choice,
+future qualifier, or ask supplies identity.
 """
 
 from dataclasses import replace
@@ -14,14 +16,15 @@ from .reference_identity import ReferenceIdentity, reference_from_unit, referenc
 from .temporal import FUTURE, normalize_perspective
 
 
-def _actual_clause(reading, predicate, reg):
-    if reading is None or reading.assumption:
+def _clause_predicate(reading, predicate, reg, *, comparison=False):
+    if reading is None or comparison and reading.assumption:
         return None
     verbs = [unit for unit in reading.units if unit.sense() == "verb"]
-    if len(verbs) != 1 or verbs[0].features.get("lemma") != predicate:
+    if (len(verbs) not in ((1, 2) if comparison else (1,))
+            or any(unit.features.get("lemma") != predicate for unit in verbs)):
         return None
-    # The first supported class is an unscoped, single actual clause. These
-    # structural exclusions also keep explicit whole totals out of anaphora.
+    # Comparisons may repeat the predicate in their standard clause. Counted
+    # targets remain single clauses; explicit whole totals never become parts.
     excluded = ("group_total_marker", "group_total_quantifier", "negation",
                 "deictic_temporal_marker", "named_calendar_period", "time_measure")
     if any(unit.sense() in ("modal", "conjunction") or any(
@@ -85,25 +88,29 @@ def bind_item_classes(store, readings, reg, log):
         return
     by_sentence = {reading.sentence_index: reading for reading in readings}
     clauses = {}
-    def actual(source, predicate):
-        key = (source.sentence, predicate)
+    def eligible(source, predicate, comparison):
+        key = (source, predicate, comparison)
         if key not in clauses:
-            clauses[key] = _actual_clause(by_sentence.get(source.sentence), predicate, reg)
+            reading = by_sentence.get(source.sentence)
+            clauses[key] = (
+                _clause_predicate(reading, predicate, reg, comparison=comparison)
+                if reading is not None and reading.assumption == source.assumption else None
+            )
         return clauses[key]
 
     store.item_reference_clauses = frozenset(
         fact.provenance for fact in store.facts if isinstance(fact, (Quantity, Relation))
-        and actual(fact.provenance, fact.verb) is not None
+        and eligible(fact.provenance, fact.verb, isinstance(fact, Relation)) is not None
         and normalize_perspective(fact.provenance.temporal_perspective, reg) != FUTURE)
     pool = reference_pool(store)
     quantities = store.by_kind(Quantity)
     for quantity in quantities:
         if (quantity.measure_qualifier or quantity.item_reference is not None
-                or quantity.time is not None or quantity.provenance.assumption
+                or quantity.time is not None
                 or quantity.provenance.distributive
                 or quantity.provenance.source.startswith("synth/")):
             continue
-        predicate = actual(quantity.provenance, quantity.verb)
+        predicate = eligible(quantity.provenance, quantity.verb, False)
         if predicate is None:
             continue
         subject, item = _bound(predicate, "subject"), _bound(predicate, "dobj")
@@ -147,7 +154,7 @@ def project_item_reference(quantity, store):
              and link.item.resolved and link.item.head == quantity.measure.split("[", 1)[0]
              and len(link.item.qualifiers) == 1 and not link.item.owner and not link.item.label
              and link.participant == quantity.entity_ref and link.predicate == quantity.verb
-             and link.target == quantity.provenance and not link.target.assumption
+             and link.target == quantity.provenance
              and link.target in store.item_reference_clauses
              and set(link.antecedents) <= store.item_reference_clauses
              and quantity.time is None and not link.target.distributive

@@ -1,5 +1,9 @@
 format: rulekit/categories@1
 categories:
+  excursion_noun:
+    parent: noun
+  social_occasion:
+    parent: noun
   attendance_verb:
     parent: verb
   public_competition:
@@ -7,6 +11,10 @@ categories:
   competition_subject:
     parent: noun
 members:
+  excursion_noun:
+  - trip
+  social_occasion:
+  - party
   attendance_verb:
   - attend
   public_competition:

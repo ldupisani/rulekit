@@ -1,0 +1,391 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/owned-occasion-context
+  phase: read
+  description: An owned social occasion is nonquantitative context, including a 
+    contracted copula.
+  match:
+    sentence:
+    - slot: dummy
+      cat: impersonal_subject_pronoun
+      at_start: true
+    - slot: cop
+      cat: contracted_copula_clitic
+    - slot: occasion
+      cat: social_occasion
+      possessed: true
+      uncounted: true
+    - lit: .
+      consume_skipped: true
+  satisfies:
+    dummy:
+    - refers
+    cop:
+    - owner
+    - owned
+  emits:
+  - fact: batch_evidence
+    kind: occasion-context
+    entity: '{occasion.owner}'
+    measure: '{occasion}'
+    value: 0
+    position: '{occasion.span_start}'
+- id: arithmetic/fixed-purchase-line
+  phase: read
+  description: One actual purchased item with an explicit whole-item price.
+  match:
+    sentence:
+    - opt:
+      - slot: poss
+        cat: possessive_determiner
+    - slot: buyer
+      type: entity
+      common_noun_cat: intentional_agent
+    - slot: buy
+      cat: purchase
+      finite_form: true
+    - slot: item
+      cat: purchase_item
+      uncounted: true
+      number: singular
+    - lit: for
+    - slot: price
+      cat: currency_measure
+      counted: true
+    - lit: .
+      consume_skipped: true
+  satisfies:
+    poss:
+    - refers
+  consumes:
+  - price
+  emits:
+  - fact: expenditure
+    entity: '{buyer}'
+    item: '{item}'
+    qualifier: '{item.qualifier}'
+    value: price
+    measure: '{price}'
+    verb: '{buy}'
+    position: '{price.uid}'
+    event: '{buy.uid}'
+    basis: purchase
+  - fact: quantity
+    entity: '{buyer}'
+    measure: '{item}'
+    value: 1
+    verb: '{buy}'
+    measure_qualifier: '{item.qualifier}'
+    owner: '{buyer.owner}'
+  - fact: price
+    item: '{item}'
+    value: price
+    verb: '{buy}'
+    qualifier: '{item.qualifier}'
+- id: arithmetic/package-purchase-line
+  phase: read
+  description: Explicit per-package prices keep the package count separate from 
+    its contents.
+  match:
+    sentence:
+    - slot: buyer
+      cat: discourse_subject_group_pronoun
+      at_start: true
+    - slot: buy
+      cat: purchase
+      finite_form: true
+    - slot: count
+      cat: quantity_container
+      counted: true
+    - lit: of
+    - slot: item
+      cat: purchase_item
+      uncounted: true
+    - lit: for
+    - slot: price
+      cat: currency_measure
+      counted: true
+    - lit: per
+    - slot: unit
+      cat: quantity_container
+      uncounted: true
+  where:
+  - same_lemma:
+    - count
+    - unit
+  consumes:
+  - count
+  - price
+  satisfies:
+    buyer:
+    - refers
+  emits:
+  - fact: expenditure
+    entity: ''
+    item: '{item}'
+    qualifier: '{item.qualifier}'
+    quantity: count
+    unit_price: price
+    measure: '{price}'
+    verb: buy
+    position: '{price.uid}'
+    event: '{buy.uid}'
+    quantity_position: '{count.uid}'
+    lot_measure: '{count}'
+    lot_quantity: count
+    lot_position: '{count.uid}'
+    basis: purchase
+- id: arithmetic/package-purchase-line-continuation
+  phase: read
+  description: Explicit per-package prices keep the package count separate from 
+    its contents.
+  match:
+    sentence:
+    - lit: ','
+      consume_skipped: true
+    - opt:
+      - lit: and
+    - slot: count
+      cat: quantity_container
+      counted: true
+    - lit: of
+    - slot: item
+      cat: purchase_item
+      uncounted: true
+    - lit: for
+    - slot: price
+      cat: currency_measure
+      counted: true
+    - lit: per
+    - slot: unit
+      cat: quantity_container
+      uncounted: true
+  where:
+  - same_lemma:
+    - count
+    - unit
+  consumes:
+  - count
+  - price
+  satisfies: {}
+  emits:
+  - fact: expenditure
+    entity: ''
+    item: '{item}'
+    qualifier: '{item.qualifier}'
+    quantity: count
+    unit_price: price
+    measure: '{price}'
+    verb: buy
+    position: '{price.uid}'
+    event: '{count.uid}'
+    quantity_position: '{count.uid}'
+    lot_measure: '{count}'
+    lot_quantity: count
+    lot_position: '{count.uid}'
+    basis: purchase
+- id: arithmetic/package-purchase-line-named
+  phase: read
+  description: Explicit per-package prices keep the package count separate from 
+    its contents.
+  match:
+    sentence:
+    - slot: buyer
+      type: name
+      at_start: true
+    - slot: buy
+      cat: purchase
+      finite_form: true
+    - slot: count
+      cat: quantity_container
+      counted: true
+    - lit: of
+    - slot: item
+      cat: purchase_item
+      uncounted: true
+    - lit: for
+    - slot: price
+      cat: currency_measure
+      counted: true
+    - lit: per
+    - slot: unit
+      cat: quantity_container
+      uncounted: true
+  where:
+  - same_lemma:
+    - count
+    - unit
+  consumes:
+  - count
+  - price
+  emits:
+  - fact: expenditure
+    entity: '{buyer}'
+    item: '{item}'
+    qualifier: '{item.qualifier}'
+    quantity: count
+    unit_price: price
+    measure: '{price}'
+    verb: buy
+    position: '{price.uid}'
+    event: '{buy.uid}'
+    quantity_position: '{count.uid}'
+    lot_measure: '{count}'
+    lot_quantity: count
+    lot_position: '{count.uid}'
+    basis: purchase
+- id: arithmetic/owned-occasion-context-copula
+  phase: read
+  description: An owned social occasion is nonquantitative context, including a 
+    contracted copula.
+  match:
+    sentence:
+    - slot: dummy
+      cat: impersonal_subject_pronoun
+      at_start: true
+    - slot: cop
+      cat: singular_copula
+    - slot: occasion
+      cat: social_occasion
+      possessed: true
+      uncounted: true
+    - lit: .
+      consume_skipped: true
+  satisfies:
+    dummy:
+    - refers
+  emits:
+  - fact: batch_evidence
+    kind: occasion-context
+    entity: '{occasion.owner}'
+    measure: '{occasion}'
+    value: 0
+    position: '{occasion.span_start}'
+- id: arithmetic/purchased-container-and-contents
+  phase: read
+  description: An explicitly priced container with unquantified packing context;
+    the contents are priced independently.
+  match:
+    sentence:
+    - opt:
+      - slot: poss
+        cat: possessive_determiner
+    - slot: buyer
+      type: entity
+      common_noun_cat: intentional_agent
+    - slot: buy
+      cat: purchase
+      finite_form: true
+    - slot: item
+      cat: quantity_container
+      uncounted: true
+      number: singular
+    - lit: for
+    - slot: price
+      cat: currency_measure
+      counted: true
+    - lit: and
+    - slot: fill
+      cat: container_fill_participle
+      finite_form: true
+    - slot: target
+      cat: impersonal_subject_pronoun
+    - lit: with
+    - lit: all
+    - lit: of
+    - slot: contents_owner
+      cat: possessive_determiner
+    - slot: contents
+      cat: purchase_collection_noun
+      uncounted: true
+      qualified: true
+      qualifier_cat: preference_attribute
+    - lit: .
+      consume_skipped: true
+  satisfies:
+    poss:
+    - refers
+    target:
+    - refers
+    contents_owner:
+    - refers
+  consumes:
+  - price
+  emits:
+  - fact: expenditure
+    entity: '{buyer}'
+    item: '{item}'
+    qualifier: '{item.qualifier}'
+    value: price
+    measure: '{price}'
+    verb: '{buy}'
+    position: '{price.uid}'
+    event: '{buy.uid}'
+    basis: purchase
+  - fact: batch_evidence
+    kind: purchase-contents-context
+    entity: ''
+    measure: '{contents}'
+    value: 0
+    position: '{fill.span_start}'
+  - fact: quantity
+    entity: '{buyer}'
+    measure: '{item}'
+    value: 1
+    verb: '{buy}'
+    measure_qualifier: '{item.qualifier}'
+    owner: '{buyer.owner}'
+  - fact: price
+    item: '{item}'
+    value: price
+    verb: '{buy}'
+    qualifier: '{item.qualifier}'
+asks:
+- id: ask/purchased-item-and-collection-total
+  match:
+    question:
+    - lit: how
+    - lit: much
+    - slot: aux
+      type: auxiliary
+    - slot: item
+      cat: purchase_item
+      uncounted: true
+    - lit: and
+    - slot: collection
+      cat: purchase_collection_noun
+      uncounted: true
+    - slot: cost
+      cat: price_verb
+    - slot: total
+      cat: group_total_marker
+  resolves:
+    consumer: closed-purchase-basket
+    item: '{item}'
+    qualifier: '{item.qualifier}'
+    collection: '{collection}'
+- id: ask/complete-purchase-basket-total
+  match:
+    question:
+    - lit: how
+    - lit: much
+    - slot: aux
+      type: auxiliary
+    - slot: scope
+      cat: universal_item_reference
+    - slot: cost
+      cat: price_verb
+    - opt:
+      - opt:
+        - slot: total_prep
+          cat: group_total_preposition
+      - slot: total
+        cat: group_total_marker
+  where:
+  - bound_requires_category: {bound: total_prep, slot: total, cat: prepositional_group_total_marker}
+  satisfies:
+    total_prep: [object]
+    scope: [refers]
+  resolves:
+    consumer: closed-purchase-basket
+    scope: all

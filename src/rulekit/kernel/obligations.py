@@ -843,6 +843,23 @@ def disambiguate(reading: Reading, reg: Registry) -> Reading:
     for u in ambiguous:
         senses = u.senses()
         index = reading.units.index(u)
+        if ("adjective" in senses
+                and reg.attrs.get(u.features.get("fold", ""), {}).get("ordinal_index") is not None
+                and index + 1 < len(reading.units)
+                and "noun" in reading.units[index + 1].senses()):
+            # Ordinal position modifies the following noun, even when the
+            # same spelling independently names a duration unit.
+            options.append(["adjective"])
+            continue
+        if ("noun" in senses and index > 0
+                and reading.units[index - 1].sense() == "rate"
+                and reg.word_in_category(u.features.get("lemma", u.features.get("fold", "")), "duration_measure")
+                and (index + 1 == len(reading.units)
+                     or "noun" not in reading.units[index + 1].senses())):
+            # A terminal denominator is a unit, whereas an ordinal before
+            # another noun remains eligible to modify that noun.
+            options.append(["noun"])
+            continue
         if ("interrogative" in senses and "quantifier" in senses and index == 1
                 and reading.units[0].sense() == "interrogative"
                 and index + 1 < len(reading.units)

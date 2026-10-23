@@ -1,0 +1,66 @@
+format: rulekit/categories@1
+categories:
+  progress_measure:
+    parent: noun
+  process_extent_attribute:
+    parent: noun
+  progressive_process_verb:
+    parent: verb
+  process_remainder_adverb:
+    parent: adverb
+  completion_adverb:
+    parent: adverb
+  rate_frame_noun:
+    parent: noun
+  digital_extent_measure:
+    parent: progress_measure
+  digital_transfer_process:
+    parent: progressive_process_verb
+    selectional_roles:
+      actor: information_quantity_object
+      theme: digital_extent_measure
+  fluid_transfer_process:
+    parent: progressive_process_verb
+    selectional_roles:
+      actor: measurement_container
+      theme: volume_measure
+  motion_process:
+    parent: progressive_process_verb
+    selectional_roles:
+      actor: motion_participant
+      theme: length_measure
+members:
+  progress_measure:
+  - megabyte
+  - kilobyte
+  - liter
+  - meter
+  process_extent_attribute:
+  - size
+  - length
+  progressive_process_verb:
+  - download
+  - downloads
+  - fill
+  - fills
+  - travel
+  - travels
+  process_remainder_adverb:
+  - thereafter
+  completion_adverb:
+  - entirely
+  - completely
+  rate_frame_noun:
+  - rate
+  digital_extent_measure:
+  - megabyte
+  - kilobyte
+  digital_transfer_process:
+  - download
+  - downloads
+  fluid_transfer_process:
+  - fill
+  - fills
+  motion_process:
+  - travel
+  - travels

@@ -313,12 +313,6 @@ entries:
     treadmill:
         senses:
             - noun
-    treat:
-        senses:
-            - noun
-    treats:
-        senses:
-            - noun
     treehouse:
         senses:
             - noun
@@ -723,10 +717,6 @@ entries:
     wooden:
         senses:
             - adjective
-    word:
-        senses:
-            - noun
-        plural: words
     workplace:
         senses:
             - noun
@@ -747,9 +737,6 @@ entries:
         senses:
             - verb
     writer:
-        senses:
-            - noun
-    writing:
         senses:
             - noun
     yard:
