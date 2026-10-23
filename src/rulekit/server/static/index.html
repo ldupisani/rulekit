@@ -15,7 +15,6 @@
     <button id="view-reading" class="on">reading</button
     ><button id="view-generate">generate</button
     ><button id="view-reviews">reviews</button
-    ><button id="view-campaign">campaign</button
     ><button id="view-semantic">semantic field</button
     ><button id="view-field">deictic field</button
     ><button id="view-proof">proof</button>
@@ -397,10 +396,6 @@
     <!-- The project's human review history. Edits and deletes append
          corrections to the append-only ledger; nothing is rewritten. -->
     <div id="reviews" class="hidden"></div>
-
-    <!-- Human promotion decisions for isolated mining candidates. Candidate
-         manifests are immutable; decisions append to a central ledger. -->
-    <div id="campaign" class="hidden"></div>
 
     <!-- Typed propositions grouped by epistemic role. This remains a view over
          the one FactStore; it does not run a second inference path. -->

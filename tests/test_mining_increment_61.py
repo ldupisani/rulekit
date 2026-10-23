@@ -3,7 +3,7 @@ event conjuncts ("sold 5 last week and 7 this week").
 
 An event verb's dobj obligation only binds the FIRST conjunct in a
 sentence (the pre-existing, general conjunction-handling gap named in
-docs/HANDOFF.md). Increments 11/35/45 recovered NOUN-bearing siblings for
+docs/methodology.md). Increments 11/35/45 recovered NOUN-bearing siblings for
 purchase/state/event verbs. This candidate is the sibling for a conjunct
 whose item noun is fully ELIDED: a bare, unmerged count value, optionally
 trailing a bare temporal modifier ("this week", "last month" — the

@@ -896,8 +896,9 @@ Do NOT schedule look #6 off conversion count alone.
 
 ## Phase A — breadth-first premise-reader baseline (2026-07-20)
 
-Phase A of `docs/delphi-learnings-plan.md` is complete. It is measurement
-only: no rule, consumer, corpus, snapshot, or TEST state changed. The
+The implemented logic foundation is documented in `docs/logic-arithmetic.md`.
+This historical section records measurement only: no rule, consumer, corpus,
+snapshot, or TEST state changed. The
 machine-readable evidence is `folio-blocker-baseline.json`; it contains only
 DEV IDs/labels and aggregates, never copied TEST data.
 

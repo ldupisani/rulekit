@@ -27,6 +27,8 @@ templates:
           - {lit: ., consume_skipped: true}
       where:
         - distinct: [who, std]
+        - number_compatible: [who, verb]
+        - number_compatible: [std, tail]
         - {parameter: guards}
       consumes: {parameter: operands}
       satisfies: {parameter: satisfaction}
@@ -63,7 +65,7 @@ variants:
       satisfaction:
         n: [quantifies]
       measure: '{item}'
-      measure_qualifier: null
+      measure_qualifier: '{item.qualifier}'
       factor: 1
       offset: n * sign(dir)
   - id: arithmetic/comparison-repeated-predicate-multiple
@@ -89,7 +91,7 @@ variants:
       operands: [k]
       satisfaction: {}
       measure: '{item}'
-      measure_qualifier: null
+      measure_qualifier: '{item.qualifier}'
       factor: k
       offset: 0
   - id: arithmetic/comparison-repeated-predicate-fraction
@@ -137,7 +139,7 @@ variants:
       satisfaction:
         n: [quantifies]
       measure: '{item}'
-      measure_qualifier: null
+      measure_qualifier: '{item.qualifier}'
       factor: 1
       offset: n * sign(dir)
   - id: arithmetic/comparison-repeated-predicate-multiple-auxiliary
@@ -162,7 +164,7 @@ variants:
       operands: [k]
       satisfaction: {}
       measure: '{item}'
-      measure_qualifier: null
+      measure_qualifier: '{item.qualifier}'
       factor: k
       offset: 0
   - id: arithmetic/comparison-repeated-predicate-fraction-auxiliary

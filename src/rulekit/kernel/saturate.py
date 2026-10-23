@@ -2469,8 +2469,8 @@ def _container_contents_synth(store: FactStore, reg: Registry, log: ArithmeticLo
     - CR and H must share the same `time` (mixed-time arithmetic is
       unbuilt elsewhere in this kernel and stays unbuilt here).
 
-    USE-GATED, not existence-gated (the look #4-#7 invariant, docs/
-    HANDOFF.md): emitted at `sentence=-1`, exactly the SynthRule datalog
+    USE-GATED, not existence-gated (docs/composition.md): emitted at
+    `sentence=-1`, exactly the SynthRule datalog
     convention (see `_apply_synth_rule` above) — never a real premise
     sentence index. The derived VALUE (H.value*CR.value) is a NEW number
     that was never itself stated in the text (unlike relation-to-quantity's

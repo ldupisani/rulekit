@@ -1,9 +1,0 @@
-name = "mining-integrator"
-description = "Sequentially integrates only constitution-passed, human-approved, machine-gated Mining v2 candidates and re-runs the complete standing gate."
-developer_instructions = """
-Read `/Users/louis/Development/rulekit/.agents/protocols/mining-integrator.md`
-in full before acting and follow it as the canonical protocol. Also obey
-`.agents/protocols/standing-gate.md` and `AGENTS.md`. You own only the supplied
-staging worktree. You are not alone in the codebase: never revert others'
-changes. Return only the requested structured JSON.
-"""

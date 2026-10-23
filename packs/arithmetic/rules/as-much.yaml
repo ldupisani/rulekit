@@ -14,7 +14,7 @@ templates:
         guards:
           - slot_not_category: {slot: k, cat: predeterminer_multiplier}
         consumes: []
-      offset: {tokens: [], value: 0.0, consumes: []}
+      offset: {tokens: [], value: 0.0, consumes: [], satisfies: {}}
       possessive_category: possessive_determiner
       actor_guards: []
       verb_guards:
@@ -47,6 +47,7 @@ templates:
       where:
         - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
         - {number_compatible: [who, verb]}
+        - slot_not_category: {slot: verb, cat: literal_containment_verb}
         - {parameter: ratio.guards}
         - {parameter: actor_guards}
         - verb_roles_compatible:
@@ -64,6 +65,7 @@ templates:
         - {distinct: [who, std]}
       generation_where:
         - bound_rejects_category: {bound: pp_det, slot: pp_obj, cat: timeperiod}
+      satisfies: {parameter: offset.satisfies}
       emits:
         - fact: relation
           subject: '{who}'
@@ -84,7 +86,7 @@ templates:
         guards:
           - slot_not_category: {slot: k, cat: predeterminer_multiplier}
         consumes: []
-      offset: {tokens: [], value: 0.0, consumes: []}
+      offset: {tokens: [], value: 0.0, consumes: [], satisfies: {}}
       possessive_category: possessive_determiner
     rule:
       phase: read
@@ -105,6 +107,7 @@ templates:
       where:
         - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
         - {number_compatible: [who, verb]}
+        - slot_not_category: {slot: verb, cat: literal_containment_verb}
         - {parameter: ratio.guards}
         - verb_roles_compatible:
             verb: verb
@@ -114,6 +117,7 @@ templates:
         - slot_not_category: {slot: verb, cat: container_capacity_placement_verb}
         - slot_not_category: {slot: who, cat: non_quantity_holder}
         - {distinct: [who, std]}
+      satisfies: {parameter: offset.satisfies}
       emits:
         - fact: relation
           subject: '{who}'
@@ -134,7 +138,7 @@ templates:
         guards:
           - slot_not_category: {slot: k, cat: predeterminer_multiplier}
         consumes: []
-      offset: {tokens: [], value: 0.0, consumes: []}
+      offset: {tokens: [], value: 0.0, consumes: [], satisfies: {}}
       possessive_category: possessive_determiner
       verb_guards:
         - slot_not_category: {slot: verb, cat: frame_prepositional_verb}
@@ -168,6 +172,7 @@ templates:
       where:
         - bound_requires_type: {bound: appos_role, slot: std_seen, type: proper_name}
         - {number_compatible: [who, verb]}
+        - slot_not_category: {slot: verb, cat: literal_containment_verb}
         - {parameter: ratio.guards}
         - verb_roles_compatible:
             verb: verb
@@ -184,6 +189,7 @@ templates:
         - {unbound: [std_seen]}
       generation_where:
         - bound_rejects_category: {bound: pp_det, slot: pp_obj, cat: timeperiod}
+      satisfies: {parameter: offset.satisfies}
       emits:
         - fact: relation
           subject: '{who}'
@@ -198,7 +204,7 @@ templates:
 
   possessive-mass-standard:
     parameters:
-      offset: {tokens: [], value: 0.0, consumes: []}
+      offset: {tokens: [], value: 0.0, consumes: [], satisfies: {}}
     rule:
       phase: read
       match:
@@ -211,6 +217,7 @@ templates:
       where:
         - {number_compatible: [who, verb]}
         - distinct_from_owner: {entity: who, possessed: std}
+      satisfies: {parameter: offset.satisfies}
       emits:
         - fact: relation
           subject: '{who}'
@@ -269,6 +276,7 @@ variants:
           - {lit: than}
         value: n * sign(dir)
         consumes: [n]
+        satisfies: {n: [quantifies]}
       possessive_category: animate_possessive_determiner
       actor_guards:
         - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: animate_subject_verb, role_cat:
@@ -327,6 +335,7 @@ variants:
           - {lit: than}
         value: n * sign(dir)
         consumes: [n]
+        satisfies: {n: [quantifies]}
 
   - id: arithmetic/times-as-much-elided-standard
     template: elided-mass-standard
@@ -378,3 +387,4 @@ variants:
           - {lit: than}
         value: n * sign(dir)
         consumes: [n]
+        satisfies: {n: [quantifies]}

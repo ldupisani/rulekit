@@ -289,6 +289,7 @@ entries:
   collect:
     senses:
     - verb
+    number: plural
   collected:
     senses:
     - verb
@@ -297,6 +298,7 @@ entries:
   collects:
     senses:
     - verb
+    number: singular
     verb:
       lemma: collect
   color: {senses: [noun], plural: colors}
@@ -548,9 +550,9 @@ entries:
   ethanol:
     senses:
     - noun
-  evaporate: {senses: [verb]}
+  evaporate: {senses: [verb], number: plural}
   evaporated: {senses: [verb], verb: {lemma: evaporate}}
-  evaporates: {senses: [verb], verb: {lemma: evaporate}}
+  evaporates: {senses: [verb], number: singular, verb: {lemma: evaporate}}
   every: {senses: [quantifier]}
   everybody: {senses: [pronoun]}
   everyone: {senses: [pronoun]}

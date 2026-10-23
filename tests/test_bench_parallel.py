@@ -1,6 +1,6 @@
 """Parallel bench must be byte-identical to serial.
 
-Every gate in the campaign is a snapshot comparison, so if fanning items out
+Regression gates use snapshot comparisons, so if fanning items out
 over processes perturbed ordering or content by one byte, every baseline in
 flight would be silently invalidated. The bar is not "it's faster" — it is
 "the snapshot is the same".

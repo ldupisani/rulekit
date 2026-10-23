@@ -761,7 +761,8 @@ Typical commands from a development checkout:
 
 Maintain this guide when a YAML contract changes. Update architecture only
 when responsibility or data flow changes; keep per-question history and
-validation counts in the handoff, focused examples, or campaign records.
+validation evidence in tests and benchmark snapshots, and report check results
+with the change.
 
 Scoped proportional calculations also retain their population and role evidence:
 

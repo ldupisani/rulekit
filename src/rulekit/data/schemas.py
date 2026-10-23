@@ -2336,7 +2336,7 @@ class DatasetDef(StrictModel):
     parquet: str
     question: str = "question"
     answer: str = "answer"
-    # TYPED GOLD (docs/difg-corpus-plan.md). Absent (the default) => today's
+    # TYPED GOLD (docs/corpora.md). Absent (the default) => today's
     # float path, byte-identical: the loader parses "#### <n>" to a bare float and
     # skips any row it cannot. `typed` => the loader classifies the gold payload
     # STRUCTURALLY into a harness.firewall.TypedGold, so a gold like "68.04 kg",

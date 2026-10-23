@@ -23,7 +23,7 @@ CURATED = ROOT / "projects" / "curated"
 
 EXPECTED_PATHS = {
     "arithmetic/anchored-relation": {
-        (9,): ("standard_tail_verb",),
+        (9, 1): ("standard_tail_item",),
         (10,): ("conjunction_seen",),
     },
     "arithmetic/anchored-relation-fully-elided": {
@@ -167,7 +167,7 @@ def test_g5l_profiles_the_complete_unbound_branch_class() -> None:
 
     assert set(rules) == set(EXPECTED_PATHS)
     assert sentinels == {
-        "standard_tail_verb": 1,
+        "standard_tail_item": 1,
         "conjunction_seen": 1,
         "direct_std_seen": 4,
         "item_seen": 1,

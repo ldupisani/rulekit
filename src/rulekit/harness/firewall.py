@@ -25,7 +25,7 @@ _GOLD = re.compile(r"####\s*([-+]?[\d,]*\.?\d+)")
 
 @dataclass(frozen=True)
 class TypedGold:
-    """A gold that is not a bare float (docs/difg-corpus-plan.md, Phase 0).
+    """A gold that is not a bare float (docs/corpora.md, Typed gold).
 
     Only 44.5% of the difg corpus's answers are bare numbers; the rest are
     quantity+unit ("68.04 kg"), verdicts, money, percents, entities and sets. A

@@ -7,9 +7,10 @@ There is no LLM in the runtime path.
 
 This document describes the application, its boundaries, and where extensions
 belong. For file formats, rule syntax, category relationships, and generation
-contracts, use the [YAML reference](yaml-reference.md). For current work and
-validation results, use [HANDOFF.md](HANDOFF.md); for the development policy,
-use [CLAUDE.md](../CLAUDE.md) and [methodology.md](methodology.md).
+contracts, use the [YAML reference](yaml-reference.md). The
+[reference index](README.md) links to implemented features and design
+principles. Development policy lives in [CLAUDE.md](../CLAUDE.md), with
+validation described in [methodology.md](methodology.md).
 
 ## System map
 
@@ -52,8 +53,8 @@ semantic roles, conversions, constants, and sentence constructions. Python
 implements reusable operations on that data, not lists of words or branches
 for individual questions.
 
-Authoring is separate from inference. A generated sentence, a human judgment,
-or a campaign approval cannot become a runtime fact by itself. Generation
+Authoring is separate from inference. A generated sentence or a human judgment
+cannot become a runtime fact by itself. Generation
 uses the ordinary reader and solver to observe behavior; review records never
 train a probabilistic model or silently modify a pack.
 
@@ -200,7 +201,7 @@ time, holder, purpose, unit, or completeness conditions.
 ## Designer and authoring workflow
 
 The local Designer exposes reading traces, facts, gaps, semantic/deictic/proof
-views, YAML editing, generation, reviews, and an optional campaign queue.
+views, YAML editing, generation, and reviews.
 The [YAML reference](yaml-reference.md) is available from its editor, together
 with live JSON schemas for the running code.
 
@@ -223,11 +224,10 @@ it is not a new human verdict. Tombstones and evidence exclusions control
 which records participate without rewriting history. Generation support,
 reader matching, a solver commitment, and human validity are different claims.
 
-Campaign review is a separate, explicitly requested workflow: immutable
-candidate revisions, exact fingerprints, human promotion decisions and
-machine gates. Ordinary supplied-question development does not require it.
-See the [generation plan](generation-and-annotation-plan.md) and
-[mining plan](gsm8k-mining-v2-plan.md) for their product/process details.
+The [workbench reference](authoring-workbench.md) describes implemented
+generation, review, coverage, and the location of historical campaign records.
+Automated mining and its candidate promotion workflow are retired.
+User-selected questions use the same runtime and regression harness directly.
 
 ## Evaluation, snapshots, and firewall
 

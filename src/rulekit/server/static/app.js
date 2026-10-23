@@ -37,10 +37,6 @@ const state = {
   reviewTotal: 0,
   reviewSort: { key: "timestamp", dir: "desc" },
   editingReview: null,   // id of the row being corrected
-  campaignReviews: [],
-  campaignShowLanded: false,
-  campaignRunner: { active: false },
-  displayedProjectCandidate: null,
   editorSaveBusy: false,
 };
 
@@ -187,27 +183,8 @@ function setStatus(text, cls) {
 
 /* ---------- project / file tree ---------- */
 
-function activeCampaignCandidateId() {
-  return state.campaignRunner?.active
-    ? state.campaignRunner.candidate_id
-    : null;
-}
-
-function campaignRunnerOwns(candidateId) {
-  return activeCampaignCandidateId() === candidateId;
-}
-
-function campaignRunnerPath(suffix) {
-  const candidateId = activeCampaignCandidateId();
-  if (!candidateId) return null;
-  return `/api/campaign/runner/${encodeURIComponent(candidateId)}${suffix}`;
-}
-
-function renderProjectDocuments(p, candidateId = null) {
-  state.displayedProjectCandidate = candidateId;
-  $("project-name").textContent = candidateId
-    ? `${p.name} · isolated ${candidateId}`
-    : p.name;
+function renderProjectDocuments(p) {
+  $("project-name").textContent = p.name;
   $("fingerprint").textContent = p.fingerprint;
   const tree = $("file-tree");
   tree.replaceChildren();
@@ -224,9 +201,7 @@ function renderProjectDocuments(p, candidateId = null) {
   }
   state.currentDoc = null;
   $("editor").value = "";
-  $("editor-title").textContent = candidateId
-    ? `isolated candidate · ${candidateId}`
-    : "editor";
+  $("editor-title").textContent = "editor";
   $("save-result").textContent = "";
   $("lint-box").replaceChildren();
   window.RulekitEditor?.refresh();
@@ -255,10 +230,9 @@ async function loadProject() {
 async function openDoc(path, node) {
   document.querySelectorAll("#file-tree .file.active").forEach((n) => n.classList.remove("active"));
   if (node) node.classList.add("active");
-  const runnerPath = campaignRunnerPath("/doc");
   const doc = await api(
     "GET",
-    `${runnerPath || "/api/doc"}?path=${encodeURIComponent(path)}`,
+    `/api/doc?path=${encodeURIComponent(path)}`,
   );
   if (doc.detail) {
     setStatus(doc.detail, "err");
@@ -276,16 +250,15 @@ function updateSaveRetestState() {
   $("save-btn").disabled = state.editorSaveBusy;
   $("save-retest-btn").disabled =
     state.editorSaveBusy || !state.currentDoc || !state.candidate
-    || !state.candidate.target_rule || Boolean(activeCampaignCandidateId());
+    || !state.candidate.target_rule;
 }
 
 async function saveCurrentDoc({ rerunTrace = true } = {}) {
   if (!state.currentDoc) return;
   setStatus("validating…");
-  const runnerPath = campaignRunnerPath("/doc");
   const res = await api(
     "PUT",
-    runnerPath || "/api/doc",
+    "/api/doc",
     { path: state.currentDoc, content: $("editor").value },
   );
   const out = $("save-result");
@@ -304,11 +277,9 @@ async function saveCurrentDoc({ rerunTrace = true } = {}) {
   for (const f of res.lint) {
     lintBox.append(el("div", `lint-item ${f.level}`, `[${f.code}] ${f.message}`));
   }
-  if (!runnerPath) {
-    await loadGenerationRules();
-    await loadGenerationAsks();
-    await loadGenerationExploration();
-  }
+  await loadGenerationRules();
+  await loadGenerationAsks();
+  await loadGenerationExploration();
   setStatus(`saved · ${res.lint.length} lint finding(s)`, "ok");
   if (rerunTrace && $("trace-input").value.trim()) runTrace();  // live re-read
   return res;
@@ -331,9 +302,8 @@ async function saveDoc() {
 async function runTrace(interpretation = null) {
   const text = $("trace-input").value.trim();
   if (!text) return;
-  const runnerPath = campaignRunnerPath("/trace");
-  setStatus(runnerPath ? "reading in isolated candidate…" : "reading…");
-  const t = await api("POST", runnerPath || "/api/trace", {
+  setStatus("reading…");
+  const t = await api("POST", "/api/trace", {
     text,
     interpretation,
     reference_year: new Date().getFullYear(),
@@ -663,8 +633,7 @@ async function promoteReadingSentence(sentence, ruleId, button) {
   const subject = ruleId || "sentence meaning";
   setStatus(`opening ${subject} for human review…`);
   try {
-    const runnerPath = campaignRunnerPath("/generation/from-reading");
-    const candidate = await api("POST", runnerPath || "/api/generation/from-reading", {
+    const candidate = await api("POST", "/api/generation/from-reading", {
       rule_id: ruleId,
       sentence: sentence.text,
     });
@@ -1238,15 +1207,13 @@ function renderField(t) {
 }
 
 function setView(which) {
-  for (const view of ["reading", "generate", "reviews", "campaign", "semantic", "field", "proof"]) {
+  for (const view of ["reading", "generate", "reviews", "semantic", "field", "proof"]) {
     $(view).classList.toggle("hidden", which !== view);
     $(`view-${view}`).classList.toggle("on", which === view);
   }
   document.body.classList.toggle("generate-mode", which === "generate");
   document.body.classList.toggle("reviews-mode", which === "reviews");
-  document.body.classList.toggle("campaign-mode", which === "campaign");
   if (which === "reviews") loadReviews();
-  if (which === "campaign") loadCampaignReviews();
   if (which === "generate") loadGenerationExploration();
 }
 
@@ -1754,10 +1721,6 @@ async function deleteReview(r) {
 }
 
 function reviewSource(r) {
-  const target = r.target_rule || r.ask_scenario?.target_ask;
-  if (target && activeCampaignCandidateId()) {
-    return state.campaignRunner.project?.sources?.[target] || r.source_ref;
-  }
   return r.source_ref;
 }
 
@@ -1768,697 +1731,6 @@ async function openReviewInReader(r) {
   const source = reviewSource(r);
   if (source) await openGenerationSource(source);
   await runTrace();
-}
-
-/* ---------- campaign promotion reviews ----------
-
-   A manifest is an immutable snapshot from one candidate commit. The
-   central Designer owns the review ledger. One foreign worktree may run in a
-   separate candidate process; only Reading, source documents, explicit YAML
-   saves, and pinned retests are routed to it. */
-
-const CAMPAIGN_SPECIMEN_VERDICTS = ["valid", "invalid", "unclear"];
-const CAMPAIGN_CANDIDATE_VERDICTS = [
-  ["approved", "Approve"],
-  ["changes_requested", "Request changes"],
-  ["unclear", "Unclear"],
-];
-
-async function loadCampaignReviews() {
-  const [payload, runner] = await Promise.all([
-    api("GET", "/api/campaign/reviews"),
-    api("GET", "/api/campaign/runner"),
-  ]);
-  if (payload.detail) {
-    setStatus(`campaign queue unavailable: ${payload.detail}`, "err");
-    return;
-  }
-  state.campaignReviews = payload.candidates || [];
-  state.campaignRunner = runner.detail ? { active: false } : runner;
-  if (
-    state.campaignRunner.active
-    && state.campaignRunner.project
-    && state.displayedProjectCandidate !== state.campaignRunner.candidate_id
-  ) {
-    renderProjectDocuments(
-      state.campaignRunner.project,
-      state.campaignRunner.candidate_id,
-    );
-  } else if (
-    !state.campaignRunner.active
-    && state.displayedProjectCandidate
-  ) {
-    await loadProject();
-  }
-  renderCampaignReviews();
-}
-
-function campaignStatusLabel(status) {
-  return String(status || "awaiting_review").replaceAll("_", " ");
-}
-
-function campaignEvidenceLine(label, value) {
-  const row = el("div", "campaign-evidence-line");
-  row.append(el("span", "campaign-evidence-label", label), value);
-  return row;
-}
-
-function campaignRuntimeState(row) {
-  const candidateId = row.manifest.candidate_id;
-  if (row.landing) {
-    return { available: false, isolated: false, label: "landed on staging" };
-  }
-  if (campaignRunnerOwns(candidateId)) {
-    return { available: true, isolated: true, label: "isolated candidate active" };
-  }
-  if (activeCampaignCandidateId()) {
-    return {
-      available: false,
-      isolated: false,
-      label: `isolated ${activeCampaignCandidateId()} is active`,
-    };
-  }
-  if (row.runtime_available) {
-    return { available: true, isolated: false, label: "current runtime" };
-  }
-  return { available: false, isolated: false, label: "isolated runner required" };
-}
-
-async function startCampaignRunner(candidateId) {
-  setStatus(`starting isolated ${candidateId}…`);
-  const payload = await api(
-    "POST",
-    `/api/campaign/runner/${encodeURIComponent(candidateId)}/start`,
-  );
-  if (payload.detail) {
-    const current = await api("GET", "/api/campaign/runner");
-    state.campaignRunner = current.detail ? { active: false } : current;
-    setStatus(payload.detail, "err");
-    renderCampaignReviews();
-    return;
-  }
-  state.campaignRunner = payload;
-  renderProjectDocuments(payload.project, candidateId);
-  setStatus(`${candidateId}: isolated review runtime ready`, "ok");
-  renderCampaignReviews();
-}
-
-async function stopCampaignRunner() {
-  const candidateId = activeCampaignCandidateId();
-  if (!candidateId) return;
-  setStatus(`stopping isolated ${candidateId}…`);
-  const payload = await api("POST", "/api/campaign/runner/stop");
-  if (payload.detail) {
-    setStatus(payload.detail, "err");
-    return;
-  }
-  state.campaignRunner = { active: false };
-  await loadProject();
-  await loadCampaignReviews();
-  setStatus(`${candidateId}: isolated review runtime stopped`, "ok");
-}
-
-function openCampaignSpecimenInReader(specimen) {
-  $("trace-input").value = specimen.sentence;
-  setView("reading");
-  runTrace();
-}
-
-function campaignSpecimenSource(specimen, candidateId) {
-  if (campaignRunnerOwns(candidateId) && specimen.target_rule) {
-    return state.campaignRunner.project?.sources?.[specimen.target_rule]
-      || specimen.source_ref;
-  }
-  return specimen.source_ref;
-}
-
-async function retestCampaignSpecimen(specimen, candidateId, result) {
-  if (!specimen.retest) return;
-  result.replaceChildren(el("span", "dim", "retesting pinned sentence…"));
-  const path = campaignRunnerOwns(candidateId)
-    ? `/api/campaign/runner/${encodeURIComponent(candidateId)}/retest`
-    : "/api/generation/retest";
-  const replay = await api("POST", path, {
-    ...specimen.retest,
-    sentence: specimen.sentence,
-  });
-  if (replay.detail) {
-    result.replaceChildren(el("span", "campaign-retest-error", replay.detail));
-    setStatus(`pinned retest failed: ${replay.detail}`, "err");
-    return;
-  }
-  if (replay.sentence !== specimen.sentence) {
-    result.replaceChildren(el(
-      "span",
-      "campaign-retest-error",
-      "candidate changed the pinned sentence",
-    ));
-    setStatus("candidate changed the pinned sentence", "err");
-    return;
-  }
-  const rules = replay.actual_rule_ids?.join(" · ") || "no premise rule";
-  result.replaceChildren(
-    campaignEvidenceLine("Status", el("code", "", replay.target_status)),
-    campaignEvidenceLine("Rules", el("code", "", rules)),
-    campaignEvidenceLine(
-      "Facts",
-      el("code", "", `${replay.facts?.length || 0} surviving`),
-    ),
-  );
-  setStatus(`${candidateId}: pinned specimen replayed`, "ok");
-}
-
-function campaignGatePanel(row) {
-  const manifest = row.manifest;
-  const gate = row.machine_gate;
-  const panel = el("section", `campaign-machine-gate ${row.machine_gate_status}`);
-  const head = el("div", "campaign-machine-gate-head");
-  head.append(
-    el("div", "pane-title", "Machine promotion gate"),
-    el(
-      "span",
-      `campaign-gate-status ${row.machine_gate_status}`,
-      campaignStatusLabel(row.machine_gate_status),
-    ),
-  );
-  const run = el("button", "primary", gate ? "Run exact gate again" : "Run exact gate");
-  run.type = "button";
-  run.disabled = !campaignRunnerOwns(manifest.candidate_id);
-  run.title = run.disabled
-    ? "Start this candidate's isolated review runtime before running its gate."
-    : "Replay evidence, run the parallel full suite, and compare every standing DEV snapshot.";
-  run.onclick = async () => {
-    run.disabled = true;
-    run.textContent = "Running exact full + DEV gates…";
-    setStatus(`${manifest.candidate_id}: running serialized promotion gate…`);
-    const payload = await api(
-      "POST",
-      `/api/campaign/gates/${encodeURIComponent(manifest.candidate_id)}`,
-    );
-    if (!payload.ok) {
-      setStatus(payload.detail || "machine gate failed to execute", "err");
-      run.disabled = false;
-      run.textContent = gate ? "Run exact gate again" : "Run exact gate";
-      return;
-    }
-    setStatus(
-      `${manifest.candidate_id}: machine gate ${payload.gate.passed ? "passed" : "failed"}`,
-      payload.gate.passed ? "ok" : "err",
-    );
-    await loadCampaignReviews();
-  };
-  head.append(run);
-  panel.append(head);
-  if (!gate) {
-    panel.append(el(
-      "div",
-      "dim",
-      "Not run for this exact commit and registry fingerprint. Approval remains unavailable.",
-    ));
-    return panel;
-  }
-  panel.append(el(
-    "div",
-    "campaign-gate-meta mono",
-    `baseline ${gate.baseline_commit.slice(0, 12)} · ${gate.specimens.length} specimen replay(s) · ${gate.reviews.length} live review replay(s) · ${gate.standing.length} standing check(s)`,
-  ));
-  const failures = el("div", "campaign-gate-results");
-  for (const replay of gate.specimens) {
-    failures.append(el(
-      "div",
-      `campaign-gate-result ${replay.passed ? "passed" : "failed"}`,
-      `${replay.specimen_id}: ${replay.passed ? "trace unchanged" : replay.error || `changed ${replay.changed_sections.join(", ")}`}`,
-    ));
-  }
-  for (const replay of gate.reviews) {
-    failures.append(el(
-      "div",
-      `campaign-gate-result ${replay.replayed ? "passed" : "failed"}`,
-      `${replay.review_id}: ${replay.replayed ? `replayed (${replay.verdict})` : replay.error}`,
-    ));
-  }
-  for (const check of gate.standing) {
-    const summary = check.diff?.verdict
-      ? ` · ${check.diff.verdict} · net ${check.diff.net >= 0 ? "+" : ""}${check.diff.net}`
-      : "";
-    failures.append(el(
-      "div",
-      `campaign-gate-result ${check.passed ? "passed" : "failed"}`,
-      `${check.id}: ${check.passed ? "pass" : "fail"}${summary}`,
-    ));
-  }
-  panel.append(failures);
-  return panel;
-}
-
-function renderCampaignReviews() {
-  const box = $("campaign");
-  box.replaceChildren();
-
-  const landedCount = state.campaignReviews.filter(
-    (row) => Boolean(row.landing) || row.status === "landed",
-  ).length;
-  const visibleReviews = state.campaignShowLanded
-    ? state.campaignReviews
-    : state.campaignReviews.filter(
-      (row) => !row.landing && row.status !== "landed",
-    );
-  const head = el("div", "campaign-head");
-  const landedToggle = el(
-    "button",
-    "campaign-landed-toggle",
-    state.campaignShowLanded
-      ? `Hide landed (${landedCount})`
-      : `Show landed (${landedCount})`,
-  );
-  landedToggle.disabled = landedCount === 0;
-  landedToggle.onclick = () => {
-    state.campaignShowLanded = !state.campaignShowLanded;
-    renderCampaignReviews();
-  };
-  head.append(
-    el("div", "pane-title", "Mining candidate promotion queue"),
-    el(
-      "span",
-      "dim",
-      `${visibleReviews.length} active · ${landedCount} landed · decisions are append-only and pinned to commit + fingerprint`,
-    ),
-    landedToggle,
-  );
-  box.append(head);
-
-  if (!state.campaignReviews.length) {
-    box.append(el(
-      "div",
-      "campaign-empty",
-      "No mining candidates are awaiting promotion review. The v2 orchestrator will publish immutable review manifests here.",
-    ));
-    return;
-  }
-
-  if (!visibleReviews.length) {
-    box.append(el(
-      "div",
-      "campaign-empty",
-      "All published candidates have landed. Use Show landed to inspect their frozen promotion evidence.",
-    ));
-    return;
-  }
-
-  for (const row of visibleReviews) {
-    box.append(campaignCandidateCard(row));
-  }
-}
-
-function campaignCandidateCard(row) {
-  const manifest = row.manifest;
-  const previous = row.latest_review;
-  const runtime = campaignRuntimeState(row);
-  const card = el("section", "campaign-card");
-
-  const header = el("div", "campaign-card-head");
-  const title = el("div");
-  title.append(
-    el("div", "campaign-class", manifest.class_name),
-    el("div", "campaign-id mono", manifest.candidate_id),
-  );
-  const status = el(
-    "span",
-    `campaign-status ${row.status}`,
-    campaignStatusLabel(row.status),
-  );
-  header.append(title, status);
-  card.append(header);
-
-  const metadata = el("div", "campaign-metadata mono");
-  metadata.append(
-    el("span", "", manifest.branch),
-    el("span", "", manifest.commit.slice(0, 12)),
-    el("span", "", manifest.registry_fingerprint.slice(0, 16)),
-    el(
-      "span",
-      runtime.available ? "runtime-ready" : "runtime-isolated",
-      runtime.label,
-    ),
-  );
-  card.append(metadata);
-  if (
-    !row.landing
-    && (!row.runtime_available || campaignRunnerOwns(manifest.candidate_id))
-  ) {
-    const runnerControls = el("div", "campaign-runner-controls");
-    if (campaignRunnerOwns(manifest.candidate_id)) {
-      const stop = el("button", "", "Stop isolated runner");
-      stop.onclick = stopCampaignRunner;
-      runnerControls.append(
-        stop,
-        el(
-          "span",
-          "dim",
-          "Reading and YAML edits are routed only to this candidate worktree.",
-        ),
-      );
-    } else if (!row.runtime_available) {
-      const start = el(
-        "button",
-        "primary",
-        activeCampaignCandidateId()
-          ? "Switch isolated runner"
-          : "Start isolated review",
-      );
-      start.onclick = async () => {
-        start.disabled = true;
-        await startCampaignRunner(manifest.candidate_id);
-      };
-      runnerControls.append(start);
-    }
-    card.append(runnerControls);
-  }
-  card.append(campaignEvidenceLine(
-    "Mechanism",
-    el("span", "", manifest.mechanism),
-  ));
-  if (manifest.class_evidence) {
-    const evidence = manifest.class_evidence;
-    const evidenceSummary = evidence.mode === "product"
-      ? `product-led manual class · no corpus yield claimed · ${evidence.product_rationale}`
-      : `${evidence.expected_solved}/${evidence.pool_frequency} expected yield · ` +
-        `${evidence.walked_item_ids.length} walked item id(s)`;
-    card.append(campaignEvidenceLine(
-      evidence.mode === "product" ? "Product class" : "DEV class",
-      el(
-        "span",
-        "",
-        `${evidenceSummary} · ` +
-          `${evidence.premise_mechanism} ${evidence.ask_mechanism}`,
-      ),
-    ));
-  }
-  if (manifest.generation_contract) {
-    card.append(campaignEvidenceLine(
-      "Generated contract",
-      el(
-        "code",
-        "",
-        [
-          ...(manifest.generation_contract.premise_rules || []),
-          ...(manifest.generation_contract.ask_rules || []),
-        ].join(" · ") || "no targets",
-      ),
-    ));
-  }
-  if (manifest.constitution_review) {
-    card.append(campaignEvidenceLine(
-      "Constitution",
-      el(
-        "span",
-        manifest.constitution_review.verdict === "pass"
-          ? "runtime-ready"
-          : "campaign-retest-error",
-        `${manifest.constitution_review.verdict} · ` +
-          (manifest.constitution_review.notes || "read-only review recorded"),
-      ),
-    ));
-  }
-  if (manifest.risks?.length) {
-    const risks = el("ul", "campaign-risks");
-    for (const risk of manifest.risks) risks.append(el("li", "", risk));
-    card.append(campaignEvidenceLine("Risks", risks));
-  }
-  if (row.stale_review_count) {
-    card.append(el(
-      "div",
-      "campaign-stale",
-      `${row.stale_review_count} earlier decision${row.stale_review_count === 1 ? " is" : "s are"} preserved but stale for this commit/fingerprint.`,
-    ));
-  }
-  if (row.landing) {
-    card.append(campaignEvidenceLine(
-      "Staging landing",
-      el(
-        "span",
-        "runtime-ready mono",
-        `${row.landing.staging_branch} · increment ${row.landing.increment} · ${row.landing.staging_commit.slice(0, 12)}`,
-      ),
-    ));
-  }
-  card.append(campaignGatePanel(row));
-
-  const previousBySpecimen = new Map(
-    (previous?.specimens || []).map((item) => [item.specimen_id, item]),
-  );
-  const specimenVerdicts = new Map();
-  const specimenList = el("div", "campaign-specimens");
-  for (const specimen of manifest.specimens) {
-    const prior = previousBySpecimen.get(specimen.id);
-    if (prior) specimenVerdicts.set(specimen.id, prior.verdict);
-    specimenList.append(campaignSpecimenCard(
-      specimen,
-      manifest.candidate_id,
-      runtime,
-      prior,
-      (verdict) => {
-        specimenVerdicts.set(specimen.id, verdict);
-        updateCampaignDecisionState();
-      },
-    ));
-  }
-  card.append(specimenList);
-
-  const review = el("section", "campaign-decision");
-  review.append(el("div", "pane-title", "Promotion decision"));
-  let candidateVerdict = previous?.verdict || null;
-  const verdicts = el("div", "campaign-decision-verdicts");
-  for (const [value, label] of CAMPAIGN_CANDIDATE_VERDICTS) {
-    const button = el(
-      "button",
-      candidateVerdict === value ? "selected" : "",
-      label,
-    );
-    button.dataset.verdict = value;
-    if (row.landing) {
-      button.disabled = true;
-      button.title = "This exact candidate revision has already landed on staging.";
-    } else if (value === "approved" && !row.machine_gate?.passed) {
-      button.disabled = true;
-      button.title = "Approval requires a passing machine gate for this exact revision.";
-    }
-    button.onclick = () => {
-      candidateVerdict = value;
-      verdicts.querySelectorAll("button").forEach((node) => {
-        node.classList.toggle("selected", node.dataset.verdict === value);
-      });
-      updateCampaignDecisionState();
-    };
-    verdicts.append(button);
-  }
-  review.append(verdicts);
-
-  const note = el("textarea", "campaign-note");
-  note.maxLength = 4000;
-  note.placeholder = "Why should this candidate advance, change, or remain unclear?";
-  note.value = previous?.note || "";
-  note.disabled = Boolean(row.landing);
-  review.append(note);
-
-  const actions = el("div", "campaign-decision-actions");
-  const save = el("button", "primary", "Record promotion decision");
-  const result = el("span", "dim");
-  if (previous) {
-    result.textContent =
-      `Recorded ${campaignStatusLabel(previous.verdict).toLowerCase()} · ` +
-      `${(previous.timestamp || "").replace("T", " ").slice(0, 19)}`;
-  }
-  actions.append(save, result);
-  review.append(actions);
-  card.append(review);
-
-  function decisionIsComplete() {
-    const values = manifest.specimens.map((item) => specimenVerdicts.get(item.id));
-    if (!candidateVerdict || values.some((value) => !value)) return false;
-    if (candidateVerdict === "approved") {
-      return row.machine_gate?.passed
-        && values.every((value) => value === "valid");
-    }
-    if (candidateVerdict === "changes_requested") {
-      return values.some((value) => value === "invalid");
-    }
-    return values.some((value) => value === "unclear");
-  }
-
-  function decisionMatchesPrevious() {
-    if (!previous) return false;
-    if (candidateVerdict !== previous.verdict) return false;
-    if (note.value !== (previous.note || "")) return false;
-    return manifest.specimens.every((item) => {
-      const prior = previousBySpecimen.get(item.id);
-      return prior?.verdict === specimenVerdicts.get(item.id)
-        && !(prior.defects || []).length
-        && !(prior.note || "");
-    });
-  }
-
-  function updateCampaignDecisionState() {
-    const unchanged = decisionMatchesPrevious();
-    save.disabled = Boolean(row.landing) || !decisionIsComplete() || unchanged;
-    save.textContent = row.landing
-      ? "Landed on staging"
-      : unchanged
-      ? "Decision recorded"
-      : "Record promotion decision";
-    save.title = row.landing
-      ? "This exact candidate revision has already landed and its promotion evidence is frozen."
-      : unchanged
-      ? "This exact decision is already recorded. Change a verdict or note to append a revision."
-      : save.disabled
-      ? "Review every specimen. Approval requires all valid; changes require an invalid specimen; unclear requires an unclear specimen."
-      : "Append this decision to the central campaign review ledger.";
-  }
-
-  note.addEventListener("input", updateCampaignDecisionState);
-
-  save.onclick = async () => {
-    save.disabled = true;
-    result.textContent = "recording…";
-    const payload = await api(
-      "POST",
-      `/api/campaign/reviews/${encodeURIComponent(manifest.candidate_id)}`,
-      {
-        candidate_id: manifest.candidate_id,
-        candidate_commit: manifest.commit,
-        registry_fingerprint: manifest.registry_fingerprint,
-        verdict: candidateVerdict,
-        specimens: manifest.specimens.map((item) => ({
-          specimen_id: item.id,
-          verdict: specimenVerdicts.get(item.id),
-          defects: [],
-          note: "",
-        })),
-        note: note.value,
-      },
-    );
-    if (!payload.ok) {
-      result.textContent = payload.detail || "decision rejected";
-      setStatus(result.textContent, "err");
-      updateCampaignDecisionState();
-      return;
-    }
-    setStatus(
-      `${manifest.candidate_id}: ${campaignStatusLabel(candidateVerdict)} recorded`,
-      "ok",
-    );
-    await loadCampaignReviews();
-  };
-  updateCampaignDecisionState();
-  return card;
-}
-
-function campaignSpecimenCard(
-  specimen,
-  candidateId,
-  runtime,
-  previous,
-  onVerdict,
-) {
-  const card = el("article", "campaign-specimen");
-  const head = el("div", "campaign-specimen-head");
-  head.append(
-    el("span", `campaign-kind ${specimen.kind}`, specimen.kind.replaceAll("_", " ")),
-    el("span", "campaign-specimen-title", specimen.title),
-    el("span", "campaign-specimen-id mono", specimen.id),
-  );
-  card.append(head, el("div", "campaign-sentence", specimen.sentence));
-  card.append(campaignEvidenceLine(
-    "Expected",
-    el("span", "", specimen.expectation),
-  ));
-
-  const actual = el("div", "campaign-actual");
-  if (specimen.actual_rule_ids?.length) {
-    actual.append(campaignEvidenceLine(
-      "Rules",
-      el("code", "", specimen.actual_rule_ids.join(" · ")),
-    ));
-  }
-  if (specimen.answer) {
-    actual.append(campaignEvidenceLine(
-      "Answer",
-      el(
-        "code",
-        "",
-        `${specimen.answer.kind}:${JSON.stringify(specimen.answer.value)} · ${specimen.answer.reason || ""}`,
-      ),
-    ));
-  }
-  if (specimen.facts?.length) {
-    const facts = el("div", "campaign-facts");
-    for (const fact of specimen.facts) {
-      facts.append(el(
-        "code",
-        "campaign-fact",
-        `${fact.type} ${JSON.stringify(fact.fields)}`,
-      ));
-    }
-    actual.append(campaignEvidenceLine("Facts", facts));
-  }
-  if (specimen.deficiencies?.length) {
-    actual.append(campaignEvidenceLine(
-      "Gaps",
-      el("span", "campaign-gaps", specimen.deficiencies.join(" · ")),
-    ));
-  }
-  card.append(actual);
-
-  const controls = el("div", "campaign-specimen-controls");
-  let retestResult = null;
-  if (runtime.available) {
-    const inspect = el("button", "", "Inspect in Reading");
-    inspect.onclick = () => openCampaignSpecimenInReader(specimen);
-    controls.append(inspect);
-    const source = campaignSpecimenSource(specimen, candidateId);
-    if (source) {
-      controls.append(generationSourceControl(source, "Open target YAML"));
-    }
-    if (specimen.retest) {
-      const retest = el("button", "", "Retest pinned");
-      retestResult = el("div", "campaign-retest-result");
-      retest.onclick = async () => {
-        retest.disabled = true;
-        try {
-          await retestCampaignSpecimen(specimen, candidateId, retestResult);
-        } finally {
-          retest.disabled = false;
-        }
-      };
-      controls.append(retest);
-    }
-  } else {
-    const unavailable = el(
-      "span",
-      "campaign-runner-needed",
-      runtime.label,
-    );
-    controls.append(unavailable);
-  }
-
-  const verdicts = el("div", "campaign-specimen-verdicts");
-  let selected = previous?.verdict || null;
-  for (const value of CAMPAIGN_SPECIMEN_VERDICTS) {
-    const button = el("button", selected === value ? "selected" : "", value);
-    button.dataset.verdict = value;
-    button.onclick = () => {
-      selected = value;
-      verdicts.querySelectorAll("button").forEach((node) => {
-        node.classList.toggle("selected", node.dataset.verdict === value);
-      });
-      onVerdict(value);
-    };
-    verdicts.append(button);
-  }
-  controls.append(verdicts);
-  card.append(controls);
-  if (retestResult) card.append(retestResult);
-  return card;
 }
 
 /* ---------- generation and human review ---------- */
@@ -4327,7 +3599,6 @@ $("baseline-btn").onclick = setBaseline;
 $("view-reading").onclick = () => setView("reading");
 $("view-generate").onclick = () => setView("generate");
 $("view-reviews").onclick = () => setView("reviews");
-$("view-campaign").onclick = () => setView("campaign");
 $("view-semantic").onclick = () => setView("semantic");
 $("view-field").onclick = () => setView("field");
 $("view-proof").onclick = () => setView("proof");

@@ -1,7 +1,7 @@
 # rulekit
 
-**Continuing a session? Read `docs/HANDOFF.md` first** — the active direction,
-current baseline, next action, and hard-won invariants.
+**Reference index: [`docs/README.md`](docs/README.md)** — implemented features,
+architecture, testing methodology, and project design principles.
 
 Grammar-driven reading & reasoning engine. Small deterministic kernel, declarative YAML rule
 packs, no LLM at runtime. Architecture: `docs/architecture.md`.
@@ -21,24 +21,24 @@ YAML authoring reference: `docs/yaml-reference.md`. Measurement discipline:
    gates (minimum-structure: literals are grammatical skeleton only), synthesizers, and the
    generic consumers in `answer.py`. A rule must be justified by a CLASS of problems, named at
    ship time.
-3. **Every behavior change needs regression evidence.** Direct question implementation uses
-   the proportionate checks below; explicit mining uses baseline snapshot → change →
+3. **Every behavior change needs regression evidence.** Question implementation uses
+   the proportionate checks below; broader regression comparisons use baseline snapshot → change →
    `rulekit diff` (0 BROKE, 0 DECL→WRONG) → dev-holdout delta (0 new wrongs), alongside
    synthetic unit tests. Never put a GSM8K string in `tests/`. TEST looks require explicit
    authorization; a TEST precision drop reverts the change no matter how good DEV looked.
 4. **Precision before coverage.** A confident-wrong is worse than a decline. New capability may
    only move an item declined → {correct | declined}, never → wrong.
 
-## Direct question implementation — default for supplied questions
+## Question implementation — user-selected questions
 
 When the user asks to implement a specific question or a supplied list of
 questions, work directly in the current checkout, preserving unrelated changes.
 The default target is `projects/curated`: supplied questions must work there
 without relying on vocabulary or rules loaded only by benchmark projects.
-This is ordinary product development, **not Mining v2**, even if the question
-comes from GSM8K. Do not automatically create a mining batch, candidate
-worktrees, manifests, agent review stages, Designer promotion decisions, or
-sequential integration gates.
+Work from questions the user selects. Automated mining skills and agent
+workflows are retired; do not select benchmark questions or start mining
+batches autonomously. Keep implementation and validation proportionate to
+the supplied question's general capability.
 
 1. Trace the supplied question end to end and identify the missing general
    capability. Reuse existing grammar, category relationships, facts, and
@@ -56,29 +56,17 @@ sequential integration gates.
 4. Run focused affected tests, the curated suite, and relevant lint. Expand
    validation according to the change's reach: shared kernel changes warrant
    the full synthetic suite and relevant DEV regression comparisons. Do not
-   automatically run the entire mining matrix or repeat unchanged gates.
+   automatically run every corpus gate or repeat unchanged gates.
 5. Check the supplied question locally and report the result, limitations, and
    checks performed. Do not claim independent benchmark generalization from it.
 
 Protected TEST/generalization looks, committing, and pushing remain separate
 user-authorized actions. Do not stop or restart the running Designer server.
 
-## Batch mining (`/mine`) — explicit requests only
-
-Use this workflow only when the user explicitly asks for mining or a mining
-campaign. A request to support a particular question is not such a request.
-
-`/mine [count]` runs example-led Mining v2 as a multi-agent batch
-(`.claude/skills/mine/SKILL.md`): a GSM8K DEV scout selects one declining
-`dev-train` item per requested candidate → parallel isolated
-implementers with generated evidence → constitution review → immutable
-manifests in the Designer. It then STOPS for human review and the exact machine
-gate. `/mine --integrate-approved` resumes only exact approved/machine-passed
-revisions and lands them sequentially onto `mining/batch-<date>`, with a full
-re-gate per increment. It never merges `main` or touches TEST. Protected looks
-remain manual, one per landed increment in commit order; a precision drop
-reverts that commit, and only survivors are fast-forwarded by hand.
-`/mine --smoke` exercises the same paused pipeline with a no-op candidate.
+Semantic-projection integration remains parked. Do not inspect protected
+COGS/PMB rows, resume that campaign, seal the external semantic-generator
+candidate, or build an importer without explicit user direction. The
+implemented boundary is documented in `docs/semantic-projection.md`.
 
 ## Commands
 
@@ -96,7 +84,7 @@ uv run rulekit --project projects/mawps bench --slice dev --jobs 8      # 3rd �
 uv run rulekit --project projects/scibench bench --slice dev --jobs 8   # 4th — SciBench (ATTEMPTED since 2026-07; standard bar: 0 BROKE, 0 DECL→WRONG)
 uv run rulekit --project projects/folio bench --slice dev --jobs 8      # 5th — FOLIO LOGIC safety, the only NON-arithmetic gate (the sole want-0-commits gate)
 uv run rulekit --project projects/cogs bench --slice dev-train --jobs 8 # semantic-projection DEV worklist (COGS gold graphs)
-uv run rulekit --project projects/gsm8k stats                          # the mining worklists
+uv run rulekit --project projects/gsm8k stats                          # DEV coverage diagnostics
 uv run rulekit --project projects/gsm8k lint [--category NAME]         # overlaps, blast radius
 uv run rulekit --project projects/gsm8k serve                          # visual designer
 ```
@@ -129,7 +117,7 @@ uv run rulekit --project projects/gsm8k serve                          # visual 
   a committed number against its verdict/text golds scores WRONG. Expect 0 commits — since SciBench
   became an attempted corpus (2026-07) this is the SOLE expect-0-commits gate. Its firewall buckets
   by PREMISE BLOCK, not per-item (340 stories → 1,001 items), and its 'Uncertain' gold is `text`, never
-  `decline` — see `docs/negative-results.md` → "The logic-corpus search" before touching either.
+  `decline` — see `docs/corpora.md` → "FOLIO" before touching either.
 - `projects/cogs/` — the semantic-projection development corpus. Its pinned
   builder materializes official COGS into DEV-train/DEV-holdout, contaminated
   calibration, and aggregate-only TEST/generalization slices. `bench` routes
@@ -141,5 +129,5 @@ uv run rulekit --project projects/gsm8k serve                          # visual 
   are ODC-BY 1.0. Train/development are inspectable and standard TEST is
   aggregate-only and one-look. Data and snapshots remain gitignored.
 
-Mining scripts are throwaway: keep them in the session scratchpad, never the repo — recreate
-from `docs/methodology.md` §4.
+Temporary investigation scripts belong in the session scratchpad, never the repo.
+Use `docs/methodology.md` for the testing and measurement procedure.

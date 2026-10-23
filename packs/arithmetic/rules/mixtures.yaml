@@ -29,6 +29,8 @@ templates:
         - {slot: solvent, cat: mixture_component, uncounted: true}
         - {parameter: ending}
         - {lit: '?', consume_skipped: true}
+      where:
+      - number_compatible: [solvent, removal]
       resolves:
         consumer: mixture-component
         component: '{component}'

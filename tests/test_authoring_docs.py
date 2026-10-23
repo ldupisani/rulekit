@@ -170,8 +170,8 @@ async def _get(app, path):
 def test_designer_help_routes_and_editor_link(monkeypatch):
     from rulekit.server import app as app_module
 
-    # Exercise the real app integration without loading corpus state or
-    # spawning a campaign runner; help is independent of either.
+    # Exercise the real app integration without loading corpus state;
+    # help is independent of the selected project.
     monkeypatch.setattr(app_module, "ServerState", lambda _: object())
     monkeypatch.setattr(app_module, "build_router", lambda _: APIRouter())
     app = app_module.create_app(ROOT / "projects/curated")

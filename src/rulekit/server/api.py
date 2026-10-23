@@ -22,9 +22,6 @@ from ..data.registry import CompileError, Registry
 from ..data.sources import SourceIndex
 from ..generation import (
     AskScenarioMode,
-    CampaignCandidateManifest,
-    CampaignReviewDecision,
-    CampaignReviewError,
     GenerationError,
     GenerationMode,
     GenerationObjective,
@@ -34,11 +31,8 @@ from ..generation import (
     ReviewDefect,
     append_exploration,
     append_exploration_failure,
-    append_campaign_review,
-    append_campaign_gate,
     append_review,
     ask_review_evidence,
-    campaign_review_queue,
     choose_exploration_target,
     delete_review,
     derive_hypotheses,
@@ -48,15 +42,12 @@ from ..generation import (
     exploration_status,
     list_ask_availability,
     list_rule_availability,
-    latest_campaign_gate,
     promote_reading_candidate,
     promote_sentence_review_candidate,
     premise_review_evidence,
-    publish_campaign_manifest,
     read_review_history,
     read_reviews,
     review_needs_attention,
-    read_campaign_gates,
     retest_candidate,
     update_review,
 )
@@ -67,8 +58,6 @@ from ..kernel.model import PATTERN, Unit, _jsonable
 from ..kernel.patterns import match_ask, subsumes
 from ..lint.checks import lint_checks
 from ..lint.overlap import lint_overlaps
-from .candidate_runner import CandidateRunnerError, CandidateRunnerManager
-from .promotion_gate import run_campaign_promotion_gate
 
 
 # module-level (not nested in build_router): `from __future__ import
@@ -203,10 +192,6 @@ class ServerState:
         # Generation/review I/O is independent from benchmark execution, but
         # two tabs must not interleave JSONL writes.
         self.generation_lock = threading.Lock()
-        # Candidate code is never imported into this process. The manager
-        # starts at most one exact Git worktree runtime on loopback and owns
-        # its complete lifecycle.
-        self.candidate_runner = CandidateRunnerManager(self.project_root)
 
     @property
     def registry(self) -> Registry:
@@ -219,9 +204,6 @@ class ServerState:
             return None
         except (PackError, CompileError, Exception) as exc:  # noqa: BLE001
             return f"{type(exc).__name__}: {exc}"
-
-    def close(self) -> None:
-        self.candidate_runner.close()
 
 
 def _unit_json(unit: Unit) -> dict[str, Any]:
@@ -345,7 +327,7 @@ def _reading_machine_matches(
     results: list[Any],
     registry: Registry,
 ) -> list[dict[str, Any]]:
-    """Exact ordinary premise matches for machine-readable campaign replay."""
+    """Exact ordinary premise matches for inspecting rule bindings and overlap."""
 
     ordinary = [
         result
@@ -811,7 +793,7 @@ def resolve_editable_doc(raw: str, project) -> Path | None:
 
 
 def trace_project(project: Project, body: TraceBody) -> dict[str, Any]:
-    """Run the ordinary Designer trace outside HTTP for campaign capture."""
+    """Run the ordinary Designer trace for reading and review inspection."""
 
     registry = project.registry
     source_index = project.source_index
@@ -1125,222 +1107,6 @@ def build_router(state: ServerState) -> APIRouter:
             {"level": f.level, "code": f.code, "message": f.message}
             for f in findings
         ]
-
-    @router.get("/campaign/reviews")
-    def campaign_reviews():
-        """The central, durable promotion queue for isolated candidates."""
-
-        with state.generation_lock:
-            try:
-                queue = campaign_review_queue(state.project)
-            except CampaignReviewError as exc:
-                raise HTTPException(422, str(exc)) from exc
-        for row in queue:
-            manifest = row["manifest"]
-            row["machine_gate"] = latest_campaign_gate(
-                state.project,
-                manifest["candidate_id"],
-                manifest["commit"],
-                manifest["registry_fingerprint"],
-            )
-            row["machine_gate_status"] = (
-                "not_run"
-                if row["machine_gate"] is None
-                else ("passed" if row["machine_gate"]["passed"] else "failed")
-            )
-            if not row["runtime_available"]:
-                continue
-            for specimen in row["manifest"]["specimens"]:
-                specimen["source_ref"] = _identifier_source_json(
-                    state.project.source_index,
-                    specimen.get("target_rule"),
-                )
-        return {
-            "candidates": queue,
-            "registry_fingerprint": state.registry.fingerprint,
-        }
-
-    @router.post("/campaign/reviews/candidate")
-    def campaign_review_candidate(body: CampaignCandidateManifest):
-        """Publish one immutable bundle; the future orchestrator uses this seam."""
-
-        with state.generation_lock:
-            try:
-                manifest = publish_campaign_manifest(state.project, body)
-            except CampaignReviewError as exc:
-                raise HTTPException(409, str(exc)) from exc
-        return {"ok": True, "manifest": manifest}
-
-    @router.post("/campaign/reviews/{candidate_id}")
-    def campaign_review_decision(
-        candidate_id: str,
-        body: CampaignReviewDecision,
-    ):
-        """Append one human promotion decision pinned to exact candidate code."""
-
-        if candidate_id != body.candidate_id:
-            raise HTTPException(422, "candidate id does not match the review path")
-        if body.verdict == "approved":
-            with state.generation_lock:
-                gate = latest_campaign_gate(
-                    state.project,
-                    candidate_id,
-                    body.candidate_commit,
-                    body.registry_fingerprint,
-                )
-            if gate is None or not gate["passed"]:
-                raise HTTPException(
-                    409,
-                    "approval requires a passing machine promotion gate for "
-                    "this exact commit and registry fingerprint",
-                )
-            try:
-                blocker = state.candidate_runner.approval_blocker(
-                    candidate_id,
-                    body.candidate_commit,
-                    body.registry_fingerprint,
-                )
-            except CandidateRunnerError as exc:
-                raise HTTPException(409, str(exc)) from exc
-            if blocker is not None:
-                raise HTTPException(409, blocker)
-        with state.generation_lock:
-            try:
-                review = append_campaign_review(state.project, body)
-            except CampaignReviewError as exc:
-                raise HTTPException(409, str(exc)) from exc
-        return {"ok": True, "review": review}
-
-    def _campaign_manifest(candidate_id: str) -> dict[str, Any]:
-        with state.generation_lock:
-            try:
-                queue = campaign_review_queue(state.project)
-            except CampaignReviewError as exc:
-                raise HTTPException(422, str(exc)) from exc
-        for row in queue:
-            manifest = row["manifest"]
-            if manifest["candidate_id"] == candidate_id:
-                return manifest
-        raise HTTPException(404, f"no campaign candidate {candidate_id!r}")
-
-    def _runner_call(call):
-        try:
-            return call()
-        except CandidateRunnerError as exc:
-            raise HTTPException(409, str(exc)) from exc
-
-    @router.get("/campaign/runner")
-    def campaign_runner_status():
-        return _runner_call(state.candidate_runner.status)
-
-    @router.get("/campaign/gates/{candidate_id}")
-    def campaign_gate_history(candidate_id: str):
-        _campaign_manifest(candidate_id)
-        with state.generation_lock:
-            gates = [
-                row
-                for row in read_campaign_gates(state.project)
-                if row["candidate_id"] == candidate_id
-            ]
-        return {"candidate_id": candidate_id, "gates": gates}
-
-    @router.post("/campaign/gates/{candidate_id}")
-    def campaign_gate_run(candidate_id: str):
-        """Run one exact full gate; the shared bench lock serializes it."""
-
-        manifest = _campaign_manifest(candidate_id)
-        if not state.run_lock.acquire(blocking=False):
-            raise HTTPException(409, "a benchmark or promotion gate is already running")
-        try:
-            try:
-                with state.candidate_runner.promotion_session(candidate_id) as (
-                    baseline,
-                    candidate,
-                ):
-                    gate = run_campaign_promotion_gate(
-                        state.project,
-                        manifest,
-                        baseline,
-                        candidate,
-                        lambda text, interpretation, reference_year: (
-                            state.candidate_runner.trace(
-                                candidate_id,
-                                {
-                                    "text": text,
-                                    "interpretation": interpretation,
-                                    "reference_year": reference_year,
-                                },
-                            )
-                        ),
-                    )
-            except CandidateRunnerError as exc:
-                raise HTTPException(409, str(exc)) from exc
-            except CampaignReviewError as exc:
-                raise HTTPException(422, str(exc)) from exc
-            with state.generation_lock:
-                durable = append_campaign_gate(state.project, gate)
-            return {"ok": True, "gate": durable}
-        finally:
-            state.run_lock.release()
-
-    @router.post("/campaign/runner/{candidate_id}/start")
-    def campaign_runner_start(candidate_id: str):
-        manifest = _campaign_manifest(candidate_id)
-        return _runner_call(lambda: state.candidate_runner.start(manifest))
-
-    @router.post("/campaign/runner/stop")
-    def campaign_runner_stop():
-        stopped = state.candidate_runner.stop()
-        return {"ok": True, "stopped": stopped, "active": False}
-
-    @router.get("/campaign/runner/{candidate_id}/project")
-    def campaign_runner_project(candidate_id: str):
-        return _runner_call(lambda: state.candidate_runner.project(candidate_id))
-
-    @router.post("/campaign/runner/{candidate_id}/trace")
-    def campaign_runner_trace(candidate_id: str, body: TraceBody):
-        return _runner_call(
-            lambda: state.candidate_runner.trace(candidate_id, body.model_dump())
-        )
-
-    @router.post("/campaign/runner/{candidate_id}/generation/from-reading")
-    def campaign_runner_from_reading(
-        candidate_id: str,
-        body: GenerationReadingBody,
-    ):
-        return _runner_call(
-            lambda: state.candidate_runner.from_reading(
-                candidate_id,
-                body.model_dump(),
-            )
-        )
-
-    @router.get("/campaign/runner/{candidate_id}/doc")
-    def campaign_runner_read_doc(candidate_id: str, path: str):
-        return _runner_call(
-            lambda: state.candidate_runner.read_doc(candidate_id, path)
-        )
-
-    @router.put("/campaign/runner/{candidate_id}/doc")
-    def campaign_runner_write_doc(candidate_id: str, body: DocBody):
-        return _runner_call(
-            lambda: state.candidate_runner.write_doc(
-                candidate_id,
-                body.model_dump(),
-            )
-        )
-
-    @router.post("/campaign/runner/{candidate_id}/retest")
-    def campaign_runner_retest(
-        candidate_id: str,
-        body: GenerationRetestBody,
-    ):
-        return _runner_call(
-            lambda: state.candidate_runner.retest(
-                candidate_id,
-                body.model_dump(),
-            )
-        )
 
     @router.get("/generation/rules")
     def generation_rules():

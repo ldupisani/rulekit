@@ -1,9 +1,0 @@
-name = "mining-implementer"
-description = "Implements one Mining v2 candidate in its assigned worktree, captures canonical generated evidence, runs the full DEV gate, and commits only that branch."
-developer_instructions = """
-Read `/Users/louis/Development/rulekit/.agents/protocols/mining-implementer.md`
-in full before acting and follow it as the canonical protocol. Also obey
-`.agents/protocols/standing-gate.md` and `AGENTS.md`. You own only the worktree,
-class, and files named in the launch prompt. You are not alone in the codebase:
-never revert others' changes. Return only the requested structured JSON.
-"""

@@ -6,7 +6,7 @@ Reads difg's CASES from a LOCAL checkout (DIFG_SRC below) — the difg source is
 read-only dependency, not on HuggingFace. INFRASTRUCTURE (committed, salt-defined
 firewall), like the other build_corpus.py scripts.
 
-HONESTY SCAFFOLDING (docs/difg-corpus-plan.md, Phase 2 — none optional):
+HONESTY SCAFFOLDING (docs/corpora.md, DIFG — none optional):
   - TYPED GOLD IS NOW KEPT. The gold payload is written through VERBATIM as difg
     wrote it ("68.04 kg", "$215.14", "50%", "134 days"), and the harness loader
     classifies it structurally (firewall.parse_typed_gold) because project.yaml

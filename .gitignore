@@ -1,5 +1,5 @@
 # benchmark data never enters version control (the firewall)
-# no trailing slash: in /mine worktrees, data is a SYMLINK to the main
+# no trailing slash: in linked worktrees, data may be a SYMLINK to the main
 # checkout and the dir-only pattern would not match it
 projects/*/data
 projects/*/snapshots

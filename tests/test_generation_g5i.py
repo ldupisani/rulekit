@@ -83,7 +83,9 @@ def test_g5i_profiles_the_complete_recursive_optional_class() -> None:
     # quantifiers without increasing the maximum optional nesting depth.
     # Amount references and itemized quote variants add flat optional groups.
     # Content comparisons allow an omitted standard predicate in two forms.
-    assert _optional_profile(project) == (252, 432, 53, 3)
+    # Holder comparisons admit a repeated predicate while an optional object
+    # beneath it still distinguishes the fuller item-comparison construction.
+    assert _optional_profile(project) == (252, 433, 54, 3)
 
 
 def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:

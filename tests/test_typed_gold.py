@@ -1,4 +1,4 @@
-"""Typed gold — the Phase 0 comparator (docs/difg-corpus-plan.md).
+"""Typed gold — the Phase 0 comparator (docs/corpora.md).
 
 SYNTHETIC ONLY (constitution rule 3). Not one string here comes from GSM8K or
 from difg's corpus — every fixture is invented, so reading this file leaks no

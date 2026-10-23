@@ -153,7 +153,7 @@ class BenchReport:
 
 
 def _judge_typed(gold, result) -> tuple[str, object]:
-    """Per-type comparator (docs/difg-corpus-plan.md, Phase 0).
+    """Per-type comparator (docs/corpora.md, Typed gold).
 
     Reached ONLY when the item's gold is a `TypedGold` — which only a `gold:
     typed` project's loader ever builds. GSM8K's loader emits a bare float and
@@ -265,7 +265,7 @@ def _series_mapping(value: object) -> dict[tuple[str, str], float] | None:
 
 
 def _judge(expected: object, result) -> tuple[str, object]:
-    # TYPED GOLD (docs/difg-corpus-plan.md Phase 0) — additive, and unreachable
+    # TYPED GOLD (docs/corpora.md, Typed gold) — additive, and unreachable
     # for GSM8K: only a `gold: typed` project's loader constructs a TypedGold.
     # Everything below this line is byte-for-byte the pre-Phase-0 float path.
     if isinstance(expected, TypedGold):

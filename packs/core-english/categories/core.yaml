@@ -251,6 +251,12 @@ categories:
       Stative predicates that report the contents of an interior
       location. Their actor must be a declared container/location rather
       than an arbitrary entity.
+  literal_containment_verb:
+    parent: quantity_comparison_verb
+    notes: >
+      Literal interior-content predicates. Entity-based comparisons can
+      describe a stated container; a name-only mass comparison supplies
+      no evidence that its participant is an interior location.
   container_totality_transfer_verb:
     parent: placement_quantity_verb
     notes: >
@@ -722,9 +728,18 @@ categories:
     parent: verb
     notes: >
       Verb forms known not to license the direct quantitative object
-      frame used by arithmetic comparative premises. Rules exclude this
-      category declaratively while leaving newly loaded transitive
-      quantity verbs available for human review.
+      frame used by arithmetic comparative premises. Complete nominal
+      comparisons additionally require a positive quantity-predicate
+      boundary; older constructions combine this exclusion with their
+      own role and frame contracts.
+  intransitive_process_verb:
+    parent: non_quantity_object_verb
+    notes: >
+      Process-only predicate senses whose changing material or participant
+      is the subject. They do not supply a direct counted object for a
+      generic arithmetic comparison; a transitive quantitative use needs
+      its own declared frame. Domain-specific process constructions retain
+      their measured evidence separately.
   animate_pronoun:
     parent: pronoun
     notes: >
@@ -952,7 +967,7 @@ categories:
       currency resource. This remains a lexical event sense distinct
       from the non-actual purpose-goal construction.
   past_departure_quantity_verb:
-    parent: verb
+    parent: quantity_comparison_verb
     notes: >
       The ambiguous past departure form when it heads an overt
       quantitative event. It constrains the event actor without making
@@ -2798,6 +2813,7 @@ members:
   linear_dimension_comparative: [higher, larger, longer, shorter, smaller, taller, wider]
   linear_dimension_holder: [book, tree]
   linear_unit_dimension_adjective: [tall]
+  literal_containment_verb: [contain, contained, contains]
   livestock_raising_quantity_verb: [raise, raised, raises, raising]
   location_impossibility_modal: [can]
   location_initiating_past_verb: [arrived]

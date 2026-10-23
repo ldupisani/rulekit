@@ -8,7 +8,7 @@ templates:
     parameters:
       subject: &holder
         {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true, bare_reference_category: bare_entity_reference}
-      verb: {slot: verb, type: verb}
+      verb: {slot: verb, type: verb, finite_form: true}
       ratio:
         tokens: []
         factor: 1.0
@@ -39,6 +39,7 @@ templates:
         standard_qualifier: null
         guards:
           - same_lemma: [verb, standard_tail_verb]
+          - number_compatible: [std, standard_tail_verb]
           - slot_not_category: {slot: standard_tail_verb, cat: non_quantity_object_verb}
           - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
           - bound_requires_category: {bound: appos_det, bound_cat: third_person_possessive_determiner, slot: who, cat: quantity_event_participant, allow_proper_name: true}
@@ -82,6 +83,7 @@ templates:
           - {parameter: standard}
           - {parameter: layout.ending}
       where:
+        - slot_not_category: {slot: verb, cat: intransitive_process_verb}
         - number_compatible: [who, verb]
         - slot_not_category: {slot: who, cat: non_quantity_holder}
         - slot_not_category: {slot: item, cat: many_incompatible_noun}

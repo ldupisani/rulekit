@@ -5,7 +5,13 @@ categories:
   mixture_substance: {parent: noun, includes: [mixture_material]}
   mixture_component: {parent: noun}
   mixture_sampling_verb: {parent: verb}
-  solvent_removal_verb: {parent: verb}
+  solvent_removal_verb:
+    parent: intransitive_process_verb
+    notes: >
+      Solvent-removal processes used by mixture recovery constructions.
+      They do not license the generic direct count-object comparison frame;
+      component recovery keeps its explicit source, solvent and conservation
+      evidence in the mixture model.
   evaporation_perfect_auxiliary: {parent: verb}
   component_recovery_verb: {parent: verb}
   mixture_composition_verb: {parent: verb}

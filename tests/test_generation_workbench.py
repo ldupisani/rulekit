@@ -49,6 +49,7 @@ from rulekit.server.api import (
     GenerationMinimalPairBody,
     GenerationReadingBody,
     GenerationRetestBody,
+    ImpactBody,
     ServerState,
     TraceBody,
     build_router,
@@ -1971,6 +1972,115 @@ def test_unsupported_defect_says_no_mechanical_hypothesis(
     ) == ()
 
 
+def test_ordinary_review_loop_leaves_historical_campaign_records_untouched(
+    tmp_path: Path,
+) -> None:
+    _write_project(tmp_path)
+    archive = tmp_path / "generation" / "campaign"
+    preserved = {}
+    for relative in (
+        "candidates/old-candidate/abcdef1.json",
+        "reviews.jsonl",
+        "gates.jsonl",
+        "landings.jsonl",
+    ):
+        path = archive / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        # The active workbench must not parse, migrate, or repair archives.
+        preserved[path] = b"opaque historical evidence\r\n"
+        path.write_bytes(preserved[path])
+
+    state = ServerState(tmp_path)
+    router = build_router(state)
+    assert not any(route.path.startswith("/api/campaign") for route in router.routes)
+    assert {"/api/generation/ask", "/api/impact", "/api/baseline"} <= {
+        route.path for route in router.routes
+    }
+
+    def endpoint(path: str, method: str):
+        return next(
+            route.endpoint
+            for route in router.routes
+            if route.path == path and method in route.methods
+        )
+
+    candidate = endpoint("/api/generation/candidate", "POST")(
+        GenerationCandidateBody(rule_id="invented/simple", seed=5)
+    )
+    saved = endpoint("/api/generation/review", "POST")(
+        ReviewRecord(
+            candidate_id=candidate["id"],
+            sentence=candidate["sentence"],
+            target_rule=candidate["target_rule"],
+            seed=candidate["seed"],
+            registry_fingerprint=candidate["registry_fingerprint"],
+            verdict="valid",
+        )
+    )
+    assert saved["ok"]
+    assert state.reload() is None
+    history = endpoint("/api/generation/history", "GET")()
+    assert [row["id"] for row in history["reviews"]] == [saved["review"]["id"]]
+    assert history["reviews"][0]["source_ref"]["kind"] == "rule"
+    retested = endpoint("/api/generation/retest", "POST")(
+        GenerationRetestBody(
+            rule_id=candidate["target_rule"],
+            sentence=candidate["sentence"],
+            seed=candidate["seed"],
+            requested_bindings=candidate["requested_bindings"],
+        )
+    )
+    assert retested["sentence"] == candidate["sentence"]
+    assert retested["target_status"] == "matched"
+    assert review_path(state.project) == tmp_path / "generation" / "reviews.jsonl"
+    for path in preserved:
+        with pytest.raises(HTTPException) as exc:
+            endpoint("/api/doc", "GET")(str(path))
+        assert exc.value.status_code == 403
+    assert {path: path.read_bytes() for path in archive.rglob("*") if path.is_file()} == preserved
+
+
+def test_cli_keeps_evaluation_commands_without_campaign_operations(capsys) -> None:
+    from rulekit.cli import main
+
+    with pytest.raises(SystemExit) as exc:
+        main(["--help"])
+    assert exc.value.code == 0
+    help_text = capsys.readouterr().out
+    assert "campaign" not in help_text.lower()
+    assert "bench" in help_text and "diff" in help_text and "serve" in help_text
+
+    for command in ("campaign-publish", "campaign-queue", "campaign-land", "campaign-trace"):
+        with pytest.raises(SystemExit) as exc:
+            main([command])
+        assert exc.value.code == 2
+        assert "invalid choice" in capsys.readouterr().err
+
+
+def test_protected_evaluation_still_requires_authorization(tmp_path: Path, capsys) -> None:
+    from rulekit.cli import main
+
+    _write_project(tmp_path)
+    project_doc = tmp_path / "project.yaml"
+    project_doc.write_text(
+        project_doc.read_text()
+        + "datasets:\n  invented:\n    test: {parquet: data/not-materialized.parquet}\n"
+    )
+    # No corpus is present: authorization must be checked before any rows load.
+    assert main(["--project", str(tmp_path), "bench", "--slice", "test"]) == 2
+    assert "--spend-test-look" in capsys.readouterr().err
+
+    router = build_router(ServerState(tmp_path))
+    impact = next(
+        route.endpoint
+        for route in router.routes
+        if route.path == "/api/impact" and "POST" in route.methods
+    )
+    result = impact(ImpactBody(target="test"))
+    assert "TEST is one-look" in result["error"]
+    assert not (tmp_path / "snapshots" / "test-ledger.jsonl").exists()
+
+
 def test_save_then_retest_reports_the_changed_behavior_on_the_same_sentence(
     tmp_path: Path,
 ) -> None:
@@ -2046,6 +2156,10 @@ def test_trace_exposes_explicit_targets_and_promotes_the_selected_rule(
     sentence = "Luma dax miv."
     trace = endpoint("/api/trace", "POST")(TraceBody(text=sentence))
     targets = trace["sentences"][0]["review_targets"]
+    machine_match = trace["sentences"][0]["machine_matches"][0]
+    assert machine_match["rule_id"] == "invented/simple"
+    assert machine_match["bindings"] == {"who": "Luma", "verb": "dax", "item": "miv"}
+    assert machine_match["shadowed"] is False
     assert [
         {
             key: value
@@ -3060,6 +3174,7 @@ def test_designer_exposes_the_generation_review_loop() -> None:
     js = (root / "app.js").read_text()
     css = (root / "style.css").read_text()
 
+    assert "campaign" not in (html + js + css).lower()
     assert 'id="view-generate"' in html
     assert 'id="generation-rule"' in html
     assert 'id="generation-mode"' in html
@@ -3117,7 +3232,7 @@ def test_designer_exposes_the_generation_review_loop() -> None:
     assert "Open rule YAML" in js
     assert "Open ask YAML" in js
     assert "function reviewSource(r)" in js
-    assert "state.campaignRunner.project?.sources?.[target] || r.source_ref" in js
+    assert "return r.source_ref;" in js
     assert "if (source) await openGenerationSource(source)" in js
     assert "reading-fact-head" in js
     assert "d.source_ref" in js

@@ -18,7 +18,7 @@ is the leading number of ASDiv's answer ("9 (apples)" -> 9.0); unit and set gold
 are dropped to a float on purpose — this gate measures the SAME precision metric
 that revealed the answer-accounting hole (a wrong number is wrong regardless of
 unit). Typed golds (firewall.TypedGold) are a later tightening, tracked in
-docs/difg-corpus-plan.md.
+docs/corpora.md.
 
 DETERMINISM. The split is md5(SALT + text) % 4 == 0 -> TEST (~25%), else DEV.
 Continuous with the OOD probe that first measured this corpus, so the precision

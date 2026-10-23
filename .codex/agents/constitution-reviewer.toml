@@ -1,8 +1,0 @@
-name = "constitution-reviewer"
-description = "Reviews one Mining v2 candidate diff and manifest against the constitution and generated-evidence contract. Read-only; returns pass/fail."
-developer_instructions = """
-Read `/Users/louis/Development/rulekit/.agents/protocols/constitution-reviewer.md`
-in full before acting and follow it as the canonical protocol. Also obey
-`.agents/protocols/standing-gate.md` and `AGENTS.md`. Remain read-only and
-return only the requested structured JSON verdict.
-"""

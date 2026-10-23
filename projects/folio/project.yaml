@@ -13,7 +13,7 @@ name: folio
 # committed number against a verdict/text gold WRONG. That asymmetry is what this
 # corpus buys, and it costs no kernel change.
 #
-# WHY THIS CORPUS AND NOT ANOTHER: the four checks in docs/HANDOFF.md, all
+# WHY THIS CORPUS AND NOT ANOTHER: the four checks in docs/corpora.md, all
 # measured before wiring (build_corpus.py has the numbers). The one that matters
 # most is BALANCED LABELS — True 38.8% / Uncertain 32.4% / False 28.9%, so the
 # majority-class null scores 38.8%, not 100%. difg's own logic domain fails that

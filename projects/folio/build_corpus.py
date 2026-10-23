@@ -13,7 +13,7 @@ not arithmetic. Every other corpus asks for a number, so none of them can catch
 the engine ASSERTING A NUMBER at logic prose. FOLIO (Han et al. 2022, Yale-LILY,
 arxiv:2209.00840) is human-written natural-language first-order logic. It was
 picked over ProofWriter/RuleTaker and LogiQA/ReClor by the four checks in
-docs/HANDOFF.md, all four MEASURED before wiring (2026-07-16):
+docs/corpora.md, all four MEASURED before wiring (2026-07-16):
 
   1. INDEPENDENT AUTHORS — Yale NLP annotators; never seen by our packs.
   2. BALANCED LABELS — True 38.8% / Uncertain 32.4% / False 28.9%. The

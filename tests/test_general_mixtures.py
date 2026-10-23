@@ -50,6 +50,19 @@ def test_material_independent_paraphrases(reg, material, component, unit, basis,
     assert len(shares) == 1 and shares[0].basis
 
 
+@pytest.mark.parametrize("text,expected", [
+    ("Nora has 750 grams of cereal. The cereal is 20% raisins by mass. "
+     "How many grams of raisins are in the cereal?", 150),
+    ("Nora has 2 kilograms of oil blend. The oil blend contains 15% sunflower oil by mass. "
+     "How much sunflower oil is in the oil blend?", .3),
+    ("Nora has 10 moles of gas mixture. The gas mixture is 30% helium by moles. "
+     "How many moles of helium are in the gas mixture?", 3),
+])
+def test_component_amounts_across_sample_sizes(reg, text, expected):
+    result = solve(text, reg)
+    assert result.answer.value == pytest.approx(expected), result.answer.reason
+
+
 @pytest.mark.parametrize("sample", [
     "The alloy weighs 5 kilograms.",
     "Nora obtained 5 kilograms of alloy.",

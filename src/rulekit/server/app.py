@@ -20,12 +20,6 @@ def create_app(project_root: Path) -> FastAPI:
     app.include_router(build_router(state))
     app.include_router(build_help_router())
 
-    @app.on_event("shutdown")
-    def stop_candidate_runner() -> None:
-        # Never leave the isolated child alive after the central Designer
-        # exits. This does not stop or restart any unrelated server process.
-        state.close()
-
     @app.middleware("http")
     async def no_stale_ui(request, call_next):
         # a live-edit dev tool must never serve yesterday's app.js: without
