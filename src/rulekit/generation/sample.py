@@ -36,6 +36,7 @@ from ..kernel.patterns import (
     _role_is_proper_name,
     is_bare_verb_form,
     is_finite_verb_form,
+    is_past_participle_form,
     proportional_delta_is_compatible,
     subsumes,
 )
@@ -569,9 +570,7 @@ def _lexical_fillers(
             surface.endswith("ing") and surface != identity
         ):
             continue
-        if past_participle and not (
-            surface.endswith(("ed", "en")) and surface != identity
-        ):
+        if past_participle and not is_past_participle_form(surface, identity, reg):
             continue
         number = entry.number
         if sense == "noun" and surface not in reg.plural_to_singular:
@@ -1546,6 +1545,28 @@ def _proper_name_measure_allowed(
         for route_category in route_categories
         for permitted_category in measure_categories
     )
+
+
+def _measure_holder_assignment_compatible(
+    measure, holder, attribute, *, allow_proper_name,
+    proper_name_measure_categories, when_declared, reg, memo,
+):
+    """Memoize lexical compatibility independently of sampled numeric values."""
+    key = (measure.identity, holder.identity, holder.kind,
+           attribute.identity if attribute is not None else None,
+           allow_proper_name, proper_name_measure_categories, when_declared,
+           measure.surface if holder.kind == "name" else None)
+    if key not in memo:
+        memo[key] = bool(
+            when_declared and not reg.measure_has_holder_boundary(measure.identity)
+            or holder.kind == "name" and _proper_name_measure_allowed(
+                measure, attribute=attribute, allow_proper_name=allow_proper_name,
+                measure_categories=proper_name_measure_categories, reg=reg)
+            or reg.measure_applies_to_holder(
+                measure.identity, holder.identity,
+                attribute.identity if attribute is not None else None)
+        )
+    return memo[key]
 
 
 def _scoped_filler_polarity(
@@ -2895,6 +2916,27 @@ def _allowed_fillers(
     identity_domains: dict[str, set[str]] = {}
     verbal_object_frames: dict[tuple[str, str], tuple[tuple[str, str, bool], ...]] = {}
 
+    holder_compatibility_memo = {}
+    lexical_holder_domains = {}
+
+    def lexical_holder_domain(name, *, measure_categories=()):
+        # These existential checks use lexical identities and name eligibility,
+        # never amounts, owners or modifiers. Keep the full realization domain
+        # elsewhere; repeated counts must not multiply this compatibility join.
+        key = (name, measure_categories)
+        if key not in lexical_holder_domains:
+            unique = {}
+            for candidate in candidate_domain(tokens_by_slot[name]):
+                if (not _outside_categories(candidate, absent_categories, reg)
+                        or not _outside_slot_categories(candidate, name, slot_category_exclusions, reg)):
+                    continue
+                signature = (candidate.identity, candidate.kind,
+                             tuple(_filler_in_category(candidate, category, reg)
+                                   for category in measure_categories))
+                unique.setdefault(signature, candidate)
+            lexical_holder_domains[key] = list(unique.values())
+        return lexical_holder_domains[key]
+
     def compatible(filler: _Filler) -> bool:
         def known_filler(name: str) -> _Filler | None:
             return chosen.get(name) or locked_fillers.get(name)
@@ -3408,24 +3450,10 @@ def _allowed_fillers(
                 holder: _Filler,
                 attribute: _Filler | None,
             ) -> bool:
-                if (
-                    when_declared
-                    and not reg.measure_has_holder_boundary(measure.identity)
-                ):
-                    return True
-                return (
-                    holder.kind == "name"
-                    and _proper_name_measure_allowed(
-                        measure,
-                        attribute=attribute,
-                        allow_proper_name=allow_proper_name,
-                        measure_categories=proper_name_measure_categories,
-                        reg=reg,
-                    )
-                ) or reg.measure_applies_to_holder(
-                    measure.identity,
-                    holder.identity,
-                    attribute.identity if attribute is not None else None,
+                return _measure_holder_assignment_compatible(
+                    measure, holder, attribute, allow_proper_name=allow_proper_name,
+                    proper_name_measure_categories=proper_name_measure_categories,
+                    when_declared=when_declared, reg=reg, memo=holder_compatibility_memo,
                 )
 
             def possible_attributes(
@@ -3478,9 +3506,7 @@ def _allowed_fillers(
                         and holder_name in active_slots
                         and not any(
                             compatible_with_any_attribute(filler, candidate)
-                            for candidate in candidate_domain(
-                                tokens_by_slot[holder_name]
-                            )
+                            for candidate in lexical_holder_domain(holder_name)
                             if _outside_categories(
                                 candidate, absent_categories, reg
                             )
@@ -3504,9 +3530,8 @@ def _allowed_fillers(
                     and measure_name in active_slots
                     and not any(
                         compatible_with_any_attribute(candidate, filler)
-                        for candidate in candidate_domain(
-                            tokens_by_slot[measure_name]
-                        )
+                        for candidate in lexical_holder_domain(
+                            measure_name, measure_categories=proper_name_measure_categories)
                         if _outside_categories(
                             candidate, absent_categories, reg
                         )
@@ -3525,9 +3550,8 @@ def _allowed_fillers(
                     if known_filler(measure_name) is not None
                     else [
                         candidate
-                        for candidate in candidate_domain(
-                            tokens_by_slot[measure_name]
-                        )
+                        for candidate in lexical_holder_domain(
+                            measure_name, measure_categories=proper_name_measure_categories)
                         if _outside_categories(
                             candidate, absent_categories, reg
                         )
@@ -3546,9 +3570,7 @@ def _allowed_fillers(
                         if holder is not None
                         else [
                             candidate
-                            for candidate in candidate_domain(
-                                tokens_by_slot[holder_name]
-                            )
+                            for candidate in lexical_holder_domain(holder_name)
                             if _outside_categories(
                                 candidate, absent_categories, reg
                             )

@@ -6,8 +6,6 @@ categories:
     parent: duration_measure
   academic_material_descriptor:
     parent: noun
-  material_resource:
-    parent: noun
 members:
   education_cohort:
   - grade
@@ -16,8 +14,6 @@ members:
   - semester
   academic_material_descriptor:
   - coursework
-  material_resource:
-  - material
 attribute_compatibility:
   academic_material_descriptor:
   - material_resource

@@ -124,6 +124,11 @@ def consumer(name: str, *, time_scoped: bool = False,
 
 
 from . import (  # noqa: E402,F401  (import registers each handler)
+    cyclic_saving_average as _cyclic_saving_average,
+    stored_resource_loss as _stored_resource_loss,
+    material_region_remainder as _material_region_remainder,
+    uniform_content_distribution as _uniform_content_distribution,
+    item_expenditure_comparison as _item_expenditure_comparison,
     batch_outcomes as _batch_outcomes,
     shared_account as _shared_account,
     located_yield as _located_yield,

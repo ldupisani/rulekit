@@ -1,5 +1,15 @@
 format: rulekit/conversions@1
 conversions:
+- from: year
+  to: month
+  factor: 12
+  scope: cadence
+- from: foot
+  to: inch
+  factor: 12
+- from: inch
+  to: meter
+  factor: 0.0254
 - from: kilometer
   to: meter
   factor: 1000
@@ -60,3 +70,7 @@ conversions:
 - from: minute
   to: second
   factor: 60
+
+- from: centimeter
+  to: meter
+  factor: 0.01

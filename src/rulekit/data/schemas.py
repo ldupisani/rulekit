@@ -24,6 +24,7 @@ class StrictModel(BaseModel):
 
 class VerbInfo(StrictModel):
     lemma: str | None = None
+    past_participle: bool = False
 
 
 class AnaphoricForm(StrictModel):
@@ -1561,7 +1562,7 @@ class WherePredicate(StrictModel):
 
 class FactEmit(StrictModel):
     fact: Literal[
-        "batch_evidence", "specification_evidence", "population_evidence", "mixture_evidence", "proportional_base_evidence",
+        "batch_evidence", "region_evidence", "specification_evidence", "population_evidence", "mixture_evidence", "proportional_base_evidence",
         "account_entry",
         "text_value", "text_prefix_split",
         "commercial_term",
@@ -1863,6 +1864,9 @@ class AskRule(StrictModel):
     # previously mentioned plural group.  This mirrors PatternRule.satisfies
     # and remains explicit per slot/need pair.
     satisfies: dict[str, list[str]] = Field(default_factory=dict)
+    # A complete selected construction may commit explicitly named category
+    # slots to their declared root sense. Unmatched prose stays ambiguous.
+    disambiguates: list[str] = Field(default_factory=list)
     resolves: dict[str, str | list[str]] = Field(default_factory=dict)
     clarification: str | None = None
     interpretations: list[AskInterpretation] = Field(default_factory=list)
@@ -1902,15 +1906,23 @@ class AskRule(StrictModel):
                     f"ask {self.id!r}: interpretation ids must be unique"
                 )
         declared_slots: set[str] = set()
+        declared_tokens: dict[str, MatchToken] = {}
 
         def collect(tokens: list[MatchToken]) -> None:
             for token in tokens:
                 if token.slot is not None:
                     declared_slots.add(token.slot)
+                    declared_tokens[token.slot] = token
                 if token.opt is not None:
                     collect(token.opt)
 
         collect(self.match["question"])
+        if len(self.disambiguates) != len(set(self.disambiguates)):
+            raise ValueError("sense selection slots must be unique")
+        for slot in self.disambiguates:
+            token = declared_tokens.get(slot)
+            if token is None or not token.cat or token.span:
+                raise ValueError("sense selection requires a named, category-gated single-unit slot")
         for slot, needs in self.satisfies.items():
             if slot not in declared_slots:
                 raise ValueError(

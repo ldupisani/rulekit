@@ -49,7 +49,7 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
     assert any("antecedent discourse group" in blocker for blocker in contextual.blockers)
     # The reusable physics pack adds the independently generatable
     # ask/physics-quantity surface to curated.
-    assert sum(item.supported for item in availability.values()) == 278
+    assert sum(item.supported for item in availability.values()) == 324
     assert availability["ask/how-many-of-collection-are-label"].supported
     assert availability["ask/how-many-of-collection-are-label"].supported_modes == (
         "ask_only",
@@ -73,40 +73,49 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
     assert availability["ask/measured-content-in-container-unit"].blockers == (
         "ask requires generated premise evidence; standalone realization is disabled",
     )
-    assert len(availability) == 307
+    assert len(availability) == 364
     assert {
         item.id for item in availability.values() if not item.supported
-    } == {
-        "ask/relative-purchase-budget-conditional-new-collection",
-        "ask/relative-purchase-budget-new-collection",
-        "ask/threshold-population-count-inclusive",
-        "ask/threshold-population-count-strict",
-        "ask/how-much-credit-need-pay",
-        "ask/path-distance-after-numeric",
-        "ask/path-distance-after-numeric-reference",
-        "ask/path-distance-unit-after-numeric",
-        "ask/path-distance-unit-after-numeric-reference",
-        "ask/how-much-need-pay",
-        "ask/how-much-need-repay",
-        "ask/chem-cost-of-moles",
-        "ask/chem-molar-mass",
-        "ask/chem-moles-from-grams",
-        "ask/chem-weight-of-moles",
-        "ask/how-many-all-combined-discourse-group",
-        "ask/how-many-combined-discourse-group",
-        "ask/how-many-combined-in-all-discourse-group",
-        "ask/how-many-content-progress-fraction-of-remainder",
-        "ask/how-many-content-progress-fraction-of-remainder-with-of",
-        "ask/if-content-progress-fraction-of-remainder-how-many",
-        "ask/how-many-individually-discourse-group",
-        "ask/how-many-individually-discourse-group-postverbal",
-        "ask/how-old-discourse-group-now",
-        "ask/how-much-noun-entity-uninverted",
-        "ask/measured-content-in-container",
-        "ask/measured-content-in-container-unit",
-        "ask/what-combined-age-at-year",
-        "ask/which-discourse-group-at-day",
-    }
+    } == {'ask/chem-cost-of-moles',
+          'ask/chem-molar-mass',
+          'ask/chem-moles-from-grams',
+          'ask/chem-weight-of-moles',
+          'ask/how-many-all-combined-discourse-group',
+          'ask/how-many-combined-discourse-group',
+          'ask/how-many-combined-in-all-discourse-group',
+          'ask/how-many-content-progress-fraction-of-remainder',
+          'ask/how-many-content-progress-fraction-of-remainder-with-of',
+          'ask/how-many-individually-discourse-group',
+          'ask/how-many-individually-discourse-group-postverbal',
+          'ask/how-much-credit-need-pay',
+          'ask/how-much-need-pay',
+          'ask/how-much-need-repay',
+          'ask/how-much-noun-entity-uninverted',
+          'ask/how-old-discourse-group-now',
+          'ask/if-content-progress-fraction-of-remainder-how-many',
+          'ask/measured-content-in-container',
+          'ask/measured-content-in-container-unit',
+          'ask/measured-remainder-area-how-much-active-qualified-unit',
+          'ask/measured-remainder-area-length_unit-how-many-units-elided-qualified-unit',
+          'ask/measured-remainder-area-length_unit-how-many-units-left-qualified-unit',
+          'ask/measured-remainder-area-length_unit-how-many-units-qualified-unit',
+          'ask/measured-remainder-volume-length_unit-how-many-units-elided-qualified-unit',
+          'ask/measured-remainder-volume-length_unit-how-many-units-left-qualified-unit',
+          'ask/measured-remainder-volume-length_unit-how-many-units-qualified-unit',
+          'ask/measured-remainder-volume-length_unit-how-much-active-qualified-unit',
+          'ask/measured-remainder-volume-length_unit-how-much-qualified-unit',
+          'ask/measured-remainder-what-amount-area-length_unit-qualified-unit',
+          'ask/measured-remainder-what-amount-volume-length_unit-qualified-unit',
+          'ask/path-distance-after-numeric',
+          'ask/path-distance-after-numeric-reference',
+          'ask/path-distance-unit-after-numeric',
+          'ask/path-distance-unit-after-numeric-reference',
+          'ask/relative-purchase-budget-conditional-new-collection',
+          'ask/relative-purchase-budget-new-collection',
+          'ask/threshold-population-count-inclusive',
+          'ask/threshold-population-count-strict',
+          'ask/what-combined-age-at-year',
+          'ask/which-discourse-group-at-day'}
     unfilled_deadlines = {
         "ask/how-much-credit-need-pay", "ask/how-much-need-pay", "ask/how-much-need-repay",
     }
@@ -131,11 +140,27 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
                and availability[ask_id].blockers == (
                    "no project-backed ask filler exists for collection",
                ) for ask_id in unfilled_collections)
+    unfilled_powered_units = {
+        'ask/measured-remainder-area-how-much-active-qualified-unit',
+        'ask/measured-remainder-area-length_unit-how-many-units-elided-qualified-unit',
+        'ask/measured-remainder-area-length_unit-how-many-units-left-qualified-unit',
+        'ask/measured-remainder-area-length_unit-how-many-units-qualified-unit',
+        'ask/measured-remainder-volume-length_unit-how-many-units-elided-qualified-unit',
+        'ask/measured-remainder-volume-length_unit-how-many-units-left-qualified-unit',
+        'ask/measured-remainder-volume-length_unit-how-many-units-qualified-unit',
+        'ask/measured-remainder-volume-length_unit-how-much-active-qualified-unit',
+        'ask/measured-remainder-volume-length_unit-how-much-qualified-unit',
+        'ask/measured-remainder-what-amount-area-length_unit-qualified-unit',
+        'ask/measured-remainder-what-amount-volume-length_unit-qualified-unit',
+    }
+    assert all(availability[ask_id].supported_modes == ()
+               and availability[ask_id].blockers == ("no project-backed ask filler exists for unit",)
+               for ask_id in unfilled_powered_units)
     assert all(
         "answerable" in item.supported_modes
         for item in availability.values()
         if not item.supported and not item.id.startswith("ask/chem-")
-        and item.id not in unfilled_deadlines | unfilled_ordinals | unfilled_scale_labels | unfilled_collections
+        and item.id not in unfilled_deadlines | unfilled_ordinals | unfilled_scale_labels | unfilled_collections | unfilled_powered_units
     )
     for ask_id in unfilled_deadlines:
         assert availability[ask_id].supported_modes == ()

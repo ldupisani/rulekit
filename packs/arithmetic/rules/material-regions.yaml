@@ -1,0 +1,1581 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/material-fabrication-context
+  description: An explicit participant and material govern subsequent cut regions; the intended product is not 
+    another measured removal.
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: resource_user, referential: true, bare: true, at_start: true}
+    - {slot: aux, cat: copula}
+    - {slot: cut, cat: region_cutting_verb, present_participle: true}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    - {lit: to}
+    - {slot: make, cat: commercial_production_verb, bare_form: true}
+    - {slot: product, cat: fabrication_product, uncounted: true}
+    - {lit: ., consume_skipped: true}
+  where: [number_compatible: [who, aux]]
+  consumes: [aux, cut, make]
+  emits:
+  - {fact: region_evidence, stage: context, material: '{material}', entity: '{who}', shape: '', dimension: '', 
+      value: 0, unit: '', position: '{who.uid}', quantity: ''}
+- id: arithmetic/material-stock-dimensions
+  description: A rectangular stock has two explicit linear measurements, including an unrolled sheet or roll.
+  match:
+    sentence:
+    - opt:
+      - {slot: stock, cat: material_stock_unit, uncounted: true, number: singular}
+      - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    - {slot: be, cat: copula}
+    - {slot: first, cat: length_unit, counted: true}
+    - {lit: by}
+    - {slot: second, cat: length_unit, counted: true}
+    - {lit: ., consume_skipped: true}
+  where: [number_compatible: [material, be]]
+  satisfies: {be: [subject]}
+  consumes: [first, second, be]
+  emits:
+  - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: rectangle, dimension: length,
+    value: first, unit: '{first}', position: '{first.uid}', quantity: ''}
+  - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: rectangle, dimension: width, 
+      value: second, unit: '{second}', position: '{first.uid}', quantity: ''}
+- id: arithmetic/cut-measured-region
+  description: A cut rectangle preserves both unit-labelled dimensions and any explicit material or purpose 
+    location.
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: resource_user, referential: true, bare: true}
+    - {slot: cut, cat: region_cutting_verb, finite_form: true}
+    - {slot: first, cat: length_unit, counted: true}
+    - {lit: by}
+    - {slot: second, cat: rectangular_shape, counted: true, qualified: true, qualifier_cat: length_unit, number: 
+        singular}
+    - opt: [lit: of, {slot: material, cat: material_resource, uncounted: true, bare: true}]
+    - opt: [lit: for, {slot: place, cat: quantity_location, uncounted: true}]
+  where: [number_compatible: [who, cut]]
+  consumes: [first, second, cut]
+  emits:
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '{who}', shape: '{second}', 
+      dimension: length, value: first, unit: '{first}', position: '{first.uid}', quantity: ''}
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '{who}', shape: '{second}', 
+      dimension: width, value: second, unit: '{second.qualifier}', position: '{first.uid}', quantity: ''}
+- id: arithmetic/cut-measured-region-continuation
+  description: A coordinated cut list preserves each rectangle as a distinct removal; its actor needs a 
+    same-sentence anchor.
+  match:
+    sentence:
+    - {lit: and}
+    - {slot: first, cat: length_unit, counted: true}
+    - {lit: by}
+    - {slot: second, cat: rectangular_shape, counted: true, qualified: true, qualifier_cat: length_unit, number: 
+        singular}
+    - opt: [lit: of, {slot: material, cat: material_resource, uncounted: true, bare: true}]
+    - opt: [lit: for, {slot: place, cat: quantity_location, uncounted: true}]
+  consumes: [first, second]
+  emits:
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: '{second}', 
+      dimension: length, value: first, unit: '{first}', position: '{first.uid}', quantity: ''}
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: '{second}', 
+      dimension: width, value: second, unit: '{second.qualifier}', position: '{first.uid}', quantity: ''}
+- id: arithmetic/measured-removal-2d
+  match:
+    sentence:
+    - opt:
+      - {slot: rectangular, cat: rectangular_attribute}
+    - {slot: region, cat: rectangular_shape, uncounted: true, number: singular}
+    - opt:
+      - {lit: of}
+      - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    - opt:
+      - {slot: measuring, cat: material_stock_state, present_participle: true}
+    - {slot: first, cat: length_unit, counted: true}
+    - {lit: by}
+    - {slot: second, cat: length_unit, counted: true}
+    - {slot: be, cat: singular_copula}
+    - {slot: remove, cat: region_removal_verb, past_participle: true}
+    - opt:
+      - {lit: out}
+    - {lit: ., consume_skipped: true}
+  emits:
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: rectangle, 
+      dimension: length, value: first, unit: '{first}', position: '{first.uid}', quantity: '', source_scope: 
+      opening}
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: rectangle, 
+      dimension: width, value: second, unit: '{second}', position: '{first.uid}', quantity: '', source_scope: 
+      opening}
+  consumes:
+  - first
+  - second
+  - be
+  - remove
+  satisfies:
+    be:
+    - subject
+    remove:
+    - subject
+- id: arithmetic/measured-removal-2d-shared-unit
+  match:
+    sentence:
+    - opt:
+      - {slot: rectangular, cat: rectangular_attribute}
+    - {slot: region, cat: rectangular_shape, uncounted: true, number: singular}
+    - opt:
+      - {lit: of}
+      - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    - opt:
+      - {slot: measuring, cat: material_stock_state, present_participle: true}
+    - {slot: first, type: number, standalone: true}
+    - {lit: by}
+    - {slot: second, cat: length_unit, counted: true}
+    - {slot: be, cat: singular_copula}
+    - {slot: remove, cat: region_removal_verb, past_participle: true}
+    - opt:
+      - {lit: out}
+    - {lit: ., consume_skipped: true}
+  emits:
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: rectangle, 
+      dimension: length, value: first, unit: '{second}', position: '{first.uid}', quantity: '', source_scope: 
+      opening}
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: rectangle, 
+      dimension: width, value: second, unit: '{second}', position: '{first.uid}', quantity: '', source_scope: 
+      opening}
+  consumes:
+  - first
+  - second
+  - be
+  - remove
+  satisfies:
+    be:
+    - subject
+    remove:
+    - subject
+    first:
+    - quantifies
+- id: arithmetic/measured-removal-3d
+  match:
+    sentence:
+    - opt:
+      - {slot: rectangular, cat: rectangular_attribute}
+    - {slot: region, cat: solid_stock_unit, uncounted: true, number: singular}
+    - opt:
+      - {lit: of}
+      - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    - opt:
+      - {slot: measuring, cat: material_stock_state, present_participle: true}
+    - {slot: first, cat: length_unit, counted: true}
+    - {lit: by}
+    - {slot: second, cat: length_unit, counted: true}
+    - {lit: by}
+    - {slot: third, cat: length_unit, counted: true}
+    - {slot: be, cat: singular_copula}
+    - {slot: remove, cat: region_removal_verb, past_participle: true}
+    - opt:
+      - {lit: out}
+    - {lit: ., consume_skipped: true}
+  emits:
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: cuboid, dimension: 
+      length, value: first, unit: '{first}', position: '{first.uid}', quantity: '', source_scope: opening}
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: cuboid, dimension: 
+      width, value: second, unit: '{second}', position: '{first.uid}', quantity: '', source_scope: opening}
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: cuboid, dimension: 
+      height, value: third, unit: '{third}', position: '{first.uid}', quantity: '', source_scope: opening}
+  consumes:
+  - first
+  - second
+  - third
+  - be
+  - remove
+  satisfies:
+    be:
+    - subject
+    remove:
+    - subject
+- id: arithmetic/measured-removal-3d-shared-unit
+  match:
+    sentence:
+    - opt:
+      - {slot: rectangular, cat: rectangular_attribute}
+    - {slot: region, cat: solid_stock_unit, uncounted: true, number: singular}
+    - opt:
+      - {lit: of}
+      - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    - opt:
+      - {slot: measuring, cat: material_stock_state, present_participle: true}
+    - {slot: first, type: number, standalone: true}
+    - {lit: by}
+    - {slot: second, type: number, standalone: true}
+    - {lit: by}
+    - {slot: third, cat: length_unit, counted: true}
+    - {slot: be, cat: singular_copula}
+    - {slot: remove, cat: region_removal_verb, past_participle: true}
+    - opt:
+      - {lit: out}
+    - {lit: ., consume_skipped: true}
+  emits:
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: cuboid, dimension: 
+      length, value: first, unit: '{third}', position: '{first.uid}', quantity: '', source_scope: opening}
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: cuboid, dimension: 
+      width, value: second, unit: '{third}', position: '{first.uid}', quantity: '', source_scope: opening}
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: cuboid, dimension: 
+      height, value: third, unit: '{third}', position: '{first.uid}', quantity: '', source_scope: opening}
+  consumes:
+  - first
+  - second
+  - third
+  - be
+  - remove
+  satisfies:
+    be:
+    - subject
+    remove:
+    - subject
+    first:
+    - quantifies
+    second:
+    - quantifies
+- id: arithmetic/measured-resource-opening-length
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: resource_user, referential: true, at_start: true}
+    - {slot: have, cat: possession_state, finite_form: true}
+    - {slot: first, cat: length_unit, counted: true}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    - {lit: ., consume_skipped: true}
+  emits:
+  - {fact: region_evidence, stage: opening, material: '{material}', entity: '{who}', shape: '', dimension: '', 
+      value: first, unit: '{first}', position: '{first.uid}', quantity: length}
+  consumes:
+  - have
+  - first
+  where:
+  - number_compatible:
+    - who
+    - have
+- id: arithmetic/measured-resource-removal-length
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: resource_user, referential: true, at_start: true}
+    - {slot: use, cat: resource_usage_verb, finite_form: true}
+    - {slot: first, cat: length_unit, counted: true}
+    - opt:
+      - {lit: of}
+      - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    - opt:
+      - {slot: purpose_prep, cat: purpose_preposition}
+      - {lit: another, consume_skipped: true}
+  emits:
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '{who.optional}', shape: '', 
+      dimension: '', value: first, unit: '{first}', position: '{first.uid}', quantity: length}
+  consumes:
+  - first
+  - use
+  satisfies:
+    purpose_prep:
+    - object
+- id: arithmetic/measured-resource-removal-length-continuation
+  match:
+    sentence:
+    - {lit: and}
+    - opt:
+      - {lit: then}
+    - {slot: first, cat: length_unit, counted: true}
+    - opt:
+      - {lit: of}
+      - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    - opt:
+      - {slot: purpose_prep, cat: purpose_preposition}
+      - {lit: another, consume_skipped: true}
+  emits:
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: '', dimension: '', 
+      value: first, unit: '{first}', position: '{first.uid}', quantity: length, source_scope: previous}
+  consumes:
+  - first
+  satisfies:
+    purpose_prep:
+    - object
+- id: arithmetic/measured-resource-opening-mass
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: resource_user, referential: true, at_start: true}
+    - {slot: have, cat: possession_state, finite_form: true}
+    - {slot: first, cat: mass_unit, counted: true}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    - {lit: ., consume_skipped: true}
+  emits:
+  - {fact: region_evidence, stage: opening, material: '{material}', entity: '{who}', shape: '', dimension: '', 
+      value: first, unit: '{first}', position: '{first.uid}', quantity: mass}
+  consumes:
+  - have
+  - first
+  where:
+  - number_compatible:
+    - who
+    - have
+- id: arithmetic/measured-resource-removal-mass
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: resource_user, referential: true, at_start: true}
+    - {slot: use, cat: resource_usage_verb, finite_form: true}
+    - {slot: first, cat: mass_unit, counted: true}
+    - opt:
+      - {lit: of}
+      - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    - opt:
+      - {slot: purpose_prep, cat: purpose_preposition}
+      - {lit: another, consume_skipped: true}
+  emits:
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '{who.optional}', shape: '', 
+      dimension: '', value: first, unit: '{first}', position: '{first.uid}', quantity: mass}
+  consumes:
+  - first
+  - use
+  satisfies:
+    purpose_prep:
+    - object
+- id: arithmetic/measured-resource-removal-mass-continuation
+  match:
+    sentence:
+    - {lit: and}
+    - {slot: first, cat: mass_unit, counted: true}
+    - opt:
+      - {lit: of}
+      - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    - opt:
+      - {slot: purpose_prep, cat: purpose_preposition}
+      - {lit: another, consume_skipped: true}
+  emits:
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: '', dimension: '', 
+      value: first, unit: '{first}', position: '{first.uid}', quantity: mass}
+  consumes:
+  - first
+  satisfies:
+    purpose_prep:
+    - object
+- id: arithmetic/measured-resource-opening-volume
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: resource_user, referential: true, at_start: true}
+    - {slot: have, cat: possession_state, finite_form: true}
+    - {slot: first, cat: volume_measure, counted: true}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    - {lit: ., consume_skipped: true}
+  emits:
+  - {fact: region_evidence, stage: opening, material: '{material}', entity: '{who}', shape: '', dimension: '', 
+      value: first, unit: '{first}', position: '{first.uid}', quantity: volume}
+  consumes:
+  - have
+  - first
+  where:
+  - number_compatible:
+    - who
+    - have
+- id: arithmetic/measured-resource-removal-volume
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: resource_user, referential: true, at_start: true}
+    - {slot: use, cat: resource_usage_verb, finite_form: true}
+    - {slot: first, cat: volume_measure, counted: true}
+    - opt:
+      - {lit: of}
+      - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    - opt:
+      - {slot: purpose_prep, cat: purpose_preposition}
+      - {lit: another, consume_skipped: true}
+  emits:
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '{who.optional}', shape: '', 
+      dimension: '', value: first, unit: '{first}', position: '{first.uid}', quantity: volume}
+  consumes:
+  - first
+  - use
+  satisfies:
+    purpose_prep:
+    - object
+- id: arithmetic/measured-resource-removal-volume-continuation
+  match:
+    sentence:
+    - {lit: and}
+    - {slot: first, cat: volume_measure, counted: true}
+    - opt:
+      - {lit: of}
+      - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    - opt:
+      - {slot: purpose_prep, cat: purpose_preposition}
+      - {lit: another, consume_skipped: true}
+  emits:
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: '', dimension: '', 
+      value: first, unit: '{first}', position: '{first.uid}', quantity: volume}
+  consumes:
+  - first
+  satisfies:
+    purpose_prep:
+    - object
+- id: arithmetic/coordinated-measured-removals-counted
+  match:
+    sentence:
+    - {slot: regions, cat: rectangular_shape, counted: true, uncounted: false, number: plural, qualified: true, 
+        qualifier_cat: separate_region_attribute}
+    - {slot: measuring, cat: material_stock_state, present_participle: true}
+    - {slot: first, type: number, standalone: true}
+    - {lit: by}
+    - {slot: second, cat: length_unit, counted: true}
+    - {lit: and}
+    - {slot: third, type: number, standalone: true}
+    - {lit: by}
+    - {slot: fourth, cat: length_unit, counted: true}
+    - {slot: be, cat: plural_copula}
+    - {slot: remove, cat: region_removal_verb, past_participle: true}
+    - opt:
+      - {lit: out}
+    - {lit: ., consume_skipped: true}
+  emits:
+  - {fact: region_evidence, stage: removal, material: '', entity: '', shape: rectangle, dimension: length, value: 
+      first, unit: '{second}', position: '{first.uid}', quantity: '', source_scope: opening}
+  - {fact: region_evidence, stage: removal, material: '', entity: '', shape: rectangle, dimension: width, value: 
+      second, unit: '{second}', position: '{first.uid}', quantity: '', source_scope: opening}
+  - {fact: region_evidence, stage: removal, material: '', entity: '', shape: rectangle, dimension: length, value: 
+      third, unit: '{fourth}', position: '{third.uid}', quantity: '', source_scope: opening}
+  - {fact: region_evidence, stage: removal, material: '', entity: '', shape: rectangle, dimension: width, value: 
+      fourth, unit: '{fourth}', position: '{third.uid}', quantity: '', source_scope: opening}
+  - {fact: region_evidence, stage: removal-count, material: '', entity: '', shape: '', dimension: '', value: 
+      regions, unit: '', position: '{regions.uid}', quantity: ''}
+  consumes:
+  - regions
+  - measuring
+  - first
+  - second
+  - third
+  - fourth
+  - be
+  - remove
+  satisfies:
+    be:
+    - subject
+    remove:
+    - subject
+    first:
+    - quantifies
+    third:
+    - quantifies
+  overrides:
+    rule: arithmetic/coordinated-measured-removals
+    reason: Explicit count and uncounted noun shapes are disjoint; the counted frame also verifies list 
+      cardinality.
+  description: An explicit count must equal the complete coordinated list; counted and uncounted noun shapes are 
+    disjoint.
+- id: arithmetic/coordinated-measured-removals
+  match:
+    sentence:
+    - {slot: regions, cat: rectangular_shape, counted: false, uncounted: true, number: plural, qualified: false}
+    - {slot: measuring, cat: material_stock_state, present_participle: true}
+    - {slot: first, type: number, standalone: true}
+    - {lit: by}
+    - {slot: second, cat: length_unit, counted: true}
+    - {lit: and}
+    - {slot: third, type: number, standalone: true}
+    - {lit: by}
+    - {slot: fourth, cat: length_unit, counted: true}
+    - {slot: be, cat: plural_copula}
+    - {slot: remove, cat: region_removal_verb, past_participle: true}
+    - opt:
+      - {lit: out}
+    - {lit: ., consume_skipped: true}
+  emits:
+  - {fact: region_evidence, stage: removal, material: '', entity: '', shape: rectangle, dimension: length, value: 
+      first, unit: '{second}', position: '{first.uid}', quantity: '', source_scope: opening}
+  - {fact: region_evidence, stage: removal, material: '', entity: '', shape: rectangle, dimension: width, value: 
+      second, unit: '{second}', position: '{first.uid}', quantity: '', source_scope: opening}
+  - {fact: region_evidence, stage: removal, material: '', entity: '', shape: rectangle, dimension: length, value: 
+      third, unit: '{fourth}', position: '{third.uid}', quantity: '', source_scope: opening}
+  - {fact: region_evidence, stage: removal, material: '', entity: '', shape: rectangle, dimension: width, value: 
+      fourth, unit: '{fourth}', position: '{third.uid}', quantity: '', source_scope: opening}
+  consumes:
+  - regions
+  - measuring
+  - first
+  - second
+  - third
+  - fourth
+  - be
+  - remove
+  satisfies:
+    be:
+    - subject
+    remove:
+    - subject
+    first:
+    - quantifies
+    third:
+    - quantifies
+- id: arithmetic/linear-stock-content
+  match:
+    sentence:
+    - {slot: stock, cat: linear_stock_unit, uncounted: true, number: singular, at_start: true}
+    - {slot: have, cat: material_stock_holding_verb, finite_form: true}
+    - {slot: first, cat: length_unit, counted: true}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    - {lit: ., consume_skipped: true}
+  emits:
+  - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: '', dimension: '', value: 
+      first, unit: '{first}', position: '{first.uid}', quantity: length}
+  consumes:
+  - have
+  - first
+  where:
+  - number_compatible:
+    - stock
+    - have
+- id: arithmetic/linear-stock-cut
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: resource_user, referential: true, at_start: true}
+    - {slot: cut, cat: region_cutting_verb, finite_form: true}
+    - {lit: off}
+    - {slot: first, cat: length_unit, counted: true}
+    - opt:
+      - {lit: of}
+      - {slot: material, cat: material_resource, uncounted: true, bare: true}
+  emits:
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '{who}', shape: '', dimension: '',
+    value: first, unit: '{first}', position: '{first.uid}', quantity: length, source_scope: opening}
+  consumes:
+  - first
+  - cut
+- id: arithmetic/measured-resource-removal-length-counted-purpose
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: resource_user, referential: true, at_start: true}
+    - {slot: use, cat: resource_usage_verb, finite_form: true}
+    - {slot: first, cat: length_unit, counted: true}
+    - opt:
+      - {lit: of}
+      - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    - {lit: for}
+    - {slot: purpose, cat: fabrication_product, counted: true}
+  emits:
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '{who.optional}', shape: '', 
+      dimension: '', value: first, unit: '{first}', position: '{first.uid}', quantity: length}
+  - {fact: region_evidence, stage: purpose-count, material: '', entity: '', shape: '', dimension: '', value: 
+      purpose, unit: '', position: '{purpose.uid}', quantity: ''}
+  consumes:
+  - first
+  - use
+  - purpose
+- id: arithmetic/measured-resource-removal-length-continuation-counted-purpose
+  match:
+    sentence:
+    - {lit: and}
+    - opt:
+      - {lit: then}
+    - {slot: first, cat: length_unit, counted: true}
+    - opt:
+      - {lit: of}
+      - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    - {lit: for}
+    - {slot: purpose, cat: fabrication_product, counted: true}
+  emits:
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: '', dimension: '', 
+      value: first, unit: '{first}', position: '{first.uid}', quantity: length, source_scope: previous}
+  - {fact: region_evidence, stage: purpose-count, material: '', entity: '', shape: '', dimension: '', value: 
+      purpose, unit: '', position: '{purpose.uid}', quantity: ''}
+  consumes:
+  - first
+  - purpose
+- id: arithmetic/measured-resource-removal-mass-counted-purpose
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: resource_user, referential: true, at_start: true}
+    - {slot: use, cat: resource_usage_verb, finite_form: true}
+    - {slot: first, cat: mass_unit, counted: true}
+    - opt:
+      - {lit: of}
+      - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    - {lit: for}
+    - {slot: purpose, cat: fabrication_product, counted: true}
+  emits:
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '{who.optional}', shape: '', 
+      dimension: '', value: first, unit: '{first}', position: '{first.uid}', quantity: mass}
+  - {fact: region_evidence, stage: purpose-count, material: '', entity: '', shape: '', dimension: '', value: 
+      purpose, unit: '', position: '{purpose.uid}', quantity: ''}
+  consumes:
+  - first
+  - use
+  - purpose
+- id: arithmetic/measured-resource-removal-mass-continuation-counted-purpose
+  match:
+    sentence:
+    - {lit: and}
+    - {slot: first, cat: mass_unit, counted: true}
+    - opt:
+      - {lit: of}
+      - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    - {lit: for}
+    - {slot: purpose, cat: fabrication_product, counted: true}
+  emits:
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: '', dimension: '', 
+      value: first, unit: '{first}', position: '{first.uid}', quantity: mass}
+  - {fact: region_evidence, stage: purpose-count, material: '', entity: '', shape: '', dimension: '', value: 
+      purpose, unit: '', position: '{purpose.uid}', quantity: ''}
+  consumes:
+  - first
+  - purpose
+- id: arithmetic/measured-resource-removal-volume-counted-purpose
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: resource_user, referential: true, at_start: true}
+    - {slot: use, cat: resource_usage_verb, finite_form: true}
+    - {slot: first, cat: volume_measure, counted: true}
+    - opt:
+      - {lit: of}
+      - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    - {lit: for}
+    - {slot: purpose, cat: fabrication_product, counted: true}
+  emits:
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '{who.optional}', shape: '', 
+      dimension: '', value: first, unit: '{first}', position: '{first.uid}', quantity: volume}
+  - {fact: region_evidence, stage: purpose-count, material: '', entity: '', shape: '', dimension: '', value: 
+      purpose, unit: '', position: '{purpose.uid}', quantity: ''}
+  consumes:
+  - first
+  - use
+  - purpose
+- id: arithmetic/measured-resource-removal-volume-continuation-counted-purpose
+  match:
+    sentence:
+    - {lit: and}
+    - {slot: first, cat: volume_measure, counted: true}
+    - opt:
+      - {lit: of}
+      - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    - {lit: for}
+    - {slot: purpose, cat: fabrication_product, counted: true}
+  emits:
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: '', dimension: '', 
+      value: first, unit: '{first}', position: '{first.uid}', quantity: volume}
+  - {fact: region_evidence, stage: purpose-count, material: '', entity: '', shape: '', dimension: '', value: 
+      purpose, unit: '', position: '{purpose.uid}', quantity: ''}
+  consumes:
+  - first
+  - purpose
+asks:
+- id: ask/material-area-remainder
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {slot: amount_word, cat: mass_amount_interrogative}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    - {slot: be, cat: copula}
+    - {slot: remaining, cat: remnant_adj}
+    - {lit: in}
+    - {slot: power, cat: area_unit_modifier}
+    - {slot: unit, cat: length_unit, uncounted: true, bare: true}
+    - {lit: '?', consume_skipped: true}
+  satisfies: {be: [subject]}
+  disambiguates: [amount_word, remaining, power]
+  resolves: {consumer: material-region-remainder, material: '{material}', unit: '{unit}', quantity: area}
+templates:
+  measured-stock:
+    parameters:
+      prefix: []
+      axes: []
+      dimensions: []
+      agreement: []
+      consumed:
+      - state
+      - first
+      - second
+      satisfaction:
+        state:
+        - subject
+    rule:
+      match:
+        sentence:
+        - {parameter: prefix}
+        - {slot: state, cat: material_stock_state, finite_form: true}
+        - {parameter: axes}
+        - {lit: ., consume_skipped: true}
+      where: {parameter: agreement}
+      consumes: {parameter: consumed}
+      satisfies: {parameter: satisfaction}
+      emits: {parameter: dimensions}
+  measured-remainder-question:
+    parameters:
+      head: []
+      tail: []
+      unit: ''
+      quantity: ''
+      satisfies: {}
+      disambiguates: []
+      material: '{material}'
+    rule:
+      match:
+        question:
+        - {parameter: head}
+        - {parameter: tail}
+        - {lit: '?', consume_skipped: true}
+      satisfies: {parameter: satisfies}
+      disambiguates: {parameter: disambiguates}
+      resolves:
+        consumer: material-region-remainder
+        material: {parameter: material}
+        unit: {parameter: unit}
+        quantity: {parameter: quantity}
+variants:
+- id: arithmetic/measured-stock-2d
+  template: measured-stock
+  arguments:
+    prefix:
+    - opt:
+      - {slot: rectangular, cat: rectangular_attribute}
+    - {slot: stock, cat: material_stock_unit, uncounted: true, number: singular}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    axes:
+    - {slot: first, cat: length_unit, counted: true}
+    - {lit: by}
+    - {slot: second, cat: length_unit, counted: true}
+    dimensions:
+    - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: rectangle, dimension: 
+        length, value: first, unit: '{first}', position: '{first.uid}', quantity: ''}
+    - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: rectangle, dimension: 
+        width, value: second, unit: '{second}', position: '{first.uid}', quantity: ''}
+    agreement:
+    - number_compatible:
+      - stock
+      - state
+- id: arithmetic/measured-stock-2d-shared-unit
+  template: measured-stock
+  arguments:
+    prefix:
+    - opt:
+      - {slot: rectangular, cat: rectangular_attribute}
+    - {slot: stock, cat: material_stock_unit, uncounted: true, number: singular}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    axes:
+    - {slot: first, type: number, standalone: true}
+    - {lit: by}
+    - {slot: second, cat: length_unit, counted: true}
+    dimensions:
+    - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: rectangle, dimension: 
+        length, value: first, unit: '{second}', position: '{first.uid}', quantity: ''}
+    - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: rectangle, dimension: 
+        width, value: second, unit: '{second}', position: '{first.uid}', quantity: ''}
+    agreement:
+    - number_compatible:
+      - stock
+      - state
+    satisfaction:
+      state:
+      - subject
+      first:
+      - quantifies
+- id: arithmetic/measured-stock-3d
+  template: measured-stock
+  arguments:
+    prefix:
+    - opt:
+      - {slot: rectangular, cat: rectangular_attribute}
+    - {slot: stock, cat: solid_stock_unit, uncounted: true, number: singular}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    axes:
+    - {slot: first, cat: length_unit, counted: true}
+    - {lit: by}
+    - {slot: second, cat: length_unit, counted: true}
+    - {lit: by}
+    - {slot: third, cat: length_unit, counted: true}
+    dimensions:
+    - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: cuboid, dimension: length, 
+        value: first, unit: '{first}', position: '{first.uid}', quantity: ''}
+    - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: cuboid, dimension: width, 
+        value: second, unit: '{second}', position: '{first.uid}', quantity: ''}
+    - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: cuboid, dimension: height, 
+        value: third, unit: '{third}', position: '{first.uid}', quantity: ''}
+    agreement:
+    - number_compatible:
+      - stock
+      - state
+    consumed:
+    - state
+    - first
+    - second
+    - third
+- id: arithmetic/measured-stock-3d-shared-unit
+  template: measured-stock
+  arguments:
+    prefix:
+    - opt:
+      - {slot: rectangular, cat: rectangular_attribute}
+    - {slot: stock, cat: solid_stock_unit, uncounted: true, number: singular}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    axes:
+    - {slot: first, type: number, standalone: true}
+    - {lit: by}
+    - {slot: second, type: number, standalone: true}
+    - {lit: by}
+    - {slot: third, cat: length_unit, counted: true}
+    dimensions:
+    - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: cuboid, dimension: length, 
+        value: first, unit: '{third}', position: '{first.uid}', quantity: ''}
+    - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: cuboid, dimension: width, 
+        value: second, unit: '{third}', position: '{first.uid}', quantity: ''}
+    - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: cuboid, dimension: height, 
+        value: third, unit: '{third}', position: '{first.uid}', quantity: ''}
+    agreement:
+    - number_compatible:
+      - stock
+      - state
+    consumed:
+    - state
+    - first
+    - second
+    - third
+    satisfaction:
+      state:
+      - subject
+      first:
+      - quantifies
+      second:
+      - quantifies
+ask_variants:
+- id: ask/measured-remainder-length-length_unit-how-much
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {slot: amount_word, cat: mass_amount_interrogative}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: be, cat: copula}
+    - {slot: remaining, cat: remnant_adj}
+    - {lit: in}
+    - {slot: unit, cat: length_unit, uncounted: true, bare: true}
+    unit: '{unit}'
+    quantity: length
+    satisfies:
+      be:
+      - subject
+    disambiguates:
+    - amount_word
+    - remaining
+- id: ask/measured-remainder-length-length_unit-how-many-units
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: unit, cat: length_unit, uncounted: true, bare: true}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: remain, cat: resource_remnant_verb, finite_form: true}
+    unit: '{unit}'
+    quantity: length
+    satisfies: {}
+    disambiguates: []
+- id: ask/measured-remainder-length-length_unit-how-many-units-left
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: unit, cat: length_unit, uncounted: true, bare: true}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: be, cat: copula}
+    - {slot: remaining, cat: remnant_adj}
+    unit: '{unit}'
+    quantity: length
+    satisfies:
+      be:
+      - subject
+    disambiguates:
+    - remaining
+- id: ask/measured-remainder-area-length_unit-how-many-units
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: power, cat: area_unit_modifier}
+    - {slot: unit, cat: length_unit, uncounted: true, bare: true}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: remain, cat: resource_remnant_verb, finite_form: true}
+    unit: '{unit}'
+    quantity: area
+    satisfies: {}
+    disambiguates:
+    - power
+- id: ask/measured-remainder-area-length_unit-how-many-units-left
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: power, cat: area_unit_modifier}
+    - {slot: unit, cat: length_unit, uncounted: true, bare: true}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: be, cat: copula}
+    - {slot: remaining, cat: remnant_adj}
+    unit: '{unit}'
+    quantity: area
+    satisfies:
+      be:
+      - subject
+    disambiguates:
+    - remaining
+    - power
+- id: ask/measured-remainder-volume-length_unit-how-much
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {slot: amount_word, cat: mass_amount_interrogative}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: be, cat: copula}
+    - {slot: remaining, cat: remnant_adj}
+    - {lit: in}
+    - {slot: power, cat: volume_unit_modifier}
+    - {slot: unit, cat: length_unit, uncounted: true, bare: true}
+    unit: '{unit}'
+    quantity: volume
+    satisfies:
+      be:
+      - subject
+    disambiguates:
+    - amount_word
+    - remaining
+    - power
+- id: ask/measured-remainder-volume-length_unit-how-many-units
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: power, cat: volume_unit_modifier}
+    - {slot: unit, cat: length_unit, uncounted: true, bare: true}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: remain, cat: resource_remnant_verb, finite_form: true}
+    unit: '{unit}'
+    quantity: volume
+    satisfies: {}
+    disambiguates:
+    - power
+- id: ask/measured-remainder-volume-length_unit-how-many-units-left
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: power, cat: volume_unit_modifier}
+    - {slot: unit, cat: length_unit, uncounted: true, bare: true}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: be, cat: copula}
+    - {slot: remaining, cat: remnant_adj}
+    unit: '{unit}'
+    quantity: volume
+    satisfies:
+      be:
+      - subject
+    disambiguates:
+    - remaining
+    - power
+- id: ask/measured-remainder-mass-mass_unit-how-much
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {slot: amount_word, cat: mass_amount_interrogative}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: be, cat: copula}
+    - {slot: remaining, cat: remnant_adj}
+    - {lit: in}
+    - {slot: unit, cat: mass_unit, uncounted: true, bare: true}
+    unit: '{unit}'
+    quantity: mass
+    satisfies:
+      be:
+      - subject
+    disambiguates:
+    - amount_word
+    - remaining
+- id: ask/measured-remainder-mass-mass_unit-how-many-units
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: unit, cat: mass_unit, uncounted: true, bare: true}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: remain, cat: resource_remnant_verb, finite_form: true}
+    unit: '{unit}'
+    quantity: mass
+    satisfies: {}
+    disambiguates: []
+- id: ask/measured-remainder-mass-mass_unit-how-many-units-left
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: unit, cat: mass_unit, uncounted: true, bare: true}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: be, cat: copula}
+    - {slot: remaining, cat: remnant_adj}
+    unit: '{unit}'
+    quantity: mass
+    satisfies:
+      be:
+      - subject
+    disambiguates:
+    - remaining
+- id: ask/measured-remainder-volume-volume_measure-how-much
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {slot: amount_word, cat: mass_amount_interrogative}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: be, cat: copula}
+    - {slot: remaining, cat: remnant_adj}
+    - {lit: in}
+    - {slot: unit, cat: volume_measure, uncounted: true, bare: true}
+    unit: '{unit}'
+    quantity: volume
+    satisfies:
+      be:
+      - subject
+    disambiguates:
+    - amount_word
+    - remaining
+- id: ask/measured-remainder-volume-volume_measure-how-many-units
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: unit, cat: volume_measure, uncounted: true, bare: true}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: remain, cat: resource_remnant_verb, finite_form: true}
+    unit: '{unit}'
+    quantity: volume
+    satisfies: {}
+    disambiguates: []
+- id: ask/measured-remainder-volume-volume_measure-how-many-units-left
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: unit, cat: volume_measure, uncounted: true, bare: true}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: be, cat: copula}
+    - {slot: remaining, cat: remnant_adj}
+    unit: '{unit}'
+    quantity: volume
+    satisfies:
+      be:
+      - subject
+    disambiguates:
+    - remaining
+- id: ask/measured-remainder-dimension
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: what, at_start: true}
+    - {slot: dimension, cat: quantity_dimension_noun}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: remain, cat: resource_remnant_verb, finite_form: true}
+    quantity: '{dimension}'
+    satisfies: {}
+    disambiguates: []
+- id: ask/measured-remainder-remaining-dimension
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: what, at_start: true}
+    - {slot: be, cat: singular_copula}
+    - {slot: dimension, cat: quantity_dimension_noun, qualified: true, qualifier_cat: prenominal_remnant_adj, 
+        uncounted: true}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail: []
+    quantity: '{dimension}'
+    satisfies:
+      be:
+      - subject
+    disambiguates: []
+- id: ask/measured-remainder-total-length
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: what, at_start: true}
+    - {lit: total}
+    - {slot: dimension, cat: quantity_dimension_noun}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: remain, cat: resource_remnant_verb, finite_form: true}
+    quantity: '{dimension}'
+    satisfies: {}
+    disambiguates: []
+- id: ask/measured-remainder-what-amount-area-length_unit
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: what, at_start: true}
+    - {slot: amount, cat: count_aggregate_noun}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: remain, cat: resource_remnant_verb, finite_form: true}
+    - {lit: in}
+    - {slot: power, cat: area_unit_modifier}
+    - {slot: unit, cat: length_unit, uncounted: true, bare: true}
+    unit: '{unit}'
+    quantity: area
+    disambiguates:
+    - power
+    - amount
+- id: ask/measured-remainder-what-amount-volume-length_unit
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: what, at_start: true}
+    - {slot: amount, cat: count_aggregate_noun}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: remain, cat: resource_remnant_verb, finite_form: true}
+    - {lit: in}
+    - {slot: power, cat: volume_unit_modifier}
+    - {slot: unit, cat: length_unit, uncounted: true, bare: true}
+    unit: '{unit}'
+    quantity: volume
+    disambiguates:
+    - power
+    - amount
+- id: ask/measured-remainder-what-amount-length-length_unit
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: what, at_start: true}
+    - {slot: amount, cat: count_aggregate_noun}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: remain, cat: resource_remnant_verb, finite_form: true}
+    - {lit: in}
+    - {slot: unit, cat: length_unit, uncounted: true, bare: true}
+    unit: '{unit}'
+    quantity: length
+    disambiguates:
+    - amount
+- id: ask/measured-remainder-what-amount-mass-mass_unit
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: what, at_start: true}
+    - {slot: amount, cat: count_aggregate_noun}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: remain, cat: resource_remnant_verb, finite_form: true}
+    - {lit: in}
+    - {slot: unit, cat: mass_unit, uncounted: true, bare: true}
+    unit: '{unit}'
+    quantity: mass
+    disambiguates:
+    - amount
+- id: ask/measured-remainder-what-amount-volume-volume_measure
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: what, at_start: true}
+    - {slot: amount, cat: count_aggregate_noun}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: remain, cat: resource_remnant_verb, finite_form: true}
+    - {lit: in}
+    - {slot: unit, cat: volume_measure, uncounted: true, bare: true}
+    unit: '{unit}'
+    quantity: volume
+    disambiguates:
+    - amount
+- id: ask/measured-remainder-length-length_unit-how-much-active
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {slot: amount_word, cat: mass_amount_interrogative}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: remain, cat: resource_remnant_verb, finite_form: true}
+    - {lit: in}
+    - {slot: unit, cat: length_unit, uncounted: true, bare: true}
+    unit: '{unit}'
+    quantity: length
+    satisfies: {}
+    disambiguates:
+    - amount_word
+- id: ask/measured-remainder-volume-length_unit-how-much-active
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {slot: amount_word, cat: mass_amount_interrogative}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: remain, cat: resource_remnant_verb, finite_form: true}
+    - {lit: in}
+    - {slot: power, cat: volume_unit_modifier}
+    - {slot: unit, cat: length_unit, uncounted: true, bare: true}
+    unit: '{unit}'
+    quantity: volume
+    satisfies: {}
+    disambiguates:
+    - amount_word
+    - power
+- id: ask/measured-remainder-mass-mass_unit-how-much-active
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {slot: amount_word, cat: mass_amount_interrogative}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: remain, cat: resource_remnant_verb, finite_form: true}
+    - {lit: in}
+    - {slot: unit, cat: mass_unit, uncounted: true, bare: true}
+    unit: '{unit}'
+    quantity: mass
+    satisfies: {}
+    disambiguates:
+    - amount_word
+- id: ask/measured-remainder-volume-volume_measure-how-much-active
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {slot: amount_word, cat: mass_amount_interrogative}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: remain, cat: resource_remnant_verb, finite_form: true}
+    - {lit: in}
+    - {slot: unit, cat: volume_measure, uncounted: true, bare: true}
+    unit: '{unit}'
+    quantity: volume
+    satisfies: {}
+    disambiguates:
+    - amount_word
+- id: ask/measured-remainder-area-how-much-active
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {slot: amount_word, cat: mass_amount_interrogative}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: remain, cat: resource_remnant_verb, finite_form: true}
+    - {lit: in}
+    - {slot: power, cat: area_unit_modifier}
+    - {slot: unit, cat: length_unit, uncounted: true, bare: true}
+    unit: '{unit}'
+    quantity: area
+    disambiguates:
+    - amount_word
+    - power
+- id: ask/measured-remainder-total-dimension-elided
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: what, at_start: true}
+    - {lit: total}
+    - {slot: dimension, cat: quantity_dimension_noun}
+    tail:
+    - {slot: remain, cat: resource_remnant_verb, finite_form: true}
+    quantity: '{dimension}'
+    satisfies: {}
+    disambiguates: []
+    material: ''
+- id: ask/measured-remainder-length-length_unit-how-many-units-elided
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: unit, cat: length_unit, uncounted: true, bare: true}
+    tail:
+    - {slot: remain, cat: resource_remnant_verb, finite_form: true}
+    unit: '{unit}'
+    quantity: length
+    satisfies: {}
+    disambiguates: []
+    material: ''
+- id: ask/measured-remainder-area-length_unit-how-many-units-elided
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: power, cat: area_unit_modifier}
+    - {slot: unit, cat: length_unit, uncounted: true, bare: true}
+    tail:
+    - {slot: remain, cat: resource_remnant_verb, finite_form: true}
+    unit: '{unit}'
+    quantity: area
+    satisfies: {}
+    disambiguates:
+    - power
+    material: ''
+- id: ask/measured-remainder-volume-length_unit-how-many-units-elided
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: power, cat: volume_unit_modifier}
+    - {slot: unit, cat: length_unit, uncounted: true, bare: true}
+    tail:
+    - {slot: remain, cat: resource_remnant_verb, finite_form: true}
+    unit: '{unit}'
+    quantity: volume
+    satisfies: {}
+    disambiguates:
+    - power
+    material: ''
+- id: ask/measured-remainder-mass-mass_unit-how-many-units-elided
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: unit, cat: mass_unit, uncounted: true, bare: true}
+    tail:
+    - {slot: remain, cat: resource_remnant_verb, finite_form: true}
+    unit: '{unit}'
+    quantity: mass
+    satisfies: {}
+    disambiguates: []
+    material: ''
+- id: ask/measured-remainder-volume-volume_measure-how-many-units-elided
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: unit, cat: volume_measure, uncounted: true, bare: true}
+    tail:
+    - {slot: remain, cat: resource_remnant_verb, finite_form: true}
+    unit: '{unit}'
+    quantity: volume
+    satisfies: {}
+    disambiguates: []
+    material: ''
+- id: ask/measured-remainder-area-length_unit-how-many-units-qualified-unit
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: unit, cat: length_unit, uncounted: true, qualified: true, qualifier_cat: area_unit_modifier}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: remain, cat: resource_remnant_verb, finite_form: true}
+    unit: '{unit}'
+    quantity: area
+    satisfies: {}
+    disambiguates: []
+- id: ask/measured-remainder-area-length_unit-how-many-units-left-qualified-unit
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: unit, cat: length_unit, uncounted: true, qualified: true, qualifier_cat: area_unit_modifier}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: be, cat: copula}
+    - {slot: remaining, cat: remnant_adj}
+    unit: '{unit}'
+    quantity: area
+    satisfies:
+      be:
+      - subject
+    disambiguates:
+    - remaining
+- id: ask/measured-remainder-volume-length_unit-how-much-qualified-unit
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {slot: amount_word, cat: mass_amount_interrogative}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: be, cat: copula}
+    - {slot: remaining, cat: remnant_adj}
+    - {lit: in}
+    - {slot: unit, cat: length_unit, uncounted: true, qualified: true, qualifier_cat: volume_unit_modifier}
+    unit: '{unit}'
+    quantity: volume
+    satisfies:
+      be:
+      - subject
+    disambiguates:
+    - amount_word
+    - remaining
+- id: ask/measured-remainder-volume-length_unit-how-many-units-qualified-unit
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: unit, cat: length_unit, uncounted: true, qualified: true, qualifier_cat: volume_unit_modifier}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: remain, cat: resource_remnant_verb, finite_form: true}
+    unit: '{unit}'
+    quantity: volume
+    satisfies: {}
+    disambiguates: []
+- id: ask/measured-remainder-volume-length_unit-how-many-units-left-qualified-unit
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: unit, cat: length_unit, uncounted: true, qualified: true, qualifier_cat: volume_unit_modifier}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: be, cat: copula}
+    - {slot: remaining, cat: remnant_adj}
+    unit: '{unit}'
+    quantity: volume
+    satisfies:
+      be:
+      - subject
+    disambiguates:
+    - remaining
+- id: ask/measured-remainder-what-amount-area-length_unit-qualified-unit
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: what, at_start: true}
+    - {slot: amount, cat: count_aggregate_noun}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: remain, cat: resource_remnant_verb, finite_form: true}
+    - {lit: in}
+    - {slot: unit, cat: length_unit, uncounted: true, qualified: true, qualifier_cat: area_unit_modifier}
+    unit: '{unit}'
+    quantity: area
+    disambiguates:
+    - amount
+- id: ask/measured-remainder-what-amount-volume-length_unit-qualified-unit
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: what, at_start: true}
+    - {slot: amount, cat: count_aggregate_noun}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: remain, cat: resource_remnant_verb, finite_form: true}
+    - {lit: in}
+    - {slot: unit, cat: length_unit, uncounted: true, qualified: true, qualifier_cat: volume_unit_modifier}
+    unit: '{unit}'
+    quantity: volume
+    disambiguates:
+    - amount
+- id: ask/measured-remainder-volume-length_unit-how-much-active-qualified-unit
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {slot: amount_word, cat: mass_amount_interrogative}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: remain, cat: resource_remnant_verb, finite_form: true}
+    - {lit: in}
+    - {slot: unit, cat: length_unit, uncounted: true, qualified: true, qualifier_cat: volume_unit_modifier}
+    unit: '{unit}'
+    quantity: volume
+    satisfies: {}
+    disambiguates:
+    - amount_word
+- id: ask/measured-remainder-area-how-much-active-qualified-unit
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {slot: amount_word, cat: mass_amount_interrogative}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: remain, cat: resource_remnant_verb, finite_form: true}
+    - {lit: in}
+    - {slot: unit, cat: length_unit, uncounted: true, qualified: true, qualifier_cat: area_unit_modifier}
+    unit: '{unit}'
+    quantity: area
+    disambiguates:
+    - amount_word
+- id: ask/measured-remainder-area-length_unit-how-many-units-elided-qualified-unit
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: unit, cat: length_unit, uncounted: true, qualified: true, qualifier_cat: area_unit_modifier}
+    tail:
+    - {slot: remain, cat: resource_remnant_verb, finite_form: true}
+    unit: '{unit}'
+    quantity: area
+    satisfies: {}
+    disambiguates: []
+    material: ''
+- id: ask/measured-remainder-volume-length_unit-how-many-units-elided-qualified-unit
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: unit, cat: length_unit, uncounted: true, qualified: true, qualifier_cat: volume_unit_modifier}
+    tail:
+    - {slot: remain, cat: resource_remnant_verb, finite_form: true}
+    unit: '{unit}'
+    quantity: volume
+    satisfies: {}
+    disambiguates: []
+    material: ''

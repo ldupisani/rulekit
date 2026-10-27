@@ -1,0 +1,36 @@
+format: rulekit/rules@1
+rules:
+  - id: arithmetic/distributive-package-price-quote
+    description: A price for each named package keeps its contents, package unit and currency separate.
+    match:
+      sentence:
+        - opt: [{lit: and}]
+        - {slot: each, cat: postpositive_distributive_quantifier}
+        - {slot: unit, cat: purchase_lot_measure, uncounted: true, number: singular}
+        - {lit: of}
+        - {slot: item, cat: purchase_item, uncounted: true, bare: true}
+        - {slot: cost, cat: price_verb, finite_form: true}
+        - {slot: price, cat: currency_measure, counted: true}
+    where: [{number_compatible: [unit, cost]}]
+    satisfies: {cost: [subject], each: [collection]}
+    consumes: [price, cost, unit]
+    emits:
+      - {fact: price, item: '{item}', qualifier: '{item.qualifier}', per: '{unit}', measure: '{price}', value: price, verb: cost, occurrence: '{price.uid}'}
+asks:
+  - id: ask/item-expenditure-comparison
+    match:
+      question:
+        - {lit: how, at_start: true}
+        - {lit: much}
+        - {slot: direction, cat: mass_quantity_delta}
+        - {slot: aux, cat: auxiliary}
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true}
+        - {slot: spend, cat: spend_verb, bare_form: true}
+        - {slot: on, cat: spend_target_prep}
+        - {slot: first, cat: purchase_item, uncounted: true, bare: true}
+        - {lit: than}
+        - opt: [{slot: other_on, cat: spend_target_prep}]
+        - {slot: second, cat: purchase_item, uncounted: true, bare: true}
+        - {lit: '?', consume_skipped: true}
+    satisfies: {spend: [subject]}
+    resolves: {consumer: item-expenditure-comparison, entity: '{who}', first: '{first}', second: '{second}', direction: '{direction}'}

@@ -7,8 +7,7 @@ categories:
   nested_allocation_recipient:
     parent: noun
     includes:
-    - person
-    - animal
+    - collection_agent
   collection_group_noun:
     parent: noun
     includes:

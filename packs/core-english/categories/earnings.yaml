@@ -1,5 +1,11 @@
 format: rulekit/categories@1
 categories:
+  recurring_expense_target: {parent: noun, includes: [purchase_collection_noun]}
+  recurring_activity_noun: {parent: noun}
+  sports_activity_noun: {parent: recurring_activity_noun}
+  recurring_activity_verb: {parent: verb}
+  annual_activity_period: {parent: noun}
+  averaging_verb: {parent: verb}
   service_activity_verb:
     parent: quantity_event_verb
     notes: Countable work on an object; a tariff is still required to infer earnings.
@@ -18,6 +24,9 @@ categories:
   washable_surface: {parent: service_object}
   coatable_surface: {parent: service_object}
   ground_cutting_service:
+    parent: service_activity_verb
+    selectional_roles: {actor: animate, theme: cuttable_ground}
+  ground_tending_service:
     parent: service_activity_verb
     selectional_roles: {actor: animate, theme: cuttable_ground}
   surface_clearing_service:
@@ -43,6 +52,11 @@ context_synonyms:
     # context. Producing a non-currency object is not an earning event.
     forms: [earn, make]
 members:
+  recurring_expense_target: [supply]
+  sports_activity_noun: [baseball, tennis]
+  recurring_activity_verb: [play, plays, playing, work, working]
+  annual_activity_period: [season]
+  averaging_verb: [average]
   accumulation_particle: [up]
   accumulation_period_descriptor: [past]
   cash_remainder_noun: [change]
@@ -50,6 +64,7 @@ members:
   coatable_surface: [gate, window]
   cuttable_ground: [lawn]
   ground_cutting_service: [mow, mowed, mowing, mows]
+  ground_tending_service: [rake, raked, raking, rakes]
   habitual_service_predicate: [mow, mows, paint, paints, shovel, shovels, wash, washes]
   past_service_predicate: [mowed, painted, shoveled, shovelled, washed]
   periodic_income_noun:
@@ -58,7 +73,7 @@ members:
   - salary
   periodic_income_verb: [earn, earned, earns, get, gets, got, receive, received, receives]
   resource_accumulation_verb: [save, saved, saves, saving]
-  service_activity_verb: ["mow", "mowed", "mowing", "mows", "paint", "painted", "paints", "shovel", "shoveled", "shovelled", "shovels", "wash", "washed", "washes", "washing"]
+  service_activity_verb: ["mow", "mowed", "mowing", "mows", "paint", "painted", "paints", "rake", "raking", "rakes", "raked", "shovel", "shoveled", "shovelled", "shoveling", "shovelling", "shovels", "wash", "washed", "washes", "washing"]
   service_object: ["car", "driveway", "gate", "lawn", "window"]
   service_tariff_verb: [charge, charged, charges]
   surface_clearing_service: [shovel, shoveled, shovelled, shovels]

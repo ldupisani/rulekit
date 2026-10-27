@@ -27,7 +27,6 @@ entries:
   # C"). Collision-grepped 2026-07-20: reversibly/isothermally 0 everywhere;
   # transferred gsm8k-train 4 + folio 3; heat gsm8k 3+3, folio 8; iron gsm8k
   # 9+2, folio 2. The unknown-word guard is what these lift — gated on all six.
-  transferred: {senses: [verb], verb: {lemma: transfer}}
   reversibly: {senses: [adverb]}
   isothermally: {senses: [adverb]}
   heat: {senses: [noun]}

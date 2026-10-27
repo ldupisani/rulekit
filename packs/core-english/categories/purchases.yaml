@@ -81,7 +81,7 @@ members:
   ingredient: [apple, charcuterie, cheddar cheese, cheese, cold cut, cream cheese, sugar]
   mass_purchase_collection_noun: [merchandise, stuff]
   purchase_collection_noun: [clothes, ingredient, treat]
-  purchase_lot_measure: [bottle, box, gram, kilogram, pack, pound]
+  purchase_lot_measure: [bottle, box, carton, gram, kilogram, pack, pound]
   equal_division_verb:
   - split
   - share

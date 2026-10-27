@@ -14,7 +14,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field, fields, replace
 from .reference_identity import reference_from_unit
-from .model import AllocationGroup, IndexedPathEvidence, MeasuredComponent
+from .model import AllocationGroup, IndexedPathEvidence, MeasuredComponent, RegionEvidence
 from .reference_bindings import project_references
 from collections.abc import Iterable, Mapping
 from typing import TYPE_CHECKING, Any
@@ -124,6 +124,7 @@ from .model import (
 SKIPPABLE_SENSES = {"article", "punct"}
 
 _FACT_CLASSES = {
+    "region_evidence": RegionEvidence,
     "allocation_group": AllocationGroup,
     "indexed_path_evidence": IndexedPathEvidence,
     "measured_component": MeasuredComponent,
@@ -254,6 +255,13 @@ def looks_third_person_singular(fold: str) -> bool:
     )
 
 
+def is_past_participle_form(fold: str, lemma: str, reg: Registry) -> bool:
+    """Productive participles and explicitly declared invariant forms."""
+    entry = reg.lexicon.get(fold)
+    return bool(entry and entry.verb and entry.verb.past_participle) or (
+        fold.endswith(("ed", "en")) and fold != lemma)
+
+
 def is_bare_verb_form(fold: str, lemma: str) -> bool:
     """Whether one analyzed verb surface supplies bare-form evidence.
 
@@ -342,10 +350,10 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
             return False
     if token.past_participle:
         fold = unit.features.get("fold") or ""
-        if not fold.endswith(("ed", "en")) or fold == _lemma_of(unit):
+        if not is_past_participle_form(fold, _lemma_of(unit), reg):
             # OPT-IN (schemas.MatchToken.past_participle): a direct passive
-            # needs non-finite participial morphology. The lemma-change guard
-            # rejects bare verbs that merely happen to end in the same suffix.
+            # needs productive participial morphology or an explicit lexical
+            # declaration. Bare suffix lookalikes remain excluded.
             return False
     if token.bare_form and not is_bare_verb_form(
         unit.features.get("fold") or "",
@@ -781,9 +789,9 @@ def _lemma_of(unit: Unit) -> str:
     if unit.sense() == "pronoun":
         for ob in unit.obligations():
             if ob.need == "refers" and ob.met and isinstance(ob.target, Unit):
-                return ob.target.features.get(
-                    "lemma", ob.target.features.get("fold", "")
-                )
+                reference = reference_from_unit(unit)
+                if reference.resolved:
+                    return reference.head
     return unit.features.get("lemma", unit.features.get("fold", unit.surface.lower()))
 
 
@@ -2373,7 +2381,7 @@ def _build_fact(
         # in other fact contracts (for example physics).
         numeric = key in _NUMERIC_FIELDS or (cls is Expenditure and key == "quantity")
         kwargs[key] = _resolve_field(raw, slots, reg, numeric, log, rule_id)
-    if cls in (Expenditure, AccountEntry, BatchEvidence, SpecificationEvidence, PopulationEvidence):
+    if cls in (Expenditure, AccountEntry, BatchEvidence, SpecificationEvidence, PopulationEvidence, RegionEvidence):
         # Source positions are identifiers, not arithmetic operands.
         for key in ("position", "event", "lot_position", "quantity_position", "cost_factor_position"):
             if key in kwargs:

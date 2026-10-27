@@ -265,9 +265,6 @@ entries:
   original:
     senses:
     - adjective
-  originally:
-    senses:
-    - adverb
   others:
     senses:
     - noun
@@ -349,9 +346,6 @@ entries:
     senses:
     - noun
     plural: pandas
-  panels:
-    senses:
-    - noun
   parking:
     senses:
     - noun
@@ -778,10 +772,6 @@ entries:
     senses:
     - noun
     plural: puppies
-  purse:
-    senses:
-    - noun
-    plural: purses
   pushups:
     senses:
     - noun
@@ -916,13 +906,6 @@ entries:
     senses:
     - noun
     - verb
-  rectangle:
-    senses:
-    - noun
-    plural: rectangles
-  rectangular:
-    senses:
-    - adjective
   redistributed:
     senses:
     - verb
@@ -1100,10 +1083,6 @@ entries:
     senses:
     - noun
     plural: robins
-  robot:
-    senses:
-    - noun
-    plural: robots
   rock:
     senses:
     - noun
@@ -1117,20 +1096,10 @@ entries:
     - verb
     verb:
       lemma: ride
-  roll:
-    senses:
-    - verb
-  rolls:
-    senses:
-    - noun
   roof:
     senses:
     - noun
     plural: roofs
-  room:
-    senses:
-    - noun
-    plural: rooms
   roommate:
     senses:
     - noun
@@ -1149,17 +1118,10 @@ entries:
   roulette:
     senses:
     - noun
-  route:
-    senses:
-    - noun
-    plural: routes
   row:
     senses:
     - noun
     plural: rows
-  rubber:
-    senses:
-    - noun
   rule:
     senses:
     - noun
@@ -1225,9 +1187,6 @@ entries:
     senses:
     - verb
   sauce:
-    senses:
-    - noun
-  savings:
     senses:
     - noun
   saw-mill:
@@ -1325,9 +1284,6 @@ entries:
     senses:
     - noun
     plural: seniors
-  separate:
-    senses:
-    - adjective
   separately:
     senses:
     - adverb
@@ -1400,10 +1356,6 @@ entries:
   sharpener:
     senses:
     - noun
-  sheet:
-    senses:
-    - noun
-    plural: sheets
   shelf:
     senses:
     - noun
@@ -1686,9 +1638,6 @@ entries:
     senses:
     - noun
     plural: spokes
-  spool:
-    senses:
-    - noun
   spools:
     senses:
     - noun
@@ -1721,11 +1670,6 @@ entries:
   spring:
     senses:
     - adjective
-  square:
-    senses:
-    - adjective
-    - noun  # geometry shape ("a square with side N"); geometry_shape member
-    plural: squares
   stack:
     senses:
     - noun
@@ -1894,10 +1838,6 @@ entries:
   supplier:
     senses:
     - noun
-  supply:
-    senses:
-    - noun
-    plural: supplies
   support:
     senses:
     - verb

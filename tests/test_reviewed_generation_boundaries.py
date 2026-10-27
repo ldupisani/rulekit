@@ -1858,12 +1858,10 @@ def test_modal_periodic_generation_uses_bare_form_and_declared_frequency() -> No
         verb, project.registry.verb_lemmas.get(verb, verb)
     )
     assert bindings["freq"] == "every"
-    assert bindings["span"].endswith(
-        (
-            " minute", " minutes", " hour", " hours", " day", " days",
-            " week", " weeks", " year", " years",
-        )
-    )
+    from rulekit.kernel.engine import analyze
+    duration = next(u for u in analyze(bindings["span"], project.registry).units
+                    if u.features.get("value_kind") == "count")
+    assert project.registry.word_in_category(duration.features["lemma"], "duration_measure")
 
 
 @pytest.mark.parametrize(

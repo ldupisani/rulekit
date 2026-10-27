@@ -27,7 +27,7 @@ The canonical project instructions and constitution live in
 | [YAML authoring](yaml-reference.md) | Pack documents, categories, rules, asks, templates, synthesis, and conversions |
 | [Reference resolution](deixis.md) | Participant identity, deictic arbitration, item references, time, and location evidence |
 | [Clause scope and assumptions](complementizers.md) | Supported clause routing, comparison predicates, and question-local assumptions |
-| [Composition](composition.md) | Typed derivations, rates, batches, holder remainders, mixture ledgers, and evidence accounting |
+| [Composition](composition.md) | Typed derivations, recurring budgets, measured regions, batches, mixture ledgers, and evidence accounting |
 | [Logic and arithmetic](logic-arithmetic.md) | Exact class membership, role derivation, refinements, and class-scoped quantities |
 | [Semantic projection](semantic-projection.md) | Semantic graph facts, graph scoring, project boundaries, and supported diagnostics |
 

@@ -144,9 +144,6 @@ entries:
     senses:
     - noun
     plural: alligators
-  allocated:
-    senses:
-    - verb
   allotment:
     senses:
     - noun
@@ -250,9 +247,6 @@ entries:
   asleep:
     senses:
     - adjective
-  assigned:
-    senses:
-    - verb
   assignment:
     senses:
     - noun
@@ -409,10 +403,6 @@ entries:
   base:
     senses:
     - noun
-  baseball:
-    senses:
-    - noun
-    plural: baseballs
   based:
     senses:
     - verb
@@ -470,10 +460,6 @@ entries:
     senses:
     - noun
     plural: beds
-  bedroom:
-    senses:
-    - noun
-    plural: bedrooms
   beef:
     senses:
     - noun
@@ -549,10 +535,6 @@ entries:
   blizzard:
     senses:
     - noun
-  block:
-    senses:
-    - noun
-    plural: blocks
   blood:
     senses:
     - noun
@@ -577,10 +559,6 @@ entries:
     senses:
     - noun
     plural: bodyguards
-  bolt:
-    senses:
-    - noun
-    plural: bolts
   bonsai:
     senses:
     - noun
@@ -933,12 +911,6 @@ entries:
     senses:
     - noun
     plural: centers
-  centimeter:
-    senses:
-    - noun
-    plural:
-    - centimeters
-    - cm
   century:
     senses:
     - noun
@@ -1030,12 +1002,6 @@ entries:
   chopped:
     senses:
     - verb
-  chore:
-    senses:
-    - noun
-  chores:
-    senses:
-    - noun
   chosen:
     senses:
     - verb
@@ -1477,10 +1443,6 @@ entries:
     senses:
     - noun
     plural: cupcakes
-  curtain:
-    senses:
-    - noun
-    plural: curtains
   custard:
     senses:
     - noun
@@ -1491,16 +1453,6 @@ entries:
   cutlery:
     senses:
     - noun
-  cuts:
-    senses:
-    - verb
-    verb:
-      lemma: cut
-  cutting:
-    senses:
-    - verb
-    verb:
-      lemma: cut
   cuttlebone:
     senses:
     - noun
@@ -1671,32 +1623,11 @@ entries:
     senses:
     - noun
     plural: distances
-  distribute:
-    senses:
-    - verb
-  distributed:
-    senses:
-    - verb
-    verb:
-      lemma: distribute
-  distributes:
-    senses:
-    - verb
-    verb:
-      lemma: distribute
   distributing:
     senses:
     - verb
     verb:
       lemma: distribute
-  divided:
-    senses:
-    - operator
-  divides:
-    senses:
-    - verb
-    verb:
-      lemma: divide
   dividing:
     senses:
     - verb
@@ -1972,9 +1903,6 @@ entries:
     senses:
     - noun
     plural: episodes
-  equal:
-    senses:
-    - adjective
   equally-sized:
     senses:
     - adjective
@@ -2068,9 +1996,6 @@ entries:
   extra-large:
     senses:
     - adjective
-  fabric:
-    senses:
-    - noun
   face-mask:
     senses:
     - noun
@@ -2248,12 +2173,6 @@ entries:
   fond:
     senses:
     - adjective
-  foot:
-    senses:
-    - noun
-    # `ft` is the invariant written unit symbol. Keep it on the same lexical
-    # identity as foot/feet instead of allowing it to act as an unrelated noun.
-    plural: [feet, ft]
   footage:
     senses:
     - noun

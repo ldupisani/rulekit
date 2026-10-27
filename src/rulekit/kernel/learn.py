@@ -262,6 +262,12 @@ def _measure_substance(reading: Reading, measure_unit: Unit, reg: Registry) -> s
     itself (identity stays the bare lemma everywhere it already worked);
     returns None absent a partitive 'of' phrase anchored here, so every
     non-partitive call site is unaffected."""
+    content = _partitive_content_unit(reading, measure_unit, reg)
+    return _lemma(content) if content is not None else None
+
+
+def _partitive_content_unit(reading: Reading, measure_unit: Unit, reg: Registry) -> Unit | None:
+    """Reuse the reader's explicit anchor/object link; never split a fact key."""
     for unit in reading.units:
         if not reg.word_in_category(_lemma(unit), "partitive"):
             continue
@@ -269,8 +275,16 @@ def _measure_substance(reading: Reading, measure_unit: Unit, reg: Registry) -> s
             continue
         obj = _bound(unit, "object")
         if obj is not None and obj.sense() == "noun":
-            return _lemma(obj)
+            return obj
     return None
+
+
+def _partitive_reference_fields(reading: Reading, measure_unit: Unit, reg: Registry) -> dict:
+    content = _partitive_content_unit(reading, measure_unit, reg)
+    if content is None:
+        return {}
+    return {"measure_ref": reference_from_unit(measure_unit),
+            "content_ref": reference_from_unit(content)}
 
 
 def _negated(reading: Reading, verb: Unit) -> bool:
@@ -323,7 +337,9 @@ def _lemma(unit: Unit) -> str:
     if unit.sense() == "pronoun":
         antecedent = _bound(unit, "refers")
         if antecedent is not None:
-            return antecedent.features.get("lemma", antecedent.features.get("fold", ""))
+            reference = reference_from_unit(unit)
+            if reference.resolved:
+                return reference.head
     return unit.features.get("lemma", unit.features.get("fold", unit.surface.lower()))
 
 
@@ -1826,6 +1842,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                             qualifier=_qualifier(subject),
                             label=_label(subject),
                             measure=_lemma(dobj),
+                            **_partitive_reference_fields(reading, dobj, reg),
                             measure_qualifier=(
                                 _qualifier(dobj) or _measure_substance(reading, dobj, reg)
                             ),
@@ -1903,6 +1920,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                         qualifier=_qualifier(subject),
                         label=_label(subject),
                         measure=_lemma(dobj),
+                        **_partitive_reference_fields(reading, dobj, reg),
                         measure_qualifier=_qualifier(dobj) or _measure_substance(reading, dobj, reg),
                         value=float(dobj.features["value"]),
                         verb=verb_lemma,
@@ -1980,6 +1998,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                                 qualifier=_qualifier(subject),
                                 label=_label(subject),
                                 measure=_lemma(item),
+                                **_partitive_reference_fields(reading, item, reg),
                                 measure_qualifier=_qualifier(item) or _measure_substance(reading, item, reg),
                                 value=item_qty,
                                 verb=verb_lemma,
@@ -2030,6 +2049,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                                     qualifier=_qualifier(subject),
                                     label=_label(subject),
                                     measure=_lemma(dobj),
+                                    **_partitive_reference_fields(reading, dobj, reg),
                                     measure_qualifier=_qualifier(dobj) or _measure_substance(reading, dobj, reg),
                                     value=bare_value,
                                     verb=verb_lemma,
@@ -2058,6 +2078,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                         qualifier=_qualifier(subject),
                         label=_label(subject),
                         measure=_lemma(dobj),
+                        **_partitive_reference_fields(reading, dobj, reg),
                         measure_qualifier=_qualifier(dobj) or _measure_substance(reading, dobj, reg),
                         value=1.0,
                         verb=verb_lemma,
@@ -2096,6 +2117,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                             qualifier=_qualifier(subject),
                             label=_label(subject),
                             measure=_lemma(item),
+                            **_partitive_reference_fields(reading, item, reg),
                             measure_qualifier=_qualifier(item) or _measure_substance(reading, item, reg),
                             value=item_qty,
                             verb=verb_lemma,
@@ -2129,6 +2151,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                         qualifier=_qualifier(subject),
                         label=_label(subject),
                         measure=_lemma(dobj),
+                        **_partitive_reference_fields(reading, dobj, reg),
                         measure_qualifier=_qualifier(dobj) or _measure_substance(reading, dobj, reg),
                         value=float(value_unit.features["value"]),
                         verb=verb_lemma,

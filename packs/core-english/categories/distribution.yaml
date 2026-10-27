@@ -1,0 +1,116 @@
+format: rulekit/categories@1
+categories:
+  allocation_recipient:
+    parent: noun
+    includes:
+    - living_agent
+    - organization
+    - production_device
+    - computing_device
+    - allocation_storage
+  uniform_quantity_attribute: {parent: adjective}
+  retention_verb: {parent: verb}
+  recipient_distribution_preposition: {parent: preposition}
+  allocation_storage:
+    parent: noun
+    includes:
+    - quantity_container
+    - resource_store
+  collection_agent:
+    parent: noun
+    includes:
+    - living_agent
+    - organization
+    - production_device
+    - computing_device
+  allocation_transfer_verb:
+    parent: verb
+  allocation_receipt_verb:
+    parent: verb
+  allocation_target_preposition:
+    parent: preposition
+  allocation_destination_verb:
+    parent: verb
+  nonpersonal_resource_actor:
+    parent: noun
+    includes:
+    - organization
+    - production_device
+    - computing_device
+  nonpersonal_actor_anaphor:
+    parent: pronoun
+  opening_state_adverb:
+    parent: adverb
+  material_allocation_verb:
+    parent: allocation_transfer_verb
+  allocation_receipt_preposition:
+    parent: preposition
+members:
+  uniform_quantity_attribute: [same, equal]
+  retention_verb: [keep, keeps, kept, retain, retained, retains]
+  recipient_distribution_preposition: [with, among, amongst, between, to, into, across]
+  allocation_transfer_verb:
+  - allocate
+  - assign
+  - distribute
+  - transfer
+  - route
+  - divide
+  - share
+  - send
+  - place
+  - load
+  - allocated
+  - allocates
+  - assigned
+  - assigns
+  - distributed
+  - distributes
+  - divided
+  - divides
+  - loaded
+  - loading
+  - loads
+  - placed
+  - places
+  - placing
+  - routed
+  - routes
+  - sending
+  - sends
+  - sent
+  - shared
+  - transferred
+  - transfers
+  allocation_receipt_verb:
+  - receive
+  - get
+  - gets
+  - got
+  - received
+  - receives
+  allocation_target_preposition:
+  - to
+  - into
+  - among
+  - amongst
+  - between
+  - across
+  allocation_destination_verb:
+  - go
+  - goes
+  nonpersonal_actor_anaphor:
+  - it
+  opening_state_adverb:
+  - originally
+  material_allocation_verb:
+  - pour
+  - poured
+  - pouring
+  - pours
+  allocation_receipt_preposition:
+  - to
+  - in
+  - into
+attribute_compatibility:
+  uniform_quantity_attribute: [count_aggregate_noun]

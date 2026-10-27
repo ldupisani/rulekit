@@ -1,0 +1,6 @@
+format: rulekit/geometry@1
+formulas:
+- {shape: rectangle, quantity: area, expr: length * width}
+- shape: cuboid
+  quantity: volume
+  expr: length * width * height

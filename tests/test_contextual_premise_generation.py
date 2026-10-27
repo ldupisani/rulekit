@@ -45,9 +45,10 @@ def test_only_declared_non_generative_rules_remain_outside_generation(project) -
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 531
+    assert len(availability) == 593
     assert {item.id for item in availability.values() if not item.supported} == (
         SAFETY_RULES | {
+
             "arithmetic/collected-qualified-nested-population",
             "arithmetic/group-attendance-intention",
             "arithmetic/named-group-shopping-intention",
@@ -159,8 +160,8 @@ def test_generation_api_separates_safety_consumers_from_targets() -> None:
 
     payload = endpoint()
 
-    assert payload["supported"] == 476
-    assert payload["total"] == 523
+    assert payload["supported"] == 538
+    assert payload["total"] == 585
     assert payload["safety_total"] == 8
     assert {rule["id"] for rule in payload["safety_rules"]} == SAFETY_RULES
     assert not ({rule["id"] for rule in payload["rules"]} & SAFETY_RULES)

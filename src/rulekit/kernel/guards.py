@@ -311,9 +311,9 @@ def _check_number(
                for f in store.by_kind(kind)):
             return GuardVeto("answer-accounting", "a stated rate policy or repeated schedule was not used")
 
-        from .model import AllocationGroup, IndexedPathEvidence, MeasuredComponent, SpecificationEvidence, PopulationEvidence
+        from .model import AllocationGroup, IndexedPathEvidence, MeasuredComponent, SpecificationEvidence, PopulationEvidence, RegionEvidence
         if any(f.key() not in log.consumed_component_keys
-               for kind in (AllocationGroup, IndexedPathEvidence, MeasuredComponent, SpecificationEvidence, PopulationEvidence)
+               for kind in (AllocationGroup, IndexedPathEvidence, MeasuredComponent, SpecificationEvidence, PopulationEvidence, RegionEvidence)
                for f in store.by_kind(kind)):
             return GuardVeto("answer-accounting", "a scoped component was not used")
 
@@ -342,6 +342,10 @@ def _check_number(
             return GuardVeto("answer-accounting", "a stated budget balance was not used as allocation evidence")
 
     if _enabled(reg, "answer-accounting") and store is not None:
+        from .model import Price
+        if any(p.per and p.key() not in log.consumed_quoted_price_keys
+               for p in store.by_kind(Price)):
+            return GuardVeto("answer-accounting", "an explicitly scoped package price was not used")
         from .model import PurchaseTotal
 
         if any(total.key() not in log.consumed_purchase_total_keys

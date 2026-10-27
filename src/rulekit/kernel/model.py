@@ -1147,6 +1147,33 @@ class IndexedPathEvidence(Fact):
 
 
 @dataclass(frozen=True)
+class RegionEvidence(Fact):
+    """One named measurement of a resource, or explicit scope for its removal.
+
+    Measurements sharing a source position describe one region. A direct
+    scalar amount carries its quantity basis instead of a geometric axis.
+    Neither material identity nor stock form implies a measurement basis.
+    """
+    stage: str
+    material: str
+    entity: str
+    shape: str
+    value: float
+    unit: str
+    position: int
+    dimension: str = ""
+    quantity: str = ""
+    source_scope: str = ""
+
+    def key(self):
+        return ("region", self.provenance.sentence, self.position, self.stage, self.dimension)
+
+    def value_part(self):
+        return (self.material, self.entity, self.shape, self.value, self.unit,
+                self.dimension, self.quantity, self.source_scope)
+
+
+@dataclass(frozen=True)
 class MeasuredComponent(Fact):
     """A stated amount or numerical comparison between explicitly unit-labelled components."""
     entity: str
@@ -1459,6 +1486,7 @@ class BatchEvidence(Fact):
     subtotal: float = 0.0
     members: tuple[str, ...] = ()
     entity_ref: ReferenceIdentity | None = field(default=None, metadata={"reference_for": "entity"})
+    container_ref: ReferenceIdentity | None = field(default=None, metadata={"reference_for": "container"})
 
     def key(self):
         return ("batch-evidence", self.provenance.sentence, self.position, self.kind)
@@ -1468,7 +1496,8 @@ class BatchEvidence(Fact):
                 self.marker, self.fraction, self.container, self.attribute,
                 self.sign, self.acquisition, self.per_member, self.subtotal, self.members,
                 self.entity_ref.key() if self.entity_ref else None,
-                self.acquisition_ref.key() if self.acquisition_ref else None, self.content_count)
+                self.acquisition_ref.key() if self.acquisition_ref else None, self.content_count,
+                self.container_ref.key() if self.container_ref else None)
 
 
 @dataclass(frozen=True)
@@ -1759,6 +1788,10 @@ class Quantity(Fact):
     segment: int | None = None
     entity_ref: ReferenceIdentity | None = field(default=None, metadata={"reference_for": "entity"})
     item_reference: ItemClassReference | None = field(default=None, repr=False)
+    # Explicit partitive roles from the reader (e.g. packages of contents).
+    # Keep them independent of legacy display-key qualification.
+    measure_ref: ReferenceIdentity | None = None
+    content_ref: ReferenceIdentity | None = None
 
     def __post_init__(self):
         if self.entity_ref is None:
@@ -2380,8 +2413,15 @@ class Price(Fact):
     # $32 vs "blue shirt" priced at $27, both bare-folding to item='shirt')
     # into two items — never to change identity absent a real conflict.
     qualifier: str | None = None
+    # Explicit currency and pricing unit for independently quoted packages.
+    # Empty fields preserve the older item-price contract.
+    measure: str | None = None
+    per: str | None = None
 
     def key(self) -> tuple:
+        if self.per:
+            return ("price", self.item, self.qualifier, self.per, self.measure,
+                    self.verb, self.occurrence)
         return ("price", self.item, self.verb, self.occurrence)
 
     def value_part(self) -> Any:

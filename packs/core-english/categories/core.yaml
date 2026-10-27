@@ -1598,9 +1598,12 @@ categories:
       `interchangeable_categories`) so this never widens
       `_resolve_measure`/`_resolve_measure_against`, which every OTHER
       consumer keeps calling unchanged. Generic `inch` and its
-      membership are core-owned; the remaining corpus-mined members
-      extend this category from packs/difg-mined/categories/
-      semantic.yaml.
+      membership are core-owned; the remaining measurement and dimension terms
+      extend this category from packs/difg-mined/categories/semantic.yaml.
+  length_unit:
+    parent: noun
+    notes: Concrete linear formula units. Quantity-dimension resolution and
+      holder compatibility require their separate, explicit measure-family membership.
   mass_measure:
     parent: noun
     dimension: true
@@ -2674,7 +2677,7 @@ members:
   content_progress_quantity_verb: [reading, reads]
   contribution_transfer_verb: [gave, give, gives]
   copula: [are, is, was, were]
-  count_aggregate_noun: [amount, number]
+  count_aggregate_noun: [amount, number, quantity]
   count_intensifier: [more]
   count_quantity_delta: [fewer, more]
   cultivation_quantity_verb: [plant, planted, planting, plants]
@@ -2702,6 +2705,7 @@ members:
   distributive_quantifier: [each, every]
   drop_quantity_verb: [dropped, drops]
   droppable_quantity_object:
+  - bolt
   - banana
   - apple
   - apricot
@@ -2780,6 +2784,12 @@ members:
   - tea
   - tomato
   - treat
+  - ice cream
+  - frozen yoghurt
+  - frozen yogurt
+  - yoghurt
+  - yogurt
+  - milkshake
   enrollment_quantity_object: [course, student]
   enrollment_quantity_verb: [enroll, enrolled, enrolling, enrolls]
   epistemic_report_verb: [said, say, saying, says]
@@ -2815,6 +2825,7 @@ members:
   instrument_noun: [key, pencil]
   instrument_preposition: [with, without]
   length_measure: [inch]
+  length_unit: [foot, inch, meter, centimeter]
   less_dir: [fewer, less, younger]
   linear_dimension_comparative: [higher, larger, longer, shorter, smaller, taller, wider]
   linear_dimension_holder: [book, tree]
@@ -2839,7 +2850,7 @@ members:
   mass_dimension_noun: [weight]
   mass_measure: [gram, kilogram, pound, weight]
   mass_quantity_delta: [less, more]
-  mass_quantity_noun: [clay, litter, money, paper, rest, sand, sugar, vinegar, water, wool]
+  mass_quantity_noun: [cardboard, clay, cloth, fabric, ice cream, litter, money, paper, rest, sand, sugar, vinegar, water, wool, yoghurt, yogurt, frozen yoghurt, frozen yogurt]
   mass_unit: ["gram", "kilogram", "ounce", "pound"]
   material_addition_quantity_verb: [add, added, adding, adds]
   means_compatible_verb: [jumped, ran, travel, traveled, travels, walked]
@@ -3032,7 +3043,7 @@ members:
   size_attribute: [large, small]
   sized_content_bearing_whole: [bag, barrel, beaker, bottle, bowl, box, bucket, canister, container, flask,
       jar, jug, tank, vessel, vial]
-  sized_quantity_container: [bag, barrel, basket, beaker, bottle, bowl, box, bucket, canister, container, flask, jar,
+  sized_quantity_container: [bag, barrel, basket, bin, beaker, bottle, bowl, box, bucket, canister, carton, container, flask, jar,
       jug, tank, vessel, vial]
   span_preposition: [in]
   spatial_copular_verb: [are, is, was, were]
@@ -3109,6 +3120,8 @@ members:
   winnable_quantity_object: [dollar, money]
   written_production_verb: [write, writes, wrote]
 attribute_compatibility:
+  length_unit: [rectangular_shape]
+  prenominal_remnant_adj: [mass_currency_noun, quantity_dimension_noun]
   duration_measure: [duration_measure]
   academic_course_modifier: [sequential_partition_destination]
   age_comparative: [age_measure]

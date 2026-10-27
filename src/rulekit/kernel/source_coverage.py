@@ -106,3 +106,55 @@ def price_source_units(reading, fact, reg):
     ):
         return ()
     return tuple(u.uid for u in units)
+
+
+def partitive_quantity_source_units(reading, fact, reg):
+    """Footprint of an ordinary folded quantity with explicit partitive roles.
+
+    Join by reader-bound identities, then check the stated value. Repeated
+    indistinguishable phrases decline instead of selecting one by its amount.
+    A coordinated object may inherit the one clause predicate and subject.
+    """
+    from .reference_identity import reference_from_unit
+
+    def bound(unit, need):
+        return next((ob.target for ob in unit.obligations()
+                     if ob.need == need and hasattr(ob.target, "features")), None)
+
+    if (fact.provenance.source != "fold" or fact.provenance.sentence != reading.sentence_index
+            or fact.measure_ref is None or fact.content_ref is None):
+        return ()
+    phrases = []
+    for prep in reading.units:
+        if not reg.word_in_category(prep.features.get("lemma", ""), "partitive"):
+            continue
+        anchor, content = bound(prep, "anchor"), bound(prep, "object")
+        if (anchor is not None and content is not None
+                and reference_from_unit(anchor) == fact.measure_ref
+                and reference_from_unit(content) == fact.content_ref):
+            phrases.append((anchor, prep, content))
+    if len(phrases) != 1:
+        return ()
+    anchor, prep, content = phrases[0]
+    if anchor.features.get("value_kind") != "count" or anchor.features.get("value") != fact.value:
+        return ()
+    verbs = [u for u in reading.units if u.sense() == "verb"
+             and u.features.get("lemma") == fact.verb
+             and (subject := bound(u, "subject")) is not None
+             and reference_from_unit(subject) == fact.entity_ref]
+    direct = [verb for verb in verbs if bound(verb, "dobj") is anchor]
+    link = None
+    if len(direct) == 1:
+        verb = direct[0]
+    elif fact.segment is not None and len(verbs) == 1:
+        verb = verbs[0]
+        before = [u for u in reading.units[:reading.units.index(anchor)]
+                  if u.sense() not in {"article", "punct"}]
+        if not before or not reg.word_in_category(
+                before[-1].features.get("lemma", ""), "holder_list_conjunction"):
+            return ()
+        link = before[-1]
+    else:
+        return ()
+    return tuple(u.uid for u in (bound(verb, "subject"), verb, anchor, prep, content, link)
+                 if u is not None)

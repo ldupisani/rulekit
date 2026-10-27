@@ -73,6 +73,27 @@ def _satisfy_pattern_obligations(
     """Apply only the reference/literal/need contracts of a matched rule."""
 
     from .reference_bindings import project_references
+    selected = set(getattr(result.match.rule, "disambiguates", ()))
+    pending = ([token for seq in result.match.rule.match.values() for token in seq]
+               if selected else [])
+    while pending:
+        token = pending.pop()
+        pending.extend(token.opt or ())
+        if token.slot not in selected or not token.cat:
+            continue
+        unit = result.match.slots.get(token.slot)
+        root = reg.root_sense(token.cat)
+        if not isinstance(unit, Unit) or root not in unit.senses():
+            continue
+        old_senses = set(unit.senses())
+        reading.record(
+            "pattern-select-sense", unit,
+            {"senses": [root], "sense": root, "ambiguous": False,
+             "obligations": [ob for ob in unit.obligations()
+                             if ob.role == root or ob.role not in old_senses]},
+            f"category {token.cat} in selected construction {result.match.rule.id}",
+            rule_id=result.match.rule.id,
+        )
     # A validated textual composition interprets its source as literal data,
     # not prose vocabulary. This is local to the accepted match: lowercase
     # components elsewhere remain unknown, and invalid layouts never arrive
@@ -317,6 +338,36 @@ def _prior_location_anaphor_candidates(
     }
 
 
+def _prior_nonpersonal_actor_candidates(readings, reading, unit, reg):
+    """An opted-in impersonal subject continues one explicit resource actor.
+
+    Objects, capacities and personal names cannot nominate an actor. Multiple
+    prior subject mentions remain ambiguous rather than winning by recency.
+    """
+    if (not reg.word_in_category(unit.features.get("lemma", ""), "nonpersonal_actor_anaphor")
+            or not any(
+                predicate.sense() == "verb"
+                and any(reg.word_in_category(predicate.features.get("lemma", ""), category)
+                        for category in ("resource_usage_verb", "retention_verb", "allocation_transfer_verb"))
+                and any(ob.need == "subject" and ob.target is unit for ob in predicate.obligations())
+                for predicate in reading.units)):
+        return None
+    candidates = {}
+    for prior in readings:
+        if prior.sentence_index >= reading.sentence_index:
+            continue
+        for predicate in prior.units:
+            if predicate.sense() != "verb":
+                continue
+            for obligation in predicate.obligations():
+                target = obligation.target
+                if (obligation.need == "subject" and isinstance(target, Unit)
+                        and target.sense() == "noun"
+                        and reg.word_in_category(target.features.get("lemma", ""), "nonpersonal_resource_actor")):
+                    candidates[(prior.sentence_index, target.uid)] = (prior.sentence_index, target)
+    return candidates if len(candidates) == 1 else {}
+
+
 def _local_possessive_subject_candidates(
     reading: Reading, determiner: Unit, reg: Registry
 ) -> dict[ReferenceIdentity, tuple[int, Unit]]:
@@ -373,13 +424,21 @@ def _local_possessive_subject_candidates(
             lemma = target.features.get(
                 "lemma", target.features.get("fold", "")
             )
+            # Local binding must respect the same pack-owned person eligibility
+            # as ordinary singular personal reference. A local common noun is
+            # not automatically a person; nonpersonal possessives are separate.
+            if (target.sense() == "noun"
+                    and reg.word_in_category(determiner_lemma, "third_person_animate_possessive_determiner")
+                    and not reg.word_in_category(lemma, "animate")):
+                continue
             candidates[reference_from_unit(target)] = (reading.sentence_index, target)
     return candidates if len(candidates) == 1 else {}
 
 
 def _prior_possessive_owner_candidates(
-    readings: list[Reading], reading: Reading, determiner: Unit
-) -> dict[ReferenceIdentity, tuple[int, Unit]]:
+    readings: list[Reading], reading: Reading, determiner: Unit, reg: Registry,
+    local_owners=(),
+) -> dict[ReferenceIdentity, tuple[int, Unit]] | None:
     """Continue the nearest already-resolved owner of the same noun head."""
 
     owned_heads = {
@@ -417,6 +476,22 @@ def _prior_possessive_owner_candidates(
     owner = reference_from_unit(prior_owned).owner
     if owner is None or not owner.resolved:
         return {}
+    # An explicit earlier possessive supplies form evidence independently of
+    # the owner's name. A conflicting paradigm cannot fall back to that name.
+    from .reference_bindings import anaphoric_forms_agree, _referent_number
+    prior_determiner = next((u for u in prior_reading.units
+                             if u.uid == prior_owned.features.get("owner_ref_uid")), None)
+    number = _referent_number(prior_determiner) if prior_determiner is not None else None
+    if (prior_determiner is not None and prior_determiner.sense() == "pronoun"
+            # Anonymous anchored owners retain their existing independent
+            # identity contract; no nominal number is inferred for them.
+            and number is not None
+            and getattr(reg.lexicon.get(prior_determiner.surface.casefold()), "anaphoric_form", None)
+            and getattr(reg.lexicon.get(determiner.surface.casefold()), "anaphoric_form", None)
+            and not anaphoric_forms_agree(
+                [prior_determiner.surface, determiner.surface],
+                number, reg)):
+        return {} if any(local != owner for local in local_owners) else None
     targets = [
         (candidate_reading.sentence_index, unit)
         for candidate_reading in readings
@@ -696,8 +771,12 @@ def _bind_discourse(
                 location_candidates = _prior_location_anaphor_candidates(
                     readings, reading, unit, reg
                 )
+                actor_candidates = _prior_nonpersonal_actor_candidates(readings, reading, unit, reg)
                 dimension = deixis.PERSON
-                if location_candidates is not None:
+                if actor_candidates is not None:
+                    candidates = actor_candidates
+                    dimension = deixis.DISCOURSE
+                elif location_candidates is not None:
                     candidates = location_candidates
                     dimension = deixis.PLACE
                 else:
@@ -705,8 +784,10 @@ def _bind_discourse(
                         reading, unit, reg
                     )
                     prior_owner = _prior_possessive_owner_candidates(
-                        readings, reading, unit
+                        readings, reading, unit, reg, local_subjects
                     )
+                    if prior_owner is None:
+                        continue
                     candidates = (
                         local_subjects
                         or prior_owner
@@ -803,9 +884,9 @@ def _bind_discourse(
                 )
                 if winner is not None:
                     target = winner.payload
-                    lemma = target.features.get(
-                        "lemma", target.features.get("fold", "")
-                    )
+                    identity = reference_from_unit(target)
+                    lemma = identity.head if identity.resolved else target.features.get(
+                        "lemma", target.features.get("fold", ""))
                     new = list(obligations)
                     new[i] = Obligation(ob.role, ob.need, target=target, optional=ob.optional)
                     reading.record(

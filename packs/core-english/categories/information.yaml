@@ -32,6 +32,7 @@ members:
   - photograph
   computing_device:
   - computer
+  - server
   information_deletion_verb:
   - delete
   - deleted

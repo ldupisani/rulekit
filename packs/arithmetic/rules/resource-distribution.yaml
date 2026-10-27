@@ -1,0 +1,474 @@
+format: rulekit/rules@1
+templates:
+  allocation-question:
+    parameters:
+      head: []
+      tail: []
+      item: ''
+      basis: ''
+      unit: ''
+      satisfies: {}
+      disambiguates: []
+    rule:
+      match:
+        question:
+        - {parameter: head}
+        - {parameter: tail}
+        - {lit: '?', consume_skipped: true}
+      satisfies: {parameter: satisfies}
+      disambiguates: {parameter: disambiguates}
+      resolves:
+        consumer: uniform-content-distribution
+        mode: forward
+        item: {parameter: item}
+        quantity: {parameter: basis}
+        unit: {parameter: unit}
+        recipient: '{group}'
+rules:
+- id: arithmetic/equal-resource-transfer-volume
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: resource_user, referential: true, at_start: true}
+    - {slot: transfer, cat: allocation_transfer_verb, finite_form: true}
+    - {slot: amount, cat: volume_measure, counted: true}
+    - {lit: of}
+    - {slot: item, cat: material_resource, uncounted: true, bare: true}
+    - {slot: equal, cat: equal_division_adverb}
+    - {slot: prep, cat: allocation_target_preposition}
+    - {slot: group, cat: allocation_recipient, counted: true, number: plural}
+    - {lit: ., consume_skipped: true}
+  emits:
+  - {fact: batch_evidence, kind: allocation-pool, entity: '{who}', measure: '{item}', value: amount, container: '',
+      marker: '{amount}', attribute: volume, position: '{amount.uid}'}
+  - {fact: batch_evidence, kind: allocation-recipients, entity: '{who}', measure: '{item}', value: group, container: '{group}',
+    marker: '', attribute: '', position: '{group.uid}'}
+  consumes:
+  - transfer
+  - amount
+  - group
+  where:
+  - number_compatible:
+    - who
+    - transfer
+  - verb_role_compatible:
+      verb: transfer
+      roles:
+      - item
+      verb_cat: material_allocation_verb
+      role_cat: material_resource
+- id: arithmetic/equal-resource-transfer-mass
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: resource_user, referential: true, at_start: true}
+    - {slot: transfer, cat: allocation_transfer_verb, finite_form: true}
+    - {slot: amount, cat: mass_unit, counted: true}
+    - {lit: of}
+    - {slot: item, cat: material_resource, uncounted: true, bare: true}
+    - {slot: equal, cat: equal_division_adverb}
+    - {slot: prep, cat: allocation_target_preposition}
+    - {slot: group, cat: allocation_recipient, counted: true, number: plural}
+    - {lit: ., consume_skipped: true}
+  emits:
+  - {fact: batch_evidence, kind: allocation-pool, entity: '{who}', measure: '{item}', value: amount, container: '',
+      marker: '{amount}', attribute: mass, position: '{amount.uid}'}
+  - {fact: batch_evidence, kind: allocation-recipients, entity: '{who}', measure: '{item}', value: group, container: '{group}',
+    marker: '', attribute: '', position: '{group.uid}'}
+  consumes:
+  - transfer
+  - amount
+  - group
+  where:
+  - number_compatible:
+    - who
+    - transfer
+  - verb_role_compatible:
+      verb: transfer
+      roles:
+      - item
+      verb_cat: material_allocation_verb
+      role_cat: material_resource
+- id: arithmetic/equal-resource-transfer-length
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: resource_user, referential: true, at_start: true}
+    - {slot: transfer, cat: allocation_transfer_verb, finite_form: true}
+    - {slot: amount, cat: length_unit, counted: true}
+    - {lit: of}
+    - {slot: item, cat: material_resource, uncounted: true, bare: true}
+    - {slot: equal, cat: equal_division_adverb}
+    - {slot: prep, cat: allocation_target_preposition}
+    - {slot: group, cat: allocation_recipient, counted: true, number: plural}
+    - {lit: ., consume_skipped: true}
+  emits:
+  - {fact: batch_evidence, kind: allocation-pool, entity: '{who}', measure: '{item}', value: amount, container: '',
+      marker: '{amount}', attribute: length, position: '{amount.uid}'}
+  - {fact: batch_evidence, kind: allocation-recipients, entity: '{who}', measure: '{item}', value: group, container: '{group}',
+    marker: '', attribute: '', position: '{group.uid}'}
+  consumes:
+  - transfer
+  - amount
+  - group
+  where:
+  - number_compatible:
+    - who
+    - transfer
+  - verb_role_compatible:
+      verb: transfer
+      roles:
+      - item
+      verb_cat: material_allocation_verb
+      role_cat: material_resource
+- id: arithmetic/equal-resource-transfer-count
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: resource_user, referential: true, at_start: true}
+    - {slot: transfer, cat: allocation_transfer_verb, finite_form: true}
+    - {slot: amount, cat: ownable_quantity_object, counted: true, number: plural}
+    - {slot: equal, cat: equal_division_adverb}
+    - {slot: prep, cat: allocation_target_preposition}
+    - {slot: group, cat: allocation_recipient, counted: true, number: plural}
+    - {lit: ., consume_skipped: true}
+  emits:
+  - {fact: batch_evidence, kind: allocation-pool, entity: '{who}', measure: '{amount}', value: amount, container: '',
+    marker: '{amount}', attribute: count, position: '{amount.uid}'}
+  - {fact: batch_evidence, kind: allocation-recipients, entity: '{who}', measure: '{amount}', value: group,
+      container: '{group}', marker: '', attribute: '', position: '{group.uid}'}
+  consumes:
+  - transfer
+  - amount
+  - group
+  where:
+  - number_compatible:
+    - who
+    - transfer
+  - verb_role_compatible:
+      verb: transfer
+      roles:
+      - amount
+      verb_cat: material_allocation_verb
+      role_cat: material_resource
+- id: arithmetic/allocation-retained-remainder
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: resource_user, referential: true, at_start: true}
+    - {slot: keep, cat: retention_verb, finite_form: true}
+    - {slot: amount, cat: currency_measure, counted: true}
+    - {lit: and}
+    - {slot: divide, cat: allocation_transfer_verb, finite_form: true}
+    - {slot: rest, cat: remnant}
+    - {slot: equal, cat: equal_division_adverb}
+    - {slot: prep, cat: allocation_target_preposition}
+    - {slot: group, cat: allocation_recipient, counted: true, number: plural}
+    - {lit: ., consume_skipped: true}
+  emits:
+  - {fact: batch_evidence, kind: allocation-retained, entity: '{who}', measure: '{amount}', value: amount,
+      container: '', marker: '{amount}', attribute: currency, position: '{amount.uid}'}
+  - {fact: batch_evidence, kind: allocation-recipients, entity: '{who}', measure: '', value: group, container: '{group}',
+    marker: '', attribute: '', position: '{group.uid}'}
+  consumes:
+  - keep
+  - amount
+  - divide
+  - group
+  where:
+  - number_compatible:
+    - who
+    - keep
+  - number_compatible:
+    - who
+    - divide
+- id: arithmetic/equal-resource-transfer-volume-passive
+  match:
+    sentence:
+    - {slot: amount, cat: volume_measure, counted: true}
+    - {lit: of}
+    - {slot: item, cat: material_resource, uncounted: true, bare: true}
+    - {slot: be, cat: copula}
+    - {slot: transfer, cat: allocation_transfer_verb, past_participle: true}
+    - {slot: equal, cat: equal_division_adverb}
+    - {slot: prep, cat: allocation_target_preposition}
+    - {slot: group, cat: allocation_recipient, counted: true, number: plural}
+    - {lit: ., consume_skipped: true}
+  emits:
+  - {fact: batch_evidence, kind: allocation-pool, entity: '', measure: '{item}', value: amount, container: '',
+      marker: '{amount}', attribute: volume, position: '{amount.uid}'}
+  - {fact: batch_evidence, kind: allocation-recipients, entity: '', measure: '{item}', value: group, container: '{group}',
+    marker: '', attribute: '', position: '{group.uid}'}
+  consumes:
+  - transfer
+  - amount
+  - group
+  - be
+  where:
+  - number_compatible:
+    - amount
+    - be
+  - verb_role_compatible:
+      verb: transfer
+      roles:
+      - item
+      verb_cat: material_allocation_verb
+      role_cat: material_resource
+  satisfies:
+    be:
+    - subject
+    transfer:
+    - subject
+- id: arithmetic/equal-resource-transfer-mass-passive
+  match:
+    sentence:
+    - {slot: amount, cat: mass_unit, counted: true}
+    - {lit: of}
+    - {slot: item, cat: material_resource, uncounted: true, bare: true}
+    - {slot: be, cat: copula}
+    - {slot: transfer, cat: allocation_transfer_verb, past_participle: true}
+    - {slot: equal, cat: equal_division_adverb}
+    - {slot: prep, cat: allocation_target_preposition}
+    - {slot: group, cat: allocation_recipient, counted: true, number: plural}
+    - {lit: ., consume_skipped: true}
+  emits:
+  - {fact: batch_evidence, kind: allocation-pool, entity: '', measure: '{item}', value: amount, container: '',
+      marker: '{amount}', attribute: mass, position: '{amount.uid}'}
+  - {fact: batch_evidence, kind: allocation-recipients, entity: '', measure: '{item}', value: group, container: '{group}',
+    marker: '', attribute: '', position: '{group.uid}'}
+  consumes:
+  - transfer
+  - amount
+  - group
+  - be
+  where:
+  - number_compatible:
+    - amount
+    - be
+  - verb_role_compatible:
+      verb: transfer
+      roles:
+      - item
+      verb_cat: material_allocation_verb
+      role_cat: material_resource
+  satisfies:
+    be:
+    - subject
+    transfer:
+    - subject
+- id: arithmetic/equal-resource-transfer-length-passive
+  match:
+    sentence:
+    - {slot: amount, cat: length_unit, counted: true}
+    - {lit: of}
+    - {slot: item, cat: material_resource, uncounted: true, bare: true}
+    - {slot: be, cat: copula}
+    - {slot: transfer, cat: allocation_transfer_verb, past_participle: true}
+    - {slot: equal, cat: equal_division_adverb}
+    - {slot: prep, cat: allocation_target_preposition}
+    - {slot: group, cat: allocation_recipient, counted: true, number: plural}
+    - {lit: ., consume_skipped: true}
+  emits:
+  - {fact: batch_evidence, kind: allocation-pool, entity: '', measure: '{item}', value: amount, container: '',
+      marker: '{amount}', attribute: length, position: '{amount.uid}'}
+  - {fact: batch_evidence, kind: allocation-recipients, entity: '', measure: '{item}', value: group, container: '{group}',
+    marker: '', attribute: '', position: '{group.uid}'}
+  consumes:
+  - transfer
+  - amount
+  - group
+  - be
+  where:
+  - number_compatible:
+    - amount
+    - be
+  - verb_role_compatible:
+      verb: transfer
+      roles:
+      - item
+      verb_cat: material_allocation_verb
+      role_cat: material_resource
+  satisfies:
+    be:
+    - subject
+    transfer:
+    - subject
+- id: arithmetic/equal-resource-transfer-count-passive
+  match:
+    sentence:
+    - {slot: amount, cat: ownable_quantity_object, counted: true, number: plural}
+    - {slot: be, cat: copula}
+    - {slot: transfer, cat: allocation_transfer_verb, past_participle: true}
+    - {slot: equal, cat: equal_division_adverb}
+    - {slot: prep, cat: allocation_target_preposition}
+    - {slot: group, cat: allocation_recipient, counted: true, number: plural}
+    - {lit: ., consume_skipped: true}
+  emits:
+  - {fact: batch_evidence, kind: allocation-pool, entity: '', measure: '{amount}', value: amount, container: '',
+      marker: '{amount}', attribute: count, position: '{amount.uid}'}
+  - {fact: batch_evidence, kind: allocation-recipients, entity: '', measure: '{amount}', value: group, container: '{group}',
+    marker: '', attribute: '', position: '{group.uid}'}
+  consumes:
+  - transfer
+  - amount
+  - group
+  - be
+  where:
+  - number_compatible:
+    - amount
+    - be
+  - verb_role_compatible:
+      verb: transfer
+      roles:
+      - amount
+      verb_cat: material_allocation_verb
+      role_cat: material_resource
+  satisfies:
+    be:
+    - subject
+    transfer:
+    - subject
+asks: []
+variants: []
+ask_variants:
+- id: ask/equal-resource-allocation-count
+  template: allocation-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: item, cat: ownable_quantity_object, uncounted: true, bare: true, number: plural}
+    tail:
+    - {slot: aux, cat: singular_auxiliary}
+    - {slot: each, cat: distributive_quantifier}
+    - {slot: group, cat: allocation_recipient, uncounted: true, number: singular, bare: true}
+    - {slot: receive, cat: allocation_receipt_verb, bare_form: true}
+    item: '{item}'
+    basis: count
+    satisfies:
+      each:
+      - collection
+      receive:
+      - subject
+    disambiguates: []
+- id: ask/equal-resource-allocation-material
+  template: allocation-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {slot: amount_word, cat: mass_amount_interrogative}
+    - {slot: item, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: aux, cat: singular_auxiliary}
+    - {slot: each, cat: distributive_quantifier}
+    - {slot: group, cat: allocation_recipient, uncounted: true, number: singular, bare: true}
+    - {slot: receive, cat: allocation_receipt_verb, bare_form: true}
+    item: '{item}'
+    basis: ''
+    satisfies:
+      each:
+      - collection
+      receive:
+      - subject
+    disambiguates:
+    - amount_word
+- id: ask/equal-resource-allocation-money
+  template: allocation-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {slot: amount_word, cat: mass_amount_interrogative}
+    - {slot: money, cat: mass_currency_noun, uncounted: true, bare: true}
+    tail:
+    - {slot: aux, cat: singular_auxiliary}
+    - {slot: each, cat: distributive_quantifier}
+    - {slot: group, cat: allocation_recipient, uncounted: true, number: singular, bare: true}
+    - {slot: receive, cat: allocation_receipt_verb, bare_form: true}
+    item: ''
+    basis: currency
+    satisfies:
+      each:
+      - collection
+      receive:
+      - subject
+    disambiguates:
+    - amount_word
+- id: ask/equal-resource-allocation-units-volume
+  template: allocation-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: unit, cat: volume_measure, uncounted: true}
+    - {lit: of}
+    - {slot: item, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: aux, cat: singular_auxiliary}
+    - {slot: each, cat: distributive_quantifier}
+    - {slot: group, cat: allocation_recipient, uncounted: true, number: singular, bare: true}
+    - {slot: receive, cat: allocation_receipt_verb, bare_form: true}
+    item: '{item}'
+    basis: volume
+    unit: '{unit}'
+    satisfies:
+      each:
+      - collection
+      receive:
+      - subject
+- id: ask/equal-resource-allocation-units-mass
+  template: allocation-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: unit, cat: mass_unit, uncounted: true}
+    - {lit: of}
+    - {slot: item, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: aux, cat: singular_auxiliary}
+    - {slot: each, cat: distributive_quantifier}
+    - {slot: group, cat: allocation_recipient, uncounted: true, number: singular, bare: true}
+    - {slot: receive, cat: allocation_receipt_verb, bare_form: true}
+    item: '{item}'
+    basis: mass
+    unit: '{unit}'
+    satisfies:
+      each:
+      - collection
+      receive:
+      - subject
+- id: ask/equal-resource-allocation-units-length
+  template: allocation-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: unit, cat: length_unit, uncounted: true}
+    - {lit: of}
+    - {slot: item, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: aux, cat: singular_auxiliary}
+    - {slot: each, cat: distributive_quantifier}
+    - {slot: group, cat: allocation_recipient, uncounted: true, number: singular, bare: true}
+    - {slot: receive, cat: allocation_receipt_verb, bare_form: true}
+    item: '{item}'
+    basis: length
+    unit: '{unit}'
+    satisfies:
+      each:
+      - collection
+      receive:
+      - subject
+- id: ask/equal-resource-allocation-money-placement
+  template: allocation-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {slot: amount_word, cat: mass_amount_interrogative}
+    - {slot: money, cat: mass_currency_noun, uncounted: true, bare: true}
+    tail:
+    - {slot: go, cat: allocation_destination_verb, finite_form: true}
+    - {lit: into}
+    - {slot: each, cat: distributive_quantifier}
+    - {slot: group, cat: allocation_recipient, uncounted: true, number: singular, bare: true}
+    basis: currency
+    satisfies:
+      each:
+      - collection
+    disambiguates:
+    - amount_word

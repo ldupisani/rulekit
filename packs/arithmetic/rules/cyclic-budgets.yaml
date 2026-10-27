@@ -1,0 +1,168 @@
+format: rulekit/rules@1
+templates:
+  inactive-period-saving-plan:
+    parameters:
+      copula_tokens: [{slot: copula, cat: copula}]
+      satisfaction: {}
+    rule:
+      description: A relative clause identifies the periods without the activity as the saving window, not the active periods.
+      match:
+        sentence:
+          - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
+          - {slot: want, cat: finite_infinitival_goal_predicate, finite_form: true}
+          - {lit: to}
+          - {slot: use, cat: resource_usage_verb, bare_form: true}
+          - {slot: periods, cat: duration_measure, uncounted: true, number: plural}
+          - {slot: subject, cat: animate_pronoun}
+          - {parameter: copula_tokens}
+          - {lit: not}
+          - {slot: playing, cat: recurring_activity_verb, present_participle: true}
+          - {slot: activity, cat: recurring_activity_noun, uncounted: true}
+          - {lit: to}
+          - {slot: save, cat: resource_accumulation_verb, bare_form: true}
+          - opt: [{slot: up, cat: accumulation_particle}]
+      where: [{number_compatible: [who, want]}, {number_compatible: [subject, copula]}]
+      consumes: [want, use, playing, save, copula]
+      satisfies: {parameter: satisfaction}
+      emits:
+        - {fact: batch_evidence, kind: inactive-saving-plan, entity: '{who}', measure: '{periods}', container: '{activity}', value: 0, position: '{periods.uid}'}
+rules:
+  - id: arithmetic/remainder-period-saving-plan
+    description: A saving intention explicitly selects the remaining periods of the stated activity cycle.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
+        - {slot: want, cat: finite_infinitival_goal_predicate, finite_form: true}
+        - {lit: to}
+        - {slot: save, cat: resource_accumulation_verb, bare_form: true}
+        - opt: [{slot: up, cat: accumulation_particle}]
+        - {lit: during}
+        - {slot: periods, cat: duration_measure, uncounted: true, qualified: true, qualifier_cat: prenominal_remnant_adj}
+    where: [{number_compatible: [who, want]}]
+    consumes: [want, save]
+    emits:
+      - {fact: batch_evidence, kind: inactive-saving-plan, entity: '{who}', measure: '{periods}', container: '', value: 0, position: '{periods.span_start}'}
+  - id: arithmetic/single-work-activity
+    description: One offered work activity and its object; no completed task count is asserted.
+    match:
+      sentence:
+        - {lit: by}
+        - {slot: activity, cat: service_activity_verb, present_participle: true}
+        - {slot: object, cat: service_object, uncounted: true}
+        - {lit: '.', consume_skipped: true}
+    where:
+      - verb_roles_compatible: {verb: activity, roles: {theme: [object]}, frame_categories: [service_activity_verb], require_declared_frame: true}
+    consumes: [activity]
+    emits:
+      - {fact: service_scope, entity: '', verb: '{activity}', item: '{object}'}
+  - id: arithmetic/two-work-activities
+    description: Two coordinated offered activities record the explicit final object; omitted earlier objects remain unspecified.
+    match:
+      sentence:
+        - {lit: by}
+        - {slot: first, cat: service_activity_verb, present_participle: true}
+        - {lit: and}
+        - {slot: second, cat: service_activity_verb, present_participle: true}
+        - {slot: object, cat: service_object, uncounted: true}
+        - {lit: '.', consume_skipped: true}
+    where:
+      - verb_roles_compatible: {verb: second, roles: {theme: [object]}, frame_categories: [service_activity_verb], require_declared_frame: true}
+    consumes: [first, second]
+    emits:
+      - {fact: service_scope, entity: '', verb: '{first}', item: ''}
+      - {fact: service_scope, entity: '', verb: '{second}', item: '{object}'}
+  - id: arithmetic/periodic-purpose-expense
+    description: A recurring cost retains its period, participant and purpose; it is not a cash holding.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
+        - {slot: spend, cat: spend_verb, finite_form: true}
+        - {slot: amount, cat: currency_measure, counted: true}
+        - {lit: [a, per, each, every], consume_skipped: true}
+        - {slot: period, cat: duration_measure, uncounted: true, bare: true}
+        - {slot: on, cat: spend_target_prep}
+        - {slot: target, cat: recurring_expense_target, uncounted: true}
+        - {lit: '.', consume_skipped: true}
+    where: [{number_compatible: [who, spend]}]
+    consumes: [spend, amount]
+    emits:
+      - {fact: rate, entity: '{who}', measure: '{amount}', per: '{period}', value: amount, verb: '{spend}'}
+      - {fact: batch_evidence, kind: expense-purpose, entity: '{who}', measure: '{target}', attribute: '{target.qualifier}', container: '{target.owner}', value: 0, position: '{target.uid}'}
+  - id: arithmetic/owned-active-period-duration
+    description: An owned activity period has an explicit duration. Its enclosing cycle, if any, is separately declared in pack data.
+    match:
+      sentence:
+        - {slot: owner, cat: possessive_determiner, at_start: true}
+        - {slot: period, cat: annual_activity_period, uncounted: true}
+        - {slot: be, cat: copula}
+        - {slot: duration, cat: duration_measure, counted: true}
+        - {slot: long, cat: elapsed_extent_adjective}
+        - {lit: '.', consume_skipped: true}
+    where: [{number_compatible: [period, be]}]
+    consumes: [be, duration]
+    emits:
+      - {fact: batch_evidence, kind: active-period, entity: '{owner}', measure: '{duration}', container: '{period}', marker: year, fraction: 1, value: duration, position: '{duration.uid}'}
+  - id: arithmetic/three-work-activities
+    description: A coordinated list of offered tasks records activities, not completed work or assumed earnings.
+    match:
+      sentence:
+        - {lit: by}
+        - {slot: first, cat: service_activity_verb, present_participle: true}
+        - {slot: second, cat: service_activity_verb, present_participle: true}
+        - {lit: and}
+        - {slot: third, cat: service_activity_verb, present_participle: true}
+        - {slot: object, cat: service_object, uncounted: true}
+        - {lit: '.', consume_skipped: true}
+    where:
+      - verb_roles_compatible: {verb: third, roles: {theme: [object]}, frame_categories: [service_activity_verb], require_declared_frame: true}
+    consumes: [first, second, third]
+    emits:
+      - {fact: service_scope, entity: '', verb: '{first}', item: ''}
+      - {fact: service_scope, entity: '', verb: '{second}', item: ''}
+      - {fact: service_scope, entity: '', verb: '{third}', item: '{object}'}
+  - id: arithmetic/uniform-service-tariff
+    description: A price for each declared task applies uniformly; no number of tasks is invented.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
+        - {slot: charge, cat: service_tariff_verb, finite_form: true}
+        - {slot: amount, cat: currency_measure, counted: true}
+        - {slot: for, cat: price_for_marker}
+        - {slot: each, cat: postpositive_distributive_quantifier}
+        - {lit: '.', consume_skipped: true}
+    where: [{number_compatible: [who, charge]}]
+    satisfies: {for: [object], each: [collection]}
+    consumes: [charge, amount]
+    emits:
+      - {fact: earning_rate, entity: '{who}', measure: '{amount}', per: '', value: amount, verb: '{charge}', basis: uniform-service}
+variants:
+  - id: arithmetic/inactive-period-saving-plan
+    template: inactive-period-saving-plan
+    arguments:
+      copula_tokens: [{slot: copula, cat: contracted_copula_clitic}]
+      satisfaction: {copula: [owner, owned]}
+  - id: arithmetic/inactive-period-saving-plan-explicit-copula
+    template: inactive-period-saving-plan
+asks:
+  - id: ask/cyclic-saving-average-tasks
+    match:
+      question:
+        - {lit: how, at_start: true}
+        - {lit: many}
+        - {slot: tasks, cat: service_task_noun, uncounted: true, number: plural}
+        - {slot: aux, cat: auxiliary}
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true}
+        - {slot: need, cat: direct_quantity_goal_predicate, bare_form: true}
+        - {lit: to}
+        - {slot: average, cat: averaging_verb, bare_form: true}
+        - {lit: [a, per, each, every], consume_skipped: true}
+        - {slot: period, cat: duration_measure, uncounted: true, bare: true}
+        - {lit: to}
+        - {slot: save, cat: resource_accumulation_verb, bare_form: true}
+        - opt: [{slot: up, cat: accumulation_particle}]
+        - {lit: for}
+        - {slot: owner, cat: possessive_determiner}
+        - {slot: target, cat: recurring_expense_target, uncounted: true}
+        - {lit: '?', consume_skipped: true}
+    satisfies: {need: [subject], average: [subject], save: [subject]}
+    resolves: {consumer: cyclic-saving-average, entity: '{who}', period: '{period}', target: '{target}', target_qualifier: '{target.qualifier}', owner: '{owner}'}

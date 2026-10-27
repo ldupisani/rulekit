@@ -82,10 +82,6 @@ entries:
   giving:
     senses:
     - verb
-  glass:
-    senses:
-    - noun
-    plural: glasses
   gluten:
     senses:
     - noun
@@ -295,11 +291,6 @@ entries:
   heavy:
     senses:
     - adjective
-  held:
-    senses:
-    - verb
-    verb:
-      lemma: hold
   helicopter:
     senses:
     - noun
@@ -367,15 +358,7 @@ entries:
   hogs:
     senses:
     - noun
-  hold:
-    senses:
-    - verb
   holding:
-    senses:
-    - verb
-    verb:
-      lemma: hold
-  holds:
     senses:
     - verb
     verb:
@@ -459,9 +442,6 @@ entries:
     senses:
     - noun
   ice:
-    senses:
-    - noun
-  ice cream:
     senses:
     - noun
   identical:
@@ -655,22 +635,11 @@ entries:
     senses:
     - noun
     plural: kangaroos
-  keep:
-    senses:
-    - verb
   keeping:
     senses:
     - verb
     verb:
       lemma: keep
-  keeps:
-    senses:
-    - verb
-    verb:
-      lemma: keep
-  # scibench de Broglie wavelength: qualifies the energy operand. Adjective
-  # data keeps "kinetic energy" a restricted noun while the formula binds its
-  # numeric value by the eV unit, never by position.
   kinetic:
     senses:
     - adjective
@@ -682,11 +651,6 @@ entries:
     plural:
     - k
     - kelvins
-  kept:
-    senses:
-    - verb
-    verb:
-      lemma: keep
   kickball:
     senses:
     - noun
@@ -971,9 +935,6 @@ entries:
   lists:
     senses:
     - noun
-  living:
-    senses:
-    - adjective
   lizard:
     senses:
     - noun
@@ -1277,9 +1238,6 @@ entries:
   mixtape:
     senses:
     - noun
-  model:
-    senses:
-    - adjective
   models:
     senses:
     - noun

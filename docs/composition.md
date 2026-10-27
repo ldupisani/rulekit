@@ -15,6 +15,7 @@ It does not search arbitrary arithmetic expressions for a plausible number.
 | `GroupTotal` | An aggregate with its own scope and provenance |
 | `BatchEvidence` | Operands belonging to a specific ordered or grouped structure |
 | `MixtureEvidence` | Sample measurements, component shares, and process evidence |
+| `RegionEvidence` | Resource scope, named geometric axes, and directly measured opening/removal amounts |
 
 A per-container content amount is not automatically a stock holding. A total
 is not automatically a new independent occurrence. Different consumers may
@@ -175,6 +176,117 @@ Implementation: [mixture rules](../packs/arithmetic/rules/mixtures.yaml) and
 Executable examples and boundaries: [general mixtures](../tests/test_general_mixtures.py),
 [component amounts](../tests/test_mixture_component.py), and
 [paraphrases](../tests/test_mixture_paraphrases.py).
+
+## Recurring costs and complementary saving windows
+
+A periodic expense, active-period duration, saving intention, and uniform
+task tariff establish an average over the complementary saving window.
+Offered activities are `ServiceScope` evidence, not completed work or income.
+The enclosing cycle is declared in pack data: the supported annual-season
+convention uses one year and names that assumption in the answer. Calendar
+month/year conversion uses cadence conversions, not a fixed day count.
+The calculation requires a positive saving window, one participant and
+purpose, matching periods, and complete source and numeric accounting.
+
+Implementation: [cyclic budgets](../packs/arithmetic/rules/cyclic-budgets.yaml)
+and [saving average](../src/rulekit/kernel/consumers/cyclic_saving_average.py).
+
+## Measured resource remainders
+
+Material identity, stock form, geometric shape, and requested measurement
+are separate evidence. `RegionEvidence` preserves one named operand and its
+unit per source region. Rectangular areas and cuboid volumes use the shared
+YAML formula registry; directly stated lengths, masses, and volumes use the
+same resource balance without inventing geometry or density. Every geometric
+axis is converted before evaluating its formula, so area and volume conversions
+apply the unit factor to each axis.
+
+An active cut with omitted material needs an earlier fabrication scope for
+the same actor. Passive descriptions can refer to the sole stated stock;
+coordinated omissions inherit a unique same-sentence anchor. Direct usage
+must identify the stock's owner. Multiple stocks, incompatible bases, unread
+conditions, oversized individual cuts, and negative remainders decline.
+Geometric subtraction accounts for area or volume; it does not construct a
+cutting or packing layout.
+
+Separate ask constructions normalize “how much”, “how many units”, and
+“what area/volume/length/mass” to the same resource, quantity basis, and output
+unit. Both standalone and attached square/cubic modifiers preserve the power.
+A dimension-noun question may infer a unit only when the measurements state
+one unique unit. A bare amount question does not choose a physical basis.
+
+Implementation: [region rules](../packs/arithmetic/rules/material-regions.yaml),
+[shared formulas](../packs/arithmetic/geometry.yaml), and
+[resource remainder](../src/rulekit/kernel/consumers/material_region_remainder.py).
+
+## Reconstructing equal container contents
+
+An explicit equal-content stock can be reconstructed from a retained count
+and the entire remainder shared among a stated number of recipients with
+known individual shares. The container count, retained amount, recipients,
+and share remain separate operands. Their identities and event order must
+agree; discrete contents must divide into whole counts. Equal contents are
+required evidence and are never inferred merely from identical containers.
+
+Implementation: [distribution rules](../packs/arithmetic/rules/equal-content-distribution.yaml)
+and [uniform contents](../src/rulekit/kernel/consumers/uniform_content_distribution.py).
+
+## Allocation roles and equal shares
+
+Allocation recipients include living agents, organizations, devices, physical
+stores, and financial accounts. Receipt eligibility does not grant intention,
+personal-pronoun eligibility, or the ability to collect and divide resources;
+nested collection grammar retains its separate actor role.
+
+Actual active transfers and passive distributions preserve the source pool,
+resource, units, and counted recipient class. The uniform-distribution consumer
+also computes forward shares: subtract any explicit retention and divide by
+the recipient count. Ordinary monetary holdings remain `Quantity` facts and
+are adapted locally when an actual allocation identifies their use. Requirements,
+capacity, hypothetical transfers, missing equality, conflicting recipient
+descriptions, and indivisible discrete shares decline.
+
+An opted-in impersonal subject can continue a unique prior nonliving resource
+actor in a usage, retention, or allocation clause. This uses the ordinary
+reference arbiter, admits prior grammatical subjects, and leaves competing
+actors unresolved.
+
+Implementation: [recipient categories](../packs/core-english/categories/distribution.yaml),
+[allocation grammar](../packs/arithmetic/rules/resource-distribution.yaml), and
+[uniform distribution](../src/rulekit/kernel/consumers/uniform_content_distribution.py).
+Executable examples and boundaries: [measured resources and allocations](../tests/test_measured_resources_and_allocations.py).
+
+## Package quotes and expenditure comparisons
+
+A completed purchase can retain its package count before a separate quote
+supplies the price. Ordinary `Quantity` facts retain typed measure and content
+references from the reader's partitive bindings. The comparison adapts them
+locally into expenditure operands, preserving existing container-content
+derivations. `Price.per` and `Price.measure` retain the quoted package and
+currency. The existing expenditure-price evaluator computes the two item
+subtotals, which are subtracted in the requested direction. Each quote
+must match the contents and package; all purchases and quotes must belong to
+one complete ledger. A scoped quote cannot be counted as an ordinary item
+price by another consumer without explicit accounting.
+
+Implementation: [quote rules](../packs/arithmetic/rules/quoted-purchases.yaml)
+and [item expenditure comparison](../src/rulekit/kernel/consumers/item_expenditure_comparison.py).
+
+## Successive allocations and a stored loss
+
+A received monetary pool may remain an ordinary `Quantity` until a local
+consumer composes it with ordered fractional allocations. A fraction of the
+opening pool and a fraction of its remainder have distinct markers. Transfers
+retain the destination's owner and modifiers; they are not spending. The
+remaining balance must be explicitly located before a loss can use that
+store. Losing everything except a survivor subtracts the survivor from that
+balance. Missing locations, overlapping store descriptions, incompatible
+owners, extra events, and excessive survivor amounts decline.
+
+Implementation: [resource remainder rules](../packs/arithmetic/rules/resource-remainders.yaml)
+and [stored resource loss](../src/rulekit/kernel/consumers/stored_resource_loss.py).
+Executable analogues, paraphrases, and decline boundaries for these families:
+[resource composition tests](../tests/test_resource_composition_families.py).
 
 ## Related composition contracts
 

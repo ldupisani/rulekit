@@ -9,9 +9,6 @@ conversions:
 - from: meter
   to: centimeter
   factor: 100.0
-- from: foot
-  to: inch
-  factor: 12
 - from: yard
   to: foot
   factor: 3.0

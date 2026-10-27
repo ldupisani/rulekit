@@ -1,0 +1,143 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/uniform-container-stock
+  description: A counted collection of containers explicitly has equal, unstated contents.
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: resource_user, referential: true, bare: true, at_start: true}
+    - {slot: have, cat: possession_state, finite_form: true}
+    - {slot: units, cat: quantity_container, counted: true}
+    - {lit: of}
+    - {slot: item, cat: ownable_quantity_object, uncounted: true, bare: true, number: plural}
+    - {lit: with}
+    - {slot: count, cat: count_aggregate_noun, qualified: true, qualifier_cat: uniform_quantity_attribute, 
+        uncounted: true, number: singular}
+    - {lit: of}
+    - {slot: repeated, cat: ownable_quantity_object, uncounted: true, bare: true, number: plural}
+    - {lit: in}
+    - {slot: each, cat: distributive_quantifier}
+    - {slot: unit, cat: quantity_container, uncounted: true, number: singular}
+    - {lit: ., consume_skipped: true}
+  where: [same_lemma: [item, repeated], same_lemma: [units, unit], number_compatible: [who, have]]
+  consumes: [units, have]
+  satisfies: {each: [collection]}
+  emits:
+  - {fact: batch_evidence, kind: uniform-stock, entity: '{who}', measure: '{item}', container: '{units}', value: 
+      units, position: '{units.uid}'}
+- id: arithmetic/retained-and-shared-remainder
+  description: A retained count plus an exhaustive equal distribution of the remainder; the recipients remain 
+    scoped to the owner.
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: resource_user, referential: true, bare: true, at_start: true}
+    - {slot: keep, cat: retention_verb, finite_form: true}
+    - {slot: amount, cat: ownable_quantity_object, counted: true}
+    - {lit: and}
+    - {slot: share, cat: allocation_transfer_verb, finite_form: true}
+    - {slot: item, cat: ownable_quantity_object, uncounted: true, qualified: true, qualifier_cat: 
+        prenominal_remnant_adj}
+    - {slot: equally, cat: equal_division_adverb}
+    - {slot: recipients_prep, cat: recipient_distribution_preposition}
+    - opt: [{slot: owner, cat: possessive_determiner}]
+    - {slot: group, cat: allocation_recipient, counted: true, number: plural}
+    - {lit: ., consume_skipped: true}
+  where: [same_lemma: [amount, item], number_compatible: [who, keep], number_compatible: [who, share]]
+  consumes: [amount, group, keep, share]
+  satisfies: {share: [subject]}
+  emits:
+  - {fact: batch_evidence, kind: retained-count, entity: '{who}', measure: '{item}', value: amount, position: '{amount.uid}'}
+  - {fact: batch_evidence, kind: remainder-recipients, entity: '{who}', measure: '{item}', container: '{group}', 
+      value: group, attribute: '{owner.optional}', position: '{group.uid}'}
+- id: arithmetic/recipient-content-each
+  description: A named or owned recipient class receives a stated count per member.
+  match:
+    sentence:
+    - opt: [{slot: owner, cat: possessive_determiner}]
+    - {slot: group, cat: allocation_recipient, uncounted: true, number: plural}
+    - {slot: receive, cat: allocation_receipt_verb, finite_form: true}
+    - {slot: amount, cat: ownable_quantity_object, counted: true}
+    - {slot: each, cat: postpositive_distributive_quantifier}
+  where: [number_compatible: [group, receive]]
+  consumes: [receive, amount]
+  satisfies: {each: [collection]}
+  emits:
+  - {fact: batch_evidence, kind: recipient-share, entity: '{owner.optional}', measure: '{amount}', container: '{group}',
+    value: amount, position: '{amount.uid}', attribute: '{group.owner}'}
+- id: arithmetic/recipient-content-singular-each
+  match:
+    sentence:
+    - {slot: each, cat: distributive_quantifier}
+    - {slot: group, cat: allocation_recipient, uncounted: true, number: singular, bare: true}
+    - {slot: receive, cat: allocation_receipt_verb, finite_form: true}
+    - {slot: amount, cat: ownable_quantity_object, counted: true}
+    - {lit: ., consume_skipped: true}
+  emits:
+  - {fact: batch_evidence, kind: recipient-share, entity: '', measure: '{amount}', value: amount, container: '{group}',
+    marker: '', attribute: '{group.owner}', position: '{amount.uid}'}
+  consumes:
+  - receive
+  - amount
+  where:
+  - number_compatible:
+    - group
+    - receive
+  satisfies:
+    each:
+    - collection
+- id: arithmetic/recipient-content-passive-each
+  match:
+    sentence:
+    - {slot: amount, cat: ownable_quantity_object, counted: true}
+    - {slot: be, cat: copula}
+    - {slot: transfer, cat: allocation_transfer_verb, past_participle: true}
+    - {slot: prep, cat: allocation_receipt_preposition}
+    - {slot: each, cat: distributive_quantifier}
+    - {slot: group, cat: allocation_recipient, uncounted: true, number: singular, bare: true}
+    - {lit: ., consume_skipped: true}
+  emits:
+  - {fact: batch_evidence, kind: recipient-share, entity: '', measure: '{amount}', value: amount, container: '{group}',
+    marker: '', attribute: '{group.owner}', position: '{amount.uid}'}
+  consumes:
+  - amount
+  - be
+  - transfer
+  where:
+  - number_compatible:
+    - amount
+    - be
+  satisfies:
+    each:
+    - collection
+    be:
+    - subject
+    transfer:
+    - subject
+asks:
+- id: ask/uniform-container-content-after-distribution
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: item, cat: ownable_quantity_object, number: plural, uncounted: true, bare: true}
+    - {slot: copula, cat: plural_copula}
+    - opt:
+      - {slot: original, cat: opening_state_adverb}
+    - {lit: in}
+    - {slot: each, cat: distributive_quantifier}
+    - {slot: unit, cat: quantity_container, uncounted: true, number: singular}
+    - {lit: '?', consume_skipped: true}
+  satisfies: {each: [collection], copula: [subject]}
+  resolves: {consumer: uniform-content-distribution, item: '{item}', unit: '{unit}'}
+- id: ask/uniform-container-contents-active
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: item, cat: ownable_quantity_object, number: plural, uncounted: true, bare: true}
+    - {slot: aux, cat: auxiliary}
+    - {slot: each, cat: distributive_quantifier}
+    - {slot: unit, cat: quantity_container, uncounted: true, number: singular}
+    - {slot: contain, cat: container_content_state_verb, bare_form: true}
+    - {lit: '?', consume_skipped: true}
+  satisfies: {each: [collection], contain: [subject]}
+  resolves: {consumer: uniform-content-distribution, item: '{item}', unit: '{unit}'}

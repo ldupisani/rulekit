@@ -1,0 +1,114 @@
+format: rulekit/categories@1
+categories:
+  sheet_material: {parent: material_resource}
+  material_stock_unit: {parent: quantity_container}
+  rectangular_shape: {parent: noun}
+  region_cutting_verb: {parent: verb}
+  room_location: {parent: quantity_interior_location}
+  area_unit_modifier: {parent: adjective}
+  fabrication_product: {parent: ownable_quantity_object}
+  mass_amount_interrogative: {parent: interrogative}
+  material_resource:
+    parent: ownable_quantity_object
+    includes:
+    - measured_content_substance
+    - mixture_component
+  material_stock_state:
+    parent: verb
+  solid_stock_unit:
+    parent: material_stock_unit
+  linear_stock_unit:
+    parent: material_stock_unit
+  region_removal_verb:
+    parent: verb
+  resource_remnant_verb:
+    parent: verb
+  quantity_dimension_noun:
+    parent: noun
+  volume_unit_modifier:
+    parent: adjective
+  rectangular_attribute:
+    parent: adjective
+  separate_region_attribute:
+    parent: adjective
+  material_stock_holding_verb:
+    parent: verb
+members:
+  sheet_material: [fabric, cloth, paper, cardboard]
+  material_stock_unit:
+  - bolt
+  - roll
+  - sheet
+  - panel
+  - pane
+  - spool
+  - block
+  rectangular_shape: [rectangle]
+  region_cutting_verb: [cut, cuts, cutting]
+  room_location: [room, bedroom]
+  area_unit_modifier: [square]
+  fabrication_product: [curtain, panel, dress, model]
+  mass_amount_interrogative: [much]
+  material_resource:
+  - metal
+  - glass
+  - wire
+  - foam
+  - rubber
+  - wood
+  - clay
+  - material
+  solid_stock_unit:
+  - block
+  - cuboid
+  linear_stock_unit:
+  - spool
+  material_stock_state:
+  - is
+  - was
+  - measures
+  - holds
+  - has
+  - had
+  - measure
+  - hold
+  - have
+  - having
+  - held
+  - measured
+  - measuring
+  region_removal_verb:
+  - remove
+  - removed
+  - removes
+  - cut
+  - cuts
+  - cutting
+  resource_remnant_verb:
+  - remain
+  - remains
+  quantity_dimension_noun:
+  - length
+  - area
+  - volume
+  - mass
+  volume_unit_modifier:
+  - cubic
+  rectangular_attribute:
+  - rectangular
+  separate_region_attribute:
+  - separate
+  material_stock_holding_verb:
+  - have
+  - has
+  - had
+  - hold
+  - holds
+  - held
+  - having
+attribute_compatibility:
+  rectangular_attribute:
+  - material_stock_unit
+  - rectangular_shape
+  separate_region_attribute:
+  - rectangular_shape

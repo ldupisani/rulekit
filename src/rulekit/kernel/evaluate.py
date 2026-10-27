@@ -89,6 +89,7 @@ class ArithmeticLog:
     # Exact line items used by a resource consumer. This licenses their own
     # numeric mentions only; a same-valued cost elsewhere is not evidence.
     consumed_expenditure_keys: set[tuple] = field(default_factory=set)
+    consumed_quoted_price_keys: set[tuple] = field(default_factory=set)
     consumed_purchase_total_keys: set[tuple] = field(default_factory=set)
     # Source quantity facts that an explicit totality event consumed to
     # materialize the same amount under a new activity verb.  `_verb_total`

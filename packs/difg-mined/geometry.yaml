@@ -7,7 +7,6 @@ format: rulekit/geometry@1
 formulas:
   - {shape: circle, quantity: area, expr: "pi * radius**2"}
   - {shape: circle, quantity: circumference, expr: "2 * pi * radius"}
-  - {shape: rectangle, quantity: area, expr: "length * width"}
   - {shape: rectangle, quantity: perimeter, expr: "2 * (length + width)"}
   - {shape: rectangle, quantity: diagonal, expr: "(length**2 + width**2)**0.5"}
   - {shape: triangle, quantity: area, expr: "0.5 * base * height"}

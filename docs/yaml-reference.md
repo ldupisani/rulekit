@@ -108,6 +108,7 @@ format: rulekit/lexicon@1
 entries:
   token: {senses: [noun], plural: tokens}
   sorted: {senses: [verb], verb: {lemma: sort}}
+  cut: {senses: [verb], verb: {lemma: cut, past_participle: true}}
 ```
 
 An entry declares `senses`; it may also declare `plural` (one surface or a
@@ -115,6 +116,10 @@ list), pronoun `number`, verb `lemma`, `anaphoric_form`, `lexical_phrase`,
 and `notes`. Morphological fields are sense-scoped: a plural requires a noun
 sense, verb information requires a verb sense, and an anaphoric form requires
 a pronoun sense.
+
+`verb.past_participle: true` explicitly admits a participial surface whose
+form is invariant or irregular. Runtime matching and generation share this
+check alongside productive participles; no word exceptions belong in Python.
 
 `lexical_phrase: true` marks an indivisible multiword noun or adverb with
 exactly that one sense. It is not a general replacement for compositional
@@ -535,6 +540,14 @@ Exactly one of `resolves` or `interpretations` is required. Alternatives
 need a `clarification` prompt and unique interpretation ids, labels, kinds,
 and resolutions. `satisfies` can discharge explicitly identified
 question-local grammatical roles.
+
+`disambiguates: [slot, ...]` lets the selected construction commit the listed
+category slots to their category's root sense. Each slot must be unique,
+category-gated, and a single analyzed unit. Selection is recorded in the
+reader trace and removes obligations belonging only to discarded senses.
+It does not select senses in unmatched prose or discharge an unrelated need.
+The material-area ask uses this for the interrogative amount word, remainder
+adjective, and square-unit modifier in a complete area question.
 
 Only one ask is selected. It wins by consumed units, category depth, and a
 stable id tie-break. Test near neighbours and malformed suffixes: a valid
