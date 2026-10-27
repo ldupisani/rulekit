@@ -177,7 +177,8 @@ rules:
       A named arrival at one declared place and day, such as "Aven arrived at
       the garden yesterday". The generic spatial and temporal learners retain
       the event facts; this exact grammar gives contextual ask generation a
-      reviewable premise target.
+      reviewable premise target. A past arrival may occur yesterday or
+      earlier today; a future day requires a different verb construction.
     match:
       sentence:
         - {slot: who, type: name, at_start: true}
@@ -187,6 +188,8 @@ rules:
         - {slot: place, cat: spatial_reference_noun}
         - {slot: when, cat: day_deictic_marker}
         - {lit: ".", consume_skipped: true}
+    where:
+      - slot_not_category: {slot: when, cat: future_day_marker}
 
 asks:
   # Finite-domain temporal location selection. `them` must already denote one
@@ -214,6 +217,9 @@ asks:
       context_strategy: evidence
       slot_categories:
         prep: [arrival_goal_preposition]
+        # The declared evidence plan supplies past arrivals. Restrict only
+        # generated scenarios; the reader still accepts future witness asks.
+        when: [past_day_marker, current_day_marker]
       evidence_rules:
         - rule: logic-arithmetic/dated-location-arrival
           bindings: {who: candidates.0, place: place, when: when}

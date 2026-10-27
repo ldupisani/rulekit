@@ -82,7 +82,40 @@ separate validity claims. A correct answer does not automatically validate
 all premises. Fact snapshots preserve provenance and inspectable references.
 Evidence exclusions and tombstones control reuse without erasing history.
 
+The **Needs attention** view explains recorded deficiencies, collisions,
+defects, judgments, and current replay regressions separately from the human
+verdict. A `VALID` verdict can therefore still have an outstanding issue.
+
+Use **Retest saved example** to replay its exact text and context. Compare the
+recorded and current evidence, then choose fresh verdict, interpretation, and
+result judgments before **Record updated evidence**. This appends a linked
+record with the current fingerprint and snapshots; it does not replace the
+original or close its issue. Changed readings and excluded or superseded source
+records require a fresh retest. A valid update is blocked while current reader
+or target checks fail for a premise review; invalid and unclear observations
+can still be recorded. Ask reviews check their target, query, and result;
+low-level reader observations remain inspectable and do not become judgments
+that all the premises are valid.
+Ask retests preserve the saved reference year. Prior premise validations and
+minimality claims are not transferred to a new ask snapshot.
+Retests list unresolved references separately, using the reader's unmet
+reference obligations. A valid sentence can still require an antecedent in its
+saved context. These observations remain in the original deficiency list and
+still block premise validation; the display does not supply missing evidence.
+
+Use **Mark resolved** with a note to close an issue independently. Resolution
+retains the original verdict, defects, and evidence in **Evidence archive**.
+It neither grants validated coverage to problematic evidence nor removes
+coverage already supported by a clean reviewed example. Targetless sentence
+reviews remain outside premise and ask coverage. **Exclude evidence** remains
+the separate operation for removing a judgment from active evidence.
+
+Coverage prefers examples that still replay correctly before using naturalness
+and recency to choose an exemplar. The inbox checks each positive independently,
+so a healthy example cannot conceal another regressed review in the same group.
+
 Implementation: [reviews](../src/rulekit/generation/reviews.py).
+Workflow: [saved review actions](../src/rulekit/generation/review_workflow.py).
 Tests: [review boundaries](../tests/test_review_semantic_boundaries.py),
 [reference reviews](../tests/test_reference_identity_reviews.py), and
 [reviewed generation](../tests/test_reviewed_generation_boundaries.py).

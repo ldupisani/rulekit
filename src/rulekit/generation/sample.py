@@ -47,6 +47,8 @@ from .candidate import (
     MatchSummary,
     PremiseSummary,
     RuleAvailability,
+    reading_context_requirements,
+    reading_grammar_deficiencies,
 )
 
 GENERATOR_VERSION = "g6-strict-boundary-modes"
@@ -6368,6 +6370,8 @@ def _candidate_from_reading(
             for collision in document.store.collisions
         ),
         deficiencies=tuple(reading.deficiencies()),
+        context_requirements=reading_context_requirements(reading),
+        grammar_deficiencies=reading_grammar_deficiencies(reading),
         attempts=attempts,
         lexical_relaxations=lexical_relaxations,
         context_before=context_before,
@@ -6483,6 +6487,9 @@ def promote_sentence_review_candidate(
     project: Project,
     *,
     sentence: str,
+    seed: int | None = None,
+    context_before: tuple[str, ...] = (),
+    context_after: tuple[str, ...] = (),
 ) -> GenerationCandidate:
     """Promote Reading evidence without claiming that a rule consumed it.
 
@@ -6496,7 +6503,7 @@ def promote_sentence_review_candidate(
 
     if not sentence.strip():
         raise GenerationError("the Reading sentence must not be empty")
-    seed = int.from_bytes(
+    seed = seed if seed is not None else int.from_bytes(
         hashlib.sha256(
             (
                 f"sentence-review\0{project.registry.fingerprint}\0"
@@ -6506,8 +6513,12 @@ def promote_sentence_review_candidate(
         "big",
     ) & ((1 << 53) - 1)
     try:
-        reading = analyze(sentence, project.registry, tracing=True)
-        document = run_document([reading], project.registry)
+        readings = [
+            analyze(surface, project.registry, sentence_index=index, tracing=True)
+            for index, surface in enumerate((*context_before, sentence, *context_after))
+        ]
+        reading = readings[len(context_before)]
+        document = run_document(readings, project.registry)
     except Exception as exc:  # noqa: BLE001 - authoring API surfaces the defect
         raise GenerationError(
             "could not inspect the Reading sentence: "
@@ -6521,7 +6532,7 @@ def promote_sentence_review_candidate(
     digest = hashlib.sha256(
         (
             f"{project.registry.fingerprint}\0reading\0{seed}\0"
-            f"sentence-review\0{sentence}"
+            f"sentence-review\0{sentence}\0{context_before}\0{context_after}"
         ).encode()
     ).hexdigest()[:20]
     return GenerationCandidate(
@@ -6567,8 +6578,13 @@ def promote_sentence_review_candidate(
             for collision in document.store.collisions
         ),
         deficiencies=tuple(reading.deficiencies()),
+        context_requirements=reading_context_requirements(reading),
+        grammar_deficiencies=reading_grammar_deficiencies(reading),
         attempts=1,
         lexical_relaxations=(),
+        context_before=context_before,
+        context_after=context_after,
+        target_sentence_index=len(context_before),
     )
 
 

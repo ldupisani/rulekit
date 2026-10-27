@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
+
+if TYPE_CHECKING:
+    from ..kernel.model import Reading
 
 
 GenerationMode = Literal["strict", "lexical_boundary", "safety_boundary"]
@@ -120,6 +123,37 @@ class ConsumedUnitSummary:
 
 
 @dataclass(frozen=True)
+class ContextRequirement:
+    """A real unresolved reference, distinct from a grammar accounting defect."""
+
+    sentence_index: int
+    unit_uid: int
+    surface: str
+    role: str
+    need: str
+
+
+def reading_context_requirements(reading: Reading) -> tuple[ContextRequirement, ...]:
+    return tuple(
+        ContextRequirement(
+            sentence_index=reading.sentence_index,
+            unit_uid=gap.unit_uid,
+            surface=gap.surface,
+            role=gap.role,
+            need=gap.need,
+        )
+        for gap in reading.deficiency_details()
+        if gap.need == "refers"
+    )
+
+
+def reading_grammar_deficiencies(reading: Reading) -> tuple[str, ...]:
+    return tuple(
+        gap.message for gap in reading.deficiency_details() if gap.need != "refers"
+    )
+
+
+@dataclass(frozen=True)
 class GenerationCandidate:
     """One reproducible sentence-generation experiment."""
 
@@ -150,6 +184,8 @@ class GenerationCandidate:
     context_before: tuple[str, ...] = ()
     context_after: tuple[str, ...] = ()
     target_sentence_index: int = 0
+    context_requirements: tuple[ContextRequirement, ...] = ()
+    grammar_deficiencies: tuple[str, ...] = ()
 
     @property
     def clean_reading(self) -> bool:

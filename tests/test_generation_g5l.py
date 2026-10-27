@@ -22,6 +22,10 @@ ROOT = Path(__file__).resolve().parents[1]
 CURATED = ROOT / "projects" / "curated"
 
 EXPECTED_PATHS = {
+    "arithmetic/group-total-trailing-in-all": {
+        (3,): ("collection_seen",),
+        (4,): ("partitive_seen",),
+    },
     "arithmetic/anchored-relation": {
         (9, 1): ("standard_tail_item",),
         (10,): ("conjunction_seen",),
@@ -167,6 +171,8 @@ def test_g5l_profiles_the_complete_unbound_branch_class() -> None:
 
     assert set(rules) == set(EXPECTED_PATHS)
     assert sentinels == {
+        "collection_seen": 1,
+        "partitive_seen": 1,
         "standard_tail_item": 1,
         "conjunction_seen": 1,
         "direct_std_seen": 4,
@@ -202,7 +208,7 @@ def test_g5l_unlocks_exactly_the_preregistered_frontier() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 859
+    assert len(exploration_status(project)["fillers"]) == 860
 
 
 @pytest.mark.parametrize("rule_id", sorted(EXPECTED_PATHS))

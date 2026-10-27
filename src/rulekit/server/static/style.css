@@ -121,7 +121,15 @@ body.reviews-mode #impact-bar { display: none; }
 }
 .rv-sentence { min-width: 220px; }
 .rv-note { color: var(--dim); max-width: 320px; }
-.rv-actions { display: flex; gap: 5px; white-space: nowrap; }
+.rv-actions { display: flex; flex-wrap: wrap; gap: 5px; max-width: 240px; }
+.rv-attention-reasons { color: var(--amber); padding-left: 18px; margin: 7px 0; }
+.rv-retest { margin-top: 10px; padding: 10px; border: 1px solid var(--border); border-radius: 6px; }
+.rv-retest-text { white-space: pre-wrap; margin: 7px 0; }
+.rv-evidence-detail { margin: 7px 0; }
+.rv-evidence-detail pre { max-height: 280px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
+.rv-workflow-form { display: flex; flex-direction: column; gap: 7px; margin-top: 8px; }
+.rv-workflow-form label { display: flex; flex-direction: column; gap: 3px; }
+.rv-workflow-form select { background: var(--bg); color: var(--text); padding: 5px; border: 1px solid var(--border); border-radius: 5px; }
 .rv-actions button { padding: 3px 9px; font-size: 0.6875rem; }
 .rv-actions button.rv-danger:hover { border-color: var(--red); color: var(--red); }
 .rv-row.editing { background: var(--panel); }

@@ -47,11 +47,18 @@ from ..generation import (
     premise_review_evidence,
     read_review_history,
     read_reviews,
-    review_needs_attention,
+    resolve_review,
     retest_candidate,
     update_review,
 )
 from ..harness.bench import run_suite
+from ..generation.reviews import (
+    review_attention_reasons, review_needs_attention, review_replay,
+)
+from ..generation.review_workflow import (
+    ReviewWorkflowConflict, UpdatedEvidenceBody, record_updated_evidence,
+    retest_saved_review, saved_review,
+)
 from ..harness.snapshot import diff as snapshot_diff
 from ..kernel.engine import solve
 from ..kernel.model import PATTERN, Unit, _jsonable
@@ -177,6 +184,12 @@ class ReviewEditBody(BaseModel):
         "not_reviewed",
     ] | None = None
     naturalness: Literal["preferred", "acceptable", "marginal"] | None = None
+
+
+class ReviewResolutionBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    note: str = Field(min_length=1, max_length=4000)
 
 
 class ServerState:
@@ -1382,25 +1395,31 @@ def build_router(state: ServerState) -> APIRouter:
             history = read_review_history(state.project, 100_000)
             evidence = ask_review_evidence(state.project)
             premise_evidence = premise_review_evidence(state.project)
+        regressions = {
+            group["canonical_review_id"]: group["replay_detail"]
+            for group in evidence["groups"] + premise_evidence["groups"]
+            if group["replay_status"] == "regressed"
+        }
+        # Coverage may choose another healthy exemplar. Check each positive
+        # independently so that no regressed issue is hidden by that choice.
+        for review in history:
+            if review.get("verdict") == "valid" and not review_needs_attention(review):
+                replay = review_replay(state.project, review)
+                if replay["status"] == "regressed":
+                    regressions[review["id"]] = replay["detail"]
+        for review in history:
+            review["attention_reasons"] = review_attention_reasons(review)
+            if review["id"] in regressions:
+                review["attention_reasons"].append({
+                    "code": "regressed", "source": "current_replay",
+                    "detail": regressions[review["id"]],
+                })
         if view == "attention":
-            regressed = {
-                group["canonical_review_id"]
-                for group in evidence["groups"]
-                if group["replay_status"] == "regressed"
-            }
-            regressed.update(
-                group["canonical_review_id"]
-                for group in premise_evidence["groups"]
-                if group["replay_status"] == "regressed"
-            )
             history = [
                 review
                 for review in history
                 if review.get("review_status") != "resolved"
-                and (
-                    review_needs_attention(review)
-                    or review.get("id") in regressed
-                )
+                and review["attention_reasons"]
             ]
         page = history[start : start + bounded]
         for review in page:
@@ -1454,6 +1473,37 @@ def build_router(state: ServerState) -> APIRouter:
             except KeyError as exc:
                 raise HTTPException(404, f"no live review {review_id}") from exc
         return {"ok": True, "review": record}
+
+    def _review_action(call):
+        with state.generation_lock:
+            try:
+                return call()
+            except KeyError as exc:
+                raise HTTPException(404, "Review changed or was excluded; reload the review history.") from exc
+            except ReviewWorkflowConflict as exc:
+                raise HTTPException(409, str(exc)) from exc
+            except (GenerationError, ValueError) as exc:
+                raise HTTPException(422, str(exc)) from exc
+
+    @router.post("/generation/review/{review_id}/retest")
+    def generation_review_retest(review_id: str):
+        return _review_action(lambda: retest_saved_review(state.project, review_id))
+
+    @router.post("/generation/review/{review_id}/evidence")
+    def generation_review_updated_evidence(review_id: str, body: UpdatedEvidenceBody):
+        record = _review_action(lambda: record_updated_evidence(state.project, review_id, body))
+        return {"ok": True, "review": record}
+
+    @router.post("/generation/review/{review_id}/resolve")
+    def generation_review_resolve(review_id: str, body: ReviewResolutionBody):
+        def close_review():
+            review = saved_review(state.project, review_id)
+            if review["review_status"] == "resolved":
+                raise ReviewWorkflowConflict("This review is already resolved.")
+            if not body.note.strip():
+                raise ValueError("Describe why this issue can be closed.")
+            return resolve_review(state.project, review_id, body.note.strip())
+        return {"ok": True, "review": _review_action(close_review)}
 
     @router.delete("/generation/review/{review_id}")
     def generation_review_delete(review_id: str):

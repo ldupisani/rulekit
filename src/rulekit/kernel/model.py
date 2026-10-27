@@ -53,6 +53,24 @@ class Obligation:
         return self.target is not None
 
 
+@dataclass(frozen=True)
+class ReaderDeficiency:
+    """One inspectable reader gap; its display text has a single definition."""
+
+    unit_uid: int
+    surface: str
+    role: str | None = None
+    need: str | None = None
+
+    @property
+    def message(self) -> str:
+        if self.need is None:
+            return f"I have no information about the word '{self.surface}'."
+        return (
+            f"'{self.surface}' ({self.role}) needs a {self.need} and none was found."
+        )
+
+
 class Unit:
     """A unit of meaning: one or more words plus accumulated findings.
 
@@ -3080,17 +3098,19 @@ class Reading:
     def unknown_words(self) -> list[str]:
         return [u.surface for u in self.units if u.features.get("unknown")]
 
-    def deficiencies(self) -> list[str]:
-        """Human-readable statements of what stops this reading being complete."""
-        out: list[str] = []
+    def deficiency_details(self) -> list[ReaderDeficiency]:
+        """Typed gaps for authoring tools, without interpreting display strings."""
+        out: list[ReaderDeficiency] = []
         for u in self.units:
             if u.features.get("unknown"):
-                out.append(f"I have no information about the word '{u.surface}'.")
+                out.append(ReaderDeficiency(u.uid, u.surface))
             for ob in u.unmet():
-                out.append(
-                    f"'{u.surface}' ({ob.role}) needs a {ob.need} and none was found."
-                )
+                out.append(ReaderDeficiency(u.uid, u.surface, ob.role, ob.need))
         return out
+
+    def deficiencies(self) -> list[str]:
+        """Human-readable statements of what stops this reading being complete."""
+        return [gap.message for gap in self.deficiency_details()]
 
     @property
     def saturated(self) -> bool:

@@ -1613,6 +1613,7 @@ entries:
   sugar: {senses: [noun]}
   sugar water: {senses: [noun], lexical_phrase: true}
   suit: {senses: [noun], plural: suits}
+  sum: {senses: [noun]}
   summer: {senses: [noun]}
   sunday: {senses: [noun]}
   sunflower oil:

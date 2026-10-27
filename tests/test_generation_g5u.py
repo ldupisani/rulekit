@@ -358,7 +358,7 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
             }
         for item in availability
     )
-    assert len(exploration_status(project)["fillers"]) == 859
+    assert len(exploration_status(project)["fillers"]) == 860
 
 
 def test_currently_generates_a_matcher_confirmed_anchor() -> None:

@@ -169,15 +169,18 @@ asks:
         - {slot: aux, type: future_modal}
         - {slot: who, type: common_noun}
         - {slot: verb, cat: possession_state, bare_form: true}
-        - {lit: to}
+        - {slot: marker_link, cat: infinitival_marker}
         - {slot: marker, cat: start_marker_verb, bare_form: true}
-        - {lit: with}
+        - {slot: marker_prep, cat: start_marker_preposition}
     where:
       - slot_not_category: {slot: item, cat: mass_quantity_noun}
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: who, cat: timeperiod}
       - number_compatible: [who, aux]
+    satisfies:
+      marker_link: [object]
+      marker_prep: [object]
     resolves:
       consumer: single-entity
       entity: "{who}"
@@ -212,13 +215,16 @@ asks:
         - {slot: verb, cat: plural_copula}
         - {slot: prep, cat: quantity_location_preposition}
         - {slot: place, cat: quantity_interior_location, referential: true}
-        - {lit: to}
+        - {slot: marker_link, cat: infinitival_marker}
         - {slot: marker, cat: start_marker_verb, bare_form: true}
-        - {lit: with}
+        - {slot: marker_prep, cat: start_marker_preposition}
     where:
       - number_compatible: [item, verb]
       - slot_not_category: {slot: item, cat: mass_quantity_noun}
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
+    satisfies:
+      marker_link: [object]
+      marker_prep: [object]
     resolves:
       consumer: single-entity
       entity: "{place}"

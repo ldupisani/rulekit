@@ -6,7 +6,7 @@ import pytest
 from fastapi.encoders import jsonable_encoder
 
 from rulekit.data.project import load_project
-from rulekit.generation import generate_candidate
+from rulekit.generation import GenerationError, generate_ask_scenario, generate_candidate
 from rulekit.kernel.engine import analyze, solve
 from rulekit.kernel.model import (
     LocationConstraint,
@@ -24,6 +24,83 @@ CURATED = ROOT / "projects" / "curated"
 @pytest.fixture(scope="module")
 def registry():
     return load_project(CURATED).registry
+
+
+@pytest.mark.parametrize("marker", ["yesterday", "today"])
+def test_generated_past_arrival_matches_a_nonfuture_day(marker):
+    candidate = generate_candidate(
+        load_project(CURATED),
+        rule_id="logic-arithmetic/dated-location-arrival",
+        seed=0,
+        max_attempts=1,
+        locked_bindings={
+            "who": "Cato", "verb": "arrived", "prep": "at",
+            "place": "garden", "when": marker,
+        },
+    )
+
+    assert candidate.target_status == "matched"
+    assert candidate.clean_reading
+
+
+def test_past_arrival_cannot_generate_a_future_day():
+    with pytest.raises(GenerationError):
+        generate_candidate(
+            load_project(CURATED),
+            rule_id="logic-arithmetic/dated-location-arrival",
+            seed=0,
+            max_attempts=1,
+            locked_bindings={"when": "tomorrow"},
+        )
+
+
+@pytest.mark.parametrize("marker", ["yesterday", "today"])
+def test_location_scenario_keeps_its_question_and_premise_days_aligned(marker):
+    candidate = generate_ask_scenario(
+        load_project(CURATED),
+        ask_id="ask/which-discourse-group-at-day",
+        seed=0,
+        scenario_mode="answerable",
+        max_attempts=1,
+        locked_bindings={"when": marker},
+    )
+
+    assert candidate.answer["committed"]
+    assert candidate.query["when"] == marker
+    assert len(candidate.premises) == 2
+    assert all(
+        premise["requested_bindings"]["verb"] == "arrived"
+        and premise["requested_bindings"]["when"] == marker
+        for premise in candidate.premises
+    )
+
+
+def test_location_scenario_does_not_use_a_past_arrival_for_a_future_query():
+    with pytest.raises(GenerationError):
+        generate_ask_scenario(
+            load_project(CURATED),
+            ask_id="ask/which-discourse-group-at-day",
+            seed=0,
+            scenario_mode="answerable",
+            max_attempts=1,
+            locked_bindings={"when": "tomorrow"},
+        )
+
+
+@pytest.mark.parametrize("place", ["garden", "road"])
+def test_well_formed_future_arrivals_still_support_a_future_query(registry, place):
+    result = solve(
+        f"Cato will arrive at the {place} tomorrow. "
+        f"Dena will arrive at the {place} tomorrow. "
+        f"Which of them are at the {place} tomorrow?",
+        registry,
+    )
+
+    assert result.answer.committed
+    assert result.value == [
+        {"entity": "cato", "status": "supported"},
+        {"entity": "dena", "status": "supported"},
+    ]
 
 
 NARRATIVE = (

@@ -1448,6 +1448,11 @@ categories:
 
       Members live in difg-mined — both words are difg-mined lexicon entries,
       so a core-only registry must still compile (the litter/age_noun rule).
+  start_marker_preposition:
+    parent: preposition
+    notes: >
+      Final preposition in the initial-state markers "to start with" and
+      "to begin with". Its complement is supplied by the complete idiom.
   pool_pronoun:
     parent: pronoun
     notes: >
@@ -1877,7 +1882,8 @@ categories:
   group_total_quantifier:
     parent: quantifier
     notes: >
-      Quantifiers licensed before a trailing GroupTotal marker. The
+      Totality quantifiers used in conventional GroupTotal phrases,
+      including "all together" and "in all". An aggregate-rooted
       marker itself has a separate compatibility category so declaring
       "all" here does not create "all total" or other arbitrary
       quantifier/aggregate combinations.
@@ -1903,8 +1909,8 @@ categories:
   group_total_preposition:
     parent: preposition
     notes: >
-      Prepositions licensed immediately before a prepositional
-      GroupTotal marker.
+      Prepositions licensed in conventional GroupTotal phrases such as
+      "in total" and "in all". Each construction checks its own partner.
   group_total_scope:
     parent: noun
     notes: >
@@ -3056,6 +3062,7 @@ members:
   spend_target_prep: [for, on]
   spend_verb: [paid, pay, paying, pays, spend, spends, spent]
   start_marker_verb: [begin, start]
+  start_marker_preposition: [with]
   state: [are, had, has, have, is, own, owns, was, were]
   student_quantity_measure: [student]
   task_completion_duration_coordinator: [while]

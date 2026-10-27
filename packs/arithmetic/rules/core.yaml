@@ -3902,6 +3902,9 @@ rules:
     where:
       - bound_requires_category: {bound: q, slot: agg, cat: quantified_group_total_marker}
       - bound_requires_category: {bound: p, slot: agg, cat: prepositional_group_total_marker}
+    satisfies:
+      q: [collection]
+      p: [object]
     consumes: [item]
     emits:
       - fact: group_total
@@ -3919,12 +3922,24 @@ rules:
       category used by "in total" and bare "together". This literal grammar
       keeps the two senses honest while emitting the same unscoped GroupTotal.
       The counted item is consumed so the sentence cannot also become an
-      independent holder quantity.
+      independent holder quantity. The complete idiom satisfies its own
+      preposition and totality obligations; it must not consume the prefix
+      of an ordinary quantified location such as "in all gardens" or
+      "in all of the gardens".
     match:
       sentence:
         - {slot: item, type: counted}
-        - {lit: in}
-        - {lit: all}
+        - {slot: p, cat: group_total_preposition}
+        - {slot: q, cat: group_total_quantifier}
+        - opt:
+            - {slot: collection_seen, type: noun}
+        - opt:
+            - {slot: partitive_seen, cat: partitive}
+    where:
+      - unbound: [collection_seen, partitive_seen]
+    satisfies:
+      p: [object]
+      q: [collection]
     consumes: [item]
     emits:
       - fact: group_total
@@ -3970,6 +3985,7 @@ rules:
             theme: [item]
           allow_proper_name: [who]
           allow_plural_pronoun: [who]
+    satisfies: {verb: [subject]}
     consumes: [item]
     emits:
       - fact: group_total
@@ -4017,6 +4033,7 @@ rules:
             theme: [item]
           allow_proper_name: [who]
           allow_plural_pronoun: [who]
+    satisfies: {verb: [subject]}
     consumes: [item]
     emits:
       - fact: group_total
@@ -4115,6 +4132,8 @@ rules:
         - {slot: noun, cat: age_noun, number: plural}
         - {slot: verb, cat: copula, number: singular}
         - {slot: n, type: number}
+    # The age noun precedes the value, beyond local count attachment.
+    satisfies: {n: [quantifies]}
     consumes: [n]
     emits:
       - fact: group_total
@@ -4150,6 +4169,7 @@ rules:
         - {slot: noun, cat: age_noun}
         - {lit: of}
         - {slot: n, type: number}
+    satisfies: {n: [quantifies]}
     consumes: [n]
     emits:
       - fact: group_total
@@ -4810,13 +4830,14 @@ rules:
       unresolved, and the unresolved-derivation guard declines).
     match:
       sentence:
-        - {slot: n, type: number}
+        - {slot: n, type: number, standalone: true}
         - {lit: of}
         - {slot: coll, cat: plural_object_pronoun}
         - {slot: verb, cat: copula}
         - {slot: attr, type: adjective}
     where:
       - same_number: [n, verb]
+    satisfies: {n: [quantifies]}
     consumes: [n]
     emits:
       - fact: partition_quantity
@@ -4838,13 +4859,14 @@ rules:
       bespoke consumer needed.
     match:
       sentence:
-        - {slot: n, type: number}
+        - {slot: n, type: number, standalone: true}
         - {lit: of}
         - {slot: coll, cat: plural_object_pronoun}
         - {slot: verb, cat: copula}
         - {slot: attr, type: plural}
     where:
       - same_number: [n, verb, attr]
+    satisfies: {n: [quantifies]}
     consumes: [n]
     emits:
       - fact: partition_quantity
@@ -4928,7 +4950,7 @@ rules:
       an unsupported semantic commitment.
     match:
       sentence:
-        - {slot: n, type: number}
+        - {slot: n, type: number, standalone: true}
         - {lit: of}
         - {lit: the, consume_skipped: true}
         - {slot: coll, type: plural}
@@ -4937,6 +4959,8 @@ rules:
     where:
       - same_number: [n, verb]
       - attribute_compatible: {attribute: attr, noun: coll}
+    # The complete partitive connects the standalone count to its collection.
+    satisfies: {n: [quantifies]}
     consumes: [n]
     emits:
       - fact: partition_quantity
@@ -4969,7 +4993,7 @@ rules:
       narrowing with no coverage loss.
     match:
       sentence:
-        - {slot: n, type: number}
+        - {slot: n, type: number, standalone: true}
         - {lit: of}
         - {lit: the, consume_skipped: true}
         - {slot: coll, type: plural}
@@ -4982,6 +5006,7 @@ rules:
       # plural nouns. `animal` is a declared category containing dog/rabbit;
       # unrelated pairs such as student/course therefore remain unread.
       - category_contains: {collection: coll, members: [attr]}
+    satisfies: {n: [quantifies]}
     consumes: [n]
     emits:
       - fact: partition_quantity
@@ -5398,40 +5423,23 @@ rules:
   - id: arithmetic/temporal-offset-age-future-intensified
     phase: read
     description: >
-      mining candidate relation-standard-frames: "In eight MORE years,
-      Tessa will be 40 years old" — the intensifier-tolerant sibling of
-      arithmetic/temporal-offset-age-future: an INTENSIFIER word
-      ('more' — `cat: count_intensifier`, packs/core-english/categories/
-      core.yaml — deliberately NOT the same category as 'more_dir'/
-      'delta', see its own note) wedged between the bare count and its
-      noun blocks condense.py's ordinary count+noun merge (`_count_pass`
-      only merges ADJACENT units), so the base rule's `n, type: counted`
-      slot — which requires that merge to have already happened — can
-      never match "eight more years" at all; PROVEN on unmodified main:
-      "in eight years" commits 64.0, "in eight more years" declines
-      outright. Rather than widen `_count_pass` itself (a SHARED
-      condense-time function every "N NOUN" merge in the pack depends on —
-      the HANDOFF invariant against globally widening shared scan
-      functions for one caller), this is a SEPARATE sibling rule matching
-      the UNMERGED three-token span directly (`n, type: number` + the
-      intensifier + `yr, type: noun`, instead of one `type: counted`
-      slot) — so "5 MORE apples THAN Tom" (the ordinary delta-relation
-      reading of the same word 'more') is completely untouched: that
-      shape is read by a DIFFERENT rule family entirely (anchored-
-      relation-postfix and friends), never this one, and never will be,
-      since this rule's own literal skeleton has no 'than' anywhere.
-      `yr` is consumed but not read by the emitted fact (the measure is
-      hardcoded 'year' exactly like the base rule's own `m`/`n` — neither
-      rule's emitted Quantity depends on which noun word actually
-      followed the count). Same decline-safety gates and same Quantity
-      shape as the base rule; `consumes: [n, yr, m]` mirrors its own
-      `consumes: [n, m]` one slot wider, for the extra unmerged noun.
+      A future age with an intensified offset: "In four more years,
+      Dena will be 24 years old." The intensifier prevents the ordinary
+      adjacent count+noun merge, so this sibling of temporal-offset-age-
+      future matches a standalone number, a declared count intensifier,
+      and an uncounted age unit. The number and unit must agree; neither
+      an already-counted unrelated noun nor a second numeric amount can
+      serve as part of this offset. The complete construction structurally
+      satisfies the number's quantifies obligation across the intensifier;
+      consumes separately accounts for its use in the age calculation.
+      The existing current-age Quantity and relation/multiplier exclusion
+      gates are shared with the plain future-offset rule.
     match:
       sentence:
         - {lit: in}
-        - {slot: n, type: number}
+        - {slot: n, type: number, standalone: true}
         - {slot: mod, cat: count_intensifier}
-        - {slot: yr, cat: age_measure}
+        - {slot: yr, cat: age_measure, uncounted: true}
         - {slot: who, type: name}
         - {slot: aux, cat: future_modal}
         - {lit: be}
@@ -5441,6 +5449,7 @@ rules:
       - same_number: [n, yr]
       - absent: {cat: relational_marker}
       - absent: {cat: multiplier_marker}
+    satisfies: {n: [quantifies]}
     consumes: [n, yr, m]
     emits:
       - fact: quantity
@@ -5539,6 +5548,7 @@ rules:
       - same_number: [n, item]
       - distinct: [who, std]
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
+    satisfies: {n: [quantifies]}
     consumes: [n]
     emits:
       - fact: relation
@@ -6610,12 +6620,19 @@ rules:
   - id: arithmetic/discount-flat-off
     phase: read
     description: >
-      mining candidate discounted-purchase-totals: "$100 off" — the FLAT
-      sibling of arithmetic/discount-percent-off. scope=total.
+      A flat reduction such as "$6 off", "6 dollars off", or elliptical
+      "6 off". An explicit measure must be monetary; a standalone amount
+      inherits the unit of the priced purchase when the existing consumer
+      applies this Discount. The complete reduction phrase satisfies the
+      amount's quantifies obligation without inventing a separate holding
+      or a purchase total when no priced purchase is known.
     match:
       sentence:
         - {slot: amt, type: number}
         - {lit: off}
+    where:
+      - bound_requires_category: {bound: amt, bound_cat: noun, slot: amt, cat: currency}
+    satisfies: {amt: [quantifies]}
     consumes: [amt]
     emits:
       - fact: discount
@@ -6641,6 +6658,9 @@ rules:
         - {lit: discount}
         - {lit: of}
         - {slot: amt, type: number}
+    where:
+      - bound_requires_category: {bound: amt, bound_cat: noun, slot: amt, cat: currency}
+    satisfies: {amt: [quantifies]}
     consumes: [amt]
     emits:
       - fact: discount
@@ -6663,7 +6683,12 @@ rules:
         - {lit: discount}
         - {lit: of}
         - {slot: amt, type: number}
-        - {lit: each}
+        - {slot: per_unit, cat: postpositive_distributive_quantifier}
+    where:
+      - bound_requires_category: {bound: amt, bound_cat: noun, slot: amt, cat: currency}
+    satisfies:
+      amt: [quantifies]
+      per_unit: [collection]
     consumes: [amt]
     emits:
       - fact: discount
@@ -7143,6 +7168,9 @@ asks:
           verb: verb
           roles: {theme: [item]}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: animate_object_verb, role_cat: teaching_quantity_object}
+    satisfies:
+      verb: [subject]
+      q: [collection]
     resolves:
       consumer: combined
       holders: "{holders.name_list}"
@@ -7290,7 +7318,7 @@ asks:
         - {slot: item, type: plural}
         - {slot: aux, cat: plural_auxiliary}
         - {lit: the, consume_skipped: true}
-        - {slot: n, type: number}
+        - {slot: n, type: number, standalone: true}
         - opt:
             - {lit: of}
             - {lit: them}
@@ -7306,6 +7334,10 @@ asks:
           verb: verb
           roles: {theme: [item]}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: spend_verb, role_cat: currency}
+    satisfies:
+      n: [quantifies]
+      p: [object]
+      verb: [subject]
     resolves:
       consumer: combined
       measure: "{item}"
@@ -7646,11 +7678,12 @@ asks:
     match:
       question:
         - {lit: what}
-        - {lit: is}
+        - {slot: be, cat: present_copula, number: singular}
         - {lit: the, consume_skipped: true}
         - {lit: number}
         - {lit: of}
         - {slot: who, type: possessed, number: plural}
+    satisfies: {be: [subject]}
     resolves:
       consumer: single-entity
       entity: "{who.owner}"
@@ -8317,6 +8350,9 @@ asks:
           verb: verb
           roles: {theme: [item]}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: purchase, role_cat: transferable_quantity_object}
+    satisfies:
+      verb: [subject]
+      p: [object]
     resolves:
       consumer: combined
       a: "{a}"
@@ -8370,7 +8406,7 @@ asks:
         - {lit: much}
         - {slot: item, cat: mass_quantity_noun}
         - {slot: aux, type: auxiliary}
-        - {slot: n, type: number}
+        - {slot: n, type: number, standalone: true}
         - opt:
             - {lit: of}
             - {lit: them}
@@ -8380,6 +8416,10 @@ asks:
         - {slot: agg, cat: group_total_marker}
     where:
       - bound_requires_category: {bound: p, slot: agg, cat: prepositional_group_total_marker}
+    satisfies:
+      n: [quantifies]
+      p: [object]
+      verb: [subject]
     resolves:
       consumer: combined
       measure: "{item}"
@@ -8937,6 +8977,7 @@ asks:
         - {lit: old}
         - {slot: verb, cat: copula}
         - {slot: who, type: name}
+    satisfies: {verb: [subject]}
     resolves:
       consumer: single-entity
       entity: "{who}"
@@ -8961,6 +9002,9 @@ asks:
         - {slot: target_year, type: number, standalone: true, integer: true, value_min: 1000, value_max: 9999}
     where:
       - number_compatible: [who, verb]
+    satisfies:
+      target_year: [quantifies]
+      verb: [subject]
     resolves:
       consumer: age-at-year
       entity: "{who}"
@@ -8985,6 +9029,7 @@ asks:
         - {slot: verb, cat: plural_copula}
         - {slot: group, cat: discourse_subject_group_pronoun}
         - {slot: when, cat: temporal_marker}
+    satisfies: {verb: [subject]}
     resolves:
       consumer: age-at-year
       holders: "{group.group_members}"
@@ -9014,6 +9059,9 @@ asks:
         - {slot: noun, cat: age_noun}
         - {lit: in}
         - {slot: target_year, type: number, standalone: true, integer: true, value_min: 1000, value_max: 9999}
+    satisfies:
+      target_year: [quantifies]
+      verb: [subject]
     resolves:
       consumer: age-at-year
       holders: "{group.group_members}"
@@ -9044,6 +9092,7 @@ asks:
         - {slot: who, cat: animate, possessed: true}
     where:
       - owner_matches: {owner: poss_det, possessed: who}
+    satisfies: {verb: [subject]}
     resolves:
       consumer: single-entity
       entity: "{who}"
@@ -9064,6 +9113,7 @@ asks:
         - {lit: old}
         - {slot: verb, cat: singular_copula}
         - {slot: who, cat: animate, possessed: true}
+    satisfies: {verb: [subject]}
     resolves:
       consumer: single-entity
       entity: "{who}"
@@ -9087,6 +9137,7 @@ asks:
         - {slot: who, type: name}
     where:
       - number_compatible: [who, verb]
+    satisfies: {verb: [subject]}
     resolves:
       consumer: single-entity
       entity: "{who}"
@@ -9567,6 +9618,7 @@ asks:
     where:
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - number_compatible: [who, verb]
+    satisfies: {be: [subject]}
     resolves:
       consumer: combined
       measure: "{item}"

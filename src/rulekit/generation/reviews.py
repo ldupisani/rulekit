@@ -72,6 +72,7 @@ _PREMISE_EVIDENCE_CACHE: dict[tuple[str, int, int, str], dict[str, Any]] = {}
 _VALIDATED_PREMISE_CACHE: dict[
     tuple[str, int, int, str], tuple[dict[str, Any], ...]
 ] = {}
+_REVIEW_REPLAY_CACHE: dict[str, dict] = {}
 
 
 class SourceLocation(BaseModel):
@@ -194,6 +195,7 @@ class AskScenarioReviewEvidence(BaseModel):
     answer: dict[str, Any] = Field(default_factory=dict, max_length=64)
     answer_shape: str = Field(min_length=1, max_length=128)
     minimal: bool
+    reference_year: int | None = Field(default=None, ge=1, le=9999)
 
     @model_validator(mode="after")
     def _scenario_is_self_consistent(self) -> "AskScenarioReviewEvidence":
@@ -231,6 +233,7 @@ class ReviewRecord(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     candidate_id: str = Field(min_length=1, max_length=128)
+    updates_review_id: str | None = Field(default=None, min_length=1, max_length=128)
     origin: Literal["generated", "reading"] = "generated"
     generation_mode: GenerationMode = "strict"
     lexical_relaxations: list[LexicalRelaxation] = Field(
@@ -602,26 +605,37 @@ def _live_premise_reviews(project: Project) -> tuple[dict, ...]:
     return _review_evidence_rows(project)[1]
 
 
-def review_needs_attention(review: dict) -> bool:
-    """Return whether a live judgment still records an unresolved problem.
+def review_attention_reasons(review: dict) -> list[dict[str, str]]:
+    """Explain the recorded problems used by both the inbox and evidence gate."""
+    reasons = []
 
-    Verdict, interpretation, result, and attached defects are independent
-    review axes.  A grammatically valid surface can therefore still report a
-    bad fact or malformed sentence; treating that row as clean positive
-    evidence would erase the very problem the reviewer recorded.
-    """
+    def add(code: str, detail: str) -> None:
+        reasons.append({"code": code, "detail": detail, "source": "recorded"})
 
     evidence = review.get("premise_evidence") or {}
-    machine_gaps = bool(evidence.get("collisions") or evidence.get("deficiencies"))
+    for deficiency in evidence.get("deficiencies") or []:
+        add("reader_deficiency", str(deficiency))
+    if evidence.get("collisions"):
+        add("fact_collision", "The recorded reading contains conflicting facts.")
     if review.get("target_rule") and evidence:
-        machine_gaps |= evidence.get("target_status") not in {"matched", "shadowed"}
-    return machine_gaps or bool(review.get("defects")) or review.get("verdict") in {
-        "invalid",
-        "unclear",
-    } or review.get("interpretation_judgment") in {
-        "incorrect",
-        "unclear",
-    } or review.get("result_judgment") in {"incorrect", "unclear"}
+        if evidence.get("target_status") not in {"matched", "shadowed"}:
+            add("target_absent", f"The recorded target is {evidence.get('target_status')}.")
+    for defect in review.get("defects") or []:
+        add("reported_defect", str(defect["kind"]).replace("_", " "))
+    for field, label in (
+        ("verdict", "Verdict"),
+        ("interpretation_judgment", "Interpretation"),
+        ("result_judgment", "Answer or decline"),
+    ):
+        value = review.get(field)
+        if value in {"invalid", "incorrect", "unclear"}:
+            add(field, f"{label} was judged {value}.")
+    return reasons
+
+
+def review_needs_attention(review: dict) -> bool:
+    """Verdict, interpretation, result, defects, and reader gaps are independent."""
+    return bool(review_attention_reasons(review))
 
 
 def _is_clean_valid_review(review: dict) -> bool:
@@ -859,6 +873,40 @@ def replay_premise_review(
     return result
 
 
+def review_replay(project: Project, review: dict) -> dict:
+    """Cache current replay per exact review, independently of coverage grouping."""
+    key = hashlib.sha256(json.dumps(
+        [str(project.root.resolve()), project.registry.fingerprint, review],
+        sort_keys=True,
+    ).encode()).hexdigest()
+    if key in _REVIEW_REPLAY_CACHE:
+        return _REVIEW_REPLAY_CACHE[key]
+    replay = replay_ask_review if review.get("ask_scenario") else replay_premise_review
+    result = replay(project, review)
+    if len(_REVIEW_REPLAY_CACHE) >= 512:
+        _REVIEW_REPLAY_CACHE.clear()
+    _REVIEW_REPLAY_CACHE[key] = result
+    return result
+
+
+def _canonical_review(
+    project: Project,
+    rows: list[dict],
+) -> tuple[dict | None, dict]:
+    """Prefer natural exemplars that still replay; retain failures for reporting."""
+    preference = {"preferred": 0, "acceptable": 1, None: 2, "marginal": 3}
+    ordered = sorted(rows, key=lambda row: str(row.get("timestamp") or ""), reverse=True)
+    ordered.sort(key=lambda row: preference.get(row.get("naturalness"), 2))
+    fallback = (None, {"status": "unvalidated", "detail": "no valid judgment"})
+    for index, row in enumerate(ordered):
+        result = review_replay(project, row)
+        if index == 0:
+            fallback = row, result
+        if result["status"] in {"current", "machine_reconfirmed"}:
+            return row, result
+    return fallback
+
+
 def premise_review_evidence(project: Project) -> dict[str, Any]:
     cache_key = _evidence_cache_key(project)
     cached = _PREMISE_EVIDENCE_CACHE.get(cache_key)
@@ -874,26 +922,7 @@ def premise_review_evidence(project: Project) -> dict[str, Any]:
     groups: list[dict[str, Any]] = []
     for signature, rows in grouped.items():
         valid = [row for row in rows if _is_clean_valid_review(row)]
-        canonical = None
-        if valid:
-            preference = {"preferred": 0, "acceptable": 1, None: 2, "marginal": 3}
-            best_preference = min(
-                preference.get(row.get("naturalness"), 2) for row in valid
-            )
-            canonical = max(
-                (
-                    row
-                    for row in valid
-                    if preference.get(row.get("naturalness"), 2)
-                    == best_preference
-                ),
-                key=lambda row: str(row.get("timestamp") or ""),
-            )
-        replay = (
-            replay_premise_review(project, canonical)
-            if canonical is not None
-            else {"status": "unvalidated", "detail": "no valid judgment"}
-        )
+        canonical, replay = _canonical_review(project, valid)
         groups.append(
             {
                 "signature": signature,
@@ -1155,22 +1184,32 @@ def _reviewed_query_matches(actual: Any, expected: Any) -> bool:
     )
 
 
+def _read_reviewed_ask(project: Project, review: dict):
+    """Use the ordinary document loop for the exact saved scenario and context."""
+    scenario = review["ask_scenario"]
+    question = scenario.get("question") or review["sentence"]
+    result = solve(
+        scenario.get("text") or question,
+        project.registry,
+        tracing=False,
+        reference_year=scenario.get("reference_year"),
+    )
+    reading = result.question or analyze(question, project.registry)
+    return result, match_ask(reading, project.registry, store=result.store)
+
+
 def replay_ask_review(project: Project, review: dict) -> dict[str, str]:
     """Replay one pinned positive ask without making reviews runtime inputs."""
 
     scenario = review.get("ask_scenario")
     if not isinstance(scenario, dict):
         return {"status": "not_applicable", "detail": "not an ask review"}
-    question = str(scenario.get("question") or review.get("sentence") or "")
-    text = str(scenario.get("text") or question)
     try:
         # Context-dependent asks must be replayed after the ordinary document
         # loop has rebuilt their discourse features. Analyzing the isolated
         # question drops a pronoun's referent group and can make a generic ask
         # appear to supersede the reviewed discourse-specific rule.
-        result = solve(text, project.registry, tracing=False)
-        reading = result.question or analyze(question, project.registry)
-        matched = match_ask(reading, project.registry, store=result.store)
+        result, matched = _read_reviewed_ask(project, review)
         if matched is None:
             return {
                 "status": "regressed",
@@ -1225,26 +1264,7 @@ def ask_review_evidence(project: Project) -> dict[str, Any]:
     for signature, rows in grouped.items():
         scenario = rows[-1]["ask_scenario"]
         valid = [row for row in rows if _is_clean_valid_review(row)]
-        canonical = None
-        if valid:
-            preference = {"preferred": 0, "acceptable": 1, None: 2, "marginal": 3}
-            best_preference = min(
-                preference.get(row.get("naturalness"), 2) for row in valid
-            )
-            canonical = max(
-                (
-                    row
-                    for row in valid
-                    if preference.get(row.get("naturalness"), 2)
-                    == best_preference
-                ),
-                key=lambda row: str(row.get("timestamp") or ""),
-            )
-        replay = (
-            replay_ask_review(project, canonical)
-            if canonical is not None
-            else {"status": "unvalidated", "detail": "no valid judgment"}
-        )
+        canonical, replay = _canonical_review(project, valid)
         groups.append(
             {
                 "signature": signature,

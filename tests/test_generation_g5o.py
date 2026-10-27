@@ -45,6 +45,8 @@ EXPECTED_OCCURRENCES = {
     "arithmetic/totality-activity-event": ((3,), "totality"),
     "arithmetic/existential-premise-distributive": ((4,), "q"),
     "arithmetic/group-total-trailing": ((1, 0), "q"),
+    "arithmetic/group-total-trailing-in-all": ((2,), "q"),
+    "arithmetic/discount-of-flat-per-unit": ((3,), "per_unit"),
     "arithmetic/periodic-output-per-unit": ((4,), "freq"),
     "arithmetic/periodic-rate-every-span": ((4,), "freq"),
     "arithmetic/per-member-period-rate": ((0,), "each"),
@@ -164,7 +166,7 @@ def test_g5o_unlocks_only_the_preregistered_rule() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 859
+    assert len(exploration_status(project)["fillers"]) == 860
 
 
 @pytest.mark.parametrize("quantifier", sorted(EXPECTED_DISTRIBUTIVE_FILLERS))
@@ -235,6 +237,7 @@ def test_exploration_exposes_quantifiers_only_on_compatible_rules() -> None:
                 )
         if quantifier == "all":
             expected.add(("arithmetic/group-total-trailing", "q"))
+            expected.add(("arithmetic/group-total-trailing-in-all", "q"))
         assert placements == expected
 
 

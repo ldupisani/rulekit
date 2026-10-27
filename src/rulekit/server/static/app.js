@@ -36,6 +36,8 @@ const state = {
   reviewLimit: 100,
   reviewTotal: 0,
   reviewSort: { key: "timestamp", dir: "desc" },
+  reviewRetests: {},
+  resolvingReview: null,
   editingReview: null,   // id of the row being corrected
   editorSaveBusy: false,
 };
@@ -1287,7 +1289,7 @@ function renderReviews() {
   head.append(el("span", "dim",
     `${premiseSummary.validated_group_count || 0}/${premiseSummary.group_count || 0} premise shapes · ` +
     `${summary.validated_group_count || 0}/${summary.group_count || 0} ask shapes validated · ` +
-    `${(summary.regressed_group_count || 0) + (premiseSummary.regressed_group_count || 0)} regressed · append-only`));
+    `${(summary.regressed_group_count || 0) + (premiseSummary.regressed_group_count || 0)} coverage groups regressed · append-only`));
   box.append(head);
 
   const views = el("div", "rv-views");
@@ -1301,6 +1303,7 @@ function renderReviews() {
     views.append(button);
   }
   box.append(views);
+  box.append(el("p", "dim", "VALID is your verdict. Attention reasons track issues separately. Retest the saved example to record fresh evidence, or mark an issue resolved to close it."));
 
   if (state.reviewView === "validated") {
     renderValidatedCoverage(box);
@@ -1479,6 +1482,18 @@ function reviewRow(r) {
   row.append(el("td", "rv-sentence", r.ask_scenario?.question || r.sentence));
   const note = el("td", "rv-note");
   note.append(document.createTextNode(r.note || "—"));
+  if (r.updates_review_id) note.append(el("div", "rv-structured mono", `Updated evidence for ${r.updates_review_id}`));
+  if (r.resolution_note) note.append(el("div", "rv-structured", `Resolution: ${r.resolution_note}`));
+  if (r.attention_reasons?.length) {
+    const reasons = el("ul", "rv-attention-reasons");
+    reasons.setAttribute("aria-label", isResolved ? "Recorded issue reasons" : "Attention reasons");
+    for (const reason of r.attention_reasons) {
+      reasons.append(el("li", "", `${reason.source === "current_replay" ? "Current regression" : "Recorded issue"}: ${reason.detail}`));
+    }
+    note.append(reasons);
+  }
+  if (state.reviewRetests[r.id]) note.append(reviewRetestPanel(r, state.reviewRetests[r.id]));
+  if (state.resolvingReview === r.id) note.append(reviewResolutionForm(r));
   if (r.interpretation) {
     note.append(el("div", "rv-structured", `interpretation: ${r.interpretation}`));
   }
@@ -1534,7 +1549,14 @@ function reviewRow(r) {
   const actions = el("td", "rv-actions");
   const open = el("button", "", "Open in reader");
   open.onclick = () => openReviewInReader(r);
-  actions.append(open);
+  const retest = el("button", "", "Retest saved example");
+  retest.onclick = () => retestSavedReview(r, retest);
+  actions.append(open, retest);
+  if (!isResolved) {
+    const resolve = el("button", "", "Mark resolved");
+    resolve.onclick = () => { state.resolvingReview = r.id; renderReviews(); };
+    actions.append(resolve);
+  }
   if (isResolved) {
     const tombstone = el("button", "rv-danger", "Exclude evidence");
     tombstone.title = "Hide this judgment and remove it from validated coverage.";
@@ -1570,6 +1592,155 @@ function reviewRow(r) {
   actions.append(edit, del);
   row.append(actions);
   return row;
+}
+
+function reviewResolutionForm(r) {
+  const form = el("div", "rv-workflow-form");
+  form.append(el("strong", "", "Close this issue"),
+    el("div", "dim", "Resolution preserves the judgment and evidence. It does not validate the example."));
+  const note = el("textarea", "rv-edit-note");
+  note.maxLength = 4000;
+  note.placeholder = "Why can this issue be closed?";
+  note.setAttribute("aria-label", "Resolution note");
+  const save = el("button", "", "Mark resolved");
+  save.disabled = true;
+  note.oninput = () => { save.disabled = !note.value.trim(); };
+  save.onclick = async () => {
+    save.disabled = true;
+    try {
+      const result = await api("POST", `/api/generation/review/${encodeURIComponent(r.id)}/resolve`, { note: note.value });
+      if (!result.ok) throw new Error(result.detail || "Resolution rejected");
+      state.resolvingReview = null;
+      await loadReviews();
+      setStatus("Issue resolved; its judgment and evidence remain in the archive.", "ok");
+    } catch (error) {
+      setStatus(String(error), "err");
+      save.disabled = false;
+    }
+  };
+  const cancel = el("button", "", "Cancel");
+  cancel.onclick = () => { state.resolvingReview = null; renderReviews(); };
+  form.append(note, save, cancel);
+  return form;
+}
+
+async function retestSavedReview(r, button) {
+  button.disabled = true;
+  try {
+    const result = await api("POST", `/api/generation/review/${encodeURIComponent(r.id)}/retest`);
+    if (result.detail) throw new Error(result.detail);
+    state.reviewRetests[r.id] = result;
+    renderReviews();
+    setStatus("Saved text retested. Review the current evidence before recording a new judgment.", "ok");
+  } catch (error) {
+    setStatus(String(error), "err");
+  } finally {
+    button.disabled = false;
+  }
+}
+
+function appendReaderDiagnostics(panel, current) {
+  if (current.context_requirements?.length) {
+    panel.append(el("strong", "", "Unresolved references"),
+      el("div", "dim", "These need a supported antecedent in the saved text or context. A VALID sentence can still need context."));
+    const requirements = el("ul", "rv-attention-reasons");
+    for (const requirement of current.context_requirements) {
+      requirements.append(el("li", "", `Sentence ${requirement.sentence_index + 1}: “${requirement.surface}” has no resolved antecedent.`));
+    }
+    panel.append(requirements);
+  }
+  const grammarDeficiencies = current.grammar_deficiencies ?? current.deficiencies ?? [];
+  if (grammarDeficiencies.length) {
+    panel.append(el("strong", "", "Grammar deficiencies"));
+    const gaps = el("ul", "rv-attention-reasons");
+    for (const gap of grammarDeficiencies) gaps.append(el("li", "", gap));
+    panel.append(gaps);
+  }
+}
+
+function reviewRetestPanel(r, retest) {
+  const panel = el("section", "rv-retest");
+  panel.append(el("strong", "", "Retest of saved example"),
+    el("div", "mono dim", `Recorded ${r.registry_fingerprint.slice(0, 12)} → current ${retest.registry_fingerprint.slice(0, 12)}`),
+    el("div", "rv-retest-text", retest.current.text || r.sentence));
+  appendReaderDiagnostics(panel, retest.current);
+  const blockers = el("ul", "rv-attention-reasons");
+  for (const reason of retest.validation_blockers) {
+    if (!retest.current.deficiencies?.includes(reason)) blockers.append(el("li", "", reason));
+  }
+  panel.append(blockers.childNodes.length ? blockers
+    : el("div", "dim", retest.validation_blockers.length
+      ? "Unresolved reader requirements prevent premise validation."
+      : "Target checks pass. Inspect the current evidence before making a fresh human judgment."));
+  if (r.ask_scenario) panel.append(el("div", "dim", "This judgment covers the ask, query and result. It does not validate the premises."));
+  for (const [label, evidence] of [
+    ["Recorded evidence", r.premise_evidence || r.ask_scenario || { sentence: r.sentence }],
+    ["Current evidence", retest.current],
+  ]) {
+    const detail = el("details", "rv-evidence-detail");
+    detail.append(el("summary", "", label), el("pre", "", JSON.stringify(evidence, null, 2)));
+    panel.append(detail);
+  }
+  panel.append(el("div", "dim", "Recording updated evidence appends a linked judgment. The original issue stays open until you resolve it."));
+  if (retest.recordedReviewId) {
+    panel.append(el("div", "", `Updated evidence recorded: ${retest.recordedReviewId}`));
+    return panel;
+  }
+  const form = el("div", "rv-workflow-form");
+  const select = (label, options) => {
+    const wrapper = el("label");
+    wrapper.append(el("span", "", label));
+    const input = el("select");
+    for (const [value, title] of options) {
+      const option = el("option", "", title);
+      option.value = value;
+      input.append(option);
+    }
+    wrapper.append(input);
+    form.append(wrapper);
+    return input;
+  };
+  const verdict = select("New verdict", [["", "Choose a verdict"], ...VERDICTS.map(v => [v, v])]);
+  const interpretation = select("Current interpretation", [
+    ["not_reviewed", "Not reviewed"], ["correct", "Correct"], ["incorrect", "Incorrect"], ["unclear", "Unclear"],
+  ]);
+  const result = select("Current facts, answer or decline", [
+    ["not_reviewed", "Not reviewed"], ["correct_facts", "Correct facts"], ["correct_answer", "Correct answer"],
+    ["correct_decline", "Correct decline"], ["incorrect", "Incorrect"], ["unclear", "Unclear"], ["not_applicable", "Not applicable"],
+  ]);
+  const naturalness = select("Naturalness", [["", "Not rated"], ["preferred", "Preferred"], ["acceptable", "Acceptable"], ["marginal", "Marginal"]]);
+  const note = el("textarea", "rv-edit-note");
+  note.maxLength = 4000;
+  note.placeholder = "What does the current evidence show?";
+  note.setAttribute("aria-label", "Updated evidence note");
+  const save = el("button", "primary", "Record updated evidence");
+  save.disabled = true;
+  const update = () => {
+    save.disabled = !verdict.value || interpretation.value === "not_reviewed"
+      || result.value === "not_reviewed" || (verdict.value === "valid" && retest.validation_blockers.length > 0);
+  };
+  for (const control of [verdict, interpretation, result]) control.onchange = update;
+  save.onclick = async () => {
+    save.disabled = true;
+    try {
+      const response = await api("POST", `/api/generation/review/${encodeURIComponent(r.id)}/evidence`, {
+        retest_token: retest.retest_token, verdict: verdict.value,
+        interpretation_judgment: interpretation.value, result_judgment: result.value,
+        naturalness: naturalness.value || null, note: note.value,
+      });
+      if (!response.ok) throw new Error(response.detail || "Updated evidence rejected");
+      retest.recordedReviewId = response.review.id;
+      await loadReviews();
+      await loadGenerationExploration();
+      setStatus("Updated evidence recorded separately. Resolve the original issue when it is complete.", "ok");
+    } catch (error) {
+      setStatus(String(error), "err");
+      update();
+    }
+  };
+  form.append(note, save);
+  panel.append(form);
+  return panel;
 }
 
 function reviewEditRow(r) {
@@ -1910,6 +2081,7 @@ async function saveAskGenerationReview() {
     context_after: [],
     target_rule: null,
     ask_scenario: {
+      reference_year: candidate.reference_year ?? null,
       target_ask: candidate.target_ask,
       scenario_mode: candidate.scenario_mode,
       question: candidate.question,
@@ -3279,9 +3451,7 @@ function renderGenerationCandidate(
         `collision ${collision.a_source} ↔ ${collision.b_source}: ${JSON.stringify(collision.key)}`),
     );
   }
-  for (const deficiency of candidate.deficiencies) {
-    issues.append(el("div", "generation-issue", deficiency));
-  }
+  appendReaderDiagnostics(issues, candidate);
   if (!candidate.collisions.length && !candidate.deficiencies.length) {
     issues.append(el("div", "dim", "none"));
   }

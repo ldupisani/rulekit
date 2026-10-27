@@ -27,6 +27,7 @@ from rulekit.generation.reviews import (
     ask_review_target_counts,
     premise_review_evidence,
     read_review_history,
+    review_replay,
     _reviewed_facts_match,
     validated_premise_candidates,
     validated_premise_rule_usage_counts,
@@ -695,14 +696,14 @@ def test_premise_generation_can_prioritize_the_least_validated_rule(
     assert selection.objective == "least_validated_rule"
 
 
-def test_premise_contract_drift_is_a_visible_regression(
+def test_premise_contract_drift_stays_visible_beside_healthy_coverage(
     curated, tmp_path: Path
 ) -> None:
     project, _candidate, review = _validated_premise_project(curated, tmp_path)
     changed = review["premise_evidence"]
     changed["facts"][0]["fields"]["value"] = 999
-    # Append a superseding valid row with a deliberately false pinned contract.
-    append_review(
+    # An independent bad snapshot does not supersede the healthy original.
+    drifted = append_review(
         project,
         ReviewRecord.model_validate(
             {
@@ -714,4 +715,6 @@ def test_premise_contract_drift_is_a_visible_regression(
     )
 
     groups = premise_review_evidence(project)["groups"]
-    assert any(group["replay_status"] == "regressed" for group in groups)
+    assert groups[0]["canonical_review_id"] == review["id"]
+    assert groups[0]["replay_status"] in {"current", "machine_reconfirmed"}
+    assert review_replay(project, drifted)["status"] == "regressed"

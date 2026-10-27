@@ -17,6 +17,7 @@ def project():
 
 @pytest.mark.parametrize("sentence", [
     "Dena evaporated 2 fewer purposes than Fia.",
+    "Dena evaporated 2 fewer purposes than twice the number of purposes Fia evaporated in 3 months.",
     "Dena evaporated 2 fewer than Fia.",
     "Dena evaporated twice as many purposes as Fia.",
     "Dena evaporated half as many purposes as Fia.",
