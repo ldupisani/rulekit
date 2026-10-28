@@ -2617,6 +2617,7 @@ members:
   - friend
   - gardener
   - grandparent
+  - grandma
   - guardian
   - librarian
   - mom
@@ -2825,7 +2826,7 @@ members:
   instrument_noun: [key, pencil]
   instrument_preposition: [with, without]
   length_measure: [inch]
-  length_unit: [foot, inch, meter, centimeter]
+  length_unit: [foot, inch, meter, centimeter, millimeter]
   less_dir: [fewer, less, younger]
   linear_dimension_comparative: [higher, larger, longer, shorter, smaller, taller, wider]
   linear_dimension_holder: [book, tree]
@@ -3044,7 +3045,7 @@ members:
   sized_content_bearing_whole: [bag, barrel, beaker, bottle, bowl, box, bucket, canister, container, flask,
       jar, jug, tank, vessel, vial]
   sized_quantity_container: [bag, barrel, basket, bin, beaker, bottle, bowl, box, bucket, canister, carton, container, flask, jar,
-      jug, tank, vessel, vial]
+      jug, tank, tub, vessel, vial]
   span_preposition: [in]
   spatial_copular_verb: [are, is, was, were]
   spatial_goal_preposition: [into, onto, to, toward, towards]
@@ -3121,7 +3122,7 @@ members:
   written_production_verb: [write, writes, wrote]
 attribute_compatibility:
   length_unit: [rectangular_shape]
-  prenominal_remnant_adj: [mass_currency_noun, quantity_dimension_noun]
+  prenominal_remnant_adj: [mass_currency_noun, quantity_dimension_noun, material_resource]
   duration_measure: [duration_measure]
   academic_course_modifier: [sequential_partition_destination]
   age_comparative: [age_measure]

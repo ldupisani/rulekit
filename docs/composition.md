@@ -187,6 +187,9 @@ convention uses one year and names that assumption in the answer. Calendar
 month/year conversion uses cadence conversions, not a fixed day count.
 The calculation requires a positive saving window, one participant and
 purpose, matching periods, and complete source and numeric accounting.
+The duration may be declared after the saving plan or tariff. A named activity
+does not by itself limit an unrelated recurring expense to that activity's
+season. Saving-for and affordability questions share the same goal contract.
 
 Implementation: [cyclic budgets](../packs/arithmetic/rules/cyclic-budgets.yaml)
 and [saving average](../src/rulekit/kernel/consumers/cyclic_saving_average.py).
@@ -212,8 +215,16 @@ cutting or packing layout.
 Separate ask constructions normalize “how much”, “how many units”, and
 “what area/volume/length/mass” to the same resource, quantity basis, and output
 unit. Both standalone and attached square/cubic modifiers preserve the power.
-A dimension-noun question may infer a unit only when the measurements state
-one unique unit. A bare amount question does not choose a physical basis.
+A question may omit its physical basis only when all measured operands and
+declared shape formulas establish one common basis. Omitted output units still
+require one uniquely stated unit. Conversions follow declared unit paths and
+apply the factor to every geometric axis. Material modifiers such as an uncut
+remainder retain the same identity and measurement checks.
+Predicative length questions and dimension-noun questions with a remnant
+modifier on the material use the same contract. Physical-length wording is
+gated to measured materials; it does not widen duration asks or infer a
+remaining side length from area or volume. Explicit length units permit
+conversion; omitted units still require a unique stated unit.
 
 Implementation: [region rules](../packs/arithmetic/rules/material-regions.yaml),
 [shared formulas](../packs/arithmetic/geometry.yaml), and
@@ -268,6 +279,8 @@ subtotals, which are subtracted in the requested direction. Each quote
 must match the contents and package; all purchases and quotes must belong to
 one complete ledger. A scoped quote cannot be counted as an ordinary item
 price by another consumer without explicit accounting.
+Both distributive package-first and content-first per-package quotes preserve
+that denominator; a price per package cannot become an unqualified item price.
 
 Implementation: [quote rules](../packs/arithmetic/rules/quoted-purchases.yaml)
 and [item expenditure comparison](../src/rulekit/kernel/consumers/item_expenditure_comparison.py).
@@ -282,11 +295,19 @@ remaining balance must be explicitly located before a loss can use that
 store. Losing everything except a survivor subtracts the survivor from that
 balance. Missing locations, overlapping store descriptions, incompatible
 owners, extra events, and excessive survivor amounts decline.
+Work context need not name a location. Allocation destinations may be explicit
+without a possessive, but an account and a reserve description cannot silently
+be treated as different stores. Destruction, consumption, and theft all support
+owner-relative loss when they identify the same stored pool. A definite store
+can refer to the unique earlier location; an indefinite store cannot establish
+that reference. An exception separated from the loss by another event is not
+silently assigned back to the loss.
 
 Implementation: [resource remainder rules](../packs/arithmetic/rules/resource-remainders.yaml)
 and [stored resource loss](../src/rulekit/kernel/consumers/stored_resource_loss.py).
 Executable analogues, paraphrases, and decline boundaries for these families:
-[resource composition tests](../tests/test_resource_composition_families.py).
+[resource composition tests](../tests/test_resource_composition_families.py) and
+[alternate phrasings](../tests/test_resource_alternate_phrasings.py).
 
 ## Related composition contracts
 

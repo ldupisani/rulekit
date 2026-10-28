@@ -4,18 +4,37 @@ categories:
   resource_receipt_verb: {parent: acquire}
   resource_transfer_verb: {parent: verb}
   remainder_placement_verb: {parent: verb}
-  destructive_loss_verb: {parent: verb}
+  resource_loss_verb: {parent: verb}
+  destructive_loss_verb: {parent: resource_loss_verb}
+  resource_consumption_loss_verb: {parent: resource_loss_verb}
+  resource_theft_verb: {parent: resource_loss_verb}
+  nonfinite_resource_loss_form: {parent: verb}
+  resource_loss_state_verb: {parent: resource_loss_verb}
+  resource_store_location_preposition: {parent: preposition}
+  resource_store_transfer_preposition: {parent: preposition}
   resource_access_noun: {parent: noun}
   access_transition_verb: {parent: verb}
   service_task_noun: {parent: noun}
   resource_work_context_verb: {parent: verb}
 members:
-  resource_store: [account, wallet, purse]
+  resource_store: [account, wallet, purse, savings, piggy bank]
   resource_receipt_verb: [earn, earns, earned, receive, receives, received]
   resource_transfer_verb: [put, puts]
   remainder_placement_verb: [leave, left, put, puts]
-  destructive_loss_verb: [shred, shreds, shredded, destroy, destroyed, lose, lost]
+  destructive_loss_verb: [shred, shreds, shredded, destroy, destroyed]
+  resource_consumption_loss_verb: [eat, eats, ate]
+  resource_theft_verb: [steal, steals, stole]
+  nonfinite_resource_loss_form: [stealing, stolen]
+  resource_loss_state_verb: [lose, loses, lost]
+  resource_store_location_preposition: [in, inside]
+  resource_store_transfer_preposition: [in, into]
   resource_access_noun: [ahold]
   access_transition_verb: [get, gets, got]
   service_task_noun: [job, chore]
   resource_work_context_verb: [work, working, worked]
+context_synonyms:
+  financial_reserve_destination:
+    gate: resource_store
+    # In allocation context these may name the same reserve. This licenses
+    # an ambiguity refusal, never an assertion that two accounts are equal.
+    forms: [savings, account]

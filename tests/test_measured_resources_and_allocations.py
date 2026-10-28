@@ -114,7 +114,6 @@ def test_measured_allocations_keep_output_units(registry, ask, value):
 
 @pytest.mark.parametrize("case,before,after", [
     ("metal", "square meters?", "meters?"),
-    ("metal", "How much metal remains in square meters?", "How much metal remains?"),
     ("metal", "12 meters", "0 meters"),
     ("metal", "Two separate rectangles", "Three separate rectangles"),
     ("metal", "3 by 4 meters", "30 by 4 meters"),
@@ -245,3 +244,96 @@ def test_singular_recipient_generation_has_an_agreeing_verb():
                                    rule_id="arithmetic/recipient-content-singular-each", seed=1423)
     assert candidate.target_status in {"matched", "shadowed"}
     assert all(row.slot != "owner" for row in candidate.premises)
+
+
+def resource_question(case, ask):
+    """Keep the measured premises fixed while varying the question grammar."""
+    return CASES[case].rsplit('. ', 1)[0] + '. ' + ask
+
+
+@pytest.mark.parametrize('material', ['wire', 'cloth'])
+@pytest.mark.parametrize('ask, expected', [
+    ('How long is the remaining {material}?', 15),
+    ('How long is the {material} left?', 15),
+    ('How long is the {material} remaining?', 15),
+    ('How long is the {material} that remains?', 15),
+    ('How long is the remaining {material} in centimeters?', 1500),
+    ('How long is the {material} left in centimeters?', 1500),
+    ('How long is the {material} that remains in centimeters?', 1500),
+])
+def test_predicative_length_queries_reuse_resource_balances(registry, material, ask, expected):
+    text = resource_question('wire', ask.format(material=material)).replace('wire', material)
+    number(text, registry, expected)
+
+
+@pytest.mark.parametrize('case, dimension', [
+    ('wire', 'length'), ('metal', 'area'), ('foam', 'volume'), ('clay', 'mass'),
+])
+@pytest.mark.parametrize('ask', [
+    'What is the {dimension} of {material} left?',
+    'What is the {dimension} of {material} remaining?',
+    'What is the {dimension} of the remaining {material}?',
+    'What is the {dimension} of {material} that remains?',
+    'What {dimension} of {material} is left?',
+    'What {dimension} of {material} is remaining?',
+    'What is the remaining {dimension} of {material}?',
+])
+def test_remnant_material_questions_preserve_the_requested_dimension(registry, case, dimension, ask):
+    number(resource_question(case, ask.format(dimension=dimension, material=case)),
+           registry, EXPECTED[case])
+
+
+@pytest.mark.parametrize('case, ask', [
+    ('wire', 'How big is the remaining wire?'),
+    ('wire', 'How long does the remaining wire last?'),
+    ('wire', 'How long is the remaining wire in hours?'),
+    ('wire', 'How long is the remaining wire in square meters?'),
+    ('wire', 'How long is the wire?'),
+    ('wire', 'How long are the remaining wire?'),
+    ('wire', 'How long is the wire that remain?'),
+    ('wire', 'How long is the remaining cloth?'),
+    ('wire', "How long is Pat's remaining wire?"),
+    ('wire', 'How long is the remaining new wire?'),
+    ('wire', 'What is the size of the remaining wire?'),
+    ('wire', 'What is the volume of wire left?'),
+    ('metal', 'How long is the remaining metal?'),
+    ('metal', 'What is the volume of metal left?'),
+    ('foam', 'How long is the remaining foam?'),
+    ('foam', 'What is the mass of foam left?'),
+    ('foam', 'What is the volume of foam?'),
+    ('foam', 'What are the volume of foam left?'),
+    ('foam', 'What is the volumes of foam left?'),
+    ('foam', 'What is the volume of foam that remain?'),
+    ('foam', 'What is the volume of left foam?'),
+    ('foam', 'What is the volume of foam left by Pat?'),
+    ('foam', "What is the volume of Pat's remaining foam?"),
+    ('foam', 'What is the volume of the remaining new foam?'),
+    ('clay', 'What is the volume of the remaining clay?'),
+])
+def test_remnant_question_ambiguity_boundaries(registry, case, ask):
+    assert not solve(resource_question(case, ask), registry).answer.committed
+
+
+@pytest.mark.parametrize('ask', [
+    'How long is the remaining wire?',
+    'How long is the wire left?',
+    'How long is the wire that remains?',
+    'What is the length of wire left?',
+])
+def test_new_questions_do_not_choose_between_output_units_or_stocks(registry, ask):
+    text = resource_question('wire', ask)
+    mixed_units = text.replace('another 7 meters', 'another 7 centimeters')
+    assert not solve(mixed_units, registry).answer.committed
+    another_stock = 'A spool holds 10 meters of wire. ' + text
+    assert not solve(another_stock, registry).answer.committed
+    assert not solve(ask, registry).answer.committed
+
+
+def test_predicative_length_can_select_an_explicit_unit_for_mixed_inputs(registry):
+    text = resource_question('wire', 'How long is the remaining wire in centimeters?')
+    number(text.replace('another 7 meters', 'another 7 centimeters'), registry, 2193)
+
+
+def test_remaining_material_is_a_reviewed_qualifier(registry):
+    assert registry.attribute_applies_to('remaining', 'wire')
+    assert registry.attribute_applies_to('remaining', 'foam')

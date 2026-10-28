@@ -16,6 +16,21 @@ rules:
     consumes: [price, cost, unit]
     emits:
       - {fact: price, item: '{item}', qualifier: '{item.qualifier}', per: '{unit}', measure: '{price}', value: price, verb: cost, occurrence: '{price.uid}'}
+  - id: arithmetic/per-package-price-quote
+    description: A content-first quote preserves its explicit package denominator, rather than treating it as an item price.
+    match:
+      sentence:
+        - opt: [{lit: and}]
+        - {slot: item, cat: purchase_item, uncounted: true, bare: true}
+        - {slot: cost, cat: price_verb, finite_form: true}
+        - {slot: price, cat: currency_measure, counted: true}
+        - {lit: per}
+        - {slot: unit, cat: purchase_lot_measure, uncounted: true, bare: true, number: singular}
+    where: [{number_compatible: [item, cost]}]
+    satisfies: {cost: [subject]}
+    consumes: [price, cost]
+    emits:
+      - {fact: price, item: '{item}', qualifier: '', per: '{unit}', measure: '{price}', value: price, verb: cost, occurrence: '{price.uid}'}
 asks:
   - id: ask/item-expenditure-comparison
     match:

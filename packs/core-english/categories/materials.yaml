@@ -25,6 +25,13 @@ categories:
     parent: verb
   quantity_dimension_noun:
     parent: noun
+  length_interrogative_adjective:
+    parent: adjective
+    notes: >
+      Physical extent queried with a measured material. Kept separate from
+      general holder dimensions because the same word can ask about duration.
+  resource_remnant_attribute:
+    parent: adjective
   volume_unit_modifier:
     parent: adjective
   rectangular_attribute:
@@ -57,6 +64,7 @@ members:
   - rubber
   - wood
   - clay
+  - fuel
   - material
   solid_stock_unit:
   - block
@@ -92,6 +100,8 @@ members:
   - area
   - volume
   - mass
+  length_interrogative_adjective: [long]
+  resource_remnant_attribute: [remaining, uncut]
   volume_unit_modifier:
   - cubic
   rectangular_attribute:
@@ -107,6 +117,7 @@ members:
   - held
   - having
 attribute_compatibility:
+  resource_remnant_attribute: [material_resource]
   rectangular_attribute:
   - material_stock_unit
   - rectangular_shape

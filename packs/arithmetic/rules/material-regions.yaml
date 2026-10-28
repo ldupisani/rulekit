@@ -9,11 +9,15 @@ rules:
     - {slot: aux, cat: copula}
     - {slot: cut, cat: region_cutting_verb, present_participle: true}
     - {slot: material, cat: material_resource, uncounted: true, bare: true}
-    - {lit: to}
-    - {slot: make, cat: commercial_production_verb, bare_form: true}
-    - {slot: product, cat: fabrication_product, uncounted: true}
+    - opt:
+      - {lit: to}
+      - {slot: make, cat: commercial_production_verb, bare_form: true}
+      - {slot: product, cat: fabrication_product, uncounted: true}
+    - opt:
+      - {lit: for}
+      - {slot: purpose, cat: fabrication_product, uncounted: true}
     - {lit: ., consume_skipped: true}
-  where: [number_compatible: [who, aux]]
+  where: [{number_compatible: [who, aux]}, {mutually_exclusive: [make, purpose]}]
   consumes: [aux, cut, make]
   emits:
   - {fact: region_evidence, stage: context, material: '{material}', entity: '{who}', shape: '', dimension: '', 
@@ -710,6 +714,7 @@ templates:
       satisfies: {}
       disambiguates: []
       material: '{material}'
+      agreement: []
     rule:
       match:
         question:
@@ -718,6 +723,7 @@ templates:
         - {lit: '?', consume_skipped: true}
       satisfies: {parameter: satisfies}
       disambiguates: {parameter: disambiguates}
+      where: {parameter: agreement}
       resolves:
         consumer: material-region-remainder
         material: {parameter: material}
@@ -1579,3 +1585,188 @@ ask_variants:
     satisfies: {}
     disambiguates: []
     material: ''
+# Predicative extent and dimension-noun questions share the same balance.
+# Remnant wording may modify the material or follow it; it never licenses
+# inferring a physical basis from a generic size word or from duration.
+- id: ask/measured-remainder-how-long-prenominal
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {slot: extent, cat: length_interrogative_adjective}
+    - {slot: be, cat: singular_copula}
+    - {slot: material, cat: material_resource, uncounted: true, number: singular,
+        qualified: true, qualifier_cat: prenominal_remnant_adj, all_qualifiers: true, class_only: true}
+    tail:
+    - opt:
+      - {lit: in}
+      - {slot: unit, cat: length_unit, uncounted: true, number: plural, bare: true}
+    unit: '{unit.optional}'
+    quantity: length
+    satisfies: {be: [subject]}
+- id: ask/measured-remainder-how-long-postnominal
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {slot: extent, cat: length_interrogative_adjective}
+    - {slot: be, cat: singular_copula}
+    - {slot: material, cat: material_resource, uncounted: true, number: singular, bare: true}
+    tail:
+    - {slot: remnant, cat: remnant_adj}
+    - opt:
+      - {lit: in}
+      - {slot: unit, cat: length_unit, uncounted: true, number: plural, bare: true}
+    unit: '{unit.optional}'
+    quantity: length
+    satisfies: {be: [subject]}
+    disambiguates: [remnant]
+- id: ask/measured-remainder-how-long-relative
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {slot: extent, cat: length_interrogative_adjective}
+    - {slot: be, cat: singular_copula}
+    - {slot: material, cat: material_resource, uncounted: true, number: singular, bare: true}
+    tail:
+    - {lit: that}
+    - {slot: remain, cat: resource_remnant_verb, finite_form: true}
+    - opt:
+      - {lit: in}
+      - {slot: unit, cat: length_unit, uncounted: true, number: plural, bare: true}
+    agreement: [number_compatible: [material, remain]]
+    unit: '{unit.optional}'
+    quantity: length
+    satisfies: {be: [subject], remain: [subject]}
+- id: ask/measured-remainder-is-dimension-postnominal
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: what, at_start: true}
+    - {slot: be, cat: singular_copula}
+    - {slot: dimension, cat: quantity_dimension_noun, uncounted: true, number: singular, bare: true}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, number: singular, bare: true}
+    tail:
+    - {slot: remnant, cat: remnant_adj}
+    quantity: '{dimension}'
+    satisfies: {be: [subject]}
+    disambiguates: [remnant]
+- id: ask/measured-remainder-is-dimension-prenominal
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: what, at_start: true}
+    - {slot: be, cat: singular_copula}
+    - {slot: dimension, cat: quantity_dimension_noun, uncounted: true, number: singular, bare: true}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, number: singular,
+        qualified: true, qualifier_cat: prenominal_remnant_adj, all_qualifiers: true, class_only: true}
+    tail: []
+    quantity: '{dimension}'
+    satisfies: {be: [subject]}
+- id: ask/measured-remainder-is-dimension-relative
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: what, at_start: true}
+    - {slot: be, cat: singular_copula}
+    - {slot: dimension, cat: quantity_dimension_noun, uncounted: true, number: singular, bare: true}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, number: singular, bare: true}
+    tail:
+    - {lit: that}
+    - {slot: remain, cat: resource_remnant_verb, finite_form: true}
+    agreement: [number_compatible: [material, remain]]
+    quantity: '{dimension}'
+    satisfies: {be: [subject], remain: [subject]}
+- id: ask/measured-remainder-dimension-is-left
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: what, at_start: true}
+    - {slot: dimension, cat: quantity_dimension_noun, uncounted: true, number: singular, bare: true}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, number: singular, bare: true}
+    tail:
+    - {slot: be, cat: singular_copula}
+    - {slot: remnant, cat: remnant_adj}
+    quantity: '{dimension}'
+    satisfies: {be: [subject]}
+    disambiguates: [remnant]
+- id: ask/measured-remainder-how-much-inferred
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {slot: amount_word, cat: mass_amount_interrogative}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: be, cat: copula}
+    - {slot: remnant, cat: remnant_adj}
+    quantity: inferred
+    satisfies: {be: [subject]}
+    disambiguates: [amount_word, remnant]
+- id: ask/measured-remainder-how-much-remains-inferred
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {slot: amount_word, cat: mass_amount_interrogative}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail:
+    - {slot: remain, cat: resource_remnant_verb, finite_form: true}
+    agreement: [{number_compatible: [material, remain]}]
+    quantity: inferred
+    satisfies: {remain: [subject]}
+    disambiguates: [amount_word]
+- id: ask/measured-remainder-qualified-how-much-inferred
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {slot: amount_word, cat: mass_amount_interrogative}
+    - {slot: material, cat: material_resource, uncounted: true, qualified: true,
+        qualifier_cat: resource_remnant_attribute, all_qualifiers: true, class_only: true}
+    tail:
+    - {slot: be, cat: copula}
+    - {slot: remnant, cat: remnant_adj}
+    quantity: inferred
+    satisfies: {be: [subject]}
+    disambiguates: [amount_word, remnant]
+- id: ask/measured-remainder-qualified-how-much-area
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {slot: amount_word, cat: mass_amount_interrogative}
+    - {slot: material, cat: material_resource, uncounted: true, qualified: true,
+        qualifier_cat: resource_remnant_attribute, all_qualifiers: true, class_only: true}
+    tail:
+    - {slot: be, cat: copula}
+    - {slot: remnant, cat: remnant_adj}
+    - {lit: in}
+    - {slot: power, cat: area_unit_modifier}
+    - {slot: unit, cat: length_unit, uncounted: true, number: plural, bare: true}
+    quantity: area
+    unit: '{unit}'
+    satisfies: {be: [subject]}
+    disambiguates: [amount_word, remnant, power]
+- id: ask/measured-remainder-qualified-how-much-area-qualified-unit
+  template: measured-remainder-question
+  arguments:
+    head:
+    - {lit: how, at_start: true}
+    - {slot: amount_word, cat: mass_amount_interrogative}
+    - {slot: material, cat: material_resource, uncounted: true, qualified: true,
+        qualifier_cat: resource_remnant_attribute, all_qualifiers: true, class_only: true}
+    tail:
+    - {slot: be, cat: copula}
+    - {slot: remnant, cat: remnant_adj}
+    - {lit: in}
+    - {slot: unit, cat: length_unit, uncounted: true, qualified: true, qualifier_cat: area_unit_modifier}
+    quantity: area
+    unit: '{unit}'
+    satisfies: {be: [subject]}
+    disambiguates: [amount_word, remnant]

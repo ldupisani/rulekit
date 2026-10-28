@@ -376,6 +376,7 @@ arbitrary definite plural references. Live schemas lists all `SLOT_TYPES`.
 | `common_noun_cat` | Restrict the common-noun route of an entity slot |
 | `counted, uncounted, possessed, qualified, attributive_counted` | Structural noun requirements |
 | `qualifier_cat, number` | Qualifier and grammatical-number requirements |
+| `all_qualifiers` | Require every retained modifier to belong to `qualifier_cat`, including nested qualifiers |
 | `referential, bare_reference_category, determinerless_category` | Referential completeness and explicit exceptions |
 | `bare, class_only, standalone, single_word` | Additional shape restrictions |
 | `integer, value_min, value_max` | Numeric restrictions |

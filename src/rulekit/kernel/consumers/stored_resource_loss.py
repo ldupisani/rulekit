@@ -11,6 +11,7 @@ from ..rate_calculation import convert_units
 from ..resource_equations import resource_residual
 from ..source_coverage import uncovered_document_units
 from ..reference_identity import constrains
+from ..predicate_compatibility import predicates_compatible
 
 
 @consumer("stored-resource-loss", applicable=lambda s: any(
@@ -43,13 +44,20 @@ def consume(ctx):
     opening, location, loss = openings[0], locations[0], losses[0]
     access = accesses[0] if accesses else None
     actor = ctx.query["entity"]
+    # A definite, unowned store can refer to the sole already located pool.
+    # Its full reference must constrain that store; a new indefinite store or
+    # a contradictory owner is not an antecedent.
+    referential_loss = (loss.marker == "referential-store" and not loss.entity
+                        and loss.container_ref is not None and location.container_ref is not None
+                        and constrains(loss.container_ref, location.container_ref))
     if (opening.entity != actor or location.entity != actor or location.attribute != actor
             or access is not None and (access.entity != actor or access.container_ref != location.container_ref)
             or opening.provenance.sentence >= fractions[0].provenance.sentence
             or max(f.provenance.sentence for f in fractions) >= location.provenance.sentence
             or location.provenance.sentence >= loss.provenance.sentence
             or access is not None and loss.provenance.sentence != access.provenance.sentence
-            or access is None and (loss.entity != actor or loss.container_ref != location.container_ref)
+            or access is None and not referential_loss and (
+                loss.entity != actor or loss.container_ref != location.container_ref)
             or any(r.provenance.assumption for r in rows)
             or opening.measure != loss.measure):
         return decline("the pool, allocations, store owner and loss must share one ordered account")
@@ -67,7 +75,10 @@ def consume(ctx):
                 or step.marker == "remainder" and (
                     step.container_ref is None or location.container_ref is None
                     or constrains(step.container_ref, location.container_ref)
-                    or constrains(location.container_ref, step.container_ref))
+                    or constrains(location.container_ref, step.container_ref)
+                    or step.container_ref.head != location.container_ref.head and predicates_compatible(
+                        step.container_ref.head, location.container_ref.head,
+                        location.container_ref.head, ctx.reg))
                 or step.marker not in {"opening", "remainder"}
                 or step.marker == "opening" and index != 0):
             return decline("each fraction must name the same pool or its current remainder")

@@ -30,6 +30,7 @@ entries:
     senses:
     - adjective
   adds: {senses: [verb], number: singular, verb: {lemma: add}}
+  afford: {senses: [verb], number: plural}
   after: {senses: [preposition]}
   again: {senses: [adverb]}
   against: {senses: [preposition]}
@@ -764,6 +765,7 @@ entries:
   from: {senses: [preposition]}
   frozen yoghurt: {"senses": ["noun"], "lexical_phrase": true}
   frozen yogurt: {"senses": ["noun"], "lexical_phrase": true}
+  fuel: {senses: [noun]}
   full: {senses: [adjective]}
   full name: {senses: [noun], plural: full names, lexical_phrase: true}
   fully: {senses: [adverb]}
@@ -807,6 +809,7 @@ entries:
   got: {senses: [verb], verb: {lemma: get}}
   grade: {"senses": ["noun"], "plural": "grades"}
   gram: {senses: [noun], plural: grams}
+  grandma: {senses: [noun], plural: grandmas}
   grandparent: {senses: [noun], plural: grandparents}
   grape: {senses: [noun], plural: grapes}
   green: {senses: [adjective]}
@@ -1045,6 +1048,7 @@ entries:
     verb:
       lemma: lose
   lost: {senses: [verb], verb: {lemma: lose}}
+  lottery: {senses: [noun], plural: lotteries}
   machine: {senses: [noun], plural: machines}
   made: {senses: [verb], verb: {lemma: make}}
   make: {senses: [verb], number: plural, verb: {lemma: make}}
@@ -1088,6 +1092,7 @@ entries:
     plural:
     - m
     - meters
+    - metres
   method: {senses: [noun], plural: methods}
   might: {senses: [modal]}
   mile: {senses: [noun], plural: miles}
@@ -1100,6 +1105,7 @@ entries:
     senses:
     - noun
     plural: [milliliters, millilitres]
+  millimeter: {senses: [noun], plural: [millimeters, millimetres, mm]}
   minute: {senses: [noun], plural: minutes}
   mix:
     senses:
@@ -1332,6 +1338,7 @@ entries:
     - noun
     plural: pictures
   piece: {senses: [noun], plural: pieces}
+  piggy bank: {senses: [noun], plural: piggy banks, lexical_phrase: true}
   pile:
     senses:
     - noun
@@ -1512,11 +1519,11 @@ entries:
   relevant:
     senses:
     - adjective
-  remain: {senses: [verb]}
+  remain: {senses: [verb], number: plural}
   remainder: {senses: [noun]}
   remained: {senses: [verb], verb: {lemma: remain}}
   remaining: {senses: [adjective]}
-  remains: {senses: [verb], verb: {lemma: remain}}
+  remains: {senses: [verb], number: singular, verb: {lemma: remain}}
   remove: {senses: [verb], number: plural}
   removed: {senses: [verb], verb: {lemma: remove}}
   removes: {senses: [verb], number: singular, verb: {lemma: remove}}
@@ -1812,8 +1819,13 @@ entries:
   starting: {senses: [verb], verb: {lemma: start}}
   starts: {senses: [verb], number: singular, verb: {lemma: start}}
   statement: {senses: [noun], plural: statements}
+  steal: {senses: [verb], number: plural}
+  stealing: {senses: [verb], verb: {lemma: steal}}
+  steals: {senses: [verb], number: singular, verb: {lemma: steal}}
   sticker: {senses: [noun], plural: stickers}
   still: {senses: [adverb]}
+  stole: {senses: [verb], verb: {lemma: steal}}
+  stolen: {senses: [verb], verb: {lemma: steal, past_participle: true}}
   store:
     senses:
     - noun
@@ -1945,6 +1957,7 @@ entries:
   trip: {senses: [noun], plural: trips}
   triple: {senses: [quantifier, verb]}
   truck: {senses: [noun], plural: trucks}
+  tub: {senses: [noun], plural: tubs}
   tuesday: {senses: [noun]}
   tunnel:
     senses:
@@ -1963,6 +1976,7 @@ entries:
       lemma: turn
   turquoise: {senses: [adjective]}
   tutoring: {senses: [noun]}
+  uncut: {senses: [adjective]}
   under: {senses: [preposition]}
   underneath: {senses: [preposition]}
   uneaten:

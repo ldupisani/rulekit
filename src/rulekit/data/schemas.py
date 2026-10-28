@@ -541,6 +541,10 @@ class MatchToken(StrictModel):
     # The head still uses the slot's ordinary `cat`; this independently gates
     # the internal noun/adjective modifier after condensation.
     qualifier_cat: str | None = None
+    # OPT-IN: every retained modifier, including nested qualifiers, must be
+    # in `qualifier_cat`. Use when a query or emitter projects the description
+    # to its head and cannot preserve additional identity restrictions.
+    all_qualifiers: bool = False
     # OPT-IN grammatical-number constraint on any scalar slot. The matched
     # unit must carry the declared singular/plural feature; it never infers a
     # word's number. This is separate from `same_number`, which relates slots.
@@ -778,6 +782,7 @@ class MatchToken(StrictModel):
                 or self.qualified
                 or self.attributive_counted
                 or self.qualifier_cat is not None
+                or self.all_qualifiers
                 or self.number is not None
                 or self.standalone
                 or self.integer
@@ -798,7 +803,7 @@ class MatchToken(StrictModel):
                 raise ValueError(
                     "a span slot takes no "
                     "type/cat/bare/counted/possessed/qualified/attributive_counted/"
-                    "qualifier_cat/number/standalone/integer/value bounds/"
+                    "qualifier_cat/all_qualifiers/number/standalone/integer/value bounds/"
                     "fraction_within_whole/word_fraction_within_whole/"
                     "fraction_positive/generation_explicit_unit_fraction/"
                     "generation_all_numbers/"
@@ -839,6 +844,8 @@ class MatchToken(StrictModel):
             self.qualified or self.type == "qualified"
         ):
             raise ValueError("`qualifier_cat` requires a qualified noun slot")
+        if self.all_qualifiers and self.qualifier_cat is None:
+            raise ValueError("`all_qualifiers` requires `qualifier_cat`")
         if self.possessed and self.qualified:
             raise ValueError("a category slot cannot be both possessed and qualified")
         if self.number is not None and self.slot is None:

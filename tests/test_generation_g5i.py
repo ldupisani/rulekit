@@ -86,7 +86,9 @@ def test_g5i_profiles_the_complete_recursive_optional_class() -> None:
     # Holder comparisons admit a repeated predicate while an optional object
     # beneath it still distinguishes the fuller item-comparison construction.
     # The "in all" total marker rejects a following collection or partitive.
-    assert _optional_profile(project) == (286, 490, 54, 3)
+    # Resource contexts, destination ownership, coordinated package quotes,
+    # and store-loss variants add flat groups without increasing nesting.
+    assert _optional_profile(project) == (293, 498, 54, 3)
 
 
 def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
@@ -95,8 +97,8 @@ def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
         for item in list_rule_availability(load_project(CURATED))
     }
 
-    assert len(availability) == 593
-    assert sum(item.supported for item in availability.values()) == 538
+    assert len(availability) == 598
+    assert sum(item.supported for item in availability.values()) == 543
     assert sum(not item.supported for item in availability.values()) == 55
     assert all(availability[rule_id].supported for rule_id in NEWLY_SUPPORTED)
     assert all(

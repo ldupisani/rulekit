@@ -191,7 +191,7 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
     }
 
     assert adjectives == {
-        "equal", "living", "odd", "square", "rectangular", "separate", "cubic",
+        "equal", "living", "odd", "square", "rectangular", "separate", "cubic", "uncut",
         "early", "late", "long",
         "ripe", "unripe",
         "additional", "collapsing", "stable",
@@ -270,7 +270,7 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
     # Savings adds six pluralizable nouns; month reuses duration descriptors.
     # Batch acquisition adds eight plural nouns and relevance descriptors.
     # Indexed holders add houses/streets/gnomes and ordinal/terminal modifiers.
-    assert len(plural_nouns) == 362
+    assert len(plural_nouns) == 367
     assert {
         "boy",
         "day",
@@ -295,11 +295,12 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
     # Three social-group holders also inherit nine ordinal/terminal modifiers each.
     # Basket inherits the six shared container/size descriptor pairs.
     # Explicit duration qualifiers also license second on seven duration nouns.
+    # Remaining also describes the shared measured-material family.
     assert sum(
         registry.attribute_applies_to(attribute, noun)
         for attribute in adjectives
         for noun in plural_nouns
-    ) == 2100
+    ) == 2138
 
 
 def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> None:
@@ -376,7 +377,7 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
 def test_compatibility_rule_remains_supported_after_g5j_expansion() -> None:
     availability = list_rule_availability(load_project(CURATED))
 
-    assert sum(item.supported for item in availability) == 538
+    assert sum(item.supported for item in availability) == 543
     target = next(item for item in availability if item.id == RULE_ID)
     assert target.supported
     assert target.blockers == ()

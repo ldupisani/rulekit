@@ -26,6 +26,8 @@ def consume(ctx):
     purpose, active, plan = (next(r for r in rows if r.kind == k) for k in kinds)
     cost, tariff = costs[0], tariffs[0]
     who = ctx.query["entity"]
+    if plan.container and not purpose.attribute:
+        return decline("a named activity does not establish when an unrelated recurring expense is incurred")
     if (any(f.entity != who for f in [*rows, cost, tariff]) or ctx.query["owner"] != who
             or purpose.measure != ctx.query["target"] or tariff.basis != "uniform-service"
             or purpose.container and purpose.container != who
@@ -35,7 +37,7 @@ def consume(ctx):
                 len(active.container_ref.qualifiers) != 1
                 or active.container_ref.qualifiers[0] not in {purpose.attribute, plan.container})
             or cost.measure != tariff.measure or plan.measure != active.measure
-            or not purpose.provenance.sentence < active.provenance.sentence < plan.provenance.sentence < tariff.provenance.sentence
+            or not purpose.provenance.sentence < plan.provenance.sentence < tariff.provenance.sentence
             or any(t.entity or t.provenance.sentence != plan.provenance.sentence for t in tasks)
             or len({t.verb for t in tasks}) != len(tasks)
             or any(f.provenance.assumption for f in ctx.store.facts)):

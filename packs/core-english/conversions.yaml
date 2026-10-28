@@ -74,3 +74,6 @@ conversions:
 - from: centimeter
   to: meter
   factor: 0.01
+- from: millimeter
+  to: meter
+  factor: 0.001

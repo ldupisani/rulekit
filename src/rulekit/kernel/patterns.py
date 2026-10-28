@@ -425,6 +425,15 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
         unit.features.get("qualifier", ""), token.qualifier_cat
     ):
         return False
+    if token.all_qualifiers:
+        # The ordinary qualifier gate names one modifier. Head projections
+        # additionally opt in to checking the complete reference description.
+        qualifiers = reference_from_unit(unit).qualifiers
+        if not qualifiers or any(
+            not reg.word_in_category(qualifier, token.qualifier_cat)
+            for qualifier in qualifiers
+        ):
+            return False
     if (
         token.number is not None
         and unit.features.get("number") != token.number

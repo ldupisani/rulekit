@@ -1,4 +1,37 @@
 format: rulekit/rules@1
+templates:
+  stored-resource-loss:
+    parameters:
+      prefix: []
+      location: []
+      exception: [{lit: [but, except]}]
+      entity: ''
+      container: ''
+      marker: ''
+      agreement: []
+      satisfaction: {}
+    rule:
+      description: An explicitly scoped store loses its monetary contents except a stated surviving amount; the actor may destroy, consume, or take them.
+      match:
+        sentence:
+          - {parameter: prefix}
+          - {slot: loss, cat: resource_loss_verb, finite_form: true}
+          - {lit: all}
+          - {slot: resource, cat: mass_currency_noun, uncounted: true, bare: true}
+          - {parameter: location}
+          - {parameter: exception}
+          - {slot: surviving, cat: currency_measure, counted: true}
+          - {lit: '.', consume_skipped: true}
+      where:
+        - {parameter: agreement}
+        - slot_not_category: {slot: loss, cat: nonfinite_resource_loss_form}
+      consumes: [loss, surviving]
+      satisfies: {parameter: satisfaction}
+      emits:
+        - {fact: batch_evidence, kind: resource-store-loss, entity: {parameter: entity},
+            measure: '{surviving}', container: {parameter: container},
+            marker: {parameter: marker}, value: surviving, verb: '{loss}',
+            position: '{surviving.span_start}'}
 rules:
   - id: arithmetic/resource-receipt-with-work-context
     description: A stated receipt with uncounted work context establishes one source amount; the context does not add a second income. Plain receipts reuse ordinary quantities.
@@ -9,8 +42,9 @@ rules:
         - {slot: amount, cat: currency_measure, counted: true}
         - {slot: working, cat: resource_work_context_verb, present_participle: true}
         - {slot: tasks, cat: service_task_noun, uncounted: true}
-        - {lit: around}
-        - {slot: place, cat: geographic_area, uncounted: true}
+        - opt:
+            - {lit: around}
+            - {slot: place, cat: geographic_area, uncounted: true}
         - {lit: '.', consume_skipped: true}
     where: [{number_compatible: [who, receipt]}]
     consumes: [receipt, amount, working]
@@ -32,7 +66,7 @@ rules:
     emits:
       - {fact: batch_evidence, kind: resource-fraction, entity: '{who}', measure: '', value: fraction, marker: opening, container: '{item}', verb: '{spend}', position: '{fraction.span_start}'}
   - id: arithmetic/coordinated-fraction-of-remainder-transfer
-    description: A fraction of the current unallocated remainder is moved to a named owned store; it is a transfer, not spending.
+    description: A fraction of the current unallocated remainder is allocated to a named destination; its actor follows the coordinated clause.
     match:
       sentence:
         - {lit: and}
@@ -40,13 +74,13 @@ rules:
         - {slot: fraction, type: fraction, fraction_within_whole: true}
         - {lit: of}
         - {slot: rest, cat: remnant}
-        - {lit: in}
-        - {slot: owner, cat: possessive_determiner}
+        - {slot: prep, cat: resource_store_transfer_preposition}
+        - opt: [{slot: owner, cat: possessive_determiner}]
         - {slot: store, cat: resource_store, uncounted: true}
     consumes: [transfer, fraction]
     satisfies: {transfer: [subject]}
     emits:
-      - {fact: batch_evidence, kind: resource-fraction, entity: '', attribute: '{owner}', measure: '', value: fraction, marker: remainder, container: '{store}', verb: '{transfer}', position: '{fraction.span_start}'}
+      - {fact: batch_evidence, kind: resource-fraction, entity: '', attribute: '{owner.optional}', measure: '', value: fraction, marker: remainder, container: '{store}', verb: '{transfer}', position: '{fraction.span_start}'}
   - id: arithmetic/remainder-to-owned-store
     description: The entire remaining monetary pool is located in one explicitly owned store.
     match:
@@ -77,41 +111,72 @@ rules:
     where: [{same_surface: [agent_owner, owner]}, {number_compatible: [agent, get]}]
     emits:
       - {fact: batch_evidence, kind: resource-store-access, entity: '{owner}', measure: '', container: '{store}', attribute: '{agent}', value: 0, position: '{store.span_start}'}
+variants:
   - id: arithmetic/coordinated-stored-resource-loss-except
-    description: All the resource inside the immediately accessed store is lost except for a stated surviving amount.
-    match:
-      sentence:
-        - {lit: and}
-        - {slot: loss, cat: destructive_loss_verb, finite_form: true}
-        - {lit: all}
-        - {slot: resource, cat: mass_currency_noun, uncounted: true, bare: true}
-        - {lit: inside}
-        - {lit: [but, except]}
-        - {slot: surviving, cat: currency_measure, counted: true}
-        - {lit: '.', consume_skipped: true}
-    consumes: [loss, surviving]
-    satisfies: {loss: [subject]}
-    emits:
-      - {fact: batch_evidence, kind: resource-store-loss, entity: '', measure: '{surviving}', container: '', value: surviving, verb: '{loss}', position: '{surviving.uid}'}
+    template: stored-resource-loss
+    arguments:
+      prefix: [{lit: and}]
+      location: [{lit: inside}]
+      satisfaction: {loss: [subject]}
+  - id: arithmetic/coordinated-stored-resource-loss-except-for
+    template: stored-resource-loss
+    arguments:
+      prefix: [{lit: and}]
+      location: [{lit: inside}]
+      satisfaction: {loss: [subject]}
+      exception: [{lit: except}, {lit: for}]
   - id: arithmetic/explicit-stored-resource-loss-except
-    description: An explicit store and owner identify the destroyed pool without requiring an access narrative.
-    match:
-      sentence:
+    template: stored-resource-loss
+    arguments:
+      prefix:
         - opt: [{slot: actor_owner, cat: possessive_determiner, at_start: true}]
         - {slot: actor, type: entity, referential: true}
-        - {slot: loss, cat: destructive_loss_verb, finite_form: true}
-        - {lit: all}
-        - {slot: resource, cat: mass_currency_noun, uncounted: true, bare: true}
-        - {lit: in}
+      location:
+        - {slot: prep, cat: resource_store_location_preposition}
         - {slot: owner, cat: possessive_determiner}
         - {slot: store, cat: resource_store, uncounted: true}
-        - {lit: [but, except]}
-        - {slot: surviving, cat: currency_measure, counted: true}
-        - {lit: '.', consume_skipped: true}
-    where: [{number_compatible: [actor, loss]}]
-    consumes: [loss, surviving]
-    emits:
-      - {fact: batch_evidence, kind: resource-store-loss, entity: '{owner}', measure: '{surviving}', container: '{store}', value: surviving, verb: '{loss}', position: '{surviving.span_start}'}
+      entity: '{owner}'
+      container: '{store}'
+      agreement: [{number_compatible: [actor, loss]}]
+  - id: arithmetic/explicit-stored-resource-loss-except-for
+    template: stored-resource-loss
+    arguments:
+      prefix:
+        - opt: [{slot: actor_owner, cat: possessive_determiner, at_start: true}]
+        - {slot: actor, type: entity, referential: true}
+      location:
+        - {slot: prep, cat: resource_store_location_preposition}
+        - {slot: owner, cat: possessive_determiner}
+        - {slot: store, cat: resource_store, uncounted: true}
+      entity: '{owner}'
+      container: '{store}'
+      agreement: [{number_compatible: [actor, loss]}]
+      exception: [{lit: except}, {lit: for}]
+  - id: arithmetic/referential-stored-resource-loss-except
+    template: stored-resource-loss
+    arguments:
+      prefix:
+        - opt: [{slot: actor_owner, cat: possessive_determiner, at_start: true}]
+        - {slot: actor, type: entity, referential: true}
+      location:
+        - {slot: prep, cat: resource_store_location_preposition}
+        - {slot: store, cat: resource_store, uncounted: true, bare: true, referential: true, blocks_skipped: indefinite_article}
+      marker: referential-store
+      container: '{store}'
+      agreement: [{number_compatible: [actor, loss]}]
+  - id: arithmetic/referential-stored-resource-loss-except-for
+    template: stored-resource-loss
+    arguments:
+      prefix:
+        - opt: [{slot: actor_owner, cat: possessive_determiner, at_start: true}]
+        - {slot: actor, type: entity, referential: true}
+      location:
+        - {slot: prep, cat: resource_store_location_preposition}
+        - {slot: store, cat: resource_store, uncounted: true, bare: true, referential: true, blocks_skipped: indefinite_article}
+      marker: referential-store
+      container: '{store}'
+      agreement: [{number_compatible: [actor, loss]}]
+      exception: [{lit: except}, {lit: for}]
 asks:
   - id: ask/stored-resource-loss
     match:
@@ -121,7 +186,7 @@ asks:
         - {slot: measure, cat: currency_measure, uncounted: true}
         - {slot: aux, cat: auxiliary}
         - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true}
-        - {slot: lose, cat: destructive_loss_verb, bare_form: true}
+        - {slot: lose, cat: resource_loss_state_verb, bare_form: true}
         - {lit: '?', consume_skipped: true}
     satisfies: {lose: [subject]}
     resolves: {consumer: stored-resource-loss, entity: '{who}', measure: '{measure}'}

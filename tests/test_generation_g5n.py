@@ -97,8 +97,8 @@ def test_g5n_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 593
-    assert sum(item.supported for item in availability.values()) == 538
+    assert len(availability) == 598
+    assert sum(item.supported for item in availability.values()) == 543
     assert sum(not item.supported for item in availability.values()) == 55
     assert all(
         availability[rule_id].supported
@@ -109,7 +109,7 @@ def test_g5n_unlocks_exactly_the_preregistered_frontier() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 922
+    assert len(exploration_status(project)["fillers"]) == 931
 
 
 @pytest.mark.parametrize("rule_id", sorted(EXPECTED_OCCURRENCES))

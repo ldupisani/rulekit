@@ -7,7 +7,7 @@ from ..answer import Answer
 from ..evaluate import evaluate, EvaluationError
 from ..model import RegionEvidence
 from ..numeric_evidence import audit_numeric_mentions
-from ..rate_calculation import convert_units
+from ..dimensions import conversion_factor
 from ..resource_equations import resource_residual
 from ..source_coverage import uncovered_document_units
 
@@ -36,6 +36,18 @@ def consume(ctx):
         return decline("the question must identify the measured resource")
     quantity = ctx.query.get("quantity")
     unit = ctx.query.get("unit")
+    if quantity == "inferred":
+        # A dimensionless question may select only the single common basis
+        # declared by the direct measurements or the shared shape formulas.
+        candidates = None
+        for group in (opening, *removals):
+            row = group[0]
+            bases = ({basis for shape, basis in ctx.reg.geometry_formulas if shape == row.shape}
+                     if row.shape else {row.quantity} - {""})
+            candidates = bases if candidates is None else candidates & bases
+        if not candidates or len(candidates) != 1:
+            return decline("an implicit measurement basis must be uniquely established")
+        quantity = candidates.pop()
     if not quantity:
         return decline("the question must specify a measurement basis")
     if not unit:
@@ -78,10 +90,12 @@ def consume(ctx):
         if any(not isfinite(r.value) or r.value <= 0 for r in group):
             return decline("measurements must be positive and finite")
         expected[row.provenance.sentence].update(r.value for r in group)
-        operands = [convert_units(r.value, r.unit, unit, ctx.reg, ctx.log,
-                                  source="resource-measurement") for r in group]
-        if any(v is None for v in operands):
+        factors = [conversion_factor(ctx.reg, r.unit, unit) for r in group]
+        if any(factor is None for factor in factors):
             return decline("measurements and requested units must be compatible")
+        operands = [evaluate("value * factor", {"value": r.value, "factor": factor},
+                             ctx.log, source="resource-measurement")
+                    for r, factor in zip(group, factors)]
         if row.shape:
             if (any(not r.dimension or r.quantity for r in group)
                     or len({r.dimension for r in group}) != len(group)):

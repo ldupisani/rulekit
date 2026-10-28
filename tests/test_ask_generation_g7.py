@@ -49,7 +49,7 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
     assert any("antecedent discourse group" in blocker for blocker in contextual.blockers)
     # The reusable physics pack adds the independently generatable
     # ask/physics-quantity surface to curated.
-    assert sum(item.supported for item in availability.values()) == 324
+    assert sum(item.supported for item in availability.values()) == 336
     assert availability["ask/how-many-of-collection-are-label"].supported
     assert availability["ask/how-many-of-collection-are-label"].supported_modes == (
         "ask_only",
@@ -73,7 +73,7 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
     assert availability["ask/measured-content-in-container-unit"].blockers == (
         "ask requires generated premise evidence; standalone realization is disabled",
     )
-    assert len(availability) == 364
+    assert len(availability) == 377
     assert {
         item.id for item in availability.values() if not item.supported
     } == {'ask/chem-cost-of-moles',
@@ -104,6 +104,7 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
           'ask/measured-remainder-volume-length_unit-how-many-units-qualified-unit',
           'ask/measured-remainder-volume-length_unit-how-much-active-qualified-unit',
           'ask/measured-remainder-volume-length_unit-how-much-qualified-unit',
+          'ask/measured-remainder-qualified-how-much-area-qualified-unit',
           'ask/measured-remainder-what-amount-area-length_unit-qualified-unit',
           'ask/measured-remainder-what-amount-volume-length_unit-qualified-unit',
           'ask/path-distance-after-numeric',
@@ -150,6 +151,7 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
         'ask/measured-remainder-volume-length_unit-how-many-units-qualified-unit',
         'ask/measured-remainder-volume-length_unit-how-much-active-qualified-unit',
         'ask/measured-remainder-volume-length_unit-how-much-qualified-unit',
+        'ask/measured-remainder-qualified-how-much-area-qualified-unit',
         'ask/measured-remainder-what-amount-area-length_unit-qualified-unit',
         'ask/measured-remainder-what-amount-volume-length_unit-qualified-unit',
     }
@@ -171,6 +173,58 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
         for item in availability.values()
         if item.id.startswith("ask/chem-")
     )
+
+
+@pytest.mark.parametrize(
+    "suffix, material, quantity",
+    [
+        ("how-long-prenominal", "remaining wire", "length"),
+        ("how-long-postnominal", "wire", "length"),
+        ("how-long-relative", "wire", "length"),
+        ("is-dimension-postnominal", "foam", "volume"),
+        ("is-dimension-prenominal", "remaining foam", "volume"),
+        ("is-dimension-relative", "foam", "volume"),
+        ("dimension-is-left", "foam", "volume"),
+    ],
+)
+def test_remnant_measurement_asks_generate_the_existing_balance_contract(
+    curated, suffix, material, quantity
+) -> None:
+    locks = {"be": "is", "material": material}
+    if quantity == "length":
+        locks.update(extent="long", unit="meters")
+    else:
+        locks["dimension"] = "volume"
+    if suffix.endswith("relative"):
+        locks["remain"] = "remains"
+    if suffix.endswith(("postnominal", "is-left")):
+        locks["remnant"] = "left"
+    candidate = generate_ask_scenario(
+        curated,
+        ask_id=f"ask/measured-remainder-{suffix}",
+        seed=1423,
+        scenario_mode="ask_only",
+        locked_bindings=locks,
+    )
+    assert candidate.consumer == "material-region-remainder"
+    assert candidate.query["material"] == material.removeprefix("remaining ")
+    assert candidate.query["quantity"] == quantity
+    assert not candidate.answer["committed"]
+    if quantity == "length":
+        premises = (
+            "A spool holds 24 meters of wire. A technician cuts off 9 meters. "
+        )
+        expected = 15
+    else:
+        premises = (
+            "A rectangular block of foam measures 8 by 5 by 4 centimeters. "
+            "A block measuring 2 by 3 by 4 centimeters is removed. "
+        )
+        expected = 136
+    result = solve(premises + candidate.question, curated.registry)
+    assert result.answer.committed
+    assert result.value == expected
+    assert result.deficiencies() == []
 
 
 def test_core_complement_label_ask_is_independently_generatable(curated) -> None:

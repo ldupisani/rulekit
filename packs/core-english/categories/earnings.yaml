@@ -1,11 +1,12 @@
 format: rulekit/categories@1
 categories:
-  recurring_expense_target: {parent: noun, includes: [purchase_collection_noun]}
+  recurring_expense_target: {parent: noun, includes: [purchase_collection_noun, material_resource]}
   recurring_activity_noun: {parent: noun}
   sports_activity_noun: {parent: recurring_activity_noun}
   recurring_activity_verb: {parent: verb}
   annual_activity_period: {parent: noun}
   averaging_verb: {parent: verb}
+  resource_funding_verb: {parent: verb}
   service_activity_verb:
     parent: quantity_event_verb
     notes: Countable work on an object; a tariff is still required to infer earnings.
@@ -57,6 +58,7 @@ members:
   recurring_activity_verb: [play, plays, playing, work, working]
   annual_activity_period: [season]
   averaging_verb: [average]
+  resource_funding_verb: [afford]
   accumulation_particle: [up]
   accumulation_period_descriptor: [past]
   cash_remainder_noun: [change]

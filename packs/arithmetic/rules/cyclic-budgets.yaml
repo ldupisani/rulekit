@@ -1,5 +1,32 @@
 format: rulekit/rules@1
 templates:
+  cyclic-saving-average-question:
+    parameters:
+      goal:
+        - {slot: save, cat: resource_accumulation_verb, bare_form: true}
+        - opt: [{slot: up, cat: accumulation_particle}]
+        - {lit: for}
+      satisfaction: {need: [subject], average: [subject], save: [subject]}
+    rule:
+      match:
+        question:
+          - {lit: how, at_start: true}
+          - {lit: many}
+          - {slot: tasks, cat: service_task_noun, uncounted: true, number: plural}
+          - {slot: aux, cat: auxiliary}
+          - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true}
+          - {slot: need, cat: direct_quantity_goal_predicate, bare_form: true}
+          - {lit: to}
+          - {slot: average, cat: averaging_verb, bare_form: true}
+          - {lit: [a, per, each, every], consume_skipped: true}
+          - {slot: period, cat: duration_measure, uncounted: true, bare: true}
+          - {lit: to}
+          - {parameter: goal}
+          - {slot: owner, cat: possessive_determiner}
+          - {slot: target, cat: recurring_expense_target, uncounted: true, generation_all_numbers: true}
+          - {lit: '?', consume_skipped: true}
+      satisfies: {parameter: satisfaction}
+      resolves: {consumer: cyclic-saving-average, entity: '{who}', period: '{period}', target: '{target}', target_qualifier: '{target.qualifier}', owner: '{owner}'}
   inactive-period-saving-plan:
     parameters:
       copula_tokens: [{slot: copula, cat: copula}]
@@ -143,26 +170,11 @@ variants:
       satisfaction: {copula: [owner, owned]}
   - id: arithmetic/inactive-period-saving-plan-explicit-copula
     template: inactive-period-saving-plan
-asks:
+ask_variants:
   - id: ask/cyclic-saving-average-tasks
-    match:
-      question:
-        - {lit: how, at_start: true}
-        - {lit: many}
-        - {slot: tasks, cat: service_task_noun, uncounted: true, number: plural}
-        - {slot: aux, cat: auxiliary}
-        - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true}
-        - {slot: need, cat: direct_quantity_goal_predicate, bare_form: true}
-        - {lit: to}
-        - {slot: average, cat: averaging_verb, bare_form: true}
-        - {lit: [a, per, each, every], consume_skipped: true}
-        - {slot: period, cat: duration_measure, uncounted: true, bare: true}
-        - {lit: to}
-        - {slot: save, cat: resource_accumulation_verb, bare_form: true}
-        - opt: [{slot: up, cat: accumulation_particle}]
-        - {lit: for}
-        - {slot: owner, cat: possessive_determiner}
-        - {slot: target, cat: recurring_expense_target, uncounted: true}
-        - {lit: '?', consume_skipped: true}
-    satisfies: {need: [subject], average: [subject], save: [subject]}
-    resolves: {consumer: cyclic-saving-average, entity: '{who}', period: '{period}', target: '{target}', target_qualifier: '{target.qualifier}', owner: '{owner}'}
+    template: cyclic-saving-average-question
+  - id: ask/cyclic-saving-average-tasks-funding-goal
+    template: cyclic-saving-average-question
+    arguments:
+      goal: [{slot: fund, cat: resource_funding_verb, bare_form: true}]
+      satisfaction: {need: [subject], average: [subject], fund: [subject]}

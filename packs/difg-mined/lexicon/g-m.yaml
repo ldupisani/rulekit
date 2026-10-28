@@ -135,9 +135,6 @@ entries:
     senses:
     - noun
     plural: grandkids
-  grandma:
-    senses:
-    - noun
   grandmother:
     senses:
     - noun
@@ -986,10 +983,6 @@ entries:
   lots:
     senses:
     - noun
-  lottery:
-    senses:
-    - noun
-    plural: lotteries
   loves:
     senses:
     - verb
