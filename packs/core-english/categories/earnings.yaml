@@ -54,6 +54,7 @@ context_synonyms:
     forms: [earn, make]
 members:
   recurring_expense_target: [supply]
+  recurring_activity_noun: [gardening]
   sports_activity_noun: [baseball, tennis]
   recurring_activity_verb: [play, plays, playing, work, working]
   annual_activity_period: [season]

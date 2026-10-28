@@ -190,9 +190,18 @@ purpose, matching periods, and complete source and numeric accounting.
 The duration may be declared after the saving plan or tariff. A named activity
 does not by itself limit an unrelated recurring expense to that activity's
 season. Saving-for and affordability questions share the same goal contract.
+An expense can explicitly name its owned active period in a leading or
+trailing temporal phrase. Its duration may be stated separately, as a measured
+modifier of the period, or as a counted duration of that period. This links
+otherwise unrelated goods to the expense window without interpreting the
+goods as activity names. Period owners, activity modifiers, and measurements
+must agree; extra periods, negation, outside-period costs, and incomplete
+duration evidence still decline.
 
 Implementation: [cyclic budgets](../packs/arithmetic/rules/cyclic-budgets.yaml)
 and [saving average](../src/rulekit/kernel/consumers/cyclic_saving_average.py).
+Executable paraphrases and boundaries:
+[scoped periodic expenses](../tests/test_scoped_periodic_expenses.py).
 
 ## Measured resource remainders
 

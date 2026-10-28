@@ -1,5 +1,6 @@
 """Fund recurring active-period costs through work in its complementary window."""
 from collections import Counter, defaultdict
+from dataclasses import replace
 from math import isfinite
 
 from . import consumer
@@ -9,6 +10,7 @@ from ..model import BatchEvidence, EarningRate, Rate, ServiceScope
 from ..numeric_evidence import audit_numeric_mentions
 from ..rate_calculation import apply_rate, convert_duration
 from ..source_coverage import uncovered_document_units
+from ..reference_identity import constrains
 
 
 @consumer("cyclic-saving-average")
@@ -18,7 +20,9 @@ def consume(ctx):
     rows = ctx.store.by_kind(BatchEvidence)
     costs, tariffs, tasks = (ctx.store.by_kind(k) for k in (Rate, EarningRate, ServiceScope))
     kinds = ("expense-purpose", "active-period", "inactive-saving-plan")
-    if (len(rows) != 3 or any(sum(r.kind == k for r in rows) != 1 for k in kinds)
+    scopes = [r for r in rows if r.kind == "expense-active-period"]
+    if (len(scopes) > 1 or len(rows) != 3 + len(scopes)
+            or any(sum(r.kind == k for r in rows) != 1 for k in kinds)
             or len(costs) != 1 or len(tariffs) != 1 or not tasks
             or any(not isinstance(f, (BatchEvidence, Rate, EarningRate, ServiceScope)) for f in ctx.store.facts)
             or ctx.store.collisions or ctx.store.quarantined):
@@ -26,16 +30,42 @@ def consume(ctx):
     purpose, active, plan = (next(r for r in rows if r.kind == k) for k in kinds)
     cost, tariff = costs[0], tariffs[0]
     who = ctx.query["entity"]
-    if plan.container and not purpose.attribute:
+    scope = scopes[0] if scopes else None
+
+    def period_reference(row):
+        ref = row.container_ref
+        if ref is not None and (row.marker == "measured-period" or row.attribute == "measured-period"):
+            # The counted modifier measures the period; other modifiers still
+            # identify the activity. Its possessor is explicitly bound by the
+            # complete expense construction, even if count condensation kept
+            # the determiner separate from the nominal unit.
+            ref = replace(ref, qualifiers=tuple(q for q in ref.qualifiers if q != row.measure),
+                          owner=ref.owner or row.entity_ref)
+        return ref
+
+    active_ref = period_reference(active)
+    if scope is not None:
+        scope_ref = period_reference(scope)
+        if (scope.attribute != who or scope.provenance.sentence != purpose.provenance.sentence
+                or scope_ref is None or active_ref is None
+                or not (constrains(scope_ref, active_ref) or constrains(active_ref, scope_ref))):
+            return decline("the expense must explicitly name the same owned active period")
+    period_qualifiers = set(active_ref.qualifiers if active_ref else ())
+    if scope is not None:
+        period_qualifiers.update(scope_ref.qualifiers)
+    if (len(period_qualifiers) > 1
+            or period_qualifiers and any(
+                named and named not in period_qualifiers for named in (purpose.attribute, plan.container))
+            or scope is None and period_qualifiers and not period_qualifiers.intersection(
+                (purpose.attribute, plan.container))):
+        return decline("the expense period and saving activity must agree")
+    if scope is None and plan.container and not purpose.attribute:
         return decline("a named activity does not establish when an unrelated recurring expense is incurred")
     if (any(f.entity != who for f in [*rows, cost, tariff]) or ctx.query["owner"] != who
             or purpose.measure != ctx.query["target"] or tariff.basis != "uniform-service"
             or purpose.container and purpose.container != who
             or ctx.query.get("target_qualifier") and ctx.query["target_qualifier"] != purpose.attribute
             or purpose.attribute and plan.container and purpose.attribute != plan.container
-            or active.container_ref and active.container_ref.qualifiers and (
-                len(active.container_ref.qualifiers) != 1
-                or active.container_ref.qualifiers[0] not in {purpose.attribute, plan.container})
             or cost.measure != tariff.measure or plan.measure != active.measure
             or not purpose.provenance.sentence < plan.provenance.sentence < tariff.provenance.sentence
             or any(t.entity or t.provenance.sentence != plan.provenance.sentence for t in tasks)
@@ -61,7 +91,8 @@ def consume(ctx):
     expected[active.provenance.sentence][active.value] += 1
     expected[tariff.provenance.sentence][tariff.value] += 1
     if (uncovered_document_units(ctx.premises, ctx.question, ctx.match.consumed)
-            or audit_numeric_mentions((*ctx.premises, ctx.question), expected, missing="missing", duplicate="duplicate")):
+            or audit_numeric_mentions((*ctx.premises, ctx.question), expected, missing="missing", duplicate="duplicate",
+                                      additional_kinds=("attributive_count",))):
         return decline("every cost, activity and saving condition must be represented")
     total = apply_rate(cost, charged_periods, ctx.log, source="active-period-cost")
     task_count = apply_rate(tariff, total, ctx.log, source="required-task-count", inverse=True)

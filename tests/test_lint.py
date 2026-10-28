@@ -169,6 +169,25 @@ rules:
     assert lint_overlaps(reg) == []
 
 
+@pytest.mark.parametrize('first, second, overlaps', [
+    ('cat: animal, counted: true', 'cat: animal, uncounted: true', False),
+    ('type: counted', 'cat: animal, uncounted: true', False),
+    ('cat: animal, qualified: true, attributive_counted: true', 'cat: animal, uncounted: true', False),
+    ('cat: animal, counted: true', 'cat: animal, qualified: true, attributive_counted: true', False),
+    ('type: counted', 'cat: animal, qualified: true, attributive_counted: true', False),
+    ('cat: animal, counted: true', 'cat: animal', True),
+    ('cat: animal, uncounted: true', 'cat: animal', True),
+    ('cat: animal, qualified: true, attributive_counted: true', 'cat: animal', True),
+    ('cat: animal, counted: true', 'cat: animal, counted: true', True),
+    ('cat: animal, qualified: true, attributive_counted: true', 'cat: animal, qualified: true, attributive_counted: true', True),
+])
+def test_numeric_nominal_structures_keep_their_runtime_disjointness(tmp_path, first, second, overlaps):
+    reg = _mk(tmp_path, BASE_LEX, BASE_CATS,
+              RULE_TMPL.format(rid='r/first', gate=first),
+              RULE_TMPL.format(rid='r/second', gate=second))
+    assert bool(lint_overlaps(reg)) == overlaps
+
+
 def test_possessed_qualifier_requires_a_noun_rooted_category(tmp_path):
     from rulekit.data.registry import CompileError
 

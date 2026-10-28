@@ -1,5 +1,47 @@
 format: rulekit/rules@1
 templates:
+  periodic-purpose-expense:
+    parameters:
+      prefix: []
+      subject_start: true
+      suffix: []
+      references: {}
+      duration_slots: []
+      scope_facts: []
+      duration_facts: []
+    rule:
+      description: A recurring cost retains its period, participant and purpose; it is not a cash holding.
+      match:
+        sentence:
+          - {parameter: prefix}
+          - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: {
+                parameter: subject_start}}
+          - {slot: spend, cat: spend_verb, finite_form: true}
+          - {slot: amount, cat: currency_measure, counted: true}
+          - {lit: [a, per, each, every], consume_skipped: true}
+          - {slot: period, cat: duration_measure, uncounted: true, bare: true}
+          - {slot: on, cat: spend_target_prep}
+          - {slot: target, cat: recurring_expense_target, uncounted: true}
+          - {parameter: suffix}
+          - {lit: ., consume_skipped: true}
+      where:
+        - number_compatible:
+            - who
+            - spend
+      consumes:
+        - spend
+        - amount
+        - {parameter: duration_slots}
+      emits:
+        - {fact: rate, entity: '{who}', measure: '{amount}', per: '{period}', value: amount, verb: '{spend}'}
+        - {fact: batch_evidence, kind: expense-purpose, entity: '{who}', measure: '{target}', attribute: '{target.qualifier}',
+          container: '{target.owner}', value: 0, position: '{target.uid}'}
+        - {parameter: scope_facts}
+        - {parameter: duration_facts}
+      references: {parameter: references}
+      satisfies:
+        spend:
+          - subject
   cyclic-saving-average-question:
     parameters:
       goal:
@@ -98,23 +140,6 @@ rules:
     emits:
       - {fact: service_scope, entity: '', verb: '{first}', item: ''}
       - {fact: service_scope, entity: '', verb: '{second}', item: '{object}'}
-  - id: arithmetic/periodic-purpose-expense
-    description: A recurring cost retains its period, participant and purpose; it is not a cash holding.
-    match:
-      sentence:
-        - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
-        - {slot: spend, cat: spend_verb, finite_form: true}
-        - {slot: amount, cat: currency_measure, counted: true}
-        - {lit: [a, per, each, every], consume_skipped: true}
-        - {slot: period, cat: duration_measure, uncounted: true, bare: true}
-        - {slot: on, cat: spend_target_prep}
-        - {slot: target, cat: recurring_expense_target, uncounted: true}
-        - {lit: '.', consume_skipped: true}
-    where: [{number_compatible: [who, spend]}]
-    consumes: [spend, amount]
-    emits:
-      - {fact: rate, entity: '{who}', measure: '{amount}', per: '{period}', value: amount, verb: '{spend}'}
-      - {fact: batch_evidence, kind: expense-purpose, entity: '{who}', measure: '{target}', attribute: '{target.qualifier}', container: '{target.owner}', value: 0, position: '{target.uid}'}
   - id: arithmetic/owned-active-period-duration
     description: An owned activity period has an explicit duration. Its enclosing cycle, if any, is separately declared in pack data.
     match:
@@ -163,6 +188,162 @@ rules:
     emits:
       - {fact: earning_rate, entity: '{who}', measure: '{amount}', per: '', value: amount, verb: '{charge}', basis: uniform-service}
 variants:
+  - id: arithmetic/periodic-purpose-expense
+    template: periodic-purpose-expense
+  - id: arithmetic/periodic-purpose-expense-named-period-trailing
+    template: periodic-purpose-expense
+    arguments:
+      references: {scope_owner: who}
+      scope_facts:
+        - {fact: batch_evidence, kind: expense-active-period, entity: '{who}', measure: '', container: '{season}',
+          attribute: '{scope_owner}', marker: '', value: 0, position: '{season.span_start}'}
+      suffix:
+        - opt:
+            - {lit: only}
+        - {slot: during, cat: temporal_duration_preposition}
+        - {slot: scope_owner, cat: possessive_determiner}
+        - {slot: season, cat: annual_activity_period, uncounted: true}
+  - id: arithmetic/periodic-purpose-expense-named-period-leading
+    template: periodic-purpose-expense
+    arguments:
+      references: {scope_owner: who}
+      scope_facts:
+        - {fact: batch_evidence, kind: expense-active-period, entity: '{who}', measure: '', container: '{season}',
+          attribute: '{scope_owner}', marker: '', value: 0, position: '{season.span_start}'}
+      prefix:
+        - opt:
+            - {lit: only, at_start: true}
+        - {slot: during, cat: temporal_duration_preposition}
+        - {slot: scope_owner, cat: possessive_determiner}
+        - {slot: season, cat: annual_activity_period, uncounted: true}
+        - {lit: ',', consume_skipped: true}
+      subject_start: false
+  - id: arithmetic/periodic-purpose-expense-measured-period-trailing
+    template: periodic-purpose-expense
+    arguments:
+      references: {scope_owner: who}
+      scope_facts:
+        - {fact: batch_evidence, kind: expense-active-period, entity: '{who}', measure: '', container: '{season}',
+          attribute: '{scope_owner}', marker: '', value: 0, position: '{season.span_start}'}
+      suffix:
+        - opt:
+            - {lit: only}
+        - {slot: during, cat: temporal_duration_preposition}
+        - {slot: duration, cat: duration_measure, counted: true, bare: true}
+        - {lit: of}
+        - {slot: scope_owner, cat: possessive_determiner}
+        - {slot: season, cat: annual_activity_period, uncounted: true}
+      duration_slots:
+        - duration
+      duration_facts:
+        - {fact: batch_evidence, kind: active-period, entity: '{scope_owner}', measure: '{duration}',
+            container: '{season}', attribute: '', marker: year, fraction: 1, value: duration, position: '{duration.span_start}'}
+  - id: arithmetic/periodic-purpose-expense-measured-period-leading
+    template: periodic-purpose-expense
+    arguments:
+      references: {scope_owner: who}
+      scope_facts:
+        - {fact: batch_evidence, kind: expense-active-period, entity: '{who}', measure: '', container: '{season}',
+          attribute: '{scope_owner}', marker: '', value: 0, position: '{season.span_start}'}
+      prefix:
+        - opt:
+            - {lit: only, at_start: true}
+        - {slot: during, cat: temporal_duration_preposition}
+        - {slot: duration, cat: duration_measure, counted: true, bare: true}
+        - {lit: of}
+        - {slot: scope_owner, cat: possessive_determiner}
+        - {slot: season, cat: annual_activity_period, uncounted: true}
+        - {lit: ',', consume_skipped: true}
+      subject_start: false
+      duration_slots:
+        - duration
+      duration_facts:
+        - {fact: batch_evidence, kind: active-period, entity: '{scope_owner}', measure: '{duration}',
+            container: '{season}', attribute: '', marker: year, fraction: 1, value: duration, position: '{duration.span_start}'}
+  - id: arithmetic/periodic-purpose-expense-counted-period-trailing
+    template: periodic-purpose-expense
+    arguments:
+      references: {scope_owner: who}
+      scope_facts:
+        - {fact: batch_evidence, kind: expense-active-period, entity: '{who}', measure: '{season.qualifier}',
+            container: '{season}', attribute: '{scope_owner}', marker: measured-period, value: 0, position: '{season.span_start}'}
+      suffix:
+        - opt:
+            - {lit: only}
+        - {slot: during, cat: temporal_duration_preposition}
+        - {slot: scope_owner, cat: possessive_determiner}
+        - {slot: season, cat: annual_activity_period, qualified: true, qualifier_cat: duration_measure,
+            counted: true}
+      duration_slots:
+        - season
+      duration_facts:
+        - {fact: batch_evidence, kind: active-period, entity: '{scope_owner}', measure: '{season.qualifier}',
+            container: '{season}', attribute: measured-period, marker: year, fraction: 1, value: season,
+            position: '{season.span_start}'}
+  - id: arithmetic/periodic-purpose-expense-counted-period-leading
+    template: periodic-purpose-expense
+    arguments:
+      references: {scope_owner: who}
+      scope_facts:
+        - {fact: batch_evidence, kind: expense-active-period, entity: '{who}', measure: '{season.qualifier}',
+            container: '{season}', attribute: '{scope_owner}', marker: measured-period, value: 0, position: '{season.span_start}'}
+      prefix:
+        - opt:
+            - {lit: only, at_start: true}
+        - {slot: during, cat: temporal_duration_preposition}
+        - {slot: scope_owner, cat: possessive_determiner}
+        - {slot: season, cat: annual_activity_period, qualified: true, qualifier_cat: duration_measure,
+            counted: true}
+        - {lit: ',', consume_skipped: true}
+      subject_start: false
+      duration_slots:
+        - season
+      duration_facts:
+        - {fact: batch_evidence, kind: active-period, entity: '{scope_owner}', measure: '{season.qualifier}',
+            container: '{season}', attribute: measured-period, marker: year, fraction: 1, value: season,
+            position: '{season.span_start}'}
+  - id: arithmetic/periodic-purpose-expense-attributive-period-trailing
+    template: periodic-purpose-expense
+    arguments:
+      references: {scope_owner: who}
+      scope_facts:
+        - {fact: batch_evidence, kind: expense-active-period, entity: '{who}', measure: '{season.qualifier}',
+            container: '{season}', attribute: '{scope_owner}', marker: measured-period, value: 0, position: '{season.span_start}'}
+      suffix:
+        - opt:
+            - {lit: only}
+        - {slot: during, cat: temporal_duration_preposition}
+        - {slot: scope_owner, cat: possessive_determiner}
+        - {slot: season, cat: annual_activity_period, qualified: true, qualifier_cat: duration_measure,
+            attributive_counted: true}
+      duration_slots:
+        - season
+      duration_facts:
+        - {fact: batch_evidence, kind: active-period, entity: '{scope_owner}', measure: '{season.qualifier}',
+            container: '{season}', attribute: measured-period, marker: year, fraction: 1, value: season,
+            position: '{season.span_start}'}
+  - id: arithmetic/periodic-purpose-expense-attributive-period-leading
+    template: periodic-purpose-expense
+    arguments:
+      references: {scope_owner: who}
+      scope_facts:
+        - {fact: batch_evidence, kind: expense-active-period, entity: '{who}', measure: '{season.qualifier}',
+            container: '{season}', attribute: '{scope_owner}', marker: measured-period, value: 0, position: '{season.span_start}'}
+      prefix:
+        - opt:
+            - {lit: only, at_start: true}
+        - {slot: during, cat: temporal_duration_preposition}
+        - {slot: scope_owner, cat: possessive_determiner}
+        - {slot: season, cat: annual_activity_period, qualified: true, qualifier_cat: duration_measure,
+            attributive_counted: true}
+        - {lit: ',', consume_skipped: true}
+      subject_start: false
+      duration_slots:
+        - season
+      duration_facts:
+        - {fact: batch_evidence, kind: active-period, entity: '{scope_owner}', measure: '{season.qualifier}',
+            container: '{season}', attribute: measured-period, marker: year, fraction: 1, value: season,
+            position: '{season.span_start}'}
   - id: arithmetic/inactive-period-saving-plan
     template: inactive-period-saving-plan
     arguments:

@@ -88,7 +88,8 @@ def test_g5i_profiles_the_complete_recursive_optional_class() -> None:
     # The "in all" total marker rejects a following collection or partitive.
     # Resource contexts, destination ownership, coordinated package quotes,
     # and store-loss variants add flat groups without increasing nesting.
-    assert _optional_profile(project) == (293, 498, 54, 3)
+    # Eight scoped recurring-expense forms add optional focus markers.
+    assert _optional_profile(project) == (301, 506, 54, 3)
 
 
 def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
@@ -97,9 +98,9 @@ def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
         for item in list_rule_availability(load_project(CURATED))
     }
 
-    assert len(availability) == 598
-    assert sum(item.supported for item in availability.values()) == 543
-    assert sum(not item.supported for item in availability.values()) == 55
+    assert len(availability) == 606
+    assert sum(item.supported for item in availability.values()) == 549
+    assert sum(not item.supported for item in availability.values()) == 57
     assert all(availability[rule_id].supported for rule_id in NEWLY_SUPPORTED)
     assert all(
         "optional groups have no current realizer" not in item.blockers

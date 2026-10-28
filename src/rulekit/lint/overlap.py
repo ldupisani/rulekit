@@ -79,6 +79,20 @@ def _tokens_intersect(a: MatchToken, b: MatchToken, reg: Registry) -> bool:
     # is "do ANY of the options intersect" rather than a scalar comparison.
     # Equality on `.lit` would read False for two overlapping alternations and
     # silently under-report real overlaps.
+    # The matcher distinguishes a counted head, a measured noun modifier,
+    # and a noun without a value. Category overlap cannot erase these gates.
+    def count_form(token):
+        if token.counted or token.type == "counted":
+            return "count"
+        if token.attributive_counted:
+            return "attributive_count"
+        if token.uncounted:
+            return "uncounted"
+        return None
+
+    ca, cb = count_form(a), count_form(b)
+    if ca is not None and cb is not None and ca != cb:
+        return False
     # A bare reference cannot also carry a qualifier or possessive owner.
     # These gates constrain the condensed unit independently of its noun category.
     if ((a.bare and (b.qualified or b.possessed or b.qualifier_cat or b.type in {"qualified", "possessed"}))

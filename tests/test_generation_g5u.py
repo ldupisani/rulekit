@@ -244,9 +244,9 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
     project = load_project(CURATED)
     availability = list_rule_availability(project)
 
-    assert len(availability) == 598
-    assert sum(item.supported for item in availability) == 543
-    assert sum(not item.supported for item in availability) == 55
+    assert len(availability) == 606
+    assert sum(item.supported for item in availability) == 549
+    assert sum(not item.supported for item in availability) == 57
     assert all(
         not item.blockers
         or item.id
@@ -259,6 +259,8 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
             'arithmetic/account-relative-full-settlement',
             'arithmetic/capacity-progress-anaphoric-multiplier-safety',
             'arithmetic/collected-qualified-nested-population',
+            'arithmetic/periodic-purpose-expense-counted-period-leading',
+            'arithmetic/periodic-purpose-expense-counted-period-trailing',
             'arithmetic/dangling-comparative-safety',
             'arithmetic/explicit-allocation-recipients',
             'arithmetic/group-attendance-intention',

@@ -3160,7 +3160,7 @@ adverb_verb_compatibility:
   flexible_holding_anchor_adverb: [possession_state]
 measure_holder_compatibility:
   age_measure: [bare_entity_reference, quantity_event_participant]
-  duration_measure: [duration_holder, duration_measure]
+  duration_measure: [duration_holder, duration_measure, annual_activity_period]
   institution_quantity_measure: [institution_quantity_holder]
   length_measure: [linear_dimension_holder, motion_participant]
   mass_measure: [animate, mass_dimension_holder, measurement_container, physical_size_noun]

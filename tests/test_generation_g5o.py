@@ -160,9 +160,9 @@ def test_g5o_unlocks_only_the_preregistered_rule() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 598
-    assert sum(item.supported for item in availability.values()) == 543
-    assert sum(not item.supported for item in availability.values()) == 55
+    assert len(availability) == 606
+    assert sum(item.supported for item in availability.values()) == 549
+    assert sum(not item.supported for item in availability.values()) == 57
     assert availability[
         "arithmetic/existential-premise-distributive"
     ].supported
