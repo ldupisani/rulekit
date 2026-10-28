@@ -817,7 +817,9 @@ def _counted_qualified_fillers(
                 continue
             out.append(
                 _Filler(
-                    surface=f"{count} {qualifier} {surface}",
+                    surface=(f"{qualifier} {count} {surface}"
+                             if reg.word_in_category(qualifier, "precardinal_attribute")
+                             else f"{count} {qualifier} {surface}"),
                     identity=identity,
                     qualifier=qualifier,
                     number="singular" if count == 1 else "plural",
@@ -1250,6 +1252,7 @@ def _qualify_domain(
                     qualifier=filler.qualifier,
                     reference_form="bare",
                     kind=filler.kind,
+                    value=filler.value,
                 )
             )
             referential.extend(
@@ -1262,6 +1265,7 @@ def _qualify_domain(
                     qualifier=filler.qualifier,
                     reference_form="definite",
                     kind=filler.kind,
+                    value=filler.value,
                 )
                 for article in articles
             )

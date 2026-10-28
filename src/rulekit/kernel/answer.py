@@ -370,6 +370,7 @@ def answer(
             query=query, question=question, store=scoped_store, reg=reg,
             log=log, match=_match, ask=ask, premises=tuple(premises or ()),
             reference_year=reference_year,
+            interpretation=interpretation,
         ))
 
     # Phase 1: consumers that lived ABOVE the temporal origo. They never saw the

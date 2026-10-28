@@ -1,0 +1,7 @@
+format: rulekit/categories@1
+categories:
+  food_product: {parent: fabrication_product}
+  food_material: {parent: material_resource}
+members:
+  food_product: [cookie, cake]
+  food_material: [butter]

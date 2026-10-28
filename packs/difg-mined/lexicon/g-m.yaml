@@ -667,9 +667,6 @@ entries:
   kilowatts:
     senses:
     - noun
-  kind:
-    senses:
-    - noun
   kindergartner:
     senses:
     - noun
@@ -1032,10 +1029,6 @@ entries:
     senses:
     - noun
     plural: males
-  mall:
-    senses:
-    - noun
-    plural: malls
   mall-wide:
     senses:
     - adjective
@@ -1162,9 +1155,6 @@ entries:
     verb:
       lemma: meet
   metro:
-    senses:
-    - noun
-  middle:
     senses:
     - noun
   midnight:

@@ -265,7 +265,7 @@ def _named_possessor_candidates(
 
 
 def _animate_candidates(
-    readings: list[Reading], upto: int, reg: Registry
+    readings: list[Reading], upto: int, reg: Registry, pronoun: Unit
 ) -> dict[ReferenceIdentity, tuple[int, Unit]]:
     """`animate`-category common nouns before `upto` — the FALLBACK
     candidate set, consulted only when there is no name at all.
@@ -274,8 +274,10 @@ def _animate_candidates(
     lexically a common noun, so the pronoun found no antecedent and the item
     declined — while the same story with 'Ana' reads, because an unknown
     word defaults to NAME. That asymmetry is an artifact of the lexicon, not
-    of the English. Category membership is the ONLY admission test."""
+    of the English. Category membership and declared referent-number agreement
+    determine eligibility; neither chooses between competing people."""
     out: dict[ReferenceIdentity, tuple[int, Unit]] = {}
+    form = getattr(reg.lexicon.get(pronoun.surface.casefold()), "anaphoric_form", None)
     for reading in readings:
         if reading.sentence_index >= upto:
             continue
@@ -283,7 +285,8 @@ def _animate_candidates(
             if unit.sense() != "noun":
                 continue
             lemma = unit.features.get("lemma", unit.features["fold"])
-            if reg.word_in_category(lemma, "animate"):
+            if (reg.word_in_category(lemma, "animate")
+                    and (form is None or unit.features.get("number") in form.referent_numbers)):
                 out[reference_from_unit(unit)] = (reading.sentence_index, unit)
     return out
 
@@ -802,12 +805,12 @@ def _bind_discourse(
                 # metric needs a UNIQUE winner, so adding candidates to a
                 # non-empty set could silently UNBIND a working binding —
                 # this shape never runs against a non-empty set.
-                if not candidates and reg is not None and reg.word_in_category(
-                    unit.features.get("lemma", unit.features["fold"]),
-                    "animate_pronoun",
-                ):
+                if not candidates and reg is not None and any(reg.word_in_category(
+                    unit.features.get("lemma", unit.features["fold"]), category)
+                    for category in ("animate_pronoun", "animate_object_pronoun",
+                                     "third_person_animate_possessive_determiner")):
                     candidates = _animate_candidates(
-                        readings, reading.sentence_index, reg
+                        readings, reading.sentence_index, reg, unit
                     )
                     # Do not preempt a construction-local link or choose
                     # among current participants. Possessive determiners

@@ -19,6 +19,7 @@ entries:
   accommodation:
     senses:
     - noun
+  according to: {senses: [preposition]}
   account: {senses: [noun], plural: accounts}
   across: {senses: [preposition]}
   action: {senses: [noun], plural: actions}
@@ -122,6 +123,10 @@ entries:
     - verb
     verb:
       lemma: assign
+  assignment:
+    senses:
+    - noun
+    plural: assignments
   assigns:
     senses:
     - verb
@@ -255,6 +260,9 @@ entries:
     senses:
     - conjunction
   but for: {senses: [preposition]}
+  butter:
+    senses:
+    - noun
   button-up: {senses: [adjective]}
   buy: {senses: [verb], number: plural, verb: {lemma: buy}}
   buying: {senses: [verb], verb: {lemma: buy}}
@@ -313,6 +321,14 @@ entries:
     senses:
     - noun
   child: {senses: [noun], plural: children}
+  chip:
+    senses:
+    - noun
+    plural: chips
+  chocolate:
+    senses:
+    - noun
+    plural: chocolates
   chore: {"senses": ["noun"], "plural": "chores"}
   circa: {senses: [preposition]}
   clay: {senses: [noun]}
@@ -415,6 +431,10 @@ entries:
   coursework:
     senses:
     - noun
+  coworker:
+    senses:
+    - noun
+    plural: coworkers
   cream cheese: {senses: [noun], lexical_phrase: true}
   create: {senses: [verb]}
   created: {senses: [verb], verb: {lemma: create}}
@@ -448,6 +468,10 @@ entries:
   cuts: {"senses": ["verb"], "number": "singular", "verb": {"lemma": "cut"}}
   cutting: {"senses": ["verb"], "verb": {"lemma": "cut"}}
   daily: {senses: [adverb]}
+  daisy:
+    senses:
+    - noun
+    plural: daisies
   day: {senses: [noun], plural: days}
   debt: {senses: [noun], plural: debts}
   december: {senses: [noun]}
@@ -565,6 +589,7 @@ entries:
   download:
     senses:
     - verb
+    number: plural
   downloaded:
     senses:
     - verb
@@ -578,6 +603,7 @@ entries:
   downloads:
     senses:
     - verb
+    number: singular
     verb:
       lemma: download
   dr:
@@ -754,6 +780,10 @@ entries:
     senses:
     - noun
     plural: foundations
+  fountain:
+    senses:
+    - noun
+    plural: fountains
   fourth:
     senses:
     - adjective
@@ -989,6 +1019,10 @@ entries:
   kilobyte: {senses: [noun], plural: kilobytes}
   kilogram: {senses: [noun], plural: [kg, kilograms]}
   kilometer: {senses: [noun], plural: [km, kilometers]}
+  kind:
+    senses:
+    - noun
+    plural: kinds
   knew: {senses: [verb], verb: {lemma: know}}
   know: {senses: [verb], number: plural}
   knowing: {senses: [verb], verb: {lemma: know}}
@@ -1054,6 +1088,10 @@ entries:
   make: {senses: [verb], number: plural, verb: {lemma: make}}
   makes: {senses: [verb], number: singular, verb: {lemma: make}}
   making: {"senses": ["verb"], "verb": {"lemma": "make"}}
+  mall:
+    senses:
+    - noun
+    plural: malls
   manage: {senses: [verb]}
   managed: {senses: [verb], verb: {lemma: manage}}
   manages: {senses: [verb], verb: {lemma: manage}}
@@ -1094,6 +1132,9 @@ entries:
     - meters
     - metres
   method: {senses: [noun], plural: methods}
+  middle:
+    senses:
+    - noun
   might: {senses: [modal]}
   mile: {senses: [noun], plural: miles}
   milkshake: {"senses": ["noun"], "plural": "milkshakes"}
@@ -1288,6 +1329,10 @@ entries:
     senses:
     - noun
     plural: parks
+  part:
+    senses:
+    - noun
+    plural: parts
   particular: {senses: [adjective]}
   partner: {senses: [noun], plural: partners}
   party: {senses: [noun], plural: parties}
@@ -1308,10 +1353,15 @@ entries:
     verb:
       lemma: pay
   peach: {senses: [noun], plural: peaches}
+  peanut:
+    senses:
+    - noun
+    plural: peanuts
   pear: {senses: [noun], plural: pears}
   pencil: {senses: [noun], plural: pencils}
   pending: {senses: [preposition]}
   per: {senses: [rate]}
+  percent: {senses: [noun]}
   percentage: {senses: [noun], plural: percentages}
   person: {senses: [noun], plural: [people, persons]}
   personal:
@@ -1819,6 +1869,9 @@ entries:
   starting: {senses: [verb], verb: {lemma: start}}
   starts: {senses: [verb], number: singular, verb: {lemma: start}}
   statement: {senses: [noun], plural: statements}
+  statistics:
+    senses:
+    - noun
   steal: {senses: [verb], number: plural}
   stealing: {senses: [verb], verb: {lemma: steal}}
   steals: {senses: [verb], number: singular, verb: {lemma: steal}}
@@ -1859,6 +1912,28 @@ entries:
     lexical_phrase: true
   supply: {"senses": ["noun"], "plural": "supplies"}
   surname: {senses: [noun], plural: surnames}
+  survey:
+    senses:
+    - noun
+    - verb
+    plural: surveys
+  surveyed:
+    senses:
+    - verb
+    verb:
+      lemma: survey
+      past_participle: true
+  surveying:
+    senses:
+    - verb
+    verb:
+      lemma: survey
+  surveys:
+    senses:
+    - verb
+    number: singular
+    verb:
+      lemma: survey
   tab: {senses: [noun], plural: tabs}
   take: {senses: [verb], number: plural}
   takes: {senses: [verb], verb: {lemma: take}}
@@ -1959,6 +2034,10 @@ entries:
   truck: {senses: [noun], plural: trucks}
   tub: {senses: [noun], plural: tubs}
   tuesday: {senses: [noun]}
+  tulip:
+    senses:
+    - noun
+    plural: tulips
   tunnel:
     senses:
     - noun

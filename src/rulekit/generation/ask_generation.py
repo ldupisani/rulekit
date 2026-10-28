@@ -990,7 +990,7 @@ def _emit_lock_variants(
                         [(match.group(1), value) for value in expected]
                     )
                     score += 1
-                elif match.group(2) in {"owner", "qualifier", "label"}:
+                elif match.group(2) in {"owner", "qualifier", "label", "qualified"}:
                     # Exact feature constraints are realized from ordinary
                     # filler metadata below, not guessed from a head lemma.
                     score += 1
@@ -1043,7 +1043,17 @@ def _emit_feature_surface_locks(
     together before realization rather than hoping a random owner matches.
     """
     requirements: dict[str, dict[str, str]] = {}
+    qualified_fields = set()
     for emit in rule.emits:
+        for field, raw in emit.fields.items():
+            expected = query.get(field)
+            matched = _WHOLE_TEMPLATE.fullmatch(raw) if isinstance(raw, str) else None
+            if (isinstance(expected, str) and expected and field not in qualified_fields
+                    and matched is not None and matched.group(2) == "qualified"):
+                # One query operand needs one matching fact, not every
+                # differently qualified part emitted by a partition rule.
+                requirements.setdefault(matched.group(1), {})["qualified"] = expected.casefold()
+                qualified_fields.add(field)
         if emit.fact != "quantity":
             continue
         entity_template = emit.fields.get("entity")
@@ -1069,7 +1079,8 @@ def _emit_feature_surface_locks(
             filler for filler in _domain(token, project.registry, fixtures)
             if (slot not in identities or filler.identity == identities[slot])
             and all(
-                getattr(filler, attr, None) == value
+                ((f"{filler.qualifier} {filler.identity}" if filler.qualifier else filler.identity)
+                 if attr == "qualified" else getattr(filler, attr, None)) == value
                 for attr, value in attributes.items()
             )
         ]

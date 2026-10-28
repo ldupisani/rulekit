@@ -5,7 +5,7 @@ from math import isfinite
 from . import consumer
 from ..answer import Answer
 from ..evaluate import evaluate, EvaluationError
-from ..model import RegionEvidence
+from ..model import BatchEvidence, RegionEvidence
 from ..numeric_evidence import audit_numeric_mentions
 from ..dimensions import conversion_factor
 from ..resource_equations import resource_residual
@@ -14,6 +14,9 @@ from ..source_coverage import uncovered_document_units
 
 @consumer("material-region-remainder", applicable=lambda s: bool(s.by_kind(RegionEvidence)))
 def consume(ctx):
+    if any(r.kind == 'fractional-resource-use' for r in ctx.store.by_kind(BatchEvidence)):
+        from .fractional_resource_remainder import consume as fractional_remainder
+        return fractional_remainder(ctx)
     def decline(reason):
         return Answer("decline", None, reason)
     rows = list(ctx.store.by_kind(RegionEvidence))

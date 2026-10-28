@@ -75,7 +75,9 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
         )
     }
 
-    assert occurrences == {'arithmetic/acquired-batch-counted-classify': ((4, 0), 'again', ((4,),)),
+    assert occurrences == {'arithmetic/population-rate-inquiry': ((6, 0), 'frequency', ((6,),)),
+                           'arithmetic/population-rate-inquiry-qualified-attribute': ((4, 0), 'particle', ((4,),)),
+                           'arithmetic/acquired-batch-counted-classify': ((4, 0), 'again', ((4,),)),
                            'arithmetic/acquired-batch-counted-classify-negative': ((4, 0), 'again', ((4,),)),
                            'arithmetic/acquired-batch-counted-discard': ((4, 0), 'again', ((4,),)),
                            'arithmetic/acquired-batch-counted-discard-negative-reason': ((4, 0), 'again', ((4,),)),
@@ -244,9 +246,9 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
     project = load_project(CURATED)
     availability = list_rule_availability(project)
 
-    assert len(availability) == 606
-    assert sum(item.supported for item in availability) == 549
-    assert sum(not item.supported for item in availability) == 57
+    assert len(availability) == 633
+    assert sum(item.supported for item in availability) == 569
+    assert sum(not item.supported for item in availability) == 64
     assert all(
         not item.blockers
         or item.id
@@ -259,6 +261,14 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
             'arithmetic/account-relative-full-settlement',
             'arithmetic/capacity-progress-anaphoric-multiplier-safety',
             'arithmetic/collected-qualified-nested-population',
+            'arithmetic/fractional-resource-remainder-use-continuation',
+            'arithmetic/fractional-resource-use-continuation',
+            'arithmetic/population-average-rate-rest',
+            'arithmetic/population-rate-attribution',
+            'arithmetic/population-rate-inquiry-qualified-attribute',
+            'arithmetic/process-part-duration-numeric-index',
+            'arithmetic/process-relative-part-duration-numeric-index',
+
             'arithmetic/periodic-purpose-expense-counted-period-leading',
             'arithmetic/periodic-purpose-expense-counted-period-trailing',
             'arithmetic/dangling-comparative-safety',
@@ -309,7 +319,7 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
             'logic-arithmetic/universal-all-have-quantity-pp-incompatible-item-safety'}
         for item in availability
     )
-    assert len(exploration_status(project)["fillers"]) == 931
+    assert len(exploration_status(project)["fillers"]) == 948
 
 
 def test_currently_generates_a_matcher_confirmed_anchor() -> None:

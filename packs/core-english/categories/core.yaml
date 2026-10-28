@@ -2614,6 +2614,7 @@ members:
   animate:
   - brother
   - child
+  - coworker
   - friend
   - gardener
   - grandparent
@@ -2974,8 +2975,10 @@ members:
   - forest
   - fridge
   - garden
+  - house
   - jar
   - jug
+  - mall
   - neighborhood
   - pantry
   - store

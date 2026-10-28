@@ -60,6 +60,9 @@ class ConsumerContext:
     # kernel never reads the wall clock: deictic asks such as ``now`` decline
     # when this context is absent, keeping benchmarks and replay deterministic.
     reference_year: int | None = None
+    # A caller-confirmed interpretation can also resolve an ambiguity whose
+    # presence is discovered while composing premise evidence.
+    interpretation: str | None = None
 
 
 # name -> handler, dispatched BEFORE `answer()`'s if-chain so an extracted
@@ -124,6 +127,9 @@ def consumer(name: str, *, time_scoped: bool = False,
 
 
 from . import (  # noqa: E402,F401  (import registers each handler)
+    process_part_remainder as _process_part_remainder,
+    population_rate_total as _population_rate_total,
+    periodic_resource_balance as _periodic_resource_balance,
     cyclic_saving_average as _cyclic_saving_average,
     stored_resource_loss as _stored_resource_loss,
     material_region_remainder as _material_region_remainder,

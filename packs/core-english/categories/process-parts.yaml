@@ -1,0 +1,13 @@
+format: rulekit/categories@1
+categories:
+  partitioned_process: {parent: duration_holder}
+  process_part: {parent: duration_holder}
+  process_partition_verb: {parent: verb}
+  process_elapsed_predicate: {parent: verb}
+  completion_ability_descriptor: {parent: adjective}
+members:
+  partitioned_process: [assignment, project, task]
+  process_part: [part]
+  process_partition_verb: [divide, divided]
+  process_elapsed_predicate: [take, takes, took]
+  completion_ability_descriptor: [able]

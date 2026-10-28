@@ -352,10 +352,6 @@ entries:
   parrot:
     senses:
     - noun
-  part:
-    senses:
-    - noun
-    plural: parts
   participate:
     senses:
     - verb
@@ -391,10 +387,6 @@ entries:
     senses:
     - noun
     plural: payments
-  peanut:
-    senses:
-    - noun
-    plural: peanuts
   peas:
     senses:
     - noun
@@ -421,9 +413,6 @@ entries:
     senses:
     - noun
     plural: peppers
-  percent:
-    senses:
-    - noun
   perfect:
     senses:
     - adjective
@@ -1708,9 +1697,6 @@ entries:
     senses:
     - verb
   station:
-    senses:
-    - noun
-  statistics:
     senses:
     - noun
   statue:

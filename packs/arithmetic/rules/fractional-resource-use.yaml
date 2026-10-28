@@ -1,0 +1,147 @@
+format: rulekit/rules@1
+templates:
+  acquired-measured-resource:
+    parameters: {unit_category: mass_unit, quantity: mass}
+    rule:
+      description: A measured acquisition establishes stock; a production purpose does not itself consume it.
+      match:
+        sentence:
+          - {slot: who, type: entity, common_noun_cat: resource_user, referential: true, bare: true, at_start: true}
+          - {slot: acquire, cat: acquire, finite_form: true}
+          - {slot: amount, cat: {parameter: unit_category}, counted: true, bare: true}
+          - {lit: of}
+          - {slot: material, cat: material_resource, uncounted: true, bare: true}
+          - opt:
+              - {lit: to}
+              - {slot: make, cat: commercial_production_verb, bare_form: true}
+              - {slot: product, cat: fabrication_product, uncounted: true, bare: true, referential: true}
+          - {lit: '.', consume_skipped: true}
+      consumes: [acquire, amount, make]
+      where: [{number_compatible: [who, acquire]}]
+      satisfies: {make: [subject]}
+      emits:
+        - {fact: region_evidence, stage: opening, material: '{material}', entity: '{who}', shape: '',
+            dimension: '', value: amount, unit: '{amount}', quantity: {parameter: quantity}, position: '{amount.span_start}'}
+        - {fact: batch_evidence, kind: resource-production-goal, entity: '{who}', measure: '{material}',
+            value: 0, container: '{product.optional}', position: '{amount.span_start}'}
+  fractional-resource-use:
+    parameters:
+      generation: reader-only
+      context: null
+      prefix: []
+      source: [{slot: pool, cat: pool_pronoun}]
+      actor: ''
+      material: ''
+      basis: opening
+      predicates: []
+      satisfaction: {}
+      guards: []
+    rule:
+      generation: {parameter: generation}
+      generation_context: {parameter: context}
+      description: Fractional use of an established stock; continuation clauses belong to a larger sentence.
+      match:
+        sentence:
+          - {parameter: prefix}
+          - {slot: fraction, type: fraction, fraction_within_whole: true}
+          - {lit: of}
+          - {parameter: source}
+          - {slot: for, cat: purpose_preposition}
+          - {slot: product, cat: fabrication_product, uncounted: true, referential: true}
+      consumes: [fraction, {parameter: predicates}]
+      satisfies: {parameter: satisfaction}
+      where: {parameter: guards}
+      emits:
+        - {fact: batch_evidence, kind: fractional-resource-use, entity: {parameter: actor},
+            measure: {parameter: material}, value: fraction, marker: {parameter: basis},
+            container: '{product}', position: '{fraction.span_start}'}
+variants:
+  - {id: arithmetic/acquired-measured-resource-mass, template: acquired-measured-resource}
+  - id: arithmetic/acquired-measured-resource-volume
+    template: acquired-measured-resource
+    arguments: {unit_category: volume_measure, quantity: volume}
+  - id: arithmetic/acquired-measured-resource-length
+    template: acquired-measured-resource
+    arguments: {unit_category: length_unit, quantity: length}
+  - id: arithmetic/fractional-resource-use
+    template: fractional-resource-use
+    arguments:
+      generation: contextual
+      context:
+        before: &measured_stock_supporting_sentences
+          - sentence:
+              - {slot: context_actor, type: name}
+              - {slot: context_acquire, cat: acquire, finite_form: true}
+              - {slot: context_amount, cat: mass_unit, counted: true, bare: true}
+              - {lit: of}
+              - {slot: context_material, cat: material_resource, uncounted: true, bare: true}
+              - {lit: '.', consume_skipped: true}
+            where: [{number_compatible: [context_actor, context_acquire]}]
+        target_identity_links: {context_actor: who}
+        required_fact_counts: {region_evidence: 1}
+      prefix:
+        - {slot: who, type: entity, common_noun_cat: resource_user, referential: true, bare: true, at_start: true}
+        - {slot: use, cat: resource_usage_verb, finite_form: true}
+      actor: '{who}'
+      guards: [{number_compatible: [who, use]}]
+      predicates: [use]
+      satisfaction: {use: [subject]}
+  - id: arithmetic/fractional-resource-use-continuation
+    template: fractional-resource-use
+    arguments:
+      prefix: [opt: [{lit: and}]]
+  - id: arithmetic/fractional-resource-remainder-use
+    template: fractional-resource-use
+    arguments:
+      generation: contextual
+      context:
+        before: *measured_stock_supporting_sentences
+        target_identity_links: {context_actor: who, context_material: source}
+        required_fact_counts: {region_evidence: 1}
+      prefix:
+        - {slot: who, type: entity, common_noun_cat: resource_user, referential: true, bare: true, at_start: true}
+        - {slot: use, cat: resource_usage_verb, finite_form: true}
+      actor: '{who}'
+      guards: [{number_compatible: [who, use]}]
+      predicates: [use]
+      satisfaction: {use: [subject]}
+      source:
+        - {slot: source, cat: material_resource, uncounted: true, qualified: true,
+            qualifier_cat: prenominal_remnant_adj, all_qualifiers: true, class_only: true}
+      material: '{source}'
+      basis: remainder
+  - id: arithmetic/fractional-resource-remainder-use-continuation
+    template: fractional-resource-use
+    arguments:
+      prefix: [opt: [{lit: and}]]
+      source:
+        - {slot: source, cat: material_resource, uncounted: true, qualified: true,
+            qualifier_cat: prenominal_remnant_adj, all_qualifiers: true, class_only: true}
+      material: '{source}'
+      basis: remainder
+asks:
+  - id: ask/measured-remainder-after-production-varieties
+    match:
+      question:
+        - {lit: how, at_start: true}
+        - {lit: many}
+        - {slot: unit, cat: resource_measure_unit, uncounted: true, bare: true}
+        - {lit: of}
+        - {slot: material, cat: material_resource, uncounted: true, bare: true}
+        - {slot: be, cat: copula}
+        - {slot: remnant, cat: remnant_adj}
+        - {lit: after}
+        - {slot: make, cat: commercial_production_verb, present_participle: true}
+        - {slot: kinds, cat: production_variety_noun, counted: true}
+        - {lit: of}
+        - {slot: product, cat: fabrication_product, uncounted: true, bare: true}
+        - {lit: '?', consume_skipped: true}
+    satisfies: {be: [subject], make: [subject]}
+    disambiguates: [remnant]
+    resolves:
+      consumer: material-region-remainder
+      material: '{material}'
+      quantity: inferred
+      unit: '{unit}'
+      purpose_count: '{kinds.value}'
+      product: '{product}'

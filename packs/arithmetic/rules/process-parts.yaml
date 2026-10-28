@@ -1,0 +1,164 @@
+format: rulekit/rules@1
+rules:
+  - id: arithmetic/process-partition-opening
+    description: An owned process is explicitly divided into a finite number of successive parts.
+    match:
+      sentence:
+        - {slot: whole, cat: partitioned_process, uncounted: true, possessed: true, at_start: true}
+        - {slot: be, cat: copula}
+        - {slot: divide, cat: process_partition_verb, finite_form: true}
+        - {lit: into}
+        - {slot: parts, cat: process_part, counted: true}
+        - {lit: '.', consume_skipped: true}
+    consumes: [be, divide, parts]
+    where: [{number_compatible: [whole, be]}]
+    satisfies: {be: [subject], divide: [subject]}
+    emits:
+      - {fact: batch_evidence, kind: process-population, entity: '{whole.owner_identity}', container: '{whole}',
+          measure: '{parts}', value: parts, position: '{parts.span_start}'}
+templates:
+  process-part-duration:
+    parameters:
+      part: [{slot: part, cat: process_part, uncounted: true, number: singular, referential: true, class_only: true, qualified: true, qualifier_cat: holder_ordinal, all_qualifiers: true}]
+      index: '{part.qualifier}'
+    rule:
+      match:
+        sentence:
+          - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, bare: true, at_start: true}
+          - {slot: finish, cat: task_completion_verb, finite_form: true}
+          - {parameter: part}
+          - opt:
+              - {lit: of}
+              - opt: [{slot: owner, cat: possessive_determiner}]
+              - {slot: whole, cat: partitioned_process, uncounted: true}
+          - {lit: in}
+          - {slot: duration, cat: duration_measure, counted: true, bare: true}
+          - {lit: '.', consume_skipped: true}
+      consumes: [finish, duration]
+      where: [{number_compatible: [who, finish]}]
+      satisfies: {finish: [subject]}
+      emits:
+        - {fact: batch_evidence, kind: process-part-duration, entity: '{who}', container: '{whole.optional}',
+            measure: '{duration}', value: duration, marker: {parameter: index}, attribute: '{part}',
+            acquisition: '{who.surface}', position: '{part.span_start}', verb: '{finish}'}
+  process-relative-part-duration:
+    parameters:
+      part: [{slot: part, cat: process_part, uncounted: true, number: singular, referential: true, class_only: true, qualified: true, qualifier_cat: holder_ordinal, all_qualifiers: true}]
+      index: '{part.qualifier}'
+    rule:
+      generation: contextual
+      generation_context:
+        before:
+          - sentence:
+              - {slot: context_actor, type: name}
+              - {slot: context_finish, cat: task_completion_verb, finite_form: true}
+              - {slot: context_part, cat: process_part, uncounted: true, number: singular, referential: true, class_only: true, qualified: true, qualifier_cat: initial_sequence_ordinal, all_qualifiers: true}
+              - {lit: in}
+              - {slot: context_duration, cat: duration_measure, counted: true, bare: true}
+              - {lit: '.', consume_skipped: true}
+            where: [{number_compatible: [context_actor, context_finish]}]
+        required_fact_counts: {batch_evidence: 1}
+      description: An impersonal elapsed-time construction compares the next part with the immediately preceding part.
+      match:
+        sentence:
+          - {slot: it, cat: impersonal_subject_pronoun, at_start: true}
+          - {slot: take, cat: process_elapsed_predicate, finite_form: true}
+          - {slot: who, cat: singular_animate_object_pronoun}
+          - {slot: factor, type: multiplier}
+          - {lit: as}
+          - {slot: long, cat: elapsed_extent_adjective}
+          - {lit: to}
+          - {slot: finish, cat: task_completion_verb, bare_form: true}
+          - {parameter: part}
+          - {lit: '.', consume_skipped: true}
+      satisfies: {it: [refers], who: [refers], take: [subject], finish: [subject]}
+      consumes: [take, factor, finish]
+      emits:
+        - {fact: batch_evidence, kind: process-part-factor, entity: '{who}', measure: '', value: factor,
+            marker: {parameter: index}, attribute: '{part}', acquisition: '{who.surface}', position: '{part.span_start}'}
+  process-total-duration:
+    parameters: {ability: [], satisfaction: {finish: [subject]}}
+    rule:
+      question_assumption: true
+      match:
+        sentence:
+          - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, bare: true, at_start: true}
+          - {parameter: ability}
+          - {slot: finish, cat: task_completion_verb, finite_form: true}
+          - opt: [{slot: owner, cat: possessive_determiner}]
+          - {slot: whole, cat: partitioned_process, uncounted: true}
+          - {lit: in}
+          - {slot: duration, cat: duration_measure, counted: true, bare: true}
+          - {lit: '.', consume_skipped: true}
+      consumes: [finish, duration]
+      satisfies: {parameter: satisfaction}
+      emits:
+        - {fact: batch_evidence, kind: process-total-duration, entity: '{who}', container: '{whole}',
+            measure: '{duration}', value: duration, position: '{duration.span_start}'}
+  process-part-question:
+    parameters:
+      part: [{slot: part, cat: process_part, uncounted: true, number: singular, referential: true, class_only: true, qualified: true, qualifier_cat: holder_ordinal, all_qualifiers: true}]
+      index: '{part.qualifier}'
+      predicate: [{slot: finish, cat: task_completion_verb, bare_form: true}]
+      satisfaction: {finish: [subject]}
+    rule:
+      match:
+        question:
+          - {lit: how, at_start: true}
+          - {lit: many}
+          - {slot: unit, cat: duration_measure, uncounted: true, bare: true}
+          - {slot: aux, cat: auxiliary}
+          - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, bare: true}
+          - {parameter: predicate}
+          - {parameter: part}
+          - opt:
+              - {lit: of}
+              - opt: [{slot: owner, cat: possessive_determiner}]
+              - {slot: whole, cat: partitioned_process, uncounted: true}
+          - {lit: '?', consume_skipped: true}
+      satisfies: {parameter: satisfaction}
+      resolves:
+        consumer: process-part-remainder
+        entity: '{who}'
+        whole: '{whole.optional}'
+        part: '{part}'
+        index: {parameter: index}
+        measure: '{unit}'
+variants:
+  - {id: arithmetic/process-part-duration, template: process-part-duration}
+  - id: arithmetic/process-part-duration-numeric-index
+    template: process-part-duration
+    arguments:
+      part: [{slot: part_index, type: ordinal}, {slot: part, cat: process_part, uncounted: true, number: singular, bare: true}]
+      index: '{part_index.value}'
+  - {id: arithmetic/process-relative-part-duration, template: process-relative-part-duration}
+  - id: arithmetic/process-relative-part-duration-numeric-index
+    template: process-relative-part-duration
+    arguments:
+      part: [{slot: part_index, type: ordinal}, {slot: part, cat: process_part, uncounted: true, number: singular, bare: true}]
+      index: '{part_index.value}'
+  - {id: arithmetic/process-total-duration, template: process-total-duration}
+  - id: arithmetic/process-completed-ability-duration
+    template: process-total-duration
+    arguments:
+      ability: [{slot: be, cat: past_copula}, {slot: able, cat: completion_ability_descriptor}, {lit: to}]
+      satisfaction: {be: [subject], finish: [subject]}
+ask_variants:
+  - {id: ask/process-part-remainder, template: process-part-question}
+  - id: ask/process-part-remainder-numeric-index
+    template: process-part-question
+    arguments:
+      part: [{slot: part_index, type: ordinal}, {slot: part, cat: process_part, uncounted: true, number: singular, bare: true}]
+      index: '{part_index.value}'
+  - id: ask/process-part-remainder-time-spent
+    template: process-part-question
+    arguments:
+      predicate: [{slot: spend, cat: spend_verb, bare_form: true}, {lit: on}]
+      satisfaction: {spend: [subject]}
+  - id: ask/process-part-remainder-time-spent-numeric-index
+    template: process-part-question
+    arguments:
+      part: [{slot: part_index, type: ordinal}, {slot: part, cat: process_part, uncounted: true, number: singular, bare: true}]
+      index: '{part_index.value}'
+      predicate: [{slot: spend, cat: spend_verb, bare_form: true}, {lit: on}]
+      satisfaction: {spend: [subject]}

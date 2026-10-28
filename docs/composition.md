@@ -239,6 +239,77 @@ Implementation: [region rules](../packs/arithmetic/rules/material-regions.yaml),
 [shared formulas](../packs/arithmetic/geometry.yaml), and
 [resource remainder](../src/rulekit/kernel/consumers/material_region_remainder.py).
 
+A measured acquisition can also establish stock for ordered fractional uses.
+Each use preserves whether its fraction applies to the opening stock or the
+current remainder. Coordinated omissions inherit one same-sentence actor;
+material identity, compatible units, source coverage and nonnegative balances
+remain required. A production-variety count checks distinct full product
+references, rather than multiplying the usage again. This extends the same
+measured-remainder asks to food ingredients and fabrication materials.
+
+Implementation: [fractional use grammar](../packs/arithmetic/rules/fractional-resource-use.yaml)
+and [fractional resource composition](../src/rulekit/kernel/consumers/fractional_resource_remainder.py).
+
+## Category inventory percentages
+
+A category-percentage question can use an explicit category total or a
+document-local enumeration of distinct subtypes. Every state count must belong
+to that category and one inventory scope; overlapping descriptions, duplicate
+counts, unrelated facts and mixed locations decline. A single subtype alone
+does not establish the category total. Negation selects the complement before
+division. This does not close the category's taxonomy or enable general
+superordinate totals from incidental mentions.
+
+Implementation: [inventory asks](../packs/arithmetic/rules/category-populations.yaml)
+and [percentage consumers](../src/rulekit/kernel/consumers/partition_percentage.py).
+
+## Partitioned process durations
+
+An explicitly partitioned process can have one unknown part duration. Every
+other indexed part must have a duration, with compatible units and matching
+participant and process references. A relative duration uses the immediately
+preceding part and a compatible actor reference. Word and numeric ordinals
+share the existing ordinal-index machinery. The total may be asserted or an
+adjacent question-local condition; subtraction cannot produce a negative
+duration. No unspecified gaps, overlaps or concurrent work are inferred.
+
+Implementation: [process grammar](../packs/arithmetic/rules/process-parts.yaml)
+and [duration remainder](../src/rulekit/kernel/consumers/process_part_remainder.py).
+
+## Population-weighted periodic amounts
+
+A reported per-member average and its population share establish a subgroup
+total. An explicit complementary group completes the binary partition. The
+observer, population descriptions, repeated population count, attribute,
+currency and periods must agree. Group sizes must be positive whole counts;
+missing complements and overlapping unnamed shares decline. The reported
+averages are per member, rather than a second aggregate amount. Inquiry and
+source-attribution clauses add context without asserting additional receipts.
+
+Implementation: [population rate grammar](../packs/arithmetic/rules/population-rates.yaml)
+and [weighted amounts](../src/rulekit/kernel/consumers/population_rate_total.py).
+
+Invented examples, paraphrases and ambiguity boundaries for these compositions
+live in [partitioned resource tests](../tests/test_partitioned_resource_questions.py).
+
+## Indexed acquisition balances
+
+Indexed acquisitions and successive multi-period blocks form a contiguous
+sequence. Explicit block totals and per-period rates retain different scopes;
+actual partitive transfers subtract from the identified acquisition. A purpose
+clause with a modal purchase does not assert another completed transaction.
+Participant, resource, period, collection source and transfer references must
+agree, and the question must identify the observed sequence's endpoint.
+
+A multi-period amount without an explicit total or rate requests clarification.
+The ordinary caller interpretation selects a block-total or per-period reading;
+it cannot override explicit evidence or bypass identity and coverage checks.
+Multiple independently ambiguous blocks require explicit wording. A recurring
+duty supplies context without silently making the observed amounts uniform.
+
+Implementation: [period grammar](../packs/arithmetic/rules/periodic-resource-balances.yaml)
+and [acquisition balance](../src/rulekit/kernel/consumers/periodic_resource_balance.py).
+
 ## Reconstructing equal container contents
 
 An explicit equal-content stock can be reconstructed from a retained count

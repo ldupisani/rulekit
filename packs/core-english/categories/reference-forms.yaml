@@ -1,5 +1,10 @@
 format: rulekit/categories@1
 categories:
+  singular_animate_object_pronoun:
+    parent: animate_object_pronoun
+  precardinal_attribute:
+    parent: adjective
+    notes: A modifier placed before the cardinal count in a counted noun phrase.
   universal_item_reference:
     parent: pronoun
     notes: All items in an independently established domain; the consuming rule must establish completeness.
@@ -33,6 +38,8 @@ categories:
   person_title:
     parent: title
 members:
+  singular_animate_object_pronoun: [her, him]
+  precardinal_attribute: [next]
   universal_item_reference: [everything]
   impersonal_subject_pronoun:
   - it
@@ -53,6 +60,6 @@ members:
   - ms
 attribute_compatibility:
   initial_sequence_ordinal: [progress_measure]
-  holder_ordinal: [ordinal_quantity_holder, path_checkpoint, local_yield_site]
+  holder_ordinal: [ordinal_quantity_holder, path_checkpoint, local_yield_site, process_part, duration_measure]
   holder_prefix_order: [ordinal_quantity_holder]
   holder_terminal_order: [ordinal_quantity_holder]

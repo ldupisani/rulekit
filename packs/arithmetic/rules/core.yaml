@@ -3605,6 +3605,7 @@ rules:
 
   - id: arithmetic/existential-premise
     phase: read
+    satisfies: {verb: [subject]}
     description: >
       "There are 15 trees in the grove" — a located existential: the place
       holds the counted noun as a state quantity. The surface requires an
@@ -3696,6 +3697,7 @@ rules:
 
   - id: arithmetic/existential-premise-bare
     phase: read
+    satisfies: {verb: [subject]}
     description: >
       "There are 12 chairs." — an unlocated existential; the holder is the
       scene itself (the `world` entity, a data constant this pack owns).

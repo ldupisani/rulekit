@@ -1,0 +1,21 @@
+format: rulekit/categories@1
+categories:
+  observation_record: {parent: noun}
+  population_observation_verb: {parent: verb}
+  evidence_attribution_preposition: {parent: preposition}
+  rate_population: {parent: noun, includes: [allocation_recipient]}
+  periodic_rate_attribute: {parent: noun, includes: [periodic_income_noun]}
+  periodic_statistic_frequency: {parent: adverb}
+  population_partition_coordinator: {parent: conjunction}
+  percentage_quantity_noun: {parent: noun}
+members:
+  observation_record: [survey]
+  population_observation_verb: [survey, surveys, surveyed, surveying]
+  evidence_attribution_preposition: [according to]
+  periodic_statistic_frequency: [daily]
+  population_partition_coordinator: [while, and]
+  percentage_quantity_noun: [percentage, percent]
+context_synonyms:
+  daily_interval:
+    gate: duration_measure
+    forms: [daily, day]

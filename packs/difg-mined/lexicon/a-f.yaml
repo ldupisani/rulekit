@@ -243,10 +243,6 @@ entries:
   asleep:
     senses:
     - adjective
-  assignment:
-    senses:
-    - noun
-    plural: assignments
   assume:
     senses:
     - verb
@@ -706,9 +702,6 @@ entries:
     senses:
     - noun
     plural: bushes
-  butter:
-    senses:
-    - noun
   buttercream:
     senses:
     - noun
@@ -983,14 +976,6 @@ entries:
     senses:
     - noun
     plural: chilis
-  chip:
-    senses:
-    - noun
-    plural: chips
-  chocolate:
-    senses:
-    - noun
-    plural: chocolates
   choice:
     senses:
     - noun
@@ -1377,10 +1362,6 @@ entries:
   cowgirl:
     senses:
     - noun
-  coworker:
-    senses:
-    - noun
-    plural: coworkers
   crab:
     senses:
     - noun
@@ -1458,9 +1439,6 @@ entries:
   dairy:
     senses:
     - adjective
-  daisy:
-    senses:
-    - noun
   dance:
     senses:
     - noun
@@ -2213,10 +2191,6 @@ entries:
   fosters:
     senses:
     - verb
-  fountain:
-    senses:
-    - noun
-    plural: fountains
   four:
     senses:
     - value

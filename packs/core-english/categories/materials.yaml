@@ -40,6 +40,10 @@ categories:
     parent: adjective
   material_stock_holding_verb:
     parent: verb
+  resource_measure_unit:
+    parent: noun
+    includes: [mass_unit, length_unit, volume_measure]
+  production_variety_noun: {parent: noun}
 members:
   sheet_material: [fabric, cloth, paper, cardboard]
   material_stock_unit:
@@ -66,6 +70,7 @@ members:
   - clay
   - fuel
   - material
+  production_variety_noun: [kind]
   solid_stock_unit:
   - block
   - cuboid

@@ -1,0 +1,7 @@
+format: rulekit/categories@1
+categories:
+  flower:
+    parent: plantable_quantity_object
+    notes: Flower subtypes; membership does not declare an exhaustive botanical inventory.
+members:
+  flower: [rose, tulip, daisy]

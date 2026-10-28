@@ -1,0 +1,30 @@
+format: rulekit/rules@1
+templates:
+  category-population-percentage:
+    parameters: {negation: [], negated: 'false'}
+    rule:
+      match:
+        question:
+          - {lit: what, at_start: true}
+          - {slot: percentage, cat: percentage_quantity_noun}
+          - {lit: of}
+          - {slot: collection, type: plural, uncounted: true, bare: true}
+          - {slot: be, cat: plural_copula}
+          - {parameter: negation}
+          - {slot: subtype, type: plural, uncounted: true, bare: true}
+          - {lit: '?', consume_skipped: true}
+      where:
+        - category_contains: {collection: collection, members: [subtype]}
+      satisfies: {be: [subject]}
+      resolves:
+        consumer: enumerated-category-percentage
+        collection: '{collection}'
+        subtype: '{subtype}'
+        negated: {parameter: negated}
+        unlocated_sources: [arithmetic/existential-premise-bare, arithmetic/existential-premise-bare-conjoined, arithmetic/holder-population-bare]
+ask_variants:
+  - id: ask/category-population-percentage
+    template: category-population-percentage
+  - id: ask/category-population-percentage-complement
+    template: category-population-percentage
+    arguments: {negation: [{lit: not}], negated: 'true'}

@@ -1,0 +1,15 @@
+format: rulekit/categories@1
+categories:
+  collection_source:
+    parent: noun
+    includes: [quantity_container, quantity_location]
+  collection_duty_support: {parent: verb}
+  temporal_interval_preposition: {parent: temporal_preposition}
+  adjacent_interval_descriptor: {parent: adjective}
+members:
+  collection_source: [fountain]
+  collection_duty_support: [have, has, had]
+  temporal_interval_preposition: [during, for, in, over, throughout]
+  adjacent_interval_descriptor: [next]
+attribute_compatibility:
+  adjacent_interval_descriptor: [duration_measure]

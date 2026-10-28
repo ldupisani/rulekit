@@ -25,7 +25,7 @@ def _previous_word_unit(reading: Reading, unit) -> object | None:
 
 
 def annotate_senses(reading: Reading, reg: Registry) -> Reading:
-    for unit in reading.units:
+    for index, unit in enumerate(reading.units):
         fold = unit.features.get("fold", "")
         surface = unit.surface
 
@@ -52,6 +52,16 @@ def annotate_senses(reading: Reading, reg: Registry) -> Reading:
                 )
                 continue
             kind = unit.features["value_kind"]
+            ordinal = reg.attrs.get(fold, {}).get("ordinal_index")
+            entry = reg.lexicon.get(fold)
+            if (kind == "fraction" and ordinal is not None and entry is not None
+                    and "adjective" in entry.senses and index + 1 < len(reading.units)
+                    and reg.word_in_category(reading.units[index + 1].features.get("fold", ""), "noun")):
+                reading.record("annotate-sense", unit,
+                               {"senses": ["adjective"], "lemma": fold,
+                                "value": ordinal, "value_kind": "ordinal"},
+                               "a declared ordinal immediately modifies a noun")
+                continue
             sense = {
                 "count": "value", "multiplier": "multiplier", "fraction": "fraction",
                 "ordinal": "ordinal",

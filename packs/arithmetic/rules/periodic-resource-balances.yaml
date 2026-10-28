@@ -1,0 +1,193 @@
+format: rulekit/rules@1
+rules:
+  - id: arithmetic/periodic-collection-duty
+    description: A recurring collection duty supplies context, not an already completed acquisition.
+    match:
+      sentence:
+        - {slot: every, cat: frequency_quantifier, at_start: true}
+        - {slot: period, cat: duration_measure, uncounted: true, bare: true}
+        - {slot: who, type: entity, common_noun_cat: collection_agent, referential: true, bare: true}
+        - {slot: have, cat: collection_duty_support, finite_form: true}
+        - {lit: to}
+        - {slot: collect, cat: batch_acquisition_verb, bare_form: true}
+        - {slot: items, cat: ownable_quantity_object, uncounted: true, number: plural, bare: true}
+        - {slot: from, cat: spatial_source_preposition}
+        - {slot: source, cat: collection_source, uncounted: true, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
+        - opt:
+            - {slot: inside, cat: spatial_location_preposition}
+            - {slot: place, cat: quantity_location, uncounted: true, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
+        - {lit: '.', consume_skipped: true}
+    where:
+      - number_compatible: [who, have]
+      - verb_roles_compatible:
+          verb: collect
+          roles: {theme: [items]}
+          require_declared_frame: true
+    consumes: [have, collect]
+    satisfies: {have: [subject], collect: [subject]}
+    emits:
+      - {fact: batch_evidence, kind: periodic-resource-context, entity: '{who}', measure: '{items}',
+          container: '{source}', acquisition: '{place.optional}', marker: '{period}', verb: '{collect}',
+          value: 0, position: '{who.span_start}'}
+templates:
+  periodic-resource-gain:
+    parameters:
+      generation: premise
+      context: null
+      period: [{slot: period, cat: duration_measure, uncounted: true, number: singular, referential: true, class_only: true, qualified: true, qualifier_cat: holder_ordinal, all_qualifiers: true}]
+      index: '{period.qualifier}'
+      span: '1'
+      rate: []
+      kind: periodic-resource-gain
+      rate_unit: ""
+      tail: []
+      extra: []
+      consumed: []
+      references: {}
+      satisfaction: {collect: [subject]}
+    rule:
+      generation: {parameter: generation}
+      generation_context: {parameter: context}
+      description: A count belongs to one indexed period or successive block; a block total is not implicitly a per-period rate.
+      match:
+        sentence:
+          - {slot: prep, cat: temporal_interval_preposition, at_start: true}
+          - {parameter: period}
+          - {lit: ',', consume_skipped: true}
+          - {slot: who, type: entity, common_noun_cat: collection_agent, referential: true, bare: true}
+          - {slot: collect, cat: batch_acquisition_verb, finite_form: true}
+          - {slot: amount, cat: ownable_quantity_object, counted: true, bare: true}
+          - {parameter: rate}
+          - opt:
+              - {slot: from, cat: spatial_source_preposition}
+              - {slot: source, cat: collection_source, uncounted: true, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
+          - {parameter: tail}
+      consumes: [collect, amount, {parameter: consumed}]
+      satisfies: {parameter: satisfaction}
+      where:
+        - number_compatible: [who, collect]
+        - verb_roles_compatible:
+            verb: collect
+            roles: {theme: [amount]}
+            require_declared_frame: true
+      references: {parameter: references}
+      emits:
+        - {fact: batch_evidence, kind: {parameter: kind}, entity: '{who}', measure: '{amount}',
+            value: amount, fraction: {parameter: span}, marker: {parameter: index},
+            attribute: {parameter: rate_unit},
+            container: '{source.optional}', acquisition: '{period}', verb: '{collect}', position: '{amount.span_start}'}
+        - {parameter: extra}
+variants:
+  - {id: arithmetic/periodic-resource-indexed-gain, template: periodic-resource-gain}
+  - id: arithmetic/periodic-resource-successive-gain
+    template: periodic-resource-gain
+    arguments:
+      generation: contextual
+      context: &preceding_collection_period
+        before:
+          - sentence:
+              - {slot: context_prep, cat: temporal_interval_preposition}
+              - {slot: context_period, cat: duration_measure, uncounted: true, number: singular, referential: true, class_only: true, qualified: true, qualifier_cat: initial_sequence_ordinal, all_qualifiers: true}
+              - {lit: ',', consume_skipped: true}
+              - {slot: context_actor, type: name}
+              - {slot: context_collect, cat: batch_acquisition_verb, finite_form: true}
+              - {slot: context_amount, cat: ownable_quantity_object, counted: true, bare: true}
+              - {lit: '.', consume_skipped: true}
+            where: [{number_compatible: [context_actor, context_collect]}]
+        target_identity_links: {context_actor: who, context_period: period, context_amount: amount}
+        required_fact_counts: {batch_evidence: 1}
+      period:
+        - {slot: period, cat: duration_measure, counted: true, referential: true, class_only: true, qualified: true, qualifier_cat: adjacent_interval_descriptor, all_qualifiers: true, value_min: 1}
+      index: successive
+      span: period
+      kind: periodic-resource-unscoped-block
+      consumed: [period]
+  - id: arithmetic/periodic-resource-successive-total
+    template: periodic-resource-gain
+    arguments:
+      generation: contextual
+      context: *preceding_collection_period
+      period:
+        - {slot: period, cat: duration_measure, counted: true, referential: true, class_only: true, qualified: true, qualifier_cat: adjacent_interval_descriptor, all_qualifiers: true, value_min: 1}
+      index: successive
+      span: period
+      consumed: [period]
+      rate: [{lit: in}, {slot: total, cat: group_total_marker}]
+  - id: arithmetic/periodic-resource-successive-rate
+    template: periodic-resource-gain
+    arguments:
+      generation: contextual
+      context: *preceding_collection_period
+      period:
+        - {slot: period, cat: duration_measure, counted: true, referential: true, class_only: true, qualified: true, qualifier_cat: adjacent_interval_descriptor, all_qualifiers: true, value_min: 1}
+      index: successive
+      span: period
+      consumed: [period]
+      rate: [{lit: [per, each, every], consume_skipped: true}, {slot: rate_unit, cat: duration_measure, uncounted: true, bare: true}]
+      kind: periodic-resource-rate
+      rate_unit: '{rate_unit}'
+  - id: arithmetic/periodic-resource-indexed-transfer
+    template: periodic-resource-gain
+    arguments:
+      tail:
+        - {slot: continuation, cat: batch_continuation_conjunction}
+        - {slot: giver, type: entity, common_noun_cat: collection_agent, referential: true, bare: true}
+        - {slot: give, cat: contribution_transfer_verb, finite_form: true}
+        - {slot: removed, type: number, standalone: true, integer: true, value_min: 0}
+        - {lit: of}
+        - {slot: items, cat: plural_object_pronoun}
+        - {lit: to}
+        - {slot: owner, cat: possessive_determiner}
+        - {slot: recipient, cat: allocation_recipient, uncounted: true}
+        - {lit: '.', consume_skipped: true}
+      references: {giver: who, items: amount, owner: who}
+      consumed: [give, removed]
+      satisfaction: {collect: [subject], give: [subject], removed: [quantifies]}
+      extra:
+        - {fact: batch_evidence, kind: periodic-resource-transfer, entity: '{giver}', measure: '{amount}',
+            container: '{recipient}', value: removed, marker: '{period.qualifier}', position: '{removed.span_start}'}
+  - id: arithmetic/periodic-resource-indexed-transfer-purpose
+    template: periodic-resource-gain
+    arguments:
+      tail:
+        - {slot: continuation, cat: batch_continuation_conjunction}
+        - {slot: giver, type: entity, common_noun_cat: collection_agent, referential: true, bare: true}
+        - {slot: give, cat: contribution_transfer_verb, finite_form: true}
+        - {slot: removed, type: number, standalone: true, integer: true, value_min: 0}
+        - {lit: of}
+        - {slot: items, cat: plural_object_pronoun}
+        - {lit: to}
+        - {slot: owner, cat: possessive_determiner}
+        - {slot: recipient, cat: allocation_recipient, uncounted: true}
+        - {lit: so}
+        - {slot: beneficiary, cat: animate_pronoun}
+        - {slot: modal, cat: capacity_modal}
+        - {slot: buy, cat: purchase, bare_form: true}
+        - {slot: product, cat: purchase_item, uncounted: true, bare: true, referential: true}
+        - {lit: '.', consume_skipped: true}
+      references: {giver: who, items: amount, owner: who}
+      consumed: [give, removed, buy]
+      satisfaction: {collect: [subject], give: [subject], removed: [quantifies], buy: [subject], beneficiary: [refers]}
+      extra:
+        - {fact: batch_evidence, kind: periodic-resource-transfer, entity: '{giver}', measure: '{amount}',
+            container: '{recipient}', value: removed, marker: '{period.qualifier}', position: '{removed.span_start}'}
+asks:
+  - id: ask/resource-balance-after-indexed-period
+    match:
+      question:
+        - {lit: how, at_start: true}
+        - {lit: many}
+        - {slot: item, cat: ownable_quantity_object, uncounted: true, bare: true}
+        - {slot: aux, cat: auxiliary}
+        - {slot: who, type: entity, common_noun_cat: collection_agent, referential: true, bare: true}
+        - {slot: have, cat: possession_state, bare_form: true}
+        - {lit: after}
+        - {slot: period, cat: duration_measure, uncounted: true, number: singular, referential: true, class_only: true, qualified: true, qualifier_cat: holder_ordinal, all_qualifiers: true}
+        - {lit: '?', consume_skipped: true}
+    satisfies: {have: [subject]}
+    resolves:
+      consumer: periodic-resource-balance
+      entity: '{who}'
+      measure: '{item}'
+      period: '{period}'
+      index: '{period.qualifier}'

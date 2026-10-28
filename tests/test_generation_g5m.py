@@ -178,9 +178,9 @@ def test_g5m_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 606
-    assert sum(item.supported for item in availability.values()) == 549
-    assert sum(not item.supported for item in availability.values()) == 57
+    assert len(availability) == 633
+    assert sum(item.supported for item in availability.values()) == 569
+    assert sum(not item.supported for item in availability.values()) == 64
     assert all(
         availability[rule_id].supported for rule_id in GENERATIVE_GROUPS
     )
@@ -205,7 +205,7 @@ def test_g5m_unlocks_exactly_the_preregistered_frontier() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 931
+    assert len(exploration_status(project)["fillers"]) == 948
 
 
 @pytest.mark.parametrize("rule_id", sorted(GENERATIVE_GROUPS))
