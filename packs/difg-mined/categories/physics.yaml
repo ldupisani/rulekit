@@ -3,4 +3,4 @@ format: rulekit/categories@1
 # exact formula in this pack's formulas.yaml. The parent category and generic
 # ask family are owned once by packs/physics.
 members:
-  physics_quantity: [voltage, wavelength]
+  physics_quantity: [voltage]

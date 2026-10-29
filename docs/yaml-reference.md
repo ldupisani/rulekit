@@ -125,6 +125,11 @@ check alongside productive participles; no word exceptions belong in Python.
 exactly that one sense. It is not a general replacement for compositional
 compound parsing.
 
+Declared hyphenated noun plurals retain their canonical identity and require
+the source hyphen boundaries. An explicit non-noun entry for the plural
+surface keeps its own readings without suppressing the noun paradigm;
+agreement follows the selected reading.
+
 `anaphoric_form` declares a named `paradigm` and allowed
 `referent_numbers`. Reference compatibility and grammatical verb agreement
 are different checks. Use this shared contract for pronoun/possessive
@@ -389,6 +394,10 @@ membership alone never licenses summing arbitrary siblings.
 fraction_plurals, operators, currencies, percents`. Fraction plurals map back
 to their singular fraction form; a plural unit fraction still needs an
 explicit count to form a complete value.
+
+An atomic numeric compound takes its own declared value during lexical
+condensation, independently of its components' numeric meanings. This does
+not reinterpret an ordinary counted noun as a fraction.
 
 `rulekit/obligations@1` maps `roles` to `needs`, an optional subset
 `optional`, and per-need `direction` (`left, right, either`). Obligations

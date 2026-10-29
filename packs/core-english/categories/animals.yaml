@@ -33,38 +33,27 @@ categories:
     parent: animal
     attrs:
       legs: 4
-    notes: Typical adult anatomy of explicitly classified four-legged animals; no mammal-wide leg
-      count.
+    notes: Typical adult anatomy of explicitly classified four-legged animals; no mammal-wide leg count.
   legless_animal:
     parent: animal
     attrs:
       legs: 0
+  body_part:
+    parent: noun
+    notes: An anatomical part, independently classified from the animal or person that may bear it.
 members:
-  animal: [alligator, alpaca, bear, bird, blue-gill, bunny, camel, cat, cattle, chicken, chihuahua,
-      conch, cow, crab, dinosaur, doe, dog, dolphin, duck, elephant, fish, fox, frog, gecko, giraffe,
-    goat, hamster, hare, hen, hog, horse, iguana, insect, jaguar, kangaroo, kitten, koala, lion,
-      lizard, monkey, mouse, oyster, panda, penguin, pig, puppy, rabbit, rat, rooster, salmon, shark,
-    snail, snake, swordfish]
+  animal: [alligator, alpaca, bear, bird, blue-gill, bunny, camel, cat, cattle, chicken, chihuahua, conch, cow,
+    crab, dinosaur, doe, dog, dolphin, duck, elephant, fish, fox, frog, gecko, giraffe, goat, hamster, hare,
+      hen, hog, horse, iguana, insect, jaguar, kangaroo, kitten, koala, lion, lizard, monkey, mouse, oyster,
+      panda, penguin, pig, puppy, rabbit, rat, rooster, salmon, shark, snail, snake, swordfish, tadpole, tick,
+      turtle, worm]
   pet: [bird, cat, dog, fish, frog, goldfish, hamster, rabbit, snail]
-  bird: [bluebird, chicken, crow, duck, hen, jay, kingfisher, parrot, pelican, penguin, pigeon,
-      robin, rooster, seagull, sparrow]
+  bird: [bluebird, chicken, crow, duck, hen, jay, kingfisher, parrot, pelican, penguin, pigeon, robin, rooster,
+    seagull, sparrow]
   insect: [ant, bee, beetle, butterfly, grasshopper]
   fish: [angelfish, blue-gill, goldfish, guppy, pufferfish, salmon, shark, swordfish]
-  quadruped:
-  - bear
-  - camel
-  - cat
-  - cow
-  - dog
-  - elephant
-  - fox
-  - frog
-  - goat
-  - horse
-  - koala
-  - lion
-  - pig
-  - rabbit
+  quadruped: [bear, camel, cat, cow, dog, elephant, fox, frog, goat, horse, koala, lion, pig, rabbit, turtle]
   legless_animal:
   - snail
   - snake
+  body_part: [tooth, whisker]

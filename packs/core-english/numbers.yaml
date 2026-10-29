@@ -28,6 +28,9 @@ numbers:
   seventy: 70
   eighty: 80
   ninety: 90
+  thirty-six: 36
+  twenty-eight: 28
+  thirty-five: 35
 scales:
   dozen: 12
   hundred: 100
@@ -69,6 +72,11 @@ fractions:
   one-quarter: 0.25
   one-sixth: 0.16666666666666666
   one-third: 0.3333333333333333
+  three-fifths: 0.6
+  three-fourths: 0.75
+  three-quarters: 0.75
+  two-fifths: 0.4
+  two-thirds: 0.6666666666666666
 fraction_plurals:
   halves: half
   thirds: third

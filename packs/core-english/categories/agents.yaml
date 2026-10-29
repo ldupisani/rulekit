@@ -63,32 +63,28 @@ categories:
     notes: A collection of people; membership does not supply a group size.
 members:
   role_location_preposition: [at]
-  social_group: [couple, crew, crowd, family, household, team]
+  social_group: [couple, crew, crowd, family, household, team, tribe, varsity]
   educational_institution: [college, high school, school, university]
   geographic_area: [area, city, country, neighborhood, subdivision, town]
   production_device: [desktop, heater, laptop, lawnmower, machine, monitor, mower, printer, pump, robot,
       scanner]
-  person: [adult, artist, athlete, attendee, aunt, baby, babysitter, baker, bodyguard, boss, boy,
-      boyfriend, brunette, buyer, camper, cannoneer, captain, carpenter, chef, child, citizen,
-      classmate, clerk, clown, contestant, cousin, cowgirl, customer, dad, dancer, daughter, delegate,
-      doctor, dog-walker, driver, employee, farmer, father, fisherman, friend, girl, goalkeeper,
-      grandchild, granddaughter, grandfather, grandkid, grandmother, grandpa, guest, gymnast,
-      housewife, hunter, husband, kid, kindergartner, lady, magician, man, manager, mason, member,
-      merchandiser, mother, mum, neighbor, nephew, nerd, nurse, painter, pal, partner, passenger,
-      person, roommate, salesman, scientist, senior, sibling, soldier, son, spectator, student,
-      technician, worker]
+  person: [adult, artist, athlete, attendee, aunt, baby, babysitter, baker, bodyguard, boss, boy, boyfriend,
+      brunette, buyer, camper, cannoneer, captain, carpenter, chef, child, citizen, classmate, clerk, clown,
+      contestant, cousin, cowgirl, customer, dad, dancer, daughter, delegate, doctor, dog-walker, driver,
+      employee, farmer, father, fisherman, friend, girl, goalkeeper, grandchild, granddaughter, grandfather,
+      grandkid, grandmother, grandpa, guest, gymnast, housewife, hunter, husband, kid, kindergartner, lady,
+      magician, man, manager, mason, member, merchandiser, mother, mum, neighbor, nephew, nerd, nurse, painter,
+    pal, partner, passenger, person, roommate, salesman, scientist, senior, sibling, soldier, son, spectator,
+      student, tailor, teammate, technician, traveler, uncle, vet, visitor, waitress, wife, woman, worker,
+      writer]
   named_city:
   - chicago
   situated_role: [artist, athlete, babysitter, baker, bodyguard, cannoneer, captain, carpenter, chef, clerk,
       contestant, dancer, doctor, dog-walker, driver, employee, farmer, fisherman, gardener, goalkeeper,
       gymnast, hunter, kindergartner, librarian, magician, manager, mason, merchandiser, nurse, painter,
-      salesman, scientist, soldier, student, teacher, violinist, worker]
+      salesman, scientist, soldier, student, tailor, teacher, vet, violinist, waitress, worker, writer]
   office_role:
   - president
-  activity_site:
-  - park
-  - garden
-  - restaurant
-  - store
+  activity_site: [garden, park, restaurant, store, theater, warehouse, workplace, zoo]
   organization: [administration, business, club, college, company, government, workshop]
-  persongroup: [couple, crew, family, group, household, party, team]
+  persongroup: [couple, crew, family, group, household, party, team, tribe, varsity]

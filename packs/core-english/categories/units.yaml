@@ -5,5 +5,5 @@ categories:
   calendar_span_unit: {parent: noun}
 members:
   measure_unit: [centimeter, day, degree, foot, gallon, gram, hour, inch, kilogram, kilometer, liter, meter,
-      mile, milliliter, minute, moles, ounce, pint, pound, quart, radian, week]
+      mile, milliliter, minute, moles, ounce, pint, pound, quart, radian, watt, week, yard]
   calendar_span_unit: [day, month, week, year]

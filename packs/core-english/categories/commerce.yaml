@@ -58,7 +58,7 @@ categories:
       `currency` — an ordinary "gives 3 apples" never qualifies.
 members:
   audio_product: [album, cd]
-  audiovisual_product: [dvd, film, movie]
+  audiovisual_product: [dvd, film, movie, video]
   commercial_organization: [business, company, empire]
   commercial_production_verb:
   - create
@@ -74,15 +74,11 @@ members:
   - produced
   - produces
   income_modifier: [bonus]
-  income_resource_noun:
-  - bonus
-  - income
-  - pay
-  - salary
+  income_resource_noun: [bonus, income, pay, salary, windfall, winnings]
   infinitival_marker: [to]
   profit_measure: [profit]
-  publication_product: [book, paperback]
-  transaction_adjustment_noun: [discount, fee, refund, tax]
+  publication_product: [book, paperback, textbook]
+  transaction_adjustment_noun: [discount, fee, refund, tax, tip, tithe]
   visual_product:
   - painting
   - picture
@@ -95,7 +91,7 @@ members:
   - it
   - them
   coin: [dime, nickel, penny, quarter]
-  discount: [coupon, discount]
+  discount: [coupon, discount, tip]
   cashtoken: [bill, coin]
   charge: [bill, cost, expense, fee, price]
   tender_verb: [gave, give, gives, paid, pay, pays]

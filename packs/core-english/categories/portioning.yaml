@@ -42,3 +42,4 @@ attribute_compatibility:
   - decomposable_quantity_whole
   food_ingredient_modifier:
   - decomposable_quantity_whole
+  - edible_quantity_object

@@ -22,9 +22,9 @@ categories:
 members:
   information_recall_verb: [memorize, memorized, memorizes, memorizing, memorise, memorised, memorises,
       memorising]
-  information_quantity_object: [advertisement, brochure, copy, diary, digit, document, drawing, file,
-      folder, image, magazine, mixtape, newspaper, notebook, notepad, novel, photo, photograph,
-      playlist, poem, program, record, report, scrapbook, song, story, word]
+  information_quantity_object: [advertisement, brochure, copy, diary, digit, document, drawing, file, folder,
+      image, magazine, mixtape, newspaper, notebook, notepad, novel, photo, photograph, playlist, poem,
+      program, record, report, scrapbook, song, story, text, textbook, tutorial, version, video, word]
   computing_device: [computer, desktop, laptop, netbook, server, smartphone]
   information_deletion_verb:
   - delete

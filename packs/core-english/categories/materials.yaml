@@ -69,8 +69,8 @@ members:
   fabrication_product: [curtain, panel, dress, model]
   mass_amount_interrogative: [much]
   material_resource: [bamboo, beeswax, cable, charcoal, clay, foam, fuel, fur, glass, ice, material, metal,
-      ribbon, rope, rubber, silk, string, wire, wood]
-  production_variety_noun: [kind]
+      ribbon, rope, rubber, silk, string, tape, tile, wire, wood, yarn]
+  production_variety_noun: [kind, type, version]
   solid_stock_unit:
   - block
   - cuboid

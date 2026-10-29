@@ -81,10 +81,11 @@ members:
   price_quote_participle: [costing]
   marked_price_participle: [priced, listed]
   sale_offer_participle: [selling]
-  clothes: [beanie, belt, boot, cap, coat, costume, dress, hat, jacket, jeans, leggings, mitten,
-      outfit, pants, scarf, shirt, shoe, shorts, skirt, sock, suit, sunglass, sweater, top]
+  clothes: [beanie, belt, boot, cap, coat, costume, dress, hat, jacket, jeans, leggings, mitten, outfit, pants,
+    scarf, shirt, shoe, shorts, skirt, sock, suit, sunglass, sweater, t-shirt, tie, top, watch]
   generic_purchase_collection_noun: [goods, item, merchandise, stuff, thing]
-  ingredient: [apple, charcuterie, cheddar cheese, cheese, cold cut, cream cheese, sugar]
+  ingredient: [apple, charcuterie, cheddar cheese, cheese, cold cut, cream cheese, sugar, tortilla, vanilla,
+      vegetable, wheat]
   mass_purchase_collection_noun: [merchandise, stuff]
   purchase_collection_noun: [clothes, ingredient, treat]
   purchase_lot_measure: [bottle, box, bunch, carton, gallon, gram, kilogram, pack, packet, pint, pound, quart,
@@ -124,8 +125,8 @@ members:
   - work
   - worked
   - works
-  clothing: [beanie, boot, cap, clothes, coat, costume, dress, jacket, jeans, leggings, mitten, outfit,
-    pants, scarf, shirt, shorts, skirt, sunglass, sweater]
+  clothing: [beanie, boot, cap, clothes, coat, costume, dress, jacket, jeans, leggings, mitten, outfit, pants,
+      scarf, shirt, shorts, skirt, sunglass, sweater, t-shirt, tie]
 adverb_verb_compatibility:
   equal_division_adverb:
   - equal_division_verb

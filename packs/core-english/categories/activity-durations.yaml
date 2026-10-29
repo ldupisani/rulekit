@@ -24,8 +24,8 @@ categories:
     selectional_roles:
       theme: musical_instrument
 members:
-  timed_activity_nominal:
-  - studying
+  timed_activity_nominal: [studying, talking, throw, throwing, trading, trick-or-treat, triple-flip, winning,
+      yoga]
   timed_activity_verb:
   - practice
   - practices
@@ -40,10 +40,7 @@ members:
   - piano
   - violin
   - guitar
-  timed_activity_object:
-  - book
-  - poem
-  - writing
+  timed_activity_object: [book, poem, tic-tac-toe, volleyball, writing, yoga]
   elapsed_extent_adjective:
   - long
   initiation_timing:

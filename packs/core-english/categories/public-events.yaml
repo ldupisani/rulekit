@@ -11,14 +11,10 @@ categories:
   competition_subject:
     parent: noun
 members:
-  excursion_noun:
-  - trip
-  social_occasion:
-  - party
-  attendance_verb:
-  - attend
-  public_competition:
-  - contest
+  excursion_noun: [tour, trip]
+  social_occasion: [party, telethon, wedding]
+  attendance_verb: [attend, visit, visited, visiting, visits]
+  public_competition: [contest, tournament]
   competition_subject:
   - beauty
   - modeling

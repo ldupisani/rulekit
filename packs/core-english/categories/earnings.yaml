@@ -54,8 +54,8 @@ context_synonyms:
     forms: [earn, make]
 members:
   recurring_expense_target: [supply]
-  recurring_activity_noun: [gardening]
-  sports_activity_noun: [baseball, tennis]
+  recurring_activity_noun: [gardening, yoga]
+  sports_activity_noun: [baseball, tennis, volleyball]
   recurring_activity_verb: [play, plays, playing, work, working]
   annual_activity_period: [season]
   averaging_verb: [average]
@@ -76,10 +76,11 @@ members:
   - salary
   periodic_income_verb: [earn, earned, earns, get, gets, got, receive, received, receives]
   resource_accumulation_verb: [save, saved, saves, saving]
-  service_activity_verb: ["mow", "mowed", "mowing", "mows", "paint", "painted", "paints", "rake", "raking", "rakes", "raked", "shovel", "shoveled", "shovelled", "shoveling", "shovelling", "shovels", "wash", "washed", "washes", "washing"]
-  service_object: ["car", "driveway", "gate", "lawn", "window"]
+  service_activity_verb: [mow, mowed, mowing, mows, paint, painted, paints, rake, raking, rakes, raked, shovel,
+    shoveled, shovelled, shoveling, shovelling, shovels, wash, washed, washes, washing]
+  service_object: [car, driveway, gate, lawn, window]
   service_tariff_verb: [charge, charged, charges]
   surface_clearing_service: [shovel, shoveled, shovelled, shovels]
   surface_coating_service: [paint, painted, paints]
-  surface_washing_service: ["wash", "washed", "washes", "washing"]
-  washable_surface: ["car", "driveway", "gate", "window"]
+  surface_washing_service: [wash, washed, washes, washing]
+  washable_surface: [car, driveway, gate, window]

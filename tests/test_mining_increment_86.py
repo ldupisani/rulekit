@@ -127,14 +127,19 @@ def test_ambiguous_container_count_declines(full_registry):
     assert crayon_totals == []
 
 
-def test_unread_container_location_cannot_launder_an_incomplete_total(full_registry):
+def test_scoped_container_populations_cannot_invent_an_unscoped_total(full_registry):
     r = solve(
         "There are 10 bags in the warehouse. There are 20 bags in the "
         "store. Each bag holds 5 crayons. How many crayons are there?",
         full_registry,
     )
     assert r.answer.kind != "number"
-    assert "value-accounting" in r.answer.reason
+    # Both locations are now explicitly understood; their populations still
+    # cannot silently become one unscoped count of containers.
+    assert {(q.entity, q.value) for q in r.store.by_kind(Quantity) if q.measure == "bag"} == {
+        ("warehouse", 10), ("store", 20),
+    }
+    assert not [gt for gt in r.store.by_kind(GroupTotal) if gt.measure == "crayon"]
 
 
 def test_distributive_event_recipient_count_multiplies(full_registry):

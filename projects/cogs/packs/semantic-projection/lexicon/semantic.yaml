@@ -15,7 +15,6 @@ entries:
   sketch: {senses: [verb]}
   smirk: {senses: [verb]}
   sneeze: {senses: [verb]}
-  talk: {senses: [verb]}
 
   # Missing overt event forms used by the licensed construction.
   admired: {senses: [verb], verb: {lemma: admire}}

@@ -58,6 +58,19 @@ _SLASH_FRACTION = re.compile(r"^(\d+)/(\d+)$")
 _ORDINAL = re.compile(r"^(\d[\d,]*)(?:st|nd|rd|th)$")
 
 
+def declared_number_features(fold: str, reg: Registry) -> dict:
+    """Numeric meaning of one declared spelling, independent of its tokens."""
+    if fold in reg.numbers:
+        return {"value": reg.numbers[fold], "value_kind": "count"}
+    if fold in reg.multipliers:
+        return {"value": reg.multipliers[fold], "value_kind": "multiplier"}
+    if fold in reg.fractions:
+        singular = reg.fraction_plurals.get(fold)
+        return {"value": reg.fractions[fold], "value_kind": "fraction",
+                "requires_count": singular is not None, "fraction_lemma": singular or fold}
+    return {}
+
+
 def annotate_numbers(reading: Reading, reg: Registry) -> Reading:
     units = reading.units
     i = 0
@@ -131,7 +144,8 @@ def annotate_numbers(reading: Reading, reg: Registry) -> Reading:
                 f"coordinate tuple {unit.surface!r}",
             )
         elif fold in reg.numbers:
-            value = reg.numbers[fold]
+            declared = declared_number_features(fold, reg)
+            value = declared["value"]
             # word-number compounds: "twenty five" -> 25 (merge right unit)
             if (
                 i + 1 < len(units)
@@ -151,26 +165,14 @@ def annotate_numbers(reading: Reading, reg: Registry) -> Reading:
             else:
                 reading.record(
                     "annotate-number", unit,
-                    {"value": value, "value_kind": "count"},
+                    declared,
                     f"word-number {unit.surface!r}",
                 )
-        elif fold in reg.multipliers:
+        elif declared := declared_number_features(fold, reg):
             reading.record(
                 "annotate-number", unit,
-                {"value": reg.multipliers[fold], "value_kind": "multiplier"},
-                f"multiplier word {unit.surface!r}",
-            )
-        elif fold in reg.fractions:
-            singular = reg.fraction_plurals.get(fold)
-            reading.record(
-                "annotate-number", unit,
-                {
-                    "value": reg.fractions[fold],
-                    "value_kind": "fraction",
-                    "requires_count": singular is not None,
-                    "fraction_lemma": singular or fold,
-                },
-                f"fraction word {unit.surface!r}",
+                declared,
+                f"{declared['value_kind']} word {unit.surface!r}",
             )
         elif fold in reg.scales and i > 0 and "value" in units[i - 1].features:
             prev = units[i - 1]

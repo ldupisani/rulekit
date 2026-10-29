@@ -57,6 +57,7 @@ def test_changed_description_remains_undetermined() -> None:
         "There was a dog and cat on the smallest track.",
         "There was a dog on the smallest and oldest track.",
         "There was a dog on the 2 smallest tracks.",
+        "There was a cat beside the 3 small watches.",
         "There was a dog on the smallest track in Rome.",
         "There was a dog on the smallest track that closed.",
         "There was a dog on the smallest track",

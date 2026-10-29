@@ -2,12 +2,14 @@ format: rulekit/categories@1
 categories:
   personal_relation_role:
     parent: person
-    notes: A relationship or service role in a possessive description, rather than an arbitrary person or animal noun.
+    notes: A relationship or service role in a possessive description, rather than an arbitrary person or
+      animal noun.
   kinship_description:
     parent: personal_relation_role
   third_person_possessive_determiner:
     parent: possessive_determiner
 members:
-  kinship_description: [brother, sister, son, child, parent, grandparent, mom]
-  personal_relation_role: [friend, guardian, partner, teacher, student, gardener, librarian, shopper, violinist]
+  kinship_description: [brother, child, grandparent, mom, parent, sister, son, uncle, wife]
+  personal_relation_role: [friend, guardian, partner, teacher, student, gardener, librarian, shopper,
+      violinist]
   third_person_possessive_determiner: [her, his, its, their]

@@ -979,6 +979,14 @@ def disambiguate(reading: Reading, reg: Registry) -> Reading:
             # Recover the declared noun head after choosing that sense.
             fold = unit.features.get("fold", "")
             features["lemma"] = reg.plural_to_singular.get(fold, fold)
+            if fold in reg.plural_to_singular:
+                features["number"] = "plural"
+        elif sense == "verb" and "noun" in unit.senses():
+            fold = unit.features.get("fold", "")
+            features["lemma"] = reg.verb_lemmas.get(fold, fold)
+            if fold in reg.plural_to_singular:
+                entry = reg.lexicon.get(fold)
+                features["number"] = entry.number if entry and entry.number else "singular"
         return features
 
     unresolved = sum(len(choices) > 1 for choices in options)

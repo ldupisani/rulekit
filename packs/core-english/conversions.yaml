@@ -77,3 +77,6 @@ conversions:
 - from: millimeter
   to: meter
   factor: 0.001
+- from: yard
+  to: foot
+  factor: 3.0

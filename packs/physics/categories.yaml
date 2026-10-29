@@ -4,7 +4,7 @@ categories:
   # looks up its complete qualified name in the formula table.
   physics_quantity: {parent: noun}
 members:
-  physics_quantity: [energy, entropy, frequency, momentum, power, speed, weight]
+  physics_quantity: [energy, entropy, frequency, momentum, power, speed, wavelength, weight]
   geometry_dimension: [height]
   dimension_noun: [height]
   length_measure: [height]

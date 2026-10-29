@@ -37,8 +37,8 @@ categories:
     parent: adjective
   intrinsic_attribute:
     parent: adjective
-    notes: An intrinsic property such as colour, size or ripeness; excludes discourse order and
-      remainder references.
+    notes: An intrinsic property such as colour, size or ripeness; excludes discourse order and remainder
+      references.
 
   quality_bearer_noun:
     parent: noun
@@ -63,10 +63,11 @@ members:
   - favorite
 
   quality_bearer_noun: [carrot]
-  quality_attribute: [good]
+  quality_attribute: [good, tough, wonderful]
   marital_status_attribute: [married]
   capacity_attribute: [full]
   capacity_noun: [box]
+  intrinsic_attribute: [thick, wooden]
 attribute_compatibility:
   preference_attribute: [purchase_collection_noun]
   quality_attribute: [quality_bearer_noun, animate]

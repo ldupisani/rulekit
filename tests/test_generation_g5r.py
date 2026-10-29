@@ -164,7 +164,7 @@ def test_g5r_unlocks_exactly_the_preregistered_rule() -> None:
     assert availability[
         "arithmetic/anchored-relation-conjoined-anchor"
     ].supported
-    assert len(exploration_status(project)["fillers"]) == 2372
+    assert len(exploration_status(project)["fillers"]) == 2554
 
 
 @pytest.mark.parametrize("comparative", sorted(MOVED_WORDS))

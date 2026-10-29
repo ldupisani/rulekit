@@ -20,10 +20,7 @@ members:
   income_prior_descriptor:
   - old
   - previous
-  expense_item:
-  - expense
-  - rent
-  - utilities
+  expense_item: [expense, rent, tithe, tuition, utilities]
   base_increase_verb:
   - increase
   - increased

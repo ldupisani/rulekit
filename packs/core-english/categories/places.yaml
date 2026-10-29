@@ -4,8 +4,8 @@ categories:
     parent: noun
     notes: A physical building; membership does not assert occupancy or ownership.
 members:
-  building: [apartment, building, castle, church, factory, garage, home, hotel, house, library, museum,
-    school]
+  building: [apartment, building, castle, church, factory, garage, home, hotel, house, library, museum, school,
+    theater, tower, treehouse, warehouse]
 context_synonyms:
   contains:
     gate: building

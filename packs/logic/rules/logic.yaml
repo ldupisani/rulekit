@@ -1983,7 +1983,7 @@ rules:
         - {lit: there, at_start: true}
         - {lit: is}
         - {lit: [a, an], consume_skipped: true}
-        - {slot: cls, type: noun}
+        - {slot: cls, type: noun, uncounted: true}
         - {slot: prep, type: preposition}
         - {slot: obj, type: name}
         - {lit: ".", consume_skipped: true}
@@ -2007,7 +2007,7 @@ rules:
         - {slot: cls, span: true, span_blocks: [negation, quantifier, conjunction, disjunctive_marker, preposition, verb], span_blocks_counted: true}
         - {slot: prep, type: preposition}
         - {lit: the, consume_skipped: true}
-        - {slot: obj, type: noun}
+        - {slot: obj, type: noun, uncounted: true}
         - {lit: ".", consume_skipped: true}
     emits:
       - {fact: existential, cls: "{cls}", pred: "{prep} {obj.qualified}", polarity: true}

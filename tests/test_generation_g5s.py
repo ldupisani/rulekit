@@ -238,7 +238,7 @@ def test_g5s_unlocks_exactly_the_preregistered_frontier() -> None:
     assert availability[
         "arithmetic/anchored-relation-conjoined-anchor"
     ].supported
-    assert len(exploration_status(project)["fillers"]) == 2372
+    assert len(exploration_status(project)["fillers"]) == 2554
 
 
 @pytest.mark.parametrize("modal", sorted(MOVED_WORDS))

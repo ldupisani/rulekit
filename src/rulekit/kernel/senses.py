@@ -14,6 +14,27 @@ from .model import Reading
 PUNCT = {".", ",", "!", "?", ";", ":"}
 
 
+def noun_form_senses(reg: Registry, surface: str, entry, *, inherited: bool = False) -> list[str]:
+    """Noun morphology adds a noun reading without inventing other senses.
+
+    An explicit surface entry retains its independent senses. An inherited
+    plural gets another sense only when its own category declarations license
+    it; a modal or verb on the singular alone is insufficient.
+    """
+    if inherited:
+        tags = reg.word_categories.get(surface, ())
+        return ["noun", *(
+            sense for sense in entry.senses if sense != "noun"
+            and any(reg.root_sense(category) == sense for category in tags)
+        )]
+    senses = list(entry.senses)
+    lemma = reg.plural_to_singular.get(surface)
+    nominal = reg.lexicon.get(lemma) if lemma else None
+    if nominal is not None and "noun" in nominal.senses and "noun" not in senses:
+        senses.append("noun")
+    return senses
+
+
 def _previous_word_unit(reading: Reading, unit) -> object | None:
     prev = None
     for u in reading.units:
@@ -185,24 +206,8 @@ def annotate_senses(reading: Reading, reg: Registry) -> Reading:
                 continue
             if entry.number is not None:
                 number = entry.number
-            implicit_senses = ["noun"]
-            if implicit_plural:
-                surface_categories = reg.word_categories.get(fold, ())
-                implicit_senses.extend(
-                    sense
-                    for sense in entry.senses
-                    if sense != "noun"
-                    and any(
-                        reg.root_sense(category) == sense
-                        for category in surface_categories
-                    )
-                )
             changes: dict = {
-                "senses": (
-                    implicit_senses
-                    if implicit_plural
-                    else list(entry.senses)
-                ),
+                "senses": noun_form_senses(reg, fold, entry, inherited=implicit_plural),
                 "number": number,
             }
             if singular != fold and "noun" in entry.senses:

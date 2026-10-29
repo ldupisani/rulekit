@@ -6,7 +6,7 @@ categories:
   process_elapsed_predicate: {parent: verb}
   completion_ability_descriptor: {parent: adjective}
 members:
-  partitioned_process: [assignment, project, task]
+  partitioned_process: [assignment, project, task, test, tutorial]
   process_part: [part]
   process_partition_verb: [divide, divided]
   process_elapsed_predicate: [take, takes, took]

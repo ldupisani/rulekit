@@ -2196,7 +2196,8 @@ categories:
       ORs membership in this category alongside 'comparative'/'multiplier'
       to recognize a comparative/ratio clause structurally — the SAME
       "test a category, never enumerate the word in Python" shape as
-      'clause_marker'/'clause_marker_prep' (core-english/categories/clauses.yaml). 'particle' was added to registry.ROOT_SENSES to let
+      'clause_marker'/'clause_marker_prep' (core-english/categories/clauses.yaml). 'particle' was added to registry.ROOT_SENSES
+      to let
       this category resolve, purely additive (mirrors the earlier 'modal'
       root-sense addition) — 'than' keeps its single existing sense, so no
       new ambiguity is introduced for the many sentences that use it.
@@ -2608,13 +2609,14 @@ members:
       grandpa, grandparent, guardian, guest, gymnast, housewife, hunter, kid, kindergartner, lady, librarian,
       magician, man, manager, mason, merchandiser, mom, mother, mum, neighbor, nurse, painter, pal, parent,
       partner, person, roommate, salesman, scientist, seller, senior, shopkeeper, shopper, sister, soldier,
-      son, spectator, student, teacher, violinist, worker]
+      son, spectator, student, tailor, teacher, uncle, vet, violinist, waitress, wife, woman, worker, writer]
   animate_object_pronoun: [her, him, them]
   animate_object_verb: [meet, meets, met, taught, teach, teaches]
   animate_possessive_determiner: [her, his, my, their, your]
   animate_pronoun: [he, she]
   animate_subject_verb: [cough, coughed, coughs, enroll, enrolled, enrolling, enrolls, knew, know, knowing,
-      knows, own, owns, take, takes, taught, teach, teaches, took]
+      knows, own, owns, take, takes, taste, taught, teach, teaches, tell, telling, think, thinking, thinks,
+      thought, took, volunteer, volunteers, wait, waiting, wish, wishes]
   arrival_goal_preposition: [at]
   arrival_motion_verb: [arrive, arrived, arrives]
   attribute_class_diversity_adjective: [different]
@@ -2634,13 +2636,14 @@ members:
   collection_addition_quantity_verb: [add, added, adding, adds]
   ripeness_attribute: [ripe, unripe]
   color_attribute: [beige, black, black-and-white, blue, brown, gold, gray, green, grey, pink, purple, red,
-      silver, turquoise, violet, yellow]
+      silver, turquoise, violet, white, yellow]
   colorable_noun: [alpaca, apple, apricot, backpack, badge, ball, balloon, beanie, bench, bird, blanket, book,
       boot, bracelet, cabinet, cap, card, cat, chair, chest, coin, cookie, crayon, cupboard, diary, dog, doll,
       dollar, drum, earring, egg, envelope, fish, flower, folder, garden, gem, gemstone, grape, hamster, hard
       hat, hat, jacket, key, kite, magazine, marble, marker, mitten, mug, necklace, notebook, notepad, pantry,
       paper, pear, pencil, phone, pillowcase, pin, plum, puzzle, quilt, rabbit, ribbon, rose, scarf, skirt,
-      sofa, sticker, storeroom, sweater, ticket, tomato, toy]
+      sofa, sticker, storeroom, sweater, t-shirt, table, thermos, ticket, tire, tomato, towel, toy, umbrella,
+      van, vase, watch, watermelon]
   committed_transfer_decision_verb: [decide, decided, decides]
   compensated_activity: [babysitting, gardening, tutoring]
   complement_boy: [boy]
@@ -2681,10 +2684,11 @@ members:
   deictic_temporal_marker: [now, today, tomorrow, yesterday]
   destination_preposition: [to]
   difference_preposition: [between, in]
-  dimension_difference_measure: [centimeter, foot, gram, inch, kilogram, kilometer, meter, mile, ounce, pound]
+  dimension_difference_measure: [centimeter, foot, gram, inch, kilogram, kilometer, meter, mile, ounce, pound,
+      yard]
   dimension_less: [lighter, shorter, smaller]
   dimension_more: [farther, heavier, higher, larger, longer, taller, wider]
-  dimension_noun: [age, balance, cost, distance, earnings, weight]
+  dimension_noun: [age, balance, cost, distance, earnings, temperature, value, weight]
   direct_quantity_goal_predicate: [need, needed, needs, require, required, requires]
   discourse_group_pronoun: [them]
   discourse_subject_group_pronoun: [they]
@@ -2699,23 +2703,25 @@ members:
       netbook, newspaper, notebook, notepad, novel, pack, pad, paintbrush, paper, pastry, peach, pear, pebble,
       pen, pencil, phone, pickle, pill, pin, plug, plum, present, pretzel, puzzle, quilt, ribbon, rock, rose,
       scarf, scoop, scrapbook, seed, smartphone, snowball, softball, spoon, stamp, stick, sticker, stone,
-      sword, tomato, toy]
+      sword, t-shirt, tee, thermos, tile, token, tomato, toothpick, tortilla, towel, toy, umbrella, vase,
+      watch, watermelon, woodblock]
   duration_dimension_comparative: [longer, shorter]
-  duration_measure: [day, hour, minute, month, second, seconds, week, year]
-  duration_total_subject: [gap, journey, time, trip]
+  duration_measure: [day, hour, minute, month, second, seconds, week, workweek, year]
+  duration_total_subject: [gap, journey, tape, telethon, time, tour, tournament, trip, tutorial, vacation,
+      video, wedding]
   duration_verb: [takes, took]
   earnable_quantity_object: [dollar, money, point]
   earning_quantity_verb: [earn, earned, earns, score, scored, scores]
   eating_quantity_verb: [ate, eat, eats]
   edible_quantity_object: [apple, apricot, avocado, bagel, banana, bean, beetle, beignet, berry, bird,
-      blackberry, blueberry, bread, burger, cake, candy, carrot, charcuterie, cheddar cheese, cheese,
-      coffee, cold cut, conch, cookie, corn, crab, cream cheese, crepe, cucumber, cupcake, dessert,
-      donut, egg, entree, fish, food, fries, frozen yoghurt, frozen yogurt, grape, gumball, hamburger,
-      ice cream, jellybean, lemon, loaf, lollipop, macaron, macaroon, macaroons, meal, meatball,
-      milkshake, muffin, nachos, nut, olive, orange, oyster, pakora, pancake, pancakes, pastry, pear,
-      pepper, pickle, pie, piece, pineapple, pistachio, pizza, plum, potato, pretzel, provisions,
-      rabbit, raspberry, salad, salmon, samosa, sandwich, slice, snack, snake, soda, spaghetti, steak,
-      strawberry, sugar, sweets, tea, tomato, treat, yoghurt, yogurt]
+      blackberry, blueberry, bread, burger, cake, candy, carrot, charcuterie, cheddar cheese, cheese, coffee,
+      cold cut, conch, cookie, corn, crab, cream cheese, crepe, cucumber, cupcake, dessert, donut, egg, entree,
+    fish, food, fries, frozen yoghurt, frozen yogurt, grape, gumball, hamburger, ice cream, jellybean, lemon,
+      loaf, lollipop, macaron, macaroon, macaroons, meal, meatball, milkshake, muffin, nachos, nut, olive,
+      orange, oyster, pakora, pancake, pancakes, pastry, pear, pepper, pickle, pie, piece, pineapple,
+      pistachio, pizza, plum, potato, pretzel, provisions, rabbit, raspberry, salad, salmon, samosa, sandwich,
+      slice, snack, snake, soda, spaghetti, steak, strawberry, sugar, sweets, tea, toast, tomato, tortilla,
+      treat, vanilla, vegetable, watermelon, wheat, yoghurt, yogurt]
   enrollment_quantity_object: [course, student]
   enrollment_quantity_verb: [enroll, enrolled, enrolling, enrolls]
   epistemic_report_verb: [said, say, saying, says]
@@ -2724,12 +2730,12 @@ members:
   externally_deictic_possessive_determiner: [my, your]
   final_measurement_attribute: [final]
   find_quantity_verb: [find, finds, found]
-  finishable_quantity_object: [course, homework, project, puzzle, task]
+  finishable_quantity_object: [course, homework, project, puzzle, task, test, tutorial]
   finite_infinitival_goal_predicate: [hope, hoped, hopes, intend, intended, intends, want, wanted, wants]
   first_person_plural_pronoun: [we]
   food_addition_quantity_verb: [add, added, adding, adds]
   frame_head_preposition: [in, to]
-  frame_prepositional_verb: [travel, traveled, travels]
+  frame_prepositional_verb: [threw, throws, travel, traveled, travels]
   frequency_quantifier: [every]
   future_day_marker: [tomorrow]
   future_modal: [will, would]
@@ -2751,13 +2757,13 @@ members:
   instrument_noun: [brush, clamp, crayon, eraser, fork, highlighter, hose, key, knife, laser, lawnmower,
       marker, mower, paintbrush, pen, pencil, scanner, spoon, sword]
   instrument_preposition: [with, without]
-  length_measure: [centimeter, distance, foot, inch, kilometer, meter, mile]
-  length_unit: [foot, inch, meter, centimeter, millimeter]
+  length_measure: [centimeter, distance, foot, inch, kilometer, meter, mile, yard]
+  length_unit: [centimeter, foot, inch, meter, millimeter, yard]
   less_dir: [fewer, less, younger]
   linear_dimension_comparative: [farther, higher, larger, longer, shorter, smaller, taller, wider]
   linear_dimension_holder: [book, box, cable, gift, hose, pipe, plank, pyramid, ribbon, rope, snake, string,
-      tree]
-  linear_unit_dimension_adjective: [high, tall]
+      table, tape, tooth, toothpick, towel, track, trail, tree, wall, wavelength, whisker, yarn]
+  linear_unit_dimension_adjective: [high, tall, thick, wide]
   literal_containment_verb: [contain, contained, contains]
   livestock_raising_quantity_verb: [raise, raised, raises, raising]
   location_impossibility_modal: [can]
@@ -2767,7 +2773,7 @@ members:
   location_terminating_past_verb: [left]
   location_terminating_verb: [leave, leaves, leaving, left]
   lose: [ate, broke, drank, drink, drinks, drop, dropped, drops, eat, eats, gave, give, gives, lose, loses,
-      lost, paid, pay, pays, sell, sells, sold, spend, spends, spent, use, used, uses]
+      lost, paid, pay, pays, sell, sells, sold, spend, spends, spent, threw, throws, use, used, uses]
   magnitude_noun: [area, litter]
   manner_compatible_verb: [jumped, ran, travel, traveled, travels, walked, work, worked, works]
   manner_preposition: [in, with, without]
@@ -2783,8 +2789,8 @@ members:
       fabric, flour, food, frosting, frozen yoghurt, frozen yogurt, fudge, fur, garbage, gas, gluten, grass,
       guacamole, gum, ice, ice cream, jam, jelly, jewelry, juice, junk, land, lassi, laundry, lemonade,
       lettuce, litter, makeup, meat, milk, money, music, oatmeal, oregano, paper, popcorn, pork, rain,
-      rainfall, rest, rice, sand, sauce, silk, snow, soup, storage, string, sugar, vinegar, water, wool,
-      yoghurt, yogurt]
+      rainfall, rest, rice, sand, sauce, silk, snow, soup, storage, string, sugar, talent, tape, traffic,
+      trash, tuition, vanilla, vinegar, water, wheat, windfall, winnings, wool, yarn, yield, yoghurt, yogurt]
   mass_unit: [gram, kilogram, ounce, pound]
   material_addition_quantity_verb: [add, added, adding, adds]
   means_compatible_verb: [jumped, ran, travel, traveled, travels, walked]
@@ -2796,10 +2802,10 @@ members:
   measured_content_substance: [applesauce, bacon, basil, batter, beef, beeswax, bread, brownie, buttercream,
       charcoal, clay, custard, dough, flour, frosting, fudge, gas, gluten, guacamole, gum, gummy worm, ice,
       jam, jelly, jelly bean, juice, lassi, lemonade, lettuce, makeup, meat, milk, oatmeal, oregano, popcorn,
-      pork, rain, rainfall, rice, salad, sand, sauce, silk, snow, soup, sugar, vinegar, water]
+      pork, rain, rainfall, rice, salad, sand, sauce, silk, snow, soup, sugar, vanilla, vinegar, water, wheat]
   measured_content_transfer_verb: [pour, poured, pouring, pours, put, puts, putting]
   measurement_container: [barrel, beaker, bottle, bowl, box, bucket, canister, container, drum, flask, jar,
-      jug, tank, vessel, vial]
+      jug, tank, thermos, tray, vase, vessel, vial]
   measurement_container_entry_preposition: [into]
   measurement_instrument: [scale]
   measurement_mass_verb: [weigh, weighed, weighing, weighs]
@@ -2810,7 +2816,7 @@ members:
   membership_collection_noun: [animal]
   membership_predicate_incompatible_noun: [time]
   more_dir: [more, older]
-  motion_comparison_measure: [centimeter, distance, foot, inch, kilometer, meter, mile, time]
+  motion_comparison_measure: [centimeter, distance, foot, inch, kilometer, meter, mile, time, yard]
   motion_comparison_verb: [travel, traveled, travels]
   named_calendar_period: [april, august, december, february, friday, january, july, june, march, may, monday,
       november, october, saturday, september, sunday, thursday, tuesday, wednesday]
@@ -2821,32 +2827,34 @@ members:
   negation: [never, not]
   negative_person_pronoun: [nobody]
   non_event_verb: [be, been, being]
-  non_quantity_holder: [amount, calorie, cent, centimeter, clay, cost, day, degree, dollar,
-      electronvolt, foot, gallon, gram, half-hour, hour, inch, kelvin, kilogram, kilojoule, kilometer,
-      kilowatts, kw/h, lb, lbs, liter, meter, mile, minute, money, month, mpg, nanometer, number,
-      ounce, paper, pint, pound, price, quart, radian, remainder, rest, sand, time, week, wool, year]
+  non_quantity_holder: [amount, calorie, cent, centimeter, clay, cost, day, degree, dollar, electronvolt, foot,
+    gallon, gram, half-hour, hour, inch, kelvin, kilogram, kilojoule, kilometer, kilowatts, kw/h, lb, lbs,
+      liter, meter, mile, minute, money, month, mpg, nanometer, number, ounce, paper, pint, pound, price,
+      quart, radian, remainder, rest, sand, time, watt, week, wool, yard, year]
   non_quantity_object_verb: [afford, affords, are, arrive, arrived, arrives, be, came, come, comes, cost,
       equals, is, jumped, measure, measured, measures, need, needed, needs, put, puts, putting, ran, rose,
-      take, takes, took, walked, want, wanted, wanting, wants, was, were, wilted]
+      take, takes, tell, telling, think, thinking, thinks, thought, took, wait, waiting, walked, want, wanted,
+      wanting, wants, was, were, wilted, wish, wishes]
   output_quantity_measure: [page]
   output_quantity_product: [book]
   output_quantity_verb: [write, writes, wrote]
-  ownable_quantity_object: [accessory, advertisement, airplane, application, backpack, badge, bagel,
-      balloon, basketball, battery, beanie, bed, beignet, bicycle, binder, blanket, boat, boot,
-      bouquet, bracelet, brochure, brush, bunch, burger, bus, business, cabinet, cable, caboose, cage,
-      candle, canteen, cap, cartridge, case, cellphone, chair, chalkboard, charm, chest, clamp,
-      console, copy, costume, couch, counter, crayon, credit card, crepe, crown, cupcake, cutlery,
-      cuttlebone, deck, desk, desktop, diary, dice, dodgeball, doll, donut, drawer, drawing, dress,
-      earring, elevator, engine, eraser, exhibit, face-mask, fan, fertilizer, folder, football, fork,
-      frame, frisbee, gem, gemstone, gift, gumball, handlebar, hard hat, heater, helicopter,
-      highlighter, hoop, hose, ipod, jacket, jeans, jellybean, jet, jewelry, kite, knife, laptop,
-      laser, lawnmower, lego, lens, locker, lollipop, magazine, makeup, marker, match, matchbox,
-      minibus, mitten, mixtape, money, monitor, mower, mug, nail, necklace, netbook, newspaper,
-      notebook, notepad, novel, outfit, packet, pad, pail, paintball, paintbrush, pastry, pebble, pen,
-      phone, pill, pillowcase, pin, pipe, plug, pocket, pot, present, pretzel, printer, pufferfish,
+  ownable_quantity_object: [accessory, advertisement, airplane, application, backpack, badge, bagel, balloon,
+      basketball, battery, beanie, bed, beignet, bicycle, binder, blanket, boat, boot, bouquet, bracelet,
+      brochure, brush, bunch, burger, bus, business, cabinet, cable, caboose, cage, candle, canteen, cap,
+      cartridge, case, cellphone, chair, chalkboard, charm, chest, clamp, console, copy, costume, couch,
+      counter, crayon, credit card, crepe, crown, cupcake, cutlery, cuttlebone, deck, desk, desktop, diary,
+      dice, dodgeball, doll, donut, drawer, drawing, dress, earring, elevator, engine, eraser, exhibit,
+      face-mask, fan, fertilizer, folder, football, fork, frame, frisbee, gem, gemstone, gift, gumball,
+      handlebar, hard hat, heater, helicopter, highlighter, hoop, hose, ipod, jacket, jeans, jellybean, jet,
+      jewelry, kite, knife, laptop, laser, lawnmower, lego, lens, locker, lollipop, magazine, makeup, marker,
+      match, matchbox, minibus, mitten, mixtape, money, monitor, mower, mug, nail, necklace, netbook,
+      newspaper, notebook, notepad, novel, outfit, packet, pad, pail, paintball, paintbrush, pastry, pebble,
+      pen, phone, pill, pillowcase, pin, pipe, plug, pocket, pot, present, pretzel, printer, pufferfish,
       pyramid, quilt, record, ribbon, rock, rocket, rope, scanner, scarf, scoop, scrapbook, seat, seed,
-    sharpener, shelf, shoe, shoebox, skateboard, skirt, smartphone, snowball, sofa, softball, spoon,
-      statue, stick, stone, string, strip, sweater, sword, wallet]
+      sharpener, shelf, shoe, shoebox, skateboard, skirt, smartphone, snowball, sofa, softball, spoon, statue,
+      stick, stone, string, strip, sweater, sword, table, tape, target, television, thermos, tile, tire, token,
+    toothpick, towel, trackball, tray, treadmill, umbrella, vacuum, vase, volleyball, wallet, wheel,
+      wheelchair, whiteboard, wick, woodblock]
   owned_collection_location: [cupboard, garden, pantry, storeroom]
   ownership_state: [own, owned, owns]
   package_content_preposition: [of, with]
@@ -2871,7 +2879,8 @@ members:
   physical_size_noun: [alpaca, animal, apple, apricot, bag, ball, bench, bird, book, card, cat, child, coin,
       cookie, cupboard, dog, drum, egg, envelope, fish, flower, friend, garden, gardener, grape, guardian,
       hamster, key, librarian, marble, pantry, paper, pear, pencil, plum, puzzle, rabbit, rose, shopper,
-      sticker, storeroom, student, teacher, tomato, toy, tree, violinist]
+      sticker, storeroom, student, t-shirt, table, teacher, thermos, tire, tomato, towel, toy, tree, umbrella,
+      vase, violinist, watermelon, zit]
   piecewise_partitive_substance: [litter, paper, pizza]
   plain_have_state: [had, has, have]
   planned_progress_modal: [should]
@@ -2908,11 +2917,13 @@ members:
   quantity_anaphor: [amount, distance, number]
   quantity_ask_verb: [enroll, enrolled, enrolling, enrolls, had, has, have, own, owns, take, takes, took]
   quantity_container: [aquarium, backpack, binder, box, bunch, cabinet, cage, canteen, case, chest, cooler,
-      drawer, folder, house, locker, matchbox, mug, packet, pail, piñata, pot, scoop, shelf, shoebox]
+      drawer, folder, house, locker, matchbox, mug, packet, pail, piñata, pot, scoop, shelf, shoebox, thermos,
+      tray, vase]
   quantity_delta: [fewer, less, more]
-  quantity_event_participant: [animal, dragon, monster]
-  quantity_event_verb: [leave, leaves, leaving, meet, meets, met, repaint, repainted, repainting, repaints]
-  quantity_holder: [book, head, house, machine, plank, store]
+  quantity_event_participant: [animal, dragon, monster, vampire]
+  quantity_event_verb: [leave, leaves, leaving, meet, meets, met, repaint, repainted, repainting, repaints,
+      trade, traded, trades]
+  quantity_holder: [book, head, house, machine, plank, store, target, watcher, winner]
   quantity_interior_location: [aquarium, arcade, area, arena, auditorium, backpack, backyard, bag, barrel,
       basket, beaker, binder, bookstore, bottle, bowl, box, bucket, cabinet, cage, camp, canister, canteen,
       case, castle, chest, church, city, class, classroom, classrooms, closet, college, container, cooler,
@@ -2920,18 +2931,21 @@ members:
       house, jar, jug, kitchen, lake, library, locker, mall, market, museum, neighborhood, office, orchard,
       packet, pail, pantry, party, pharmacy, plantation, playground, pool, pot, ranch, sandbox, school,
       schoolyard, shelter, shoebox, stadium, station, store, storeroom, studio, subdivision, supermarket, tank,
-    truck, university, vessel, vial]
+    taxi, theater, thermos, trailer, train, treehouse, truck, university, van, vase, vessel, vial, wardrobe,
+      warehouse, well, zoo]
   quantity_location: [aquarium, area, bag, basket, bench, binder, bowl, box, city, class, classroom, country,
       cupboard, farm, forest, garden, jar, kitchen, mall, office, pantry, park, party, post office, school,
-      sea, side, storeroom, tree, university, waters]
+      sea, side, storeroom, tree, university, wardrobe, waters, wheel, zoo]
   quantity_location_preposition: [in, into]
   quantity_remainder_preposition: [with]
   quantity_site_location: [beach, bench, camp, church, class, classroom, college, factory, farm, festival,
       forest, gallery, garage, garden, gym, library, mall, museum, office, park, party, pharmacy, playground,
-      post office, ranch, school, seashore, stadium, station, supermarket, tree, university]
+      post office, ranch, school, seashore, stadium, station, supermarket, theater, tower, tree, university,
+      warehouse, well, workplace, zoo]
   quantity_site_preposition: [at]
   quantity_surface_location: [aisle, alley, avenue, beach, bench, boulevard, deck, desk, farm, field, floor,
-      ground, highway, hill, lane, patio, road, roof, shelf, side, sidewalk, street, tree]
+      ground, highway, hill, lane, patio, road, roof, shelf, side, sidewalk, street, table, tile, track, trail,
+    tree, wall, wheel, wheelchair]
   quantity_surface_preposition: [on]
   quantity_topic: [topic]
   quantity_topic_preposition: [about]
@@ -2947,7 +2961,7 @@ members:
   remnant_adj: [left]
   resource_raising_quantity_verb: [raise, raised, raises, raising]
   restrictive_focus_adverb: [just, only]
-  ripenable_noun: [apple, apricot, grape, peach, pear, plum, tomato]
+  ripenable_noun: [apple, apricot, grape, peach, pear, plum, tomato, watermelon]
   sell: [sell, sells, sold]
   sequential_partition_context: [university]
   sequential_partition_destination: [course]
@@ -2968,24 +2982,11 @@ members:
   spatial_goal_preposition: [into, onto, to, toward, towards]
   spatial_location_preposition: [aboard, above, alongside, amid, amidst, at, atop, behind, below, beneath,
       beside, beyond, in, inside, near, next to, on, opposite, outside, over, under, underneath, upon, within]
-  spatial_motion_verb: [go, goes, going, jumped, ran, travel, traveled, travels, walked, went]
+  spatial_motion_verb: [go, goes, going, jumped, ran, travel, traveled, traveling, travels, walked, went]
   spatial_path_preposition: [across, along, around, down, over, past, through, under, via]
-  spatial_reference_noun:
-  - area
-  - avenue
-  - bench
-  - boulevard
-  - cupboard
-  - garden
-  - lane
-  - pantry
-  - park
-  - road
-  - storeroom
-  - street
-  - town
-  - tree
-  - university
+  spatial_reference_noun: [area, avenue, bench, boulevard, cupboard, garden, lane, pantry, park, road,
+      storeroom, street, theater, tower, town, track, trail, tree, treehouse, underground, university,
+      upstairs, wall, wardrobe, warehouse, well, west, workplace, zoo]
   spatial_relation_verb: [taught, teach, teaches]
   spatial_source_preposition: [from, off, out of]
   spend_target_prep: [for, on]
@@ -3020,8 +3021,8 @@ members:
   time_measure: [age, day, hour, minute, month, week, year]
   timeperiod: [afternoon, april, august, day, decade, december, evening, february, friday, january, july, june,
     march, may, monday, month, morning, night, november, october, saturday, season, semester, september,
-      sunday, thursday, tuesday, wednesday, week, weekend, year]
-  topical_quantity_host: [book, course]
+      sunday, thursday, tuesday, vacation, wednesday, week, weekday, weekend, workweek, year]
+  topical_quantity_host: [book, course, text, textbook, tutorial, video]
   transfer_out: [gave, give, gives, sell, sells, sold]
   transferable_quantity_object: [alpaca, animal, bar, belt, bird, box, can, cat, clay, clothes, coat, course,
       dog, dollar, fish, flower, gnome, hamster, hat, kite, litter, money, number, orange, page, pants, paper,
@@ -3040,7 +3041,7 @@ members:
   weighable_partitive_substance: [applesauce, bacon, basil, batter, beef, beeswax, bread, buttercream,
       charcoal, chicken, clay, coffee, custard, dough, flour, food, frosting, fudge, gluten, guacamole, gum,
       ice, jam, jelly, lettuce, meat, milk, oatmeal, oregano, paper, popcorn, pork, rice, salad, sand, sauce,
-      silk, snow, soup, sugar, wool]
+      silk, snow, soup, sugar, vanilla, wheat, wool, yarn]
   win_quantity_verb: [win, wins, won]
   winnable_quantity_object: [dollar, money]
   written_production_verb: [write, writes, wrote]
@@ -3052,11 +3053,11 @@ members:
   contribute: [contribute, contributed, paid, pay, pays]
   produce: [bake, baked, bakes, brew, build, builds, built, cook, cooks, create, created, creates, draw, made,
       make, makes, paint, painted, paints, sew, sews, write, writes, wrote]
-  means_noun: [boat, bus, car]
+  means_noun: [boat, bus, car, taxi, train, transport, tricycle, van, vehicle, wagon, wheelchair]
   cause_noun: [accident]
   cause_compatible_verb: [died, dies]
   bare_entity_reference: [bill, mark]
-  duration_holder: [gap, journey, trip]
+  duration_holder: [gap, journey, telethon, tour, tournament, trip, tutorial, vacation, video, wedding]
   accompany: [bring, brings, brought, had, has, have, invite, invited, invites, take, takes, took]
   mass_unit_dimension_adjective: [heavy]
   receive: [get, gets, given, got, had, has, have, receive, received, receives]
@@ -3073,6 +3074,8 @@ members:
   measure_anaphor: [ones]
   instrument_compatible_verb: [cut, cuts, use, used, uses, write, writes, wrote]
   verb_particle: [away, off, out, up]
+  ratio_particle_verb: [threw, throws]
+  content_progress_object: [text, textbook]
 attribute_compatibility:
   length_unit: [rectangular_shape]
   prenominal_remnant_adj: [mass_currency_noun, quantity_dimension_noun, material_resource]

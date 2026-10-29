@@ -3,8 +3,7 @@ categories:
   geometry_dimension: {parent: noun}
   angle_degrees: {parent: noun}
   area_measure: {parent: noun, notes: A resource whose explicitly priced use can depend on area.}
-  perimeter_measure: {parent: noun, notes: A resource whose explicitly priced use can depend on
-      perimeter.}
+  perimeter_measure: {parent: noun, notes: A resource whose explicitly priced use can depend on perimeter.}
   geometry_quantity: {parent: noun}
   geometry_shape: {parent: noun}
   plane_shape:
@@ -110,7 +109,7 @@ categories:
 members:
   geometry_dimension: [base, length, side, radius, width]
   angle_degrees: [degree]
-  area_measure: [carpet]
+  area_measure: [carpet, tile]
   perimeter_measure: [fence]
   geometry_quantity: [area, perimeter, volume, circumference, diagonal]
   rectangle_geometry: [rectangle]

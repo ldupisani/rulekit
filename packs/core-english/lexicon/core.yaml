@@ -7417,21 +7417,82 @@ entries:
     senses:
     - noun
     plural: swordfish
+  t-shirt:
+    senses:
+    - noun
+    plural: t-shirts
   tab: {senses: [noun], plural: tabs}
+  table:
+    senses:
+    - noun
+    plural: tables
+  tadpole:
+    senses:
+    - noun
+    plural: tadpoles
+  tailor:
+    senses:
+    - noun
+    plural: tailors
   take: {senses: [verb], number: plural}
+  take-home:
+    senses:
+    - adjective
+  taken:
+    senses:
+    - verb
+    verb:
+      lemma: take
+      past_participle: true
   takes: {senses: [verb], verb: {lemma: take}}
+  taking:
+    senses:
+    - verb
+    verb:
+      lemma: take
+  talent:
+    senses:
+    - noun
+    plural: talents
+  talk:
+    senses:
+    - verb
+  talking:
+    senses:
+    - noun
+    - verb
+    verb:
+      lemma: talk
   tall: {senses: [adjective]}
   taller: {senses: [comparative]}
   tank: {senses: [noun], plural: tanks}
-  task: {senses: [noun]}
+  tape:
+    senses:
+    - noun
+    plural: tapes
+  target:
+    senses:
+    - noun
+    plural: targets
+  task: {senses: [noun], plural: tasks}
+  taste:
+    senses:
+    - verb
   taught: {senses: [verb], verb: {lemma: teach}}
   tax: {senses: [noun], plural: taxes}
+  taxi:
+    senses:
+    - noun
+    plural: taxis
   tea: {"senses": ["noun"]}
   teach: {senses: [verb], number: plural}
   teacher: {senses: [noun], plural: teachers}
   teaches: {senses: [verb], number: singular, verb: {lemma: teach}}
   teaching: {senses: [verb], verb: {lemma: teach}}
   team: {senses: [noun], plural: teams}
+  teammate:
+    senses:
+    - noun
   teaspoon:
     senses:
     - noun
@@ -7440,11 +7501,57 @@ entries:
     senses:
     - noun
     plural: technicians
+  tee:
+    senses:
+    - noun
+    plural: tees
+  telethon:
+    senses:
+    - noun
+    plural: telethons
+  television:
+    senses:
+    - noun
+    plural: televisions
+  tell:
+    senses:
+    - verb
+  telling:
+    senses:
+    - verb
+    verb:
+      lemma: tell
+  temperature:
+    senses:
+    - noun
+    plural: temperatures
+  ten:
+    senses:
+    - value
+  ten-bedroom:
+    senses:
+    - adjective
   tennis: {senses: [noun]}
   tennis ball: {senses: [noun], plural: tennis balls, lexical_phrase: true}
+  test:
+    senses:
+    - noun
+    plural: tests
+  text:
+    senses:
+    - noun
+    plural: texts
+  textbook:
+    senses:
+    - noun
+    plural: textbooks
   than: {senses: [particle]}
   that: {senses: [complementizer], notes: moved from difg-mined (was mis-lexiconed as article there)}
   the: {senses: [article]}
+  theater:
+    senses:
+    - noun
+    plural: theaters
   their: {senses: [pronoun], anaphoric_form: &neutral {paradigm: third-person-neutral, referent_numbers: [
           singular, plural]}}
   theirs: {senses: [pronoun], anaphoric_form: *neutral}
@@ -7453,39 +7560,278 @@ entries:
   then: {senses: [adverb]}
   there: {senses: [existential]}
   thereafter: {senses: [adverb]}
+  thermos:
+    senses:
+    - noun
+    plural: thermoses
+  these:
+    senses:
+    - article
+    number: plural
   they: {senses: [pronoun], number: plural, anaphoric_form: *neutral}
+  thick:
+    senses:
+    - adjective
   thing: {senses: [noun], plural: things}
+  think:
+    senses:
+    - verb
+  thinking:
+    senses:
+    - verb
+    verb:
+      lemma: think
+  thinks:
+    senses:
+    - verb
+    verb:
+      lemma: think
   third:
     senses:
     - adjective
+  thirsty:
+    senses:
+    - adjective
+  thirteen:
+    senses:
+    - value
+  thirty:
+    senses:
+    - value
+  thirty-five:
+    senses:
+    - value
+  thirty-six:
+    senses:
+    - value
   this: {senses: [article]}
   those: {senses: [article, pronoun], number: plural}
+  thought:
+    senses:
+    - verb
+    verb:
+      lemma: think
+  thousand:
+    senses:
+    - value
+  three:
+    senses:
+    - value
+  three-fifths:
+    senses:
+    - adjective
+    - multiplier
+  three-fourths:
+    senses:
+    - adjective
+    - multiplier
+  three-layer:
+    senses:
+    - adjective
+  three-quarters:
+    senses:
+    - adjective
+    - multiplier
+  threw:
+    senses:
+    - verb
+    verb:
+      lemma: throw
+  thrice:
+    senses:
+    - multiplier
   through: {senses: [preposition]}
   throughout: {senses: [preposition]}
+  throw:
+    senses:
+    - noun
+    - verb
+    plural: throws
+    verb:
+      lemma: throw
+  throwing:
+    senses:
+    - noun
+    - verb
+    verb:
+      lemma: throw
+  thrown:
+    senses:
+    - verb
+    verb:
+      lemma: throw
+      past_participle: true
+  throws:
+    senses:
+    - verb
+    verb:
+      lemma: throw
   thursday: {senses: [noun]}
+  tic-tac-toe:
+    senses:
+    - noun
+  tick:
+    senses:
+    - noun
+    plural: ticks
   ticket:
     senses:
     - noun
     plural: tickets
+  tie:
+    senses:
+    - verb
+    - noun
+    plural: ties
+  ties:
+    senses:
+    - verb
+    verb:
+      lemma: tie
+  tile:
+    senses:
+    - noun
+    plural: tiles
   time: {senses: [noun], plural: times}
   tin:
     senses:
     - noun
     plural: tins
+  tip:
+    senses:
+    - noun
+    plural: tips
+  tire:
+    senses:
+    - noun
+    plural: tires
+  tired:
+    senses:
+    - adjective
+  tithe:
+    senses:
+    - noun
+    plural: tithes
   to: {senses: [preposition]}
+  toast:
+    senses:
+    - noun
+    plural: toasts
   today: {senses: [time]}
   together: {senses: [aggregate]}
+  token:
+    senses:
+    - noun
+    plural: tokens
   tomato: {senses: [noun], plural: tomatoes}
   tomorrow: {senses: [time]}
+  tonight:
+    senses:
+    - time
+  too:
+    senses:
+    - adverb
   took: {senses: [verb], verb: {lemma: take}}
+  tooth:
+    senses:
+    - noun
+    plural: teeth
+  toothpick:
+    senses:
+    - noun
+    plural: toothpicks
   top: {senses: [noun], plural: tops}
   topic: {senses: [noun], plural: topics}
   tornado: {senses: [noun], plural: [tornadoes, tornados]}
+  tortilla:
+    senses:
+    - adjective
+    - noun
+    plural: tortillas
   total: {senses: [aggregate]}
+  totals:
+    senses:
+    - verb
+    verb:
+      lemma: total
+  tough:
+    senses:
+    - adjective
+  tour:
+    senses:
+    - noun
+    plural: tours
+  tournament:
+    senses:
+    - noun
+    plural: tournaments
   toward: {senses: [noun, preposition]}
   towards: {senses: [preposition]}
+  towel:
+    senses:
+    - noun
+    plural: towels
+  tower:
+    senses:
+    - noun
+    plural: towers
   town: {senses: [noun], plural: towns}
   toy: {senses: [noun], plural: toys}
+  track:
+    senses:
+    - noun
+    plural: tracks
+  trackball:
+    senses:
+    - noun
+    plural: trackballs
+  tracking:
+    senses:
+    - verb
+    verb:
+      lemma: track
+  tractor:
+    senses:
+    - noun
+    plural: tractors
+  trade:
+    senses:
+    - verb
+    number: plural
+    verb:
+      lemma: trade
+  traded:
+    senses:
+    - verb
+    verb:
+      lemma: trade
+  trades:
+    senses:
+    - verb
+    number: singular
+    verb:
+      lemma: trade
+  trading:
+    senses:
+    - noun
+    - verb
+    verb:
+      lemma: trade
+  traffic:
+    senses:
+    - noun
+  trail:
+    senses:
+    - noun
+    plural: trails
+  trailer:
+    senses:
+    - noun
+    plural: trailers
+  train:
+    senses:
+    - noun
+    plural: trains
   transaction: {senses: [noun], plural: transactions}
   transfer:
     senses:
@@ -7504,20 +7850,83 @@ entries:
     number: singular
     verb:
       lemma: transfer
+  transport:
+    senses:
+    - noun
+  trash:
+    senses:
+    - noun
   travel: {senses: [verb], number: plural}
   traveled: {senses: [verb], verb: {lemma: travel}}
+  traveler:
+    senses:
+    - noun
+    plural: travelers
+  traveling:
+    senses:
+    - verb
+    verb:
+      lemma: travel
   travels: {senses: [verb], number: singular, verb: {lemma: travel}}
+  tray:
+    senses:
+    - noun
+    plural: trays
+  treadmill:
+    senses:
+    - noun
+    plural: treadmills
   treat: {senses: [noun], plural: treats}
   tree: {senses: [noun], plural: trees}
+  treehouse:
+    senses:
+    - noun
+    plural: treehouses
   triangle: {senses: [noun], plural: triangles}
+  tribe:
+    senses:
+    - noun
+    plural: tribes
+  trick-or-treat:
+    senses:
+    - noun
   trick-or-treating: {"senses": ["noun"]}
   trick-or-tricking: {"senses": ["noun"], "notes": "Attested misspelling of the Halloween activity; kept explicit,
       never a general spelling correction."}
+  tricycle:
+    senses:
+    - noun
+    plural: tricycles
   trip: {senses: [noun], plural: trips}
   triple: {senses: [quantifier, verb]}
+  triple-flip:
+    senses:
+    - noun
+    plural: triple-flips
+  tripled:
+    senses:
+    - verb
+    verb:
+      lemma: triple
+  triples:
+    senses:
+    - verb
+    verb:
+      lemma: triple
   truck: {senses: [noun], plural: trucks}
+  try:
+    senses:
+    - verb
+  trying:
+    senses:
+    - verb
+    verb:
+      lemma: try
   tub: {senses: [noun], plural: tubs}
   tuesday: {senses: [noun]}
+  tuition:
+    senses:
+    - noun
   tulip:
     senses:
     - noun
@@ -7531,6 +7940,16 @@ entries:
     - noun
     - verb
     plural: turns
+  turned:
+    senses:
+    - verb
+    verb:
+      lemma: turn
+  turning:
+    senses:
+    - verb
+    verb:
+      lemma: turn
   turns:
     senses:
     - noun
@@ -7538,9 +7957,75 @@ entries:
     verb:
       lemma: turn
   turquoise: {senses: [adjective]}
+  turtle:
+    senses:
+    - noun
+    plural: turtles
+  tutorial:
+    senses:
+    - noun
+    plural: tutorials
   tutoring: {senses: [noun]}
+  twelve:
+    senses:
+    - value
+  twelve-pound:
+    senses:
+    - adjective
+  twenty:
+    senses:
+    - value
+  twenty-eight:
+    senses:
+    - value
+  twice:
+    senses:
+    - multiplier
+  twin:
+    senses:
+    - adjective
+  two:
+    senses:
+    - value
+  two-day:
+    senses:
+    - adjective
+  two-fifths:
+    senses:
+    - adjective
+    - multiplier
+  two-pound:
+    senses:
+    - adjective
+  two-thirds:
+    senses:
+    - adjective
+    - multiplier
+  type:
+    senses:
+    - noun
+    plural: types
+  umbrella:
+    senses:
+    - noun
+    plural: umbrellas
+  uncle:
+    senses:
+    - noun
+    plural: uncles
+  uncover:
+    senses:
+    - verb
+  uncovered:
+    senses:
+    - verb
+    verb:
+      lemma: uncover
   uncut: {senses: [adjective]}
   under: {senses: [preposition]}
+  underground:
+    senses:
+    - noun
   underneath: {senses: [preposition]}
   uneaten:
     senses:
@@ -7552,15 +8037,43 @@ entries:
   uniform:
     senses:
     - adjective
+  uniformly:
+    senses:
+    - manner
+  unit:
+    senses:
+    - noun
+    plural: units
   university: {senses: [noun], plural: universities}
+  unless:
+    senses:
+    - conjunction
   unlike: {senses: [preposition]}
+  unload:
+    senses:
+    - verb
+  unloaded:
+    senses:
+    - verb
+    verb:
+      lemma: unload
   unrelated:
     senses:
     - adjective
   unripe: {senses: [adjective]}
   until: {senses: [preposition]}
+  unusual:
+    senses:
+    - adjective
   up: {senses: [adverb]}
+  upcoming:
+    senses:
+    - adjective
   upon: {senses: [preposition]}
+  upstairs:
+    senses:
+    - noun
+    - adverb
   use: {senses: [verb], number: plural}
   used: {senses: [verb], verb: {lemma: use}}
   useful:
@@ -7574,77 +8087,391 @@ entries:
   utilities:
     senses:
     - noun
+  utility:
+    senses:
+    - adjective
+  vacant:
+    senses:
+    - adjective
+  vacation:
+    senses:
+    - noun
+    plural: vacations
+  vacuum:
+    senses:
+    - adjective
+    - noun
+    - verb
+    plural: vacuums
+    verb:
+      lemma: vacuum
+  vacuumed:
+    senses:
+    - verb
+    verb:
+      lemma: vacuum
   valuable:
     senses:
     - adjective
+  value:
+    senses:
+    - noun
+  value-added:
+    senses:
+    - adjective
+  vampire:
+    senses:
+    - noun
+    plural: vampires
+  van:
+    senses:
+    - noun
+    plural: vans
+  vanilla:
+    senses:
+    - noun
+  various:
+    senses:
+    - adjective
+  varsity:
+    senses:
+    - noun
+  vase:
+    senses:
+    - noun
+    plural: vases
+  vegan:
+    senses:
+    - adjective
+  vegetable:
+    senses:
+    - noun
+    plural: vegetables
+  vehicle:
+    senses:
+    - noun
+    plural: vehicles
+  vending:
+    senses:
+    - adjective
+  version:
+    senses:
+    - noun
+    plural: versions
   versus: {senses: [preposition]}
+  vertically:
+    senses:
+    - adverb
   vessel: {senses: [noun], plural: vessels}
+  vet:
+    senses:
+    - noun
+    plural: vets
   via: {senses: [preposition]}
   vial: {senses: [noun], plural: vials}
+  video:
+    senses:
+    - noun
+    plural: videos
   vinegar: {senses: [noun]}
   violet: {senses: [adjective]}
   violin: {senses: [noun], plural: violins}
   violinist: {senses: [noun], plural: violinists}
+  visit:
+    senses:
+    - verb
+    verb:
+      lemma: visit
+  visited:
+    senses:
+    - verb
+    verb:
+      lemma: visit
+  visiting:
+    senses:
+    - verb
+    verb:
+      lemma: visit
+  visitor:
+    senses:
+    - noun
+    plural: visitors
+  visits:
+    senses:
+    - verb
+    verb:
+      lemma: visit
+  volleyball:
+    senses:
+    - noun
+    plural: volleyballs
   volume: {senses: [noun], plural: volumes}
+  volunteer:
+    senses:
+    - verb
+    - noun
+    plural: volunteers
+    verb:
+      lemma: volunteer
+  volunteers:
+    senses:
+    - verb
+    verb:
+      lemma: volunteer
   vs: {senses: [preposition]}
   wage: {senses: [noun], plural: wages}
+  wagon:
+    senses:
+    - noun
+    plural: wagons
+  wait:
+    senses:
+    - verb
+    verb:
+      lemma: wait
+  waiting:
+    senses:
+    - verb
+    verb:
+      lemma: wait
+  waitress:
+    senses:
+    - noun
+    plural: waitresses
   walk: {senses: [verb]}
   walked: {senses: [verb], verb: {lemma: walk}}
   walking: {senses: [verb], verb: {lemma: walk}}
   walks: {senses: [verb], verb: {lemma: walk}}
+  wall:
+    senses:
+    - noun
+    plural: walls
   wallet: {senses: [noun], plural: wallets}
   want: {senses: [verb], number: plural}
   wanted: {senses: [verb], verb: {lemma: want}}
   wanting: {senses: [verb], verb: {lemma: want}}
   wants: {senses: [verb], verb: {lemma: want}}
+  wardrobe:
+    senses:
+    - noun
+    plural: wardrobes
+  warehouse:
+    senses:
+    - noun
+    plural: warehouses
   was: {senses: [verb], number: singular, verb: {lemma: be}}
   wash: {senses: [verb]}
   washed: {senses: [verb], verb: {lemma: wash}}
   washes: {senses: [verb], number: singular, verb: {lemma: wash}}
   washing: {"senses": ["verb"], "verb": {"lemma": "wash"}}
+  watch:
+    senses:
+    - verb
+    - noun
+    verb:
+      lemma: watch
+    plural: watches
+  watched:
+    senses:
+    - verb
+    verb:
+      lemma: watch
+  watcher:
+    senses:
+    - noun
+  watches:
+    senses:
+    - verb
+    verb:
+      lemma: watch
+  watching:
+    senses:
+    - verb
+    verb:
+      lemma: watch
   water: {senses: [noun]}
+  watermelon:
+    senses:
+    - noun
+    plural: watermelons
   waters: {senses: [noun], number: plural}
+  watt:
+    senses:
+    - noun
+    plural: watts
+  wavelength:
+    senses:
+    - noun
+    plural: wavelengths
+  way:
+    senses:
+    - noun
+    plural: ways
   we: {senses: [pronoun], number: plural}
   wear: {senses: [verb]}
   wearing: {senses: [verb], verb: {lemma: wear}}
   wears: {senses: [verb], verb: {lemma: wear}}
+  wedding:
+    senses:
+    - noun
+    plural: weddings
   wednesday: {senses: [noun]}
   week: {senses: [noun], plural: weeks}
+  weekday:
+    senses:
+    - noun
+    plural: weekdays
   weekend: {senses: [noun, adjective], plural: weekends}
+  weekly:
+    senses:
+    - adjective
   weigh: {senses: [verb], number: plural}
   weighed: {senses: [verb], verb: {lemma: weigh}}
   weighing: {senses: [verb], verb: {lemma: weigh}}
   weighs: {senses: [verb], number: singular, verb: {lemma: weigh}}
   weight: {senses: [noun], plural: weights}
+  well:
+    senses:
+    - noun
+    plural: wells
   went: {senses: [verb], verb: {lemma: go}}
   were: {senses: [verb], number: plural, verb: {lemma: be}}
+  west:
+    senses:
+    - noun
   what: {senses: [interrogative]}
+  whatever:
+    senses:
+    - pronoun
+  wheat:
+    senses:
+    - adjective
+    - noun
+  wheel:
+    senses:
+    - noun
+    plural: wheels
+  wheelchair:
+    senses:
+    - noun
+    plural: wheelchairs
   when: {senses: [conjunction]}
   where: {senses: [interrogative]}
   which: {senses: [wh_which]}
   while: {senses: [conjunction]}
+  whisker:
+    senses:
+    - noun
+    plural: whiskers
+  white:
+    senses:
+    - adjective
+  whiteboard:
+    senses:
+    - noun
+    plural: whiteboards
   who: {senses: [interrogative]}
+  whole:
+    senses:
+    - adjective
+  wick:
+    senses:
+    - noun
+    plural: wicks
+  wide:
+    senses:
+    - adjective
   wider: {senses: [comparative]}
   width: {senses: [noun], plural: widths}
+  wife:
+    senses:
+    - noun
+    plural: wives
   will: {senses: [modal]}
   wilted: {senses: [verb], verb: {lemma: wilt}}
   win: {senses: [verb], number: plural, verb: {lemma: win}}
+  wind:
+    senses:
+    - verb
+  windfall:
+    senses:
+    - noun
+    plural: windfalls
+  winding:
+    senses:
+    - verb
+    verb:
+      lemma: wind
   window: {senses: [noun], plural: windows}
+  winner:
+    senses:
+    - noun
+    plural: winners
+  winning:
+    senses:
+    - noun
+    - verb
+    verb:
+      lemma: win
+  winnings:
+    senses:
+    - noun
+    number: plural
   wins: {senses: [verb], number: singular, verb: {lemma: win}}
   wire:
     senses:
     - noun
+  wireless:
+    senses:
+    - adjective
+  wish:
+    senses:
+    - verb
+    verb:
+      lemma: wish
+  wishes:
+    senses:
+    - verb
+    verb:
+      lemma: wish
   with: {senses: [preposition]}
+  withdraw:
+    senses:
+    - verb
+  withdraws:
+    senses:
+    - verb
+    verb:
+      lemma: withdraw
+  withdrew:
+    senses:
+    - verb
+    verb:
+      lemma: withdraw
   within: {senses: [preposition]}
   without: {senses: [preposition]}
+  woman:
+    senses:
+    - noun
+    plural: women
   won: {senses: [verb], verb: {lemma: win}}
   wonder: {senses: [verb], number: plural}
   wondered: {senses: [verb], verb: {lemma: wonder}}
+  wonderful:
+    senses:
+    - adjective
   wondering: {senses: [verb], verb: {lemma: wonder}}
   wonders: {senses: [verb], number: singular, verb: {lemma: wonder}}
   wood:
     senses:
     - noun
+  woodblock:
+    senses:
+    - noun
+    plural: woodblocks
+  wooden:
+    senses:
+    - adjective
   wool: {senses: [noun]}
   word: {senses: [noun], plural: words}
   wore: {senses: [verb], verb: {lemma: wear}}
@@ -7653,21 +8480,78 @@ entries:
   worked: {senses: [verb], verb: {lemma: work}}
   worker: {senses: [noun], plural: workers}
   working: {senses: [verb], verb: {lemma: work}}
+  workplace:
+    senses:
+    - noun
+    plural: workplaces
   works: {senses: [verb], number: singular, verb: {lemma: work}}
   workshop:
     senses:
     - noun
     plural: workshops
+  workweek:
+    senses:
+    - noun
+    plural: workweeks
+  worm:
+    senses:
+    - noun
+    plural: worms
+  worth:
+    senses:
+    - adjective
   would: {senses: [modal]}
+  wrap:
+    senses:
+    - verb
+    verb:
+      lemma: wrap
+  wrapping:
+    senses:
+    - verb
+    verb:
+      lemma: wrap
   write: {senses: [verb], number: plural, verb: {lemma: write}}
+  writer:
+    senses:
+    - noun
+    plural: writers
   writes: {senses: [verb], number: singular, verb: {lemma: write}}
   writing: {senses: [noun]}
   wrote: {senses: [verb], verb: {lemma: write}}
+  yard:
+    senses:
+    - noun
+    plural: yards
+  yarn:
+    senses:
+    - noun
   year: {senses: [noun], plural: years}
   yellow: {senses: [adjective]}
   yesterday: {senses: [time]}
+  yet:
+    senses:
+    - adverb
+  yield:
+    senses:
+    - noun
+  yoga:
+    senses:
+    - adjective
+    - noun
   yoghurt: {"senses": ["noun"]}
   yogurt: {"senses": ["noun"]}
   you: {senses: [pronoun]}
   younger: {senses: [comparative]}
+  youngest:
+    senses:
+    - adjective
   your: {senses: [pronoun]}
+  zit:
+    senses:
+    - noun
+    plural: zits
+  zoo:
+    senses:
+    - noun
+    plural: zoos

@@ -30,6 +30,20 @@ def registry():
     ("laptop", ["computing_device", "quantity_holder", "ownable_quantity_object"]),
     ("milk", ["mass_quantity_noun", "measured_content_substance", "volume_partitive_substance"]),
     ("gallon", ["volume_measure", "measure_unit", "non_quantity_holder"]),
+    ("t-shirt", ["clothes", "clothing", "ownable_quantity_object"]),
+    ("turtle", ["animal", "quadruped"]),
+    ("thermos", ["quantity_container", "measurement_container", "quantity_interior_location"]),
+    ("vase", ["quantity_container", "ownable_quantity_object"]),
+    ("tailor", ["person", "situated_role", "animate"]),
+    ("waitress", ["person", "situated_role", "animate"]),
+    ("tooth", ["body_part", "linear_dimension_holder"]),
+    ("whisker", ["body_part", "linear_dimension_holder"]),
+    ("van", ["vehicle", "four_wheeled_vehicle", "journey_vehicle"]),
+    ("train", ["vehicle", "journey_vehicle", "means_noun"]),
+    ("textbook", ["information_quantity_object", "publication_product", "topical_quantity_host"]),
+    ("yarn", ["material_resource", "mass_quantity_noun", "weighable_partitive_substance"]),
+    ("yard", ["length_unit", "length_measure", "measure_unit", "non_quantity_holder"]),
+    ("watt", ["measure_unit", "non_quantity_holder"]),
 ])
 def test_words_have_multiple_independently_justified_roles(registry, word, categories):
     for category in categories:
@@ -41,6 +55,10 @@ def test_words_have_multiple_independently_justified_roles(registry, word, categ
     ("fisherman", "fishermen"), ("housewife", "housewives"),
     ("scarf", "scarves"), ("scarf", "scarfs"), ("backpack", "backpacks"),
     ("smartphone", "smartphones"), ("salesman", "salesmen"),
+    ("task", "tasks"), ("tee", "tees"), ("tooth", "teeth"),
+    ("thermos", "thermoses"), ("tribe", "tribes"), ("triple-flip", "triple-flips"),
+    ("umbrella", "umbrellas"), ("unit", "units"), ("watermelon", "watermelons"),
+    ("whisker", "whiskers"), ("wick", "wicks"), ("watch", "watches"),
 ])
 def test_count_morphology_is_explicit(registry, word, plural):
     assert registry.plural_to_singular[plural] == word
@@ -52,6 +70,10 @@ def test_count_morphology_is_explicit(registry, word, plural):
     ("6 dolphins, 9 crabs, 15 koalas, 8 lilies, and 4 oranges", "animals", "dolphins"),
     ("6 jackets, 9 skirts, 15 sweaters, 8 roses, and 4 doctors", "clothes", "jackets"),
     ("30 people, 6 scientists, 8 lilies, and 11 oranges", "people", "scientists"),
+    ("6 roses, 9 tulips, 15 daisies, 8 tailors, and 4 warehouses", "flowers", "roses"),
+    ("6 turtles, 9 tadpoles, 15 worms, 8 t-shirts, and 4 vans", "animals", "turtles"),
+    ("6 t-shirts, 9 shirts, 15 dresses, 8 turtles, and 4 vans", "clothes", "t-shirts"),
+    ("6 vets, 9 tailors, 15 waitresses, 8 roses, and 4 vans", "people", "vets"),
 ])
 def test_category_inventories_use_shared_vocabulary(registry, items, collection, subtype):
     result = solve(f"There are {items}. What percent of the {collection} are not {subtype}?", registry)
@@ -65,7 +87,8 @@ def test_an_object_role_does_not_prove_a_botanical_type(registry):
     assert not result.answer.committed
 
 
-@pytest.mark.parametrize("item", ["notebooks", "erasers", "bracelets", "jackets", "backpacks"])
+@pytest.mark.parametrize("item", ["notebooks", "erasers", "bracelets", "jackets", "backpacks",
+                                 "t-shirts", "thermoses", "toothpicks", "vases", "woodblocks", "watches"])
 def test_ordinary_purchase_events_reuse_quantity_arithmetic(registry, item):
     result = solve(f"Fia has 6 {item}. Fia bought 4 {item}. How many {item} does Fia have?", registry)
     assert result.value == 10, result.answer
@@ -210,3 +233,134 @@ def test_measured_acquisitions_still_establish_opening_stock(registry, action, u
 def test_counted_object_operations_keep_their_quantitative_role(registry, verb):
     assert registry.word_in_category(verb, 'discrete_object_event_verb')
     assert registry.word_in_category(verb, 'quantity_ask_verb')
+
+
+@pytest.mark.parametrize('word,sense', [
+    ('vertically', 'adverb'), ('yet', 'adverb'), ('whatever', 'pronoun'),
+    ('unloaded', 'verb'), ('thirty-five', 'value'),
+])
+def test_corrected_lexical_roles_are_available_without_a_spurious_noun(registry, word, sense):
+    assert sense in registry.lexicon[word].senses
+    assert 'noun' not in registry.lexicon[word].senses
+
+
+@pytest.mark.parametrize('word,lemma', [
+    ('thinking', 'think'), ('thought', 'think'), ('telling', 'tell'),
+    ('thrown', 'throw'), ('ties', 'tie'), ('unloaded', 'unload'),
+    ('vacuumed', 'vacuum'), ('withdrew', 'withdraw'), ('wrapping', 'wrap'),
+])
+def test_verb_morphology_keeps_explicit_canonical_roots(registry, word, lemma):
+    assert registry.lexicon[word].verb.lemma == lemma
+    assert 'verb' in registry.lexicon[lemma].senses
+
+
+@pytest.mark.parametrize('word,excluded', [
+    ('tick', 'insect'), ('tadpole', 'fish'), ('tee', 'clothes'),
+    ('train', 'four_wheeled_vehicle'), ('television', 'information_quantity_object'),
+])
+def test_primary_classification_does_not_supply_an_unstated_subtype(registry, word, excluded):
+    assert not registry.word_in_category(word, excluded)
+
+
+def test_animal_classification_does_not_supply_missing_anatomy(registry):
+    assert registry.attribute_value('turtles', 'legs') == 4
+    for word in ('ticks', 'tadpoles'):
+        assert registry.attribute_value(word, 'legs') is None
+    assert registry.attribute_value('tricycles', 'wheels') == 3
+    assert registry.attribute_value('trains', 'wheels') is None
+
+
+@pytest.mark.parametrize('noun', ['waitress', 'vet', 'wife'])
+def test_unambiguous_personal_heads_reuse_existing_coreference(registry, noun):
+    result = solve(f'The {noun} has 8 vases. She bought 3 vases. '
+                   f'How many vases does the {noun} have?', registry)
+    assert result.value == 11, result.answer
+    assert result.deficiencies() == []
+
+
+@pytest.mark.parametrize('noun', ['visitor', 'watcher', 'turtle', 'towel'])
+def test_ambiguous_or_nonpersonal_heads_do_not_gain_personal_coreference(registry, noun):
+    result = solve(f'The {noun} has 8 vases. He bought 3 vases. '
+                   'How many vases does he have?', registry)
+    assert not result.answer.committed
+
+
+@pytest.mark.parametrize('sentence', [
+    'Fia watched 5 turtles.', 'Fia visited 5 theaters.', 'Fia unloaded 5 boxes.',
+])
+def test_recognizing_observation_attendance_or_handling_does_not_assert_ownership(registry, sentence):
+    measure = {'watched': 'turtles', 'visited': 'theaters', 'unloaded': 'boxes'}[sentence.split()[1]]
+    result = solve(f'{sentence} How many {measure} does Fia have?', registry)
+    assert not result.answer.committed
+
+
+def test_a_negative_conditional_is_not_an_asserted_purchase(registry):
+    assert not registry.word_in_category('unless', 'clause_marker')
+    result = solve('Fia has 8 tokens. Unless Fia buys 3 tokens, how many tokens does Fia have?', registry)
+    assert not result.answer.committed
+
+
+@pytest.mark.parametrize('initial,fraction,expected', [
+    ('thirty-five', 'three-fifths', 21), ('twenty-eight', 'three-quarters', 21),
+    ('thirty-six', 'two-thirds', 24), ('thirty-five', 'two-fifths', 14),
+])
+def test_compound_number_words_and_fractions_share_the_core_number_tables(registry, initial, fraction, expected):
+    result = solve(f'Fia has {initial} tokens. Ben has {fraction} as many tokens as Fia. '
+                   'How many tokens does Ben have?', registry)
+    assert result.value == pytest.approx(expected), result.answer
+    assert result.deficiencies() == []
+
+
+@pytest.mark.parametrize('material', ['yarn', 'tape'])
+def test_new_measured_materials_reuse_length_balances_and_yard_conversion(registry, material):
+    result = solve(f'Fia has 7 yards of {material}. Fia cuts off 2 feet of {material}. '
+                   f'How long is the remaining {material} in feet?', registry)
+    assert result.value == pytest.approx(19), result.answer
+    assert result.deficiencies() == []
+
+
+def test_measurement_vocabulary_does_not_imply_a_density(registry):
+    from rulekit.kernel.dimensions import substance_conversion_factor
+    assert substance_conversion_factor(registry, 'yarn', 'kilogram', 'liter') is None
+
+
+def test_shared_vocabulary_migration_preserves_quarantine_and_one_owner(registry):
+    from ruamel.yaml import YAML
+    root = Path(__file__).resolve().parents[1]
+    quarantine = YAML(typ='safe').load((root/'packs/difg-mined/quarantine.yaml').read_text())['words']
+    assert 'teammates' in quarantine
+    assert 'teammates' not in registry.lexicon
+    assert 'teammates' not in registry.plural_to_singular
+    for filename in ('a-f.yaml', 'g-m.yaml', 'n-s.yaml', 't-z.yaml'):
+        assert not (root/'packs/difg-mined/lexicon'/filename).exists()
+
+
+def test_a_homographic_verb_keeps_its_own_agreement_after_noun_selection(registry):
+    from rulekit.kernel.engine import analyze
+    reading = analyze('Fia watches 5 turtles.', registry)
+    verb = next(unit for unit in reading.units if unit.features.get('fold') == 'watches')
+    assert verb.sense() == 'verb'
+    assert verb.features['number'] == 'singular'
+    nominal = analyze('Fia owns 5 watches.', registry)
+    item = next(unit for unit in nominal.units if unit.features.get('lemma') == 'watch')
+    assert item.sense() == 'noun'
+    assert item.features['number'] == 'plural'
+    assert item.features['value'] == 5
+
+
+@pytest.mark.parametrize('noun,plural', [('t-shirt', 't-shirts'), ('dog-walker', 'dog-walkers')])
+def test_declared_hyphenated_plural_forms_keep_their_identity(registry, noun, plural):
+    from rulekit.kernel.engine import analyze
+    reading = analyze(f'Fia has 5 {plural}.', registry)
+    item = next(unit for unit in reading.units if unit.features.get('lemma') == noun)
+    assert item.sense() == 'noun'
+    assert item.features['number'] == 'plural'
+    assert item.features['value'] == 5
+
+
+def test_fraction_compound_does_not_change_a_counted_currency_noun(registry):
+    from rulekit.kernel.engine import analyze
+    reading = analyze('Fia has 3 quarters.', registry)
+    item = next(unit for unit in reading.units if unit.features.get('lemma') == 'quarter')
+    assert item.sense() == 'noun'
+    assert item.features['value'] == 3

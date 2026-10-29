@@ -17,6 +17,8 @@ import re
 from ..data.registry import Registry
 from .learn import _has_event_polarity
 from .model import Reading, Unit
+from .numbers import declared_number_features
+from .senses import noun_form_senses
 
 
 def condense_lexical_phrases(reading: Reading, reg: Registry) -> Reading:
@@ -42,7 +44,15 @@ def condense_lexical_phrases(reading: Reading, reg: Registry) -> Reading:
         if "-" in phrase and " " not in phrase and not any(c.isdigit() for c in phrase):
             words = tuple(phrase.split("-"))
             if all(words):
-                phrases.append((words, phrase, phrase, entry.number or "singular", entry))
+                lemma = reg.plural_to_singular.get(phrase, phrase)
+                number = "plural" if lemma != phrase else entry.number or "singular"
+                phrases.append((words, phrase, lemma, number, entry))
+            phrases.extend(
+                (tuple(plural.split("-")), plural, phrase, "plural", reg.lexicon.get(plural) or entry)
+                for plural in entry.plurals()
+                if "-" in plural and " " not in plural and all(plural.split("-"))
+                and plural != phrase
+            )
         if " " not in phrase or not (
             "preposition" in entry.senses or entry.lexical_phrase
         ):
@@ -81,9 +91,13 @@ def condense_lexical_phrases(reading: Reading, reg: Registry) -> Reading:
             changes: dict[str, object] = {
                 "fold": phrase,
                 "lemma": lemma,
-                "senses": list(entry.senses),
+                "senses": noun_form_senses(reg, phrase, entry,
+                    inherited=phrase != lemma and phrase not in reg.lexicon),
                 "number": number,
             }
+            # An atomic numeric spelling takes its own declared value. It
+            # must neither lose that value nor inherit a component's count.
+            changes.update(declared_number_features(phrase, reg))
             reading.record(
                 "merge-multiword-preposition" if "preposition" in entry.senses
                 else "merge-lexical-phrase",
