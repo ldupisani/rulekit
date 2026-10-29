@@ -29,7 +29,7 @@ categories:
     parent: verb
   reference_output_activity:
     parent: verb
-    notes: The stated output side of an observed input/output ratio; no ratio is inferred without explicit 
+    notes: The stated output side of an observed input/output ratio; no ratio is inferred without explicit
       adoption.
   specification_demand_verb:
     parent: verb

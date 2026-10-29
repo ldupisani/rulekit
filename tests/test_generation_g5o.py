@@ -79,6 +79,7 @@ EXPECTED_FILLERS = {
     "much",
     "no",
     "some",
+    "several",
     "triple",
 }
 EXPECTED_DISTRIBUTIVE_FILLERS = {"each", "every"}
@@ -161,9 +162,9 @@ def test_g5o_unlocks_only_the_preregistered_rule() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 633
-    assert sum(item.supported for item in availability.values()) == 569
-    assert sum(not item.supported for item in availability.values()) == 64
+    assert len(availability) == 638
+    assert sum(item.supported for item in availability.values()) == 562
+    assert sum(not item.supported for item in availability.values()) == 76
     assert availability[
         "arithmetic/existential-premise-distributive"
     ].supported
@@ -173,7 +174,7 @@ def test_g5o_unlocks_only_the_preregistered_rule() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 948
+    assert len(exploration_status(project)["fillers"]) == 2372
 
 
 @pytest.mark.parametrize("quantifier", sorted(EXPECTED_DISTRIBUTIVE_FILLERS))

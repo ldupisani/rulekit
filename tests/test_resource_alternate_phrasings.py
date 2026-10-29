@@ -77,8 +77,13 @@ def test_bare_amount_queries_use_only_the_unique_common_declared_basis(registry,
     assert_number(resource_question(case, f'How much {case} is left?'), registry, EXPECTED[case])
 
 
-def test_multiple_registered_bases_make_an_elided_dimension_ambiguous(registry):
-    formulas = {**registry.geometry_formulas, ('rectangle', 'perimeter'): '2 * (length + width)'}
+def test_typed_boundary_measure_does_not_make_the_spatial_basis_ambiguous(registry):
+    assert registry.spatial_quantities('rectangle') == {'area'}
+    assert_number(area_story().replace(' in square feet', ''), registry, 87)
+
+
+def test_untyped_registered_basis_keeps_an_elided_dimension_ambiguous(registry):
+    formulas = {**registry.geometry_formulas, ('rectangle', 'legacy_measure'): 'length * width'}
     ambiguous = replace(registry, geometry_formulas=formulas)
     assert not solve(area_story().replace(' in square feet', ''), ambiguous).answer.committed
     assert_number(area_story(), ambiguous, 87)

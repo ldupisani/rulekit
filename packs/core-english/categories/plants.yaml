@@ -2,6 +2,13 @@ format: rulekit/categories@1
 categories:
   flower:
     parent: plantable_quantity_object
+    disjoint_with: [building, clothes, fruit, living_agent, vehicle]
     notes: Flower subtypes; membership does not declare an exhaustive botanical inventory.
+  fruit:
+    parent: noun
+    disjoint_with: [building, clothes, living_agent, vehicle]
+    notes: Botanical classification, independent of edibility and exhaustive inventory coverage.
 members:
-  flower: [rose, tulip, daisy]
+  flower: [daffodil, daisy, lilac, lily, rose, sunflower, tulip]
+  fruit: [apple, apricot, avocado, banana, berry, blackberry, blueberry, grape, lemon, mango, olive, orange,
+      peach, pear, pineapple, plum, raspberry, strawberry]

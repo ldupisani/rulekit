@@ -72,6 +72,16 @@ def test_annual_complementary_saving_window(registry):
     assert "year" in result.answer.reason and "9 saving periods" in result.answer.reason
 
 
+@pytest.mark.parametrize("extra", [
+    "Dena saved during the year. ",
+    "Cato saved during the remaining months. ",
+    "Dena worked before Monday. ",
+])
+def test_saving_window_does_not_excuse_a_separate_temporal_event(registry, extra):
+    text = cyclic_story().replace("She charges", extra + "She charges")
+    assert not solve(text, registry).answer.committed
+
+
 def test_an_explicit_activity_period_matches_the_expense_purpose(registry):
     assert_number(cyclic_story().replace("Her season", "Her baseball season"), registry, 4)
     assert not solve(cyclic_story().replace("Her season", "Her tennis season"), registry).answer.committed
@@ -252,10 +262,23 @@ def test_reusable_vocabulary_is_owned_by_the_shared_core(project):
 
 
 @pytest.mark.parametrize("rule_id", [
-    "arithmetic/cut-measured-region", "arithmetic/cut-measured-region-continuation",
+    "arithmetic/cut-measured-region",
     "arithmetic/remainder-to-owned-store", "arithmetic/uniform-container-stock",
 ])
 def test_qualified_constructions_have_realizable_generation_witnesses(rule_id):
     from rulekit.generation import generate_candidate
     candidate = generate_candidate(load_project(Path("projects/curated")), rule_id=rule_id, seed=0)
     assert candidate.target_status in {"matched", "shadowed"}
+
+
+def test_a_cut_continuation_requires_its_same_sentence_predicate():
+    from rulekit.generation import GenerationError, generate_candidate, retest_candidate
+    project = load_project(Path("projects/curated"))
+    rule = "arithmetic/cut-measured-region-continuation"
+    with pytest.raises(GenerationError, match="preceding_verb_category"):
+        generate_candidate(project, rule_id=rule, seed=0)
+    candidate = retest_candidate(
+        project, rule_id=rule, seed=0, origin="reading",
+        sentence="Fia cuts a 3 foot by 4 foot rectangle and a 2 foot by 2 foot rectangle.",
+    )
+    assert candidate.target_status == "matched"

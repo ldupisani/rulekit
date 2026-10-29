@@ -1343,6 +1343,10 @@ def _temporal_governing_verb(reading: Reading, prep: Unit) -> Unit | None:
 
     anchor = _bound(prep, "anchor")
     if anchor is not None and anchor.sense() == "verb":
+        lo, hi = sorted((reading.units.index(anchor), reading.units.index(prep)))
+        if any("verb" in unit.features.get("senses", ())
+               for unit in reading.units[lo + 1 : hi]):
+            return None
         return anchor
     candidates = []
     for verb in reading.units:
@@ -1415,6 +1419,12 @@ def _temporal_verbal_relations(
             or "value" in obj.features
             or not reg.word_in_category(_lemma(obj), "timeperiod")
         ):
+            continue
+        # A preposition's distant nominal binding is not a temporal adjunct
+        # when a predicate intervenes. In particular, an infinitival marker
+        # must not reach through its complement to that verb's time object.
+        lo, hi = sorted((units.index(prep), units.index(obj)))
+        if any("verb" in unit.features.get("senses", ()) for unit in units[lo + 1 : hi]):
             continue
         verb = _temporal_governing_verb(reading, prep)
         if verb is None:

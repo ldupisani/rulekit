@@ -46,8 +46,8 @@ def _has_ask_cue_sense(word: str, reg: Registry) -> bool:
     return entry is not None and bool(set(entry.senses) & ASK_CUE_SENSES)
 
 
-# categories (packs/difg-mined/categories/clauses.yaml — the member words
-# are only lexically defined in that pack) naming subordinators that can
+# Shared categories (packs/core-english/categories/clauses.yaml) naming
+# subordinators that can
 # open a leading temporal dependent clause ("When X, ..." / "After X, ...").
 # Category NAMES are structure, never the words themselves — 'if' stays a
 # literal per its own pre-existing skeleton precedent (the check right
@@ -284,6 +284,8 @@ def _split_leading_temporal_clause(question: str, reg: Registry) -> tuple[str | 
     marker = _leading_temporal_marker(question, reg)
     if marker is None:
         return None, question
+    if _is_complete_declared_ask(question, reg):
+        return None, question
     parts = question.split(",")
     for i in range(len(parts) - 1):
         rest = ",".join(parts[i + 1 :]).strip()
@@ -423,11 +425,10 @@ def _is_relational_clause(text: str, reg: Registry) -> bool:
     SAME category `arithmetic/anchored-relation` and its age/ratio
     siblings gate on), the `multiplier` sense (twice/half — the ratio
     rules' `k` slot), or the `relational_marker`/`multiplier_marker`
-    categories (packs/core-english's 'than', packs/difg-mined's 'times' —
+    categories (shared relational markers —
     the clause-boundary words those same rules match on as grammatical
     skeleton). Tests category membership only, exactly like
-    `clause_marker`/`clause_marker_prep` (packs/difg-mined/categories/
-    clauses.yaml) — never a Python word list. These clauses feed the
+    `clause_marker`/`clause_marker_prep` (core-english/categories/clauses.yaml) — never a Python word list. These clauses feed the
     relation/ratio synthesizers, which resolve one person's stated
     quantity against ANOTHER named person's — exactly the interaction our
     split newly makes reachable for pairs of people who previously never

@@ -17,7 +17,9 @@ templates:
               - {slot: product, cat: fabrication_product, uncounted: true, bare: true, referential: true}
           - {lit: '.', consume_skipped: true}
       consumes: [acquire, amount, make]
-      where: [{number_compatible: [who, acquire]}]
+      where:
+        - {number_compatible: [who, acquire]}
+        - slot_not_category: {slot: acquire, cat: measured_content_adjustment_verb}
       satisfies: {make: [subject]}
       emits:
         - {fact: region_evidence, stage: opening, material: '{material}', entity: '{who}', shape: '',
@@ -76,7 +78,9 @@ variants:
               - {lit: of}
               - {slot: context_material, cat: material_resource, uncounted: true, bare: true}
               - {lit: '.', consume_skipped: true}
-            where: [{number_compatible: [context_actor, context_acquire]}]
+            where:
+              - {number_compatible: [context_actor, context_acquire]}
+              - slot_not_category: {slot: context_acquire, cat: measured_content_adjustment_verb}
         target_identity_links: {context_actor: who}
         required_fact_counts: {region_evidence: 1}
       prefix:

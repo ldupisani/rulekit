@@ -35,7 +35,9 @@ from __future__ import annotations
 from ..data.registry import Registry
 
 
-def conversion_factor(reg: Registry, from_unit: str, to_unit: str) -> float | None:
+def conversion_factor(
+    reg: Registry, from_unit: str, to_unit: str, *, category: str | None = None,
+) -> float | None:
     """A MULTI-HOP factor from_unit -> to_unit over the `reg.conversions`
     graph (BFS; the table itself is small — a handful of declared pairs, both
     directions already stored by the registry build). Handles chains
@@ -46,9 +48,17 @@ def conversion_factor(reg: Registry, from_unit: str, to_unit: str) -> float | No
     caller's signal that the units are simply unrelated, not that a
     conversion is missing.
 
+    An explicit category confines endpoints and every intermediate unit to
+    that declared family. This prevents a homograph shared by different
+    physical families from connecting those families through a longer path.
+
     (mining candidate dimension-difference-asks; moved byte-for-byte from
     `totals.py`, which keeps the `_conversion_factor` alias for its existing
     callers.)"""
+    if category is not None and not all(
+        reg.word_in_category(unit, category) for unit in (from_unit, to_unit)
+    ):
+        return None
     if from_unit == to_unit:
         return 1.0
     seen = {from_unit}
@@ -57,7 +67,9 @@ def conversion_factor(reg: Registry, from_unit: str, to_unit: str) -> float | No
         next_frontier = []
         for unit, factor in frontier:
             for (a, b), f in reg.conversions.items():
-                if a == unit and b not in seen:
+                if a == unit and b not in seen and (
+                    category is None or reg.word_in_category(b, category)
+                ):
                     total = factor * f
                     if b == to_unit:
                         return total

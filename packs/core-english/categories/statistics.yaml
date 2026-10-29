@@ -8,6 +8,10 @@ categories:
   periodic_statistic_frequency: {parent: adverb}
   population_partition_coordinator: {parent: conjunction}
   percentage_quantity_noun: {parent: noun}
+  statistic: {parent: noun}
+  stat_max: {parent: statistic}
+  stat_min: {parent: statistic}
+  percent_word: {parent: noun}
 members:
   observation_record: [survey]
   population_observation_verb: [survey, surveys, surveyed, surveying]
@@ -15,6 +19,9 @@ members:
   periodic_statistic_frequency: [daily]
   population_partition_coordinator: [while, and]
   percentage_quantity_noun: [percentage, percent]
+  stat_max: [maximum]
+  stat_min: [minimum]
+  percent_word: [percent, percentage]
 context_synonyms:
   daily_interval:
     gate: duration_measure

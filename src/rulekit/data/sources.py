@@ -80,6 +80,7 @@ class SourceIndex:
     )
     adposition_roles: dict[str, SourceRef] = field(default_factory=dict)
     temporal_offsets: dict[str, SourceRef] = field(default_factory=dict)
+    properties: dict[tuple[str, str, str], SourceRef] = field(default_factory=dict)
     numeric: dict[tuple[str, str], SourceRef] = field(default_factory=dict)
 
     def merge(self, other: "SourceIndex") -> None:
@@ -105,6 +106,7 @@ class SourceIndex:
             "subject_role_derivations",
             "adposition_roles",
             "temporal_offsets",
+            "properties",
             "numeric",
         ):
             target = getattr(self, name)
@@ -292,6 +294,22 @@ def _index_categories(
                 label=category,
                 key=category,
             )
+            for family in ("attrs", "formulas", "parameter_bindings"):
+                values = raw_categories[category].get(family, {})
+                for key in values:
+                    property_key = "binding:" + key if family == "parameter_bindings" else key
+                    index.properties[("category", category, property_key)] = _ref(
+                        path, values, kind="category-property", label=f"{category}.{property_key}", key=key)
+
+    for family in ("attrs", "formulas", "parameter_bindings"):
+        for word, values in raw.get(family, {}).items():
+            for key in values:
+                property_key = "binding:" + key if family == "parameter_bindings" else key
+                index.properties[("word", word, property_key)] = _ref(
+                    path, values, kind="word-property", label=f"{word}.{property_key}", key=key)
+    for key in raw.get("formula_constants", {}):
+        index.numeric[("formula_constants", key)] = _ref(
+            path, raw["formula_constants"], kind="formula-constant", label=key, key=key)
 
     raw_members = raw.get("members", {})
     for category, members in doc.members.items():

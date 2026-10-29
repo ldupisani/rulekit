@@ -1,762 +1,754 @@
 format: rulekit/lexicon@1
 entries:
-    t-shirt:
-        senses:
-            - noun
-        plural: t-shirts
-    table:
-        senses:
-            - noun
-        plural: tables
-    tadpole:
-        senses:
-            - noun
-        plural: tadpoles
-    tailor:
-        senses:
-            - noun
-    take-home:
-        senses:
-            - adjective
-    taken:
-        senses:
-            - verb
-        verb:
-            lemma: take
-    taking:
-        senses:
-            - verb
-        verb:
-            lemma: take
-    talent:
-        senses:
-            - noun
-    talking:
-        senses:
-            - noun
-    tape:
-        senses:
-            - noun
-        plural: tapes
-    target:
-        senses:
-            - noun
-    tasks:
-        senses:
-            - noun
-    taste:
-        senses:
-            - verb
-    taxi:
-        senses:
-            - noun
-        plural: taxis
-    teammate:
-        senses:
-            - noun
-    tees:
-        senses:
-            - noun
-    teeth:
-        senses:
-            - noun
-    telethon:
-        senses:
-            - noun
-    television:
-        senses:
-            - noun
-        plural: televisions
-    telling:
-        senses:
-            - verb
-    temperature:
-        senses:
-            - noun
-    ten:
-        senses:
-            - value
-    ten-bedroom:
-        senses:
-            - adjective
-    test:
-        senses:
-            - noun
-        plural: tests
-    text:
-        senses:
-            - noun
-    textbook:
-        senses:
-            - noun
-    theater:
-        senses:
-            - noun
-        plural: theaters
-    thermos:
-        senses:
-            - noun
-    thermoses:
-        senses:
-            - noun
-    these:
-        senses:
-            - article
-    thick:
-        senses:
-            - adjective
-    things:
-        senses:
-            - noun
-    thinking:
-        senses:
-            - verb
-    thinks:
-        senses:
-            - verb
-    thirsty:
-        senses:
-            - adjective
-    thirteen:
-        senses:
-            - value
-    thirty:
-        senses:
-            - value
-    thirty-five:
-        senses:
-            - adjective
-    thirty-six:
-        senses:
-            - value
-    thought:
-        senses:
-            - verb
-    thousand:
-        senses:
-            - value
-    three:
-        senses:
-            - value
-    three-fifths:
-        senses:
-            - adjective
-            - multiplier
-    three-fourths:
-        senses:
-            - adjective
-            - multiplier
-    three-layer:
-        senses:
-            - adjective
-    three-quarters:
-        senses:
-            - adjective
-            - multiplier
-    threw:
-        senses:
-            - verb
-    thrice:
-        senses:
-            - multiplier
-    throw:
-        senses:
-            - noun
-    throwing:
-        senses:
-            - noun
-    thrown:
-        senses:
-            - verb
-    throws:
-        senses:
-            - verb
-        verb:
-            lemma: throw
-    tic-tac-toe:
-        senses:
-            - noun
-    tick:
-        senses:
-            - noun
-        plural: ticks
-    ties:
-        senses:
-            - verb
-    tile:
-        senses:
-            - noun
-    tip:
-        senses:
-            - noun
-        plural: tips
-    tire:
-        senses:
-            - noun
-        plural: tires
-    tired:
-        senses:
-            - adjective
-    tithe:
-        senses:
-            - noun
-    toast:
-        senses:
-            - noun
-        plural: toasts
-    token:
-        senses:
-            - noun
-        plural: tokens
-    tomatoes:
-        senses:
-            - noun
-    tonight:
-        senses:
-            - time
-    too:
-        senses:
-            - adverb
-    toothpick:
-        senses:
-            - noun
-        plural: toothpicks
-    tortilla:
-        senses:
-            - adjective
-    totals:
-        senses:
-            - verb
-    tough:
-        senses:
-            - adjective
-    tour:
-        senses:
-            - noun
-        plural: tours
-    tournament:
-        senses:
-            - noun
-    towel:
-        senses:
-            - noun
-        plural: towels
-    tower:
-        senses:
-            - noun
-        plural: towers
-    track:
-        senses:
-            - noun
-    trackball:
-        senses:
-            - noun
-        plural: trackballs
-    tracking:
-        senses:
-            - verb
-    tractor:
-        senses:
-            - noun
-        plural: tractors
-    trade:
-        senses:
-            - verb
-        number: plural
-        verb:
-            lemma: trade
-    traded:
-        senses:
-            - verb
-        verb:
-            lemma: trade
-    trades:
-        senses:
-            - verb
-        number: singular
-        verb:
-            lemma: trade
-    trading:
-        senses:
-            - noun
-    traffic:
-        senses:
-            - noun
-    trail:
-        senses:
-            - noun
-    trailer:
-        senses:
-            - noun
-    train:
-        senses:
-            - noun
-        plural: trains
-    transport:
-        senses:
-            - noun
-    trash:
-        senses:
-            - noun
-    traveler:
-        senses:
-            - noun
-        plural: travelers
-    traveling:
-        senses:
-            - verb
-        verb:
-            lemma: travel
-    tray:
-        senses:
-            - noun
-    treadmill:
-        senses:
-            - noun
-    treehouse:
-        senses:
-            - noun
-    triangle:
-        senses:
-            - noun
-        plural: triangles
-    tribes:
-        senses:
-            - noun
-    trick-or-treat:
-        senses:
-            - noun
-    tricycle:
-        senses:
-            - noun
-        plural: tricycles
-    triple-flip:
-        senses:
-            - noun
-    triple-flips:
-        senses:
-            - noun
-    tripled:
-        senses:
-            - verb
-        verb:
-            lemma: triple
-    triples:
-        senses:
-            - verb
-        verb:
-            lemma: triple
-    trying:
-        senses:
-            - verb
-        verb:
-            lemma: try
-    tuition:
-        senses:
-            - noun
-    turned:
-        senses:
-            - verb
-        verb:
-            lemma: turn
-    turning:
-        senses:
-            - verb
-        verb:
-            lemma: turn
-    turtle:
-        senses:
-            - noun
-        plural: turtles
-    tutorial:
-        senses:
-            - noun
-    twelve:
-        senses:
-            - value
-    twelve-pound:
-        senses:
-            - adjective
-    twenty:
-        senses:
-            - value
-    twenty-eight:
-        senses:
-            - value
-    twice:
-        senses:
-            - multiplier
-    twin:
-        senses:
-            - adjective
-    two:
-        senses:
-            - value
-    two-day:
-        senses:
-            - adjective
-    two-fifths:
-        senses:
-            - adjective
-            - multiplier
-    two-pound:
-        senses:
-            - adjective
-    two-thirds:
-        senses:
-            - adjective
-            - multiplier
-    type:
-        senses:
-            - noun
-        plural: types
-    umbrella:
-        senses:
-            - noun
-    umbrellas:
-        senses:
-            - noun
-    uncle:
-        senses:
-            - noun
-        plural: uncles
-    uncovered:
-        senses:
-            - verb
-    underground:
-        senses:
-            - noun
-    uniformly:
-        senses:
-            - manner
-    units:
-        senses:
-            - noun
-    unless:
-        senses:
-            - conjunction
-    unloaded:
-        senses:
-            - noun
-    unusual:
-        senses:
-            - adjective
-    upcoming:
-        senses:
-            - adjective
-    upstairs:
-        senses:
-            - noun
-    utility:
-        senses:
-            - adjective
-    vacant:
-        senses:
-            - adjective
-    vacation:
-        senses:
-            - noun
-        plural: vacations
-    vacuum:
-        senses:
-            - adjective
-    vacuumed:
-        senses:
-            - verb
-    value:
-        senses:
-            - noun
-    value-added:
-        senses:
-            - adjective
-    vampire:
-        senses:
-            - noun
-    van:
-        senses:
-            - noun
-        plural: vans
-    vanilla:
-        senses:
-            - noun
-    various:
-        senses:
-            - adjective
-    varsity:
-        senses:
-            - noun
-    vase:
-        senses:
-            - noun
-        plural: vases
-    vegan:
-        senses:
-            - adjective
-    vegetable:
-        senses:
-            - noun
-        plural: vegetables
-    vehicle:
-        senses:
-            - noun
-        plural: vehicles
-    vending:
-        senses:
-            - adjective
-    version:
-        senses:
-            - noun
-    vertically:
-        senses:
-            - noun
-    vet:
-        senses:
-            - noun
-        plural: vets
-    video:
-        senses:
-            - noun
-        plural: videos
-    visit:
-        senses:
-            - verb
-    visited:
-        senses:
-            - verb
-        verb:
-            lemma: visit
-    visiting:
-        senses:
-            - verb
-    visitor:
-        senses:
-            - noun
-        plural: visitors
-    visits:
-        senses:
-            - verb
-        verb:
-            lemma: visit
-    volleyball:
-        senses:
-            - noun
-    volunteer:
-        senses:
-            - verb
-    volunteers:
-        senses:
-            - verb
-    wagon:
-        senses:
-            - noun
-        plural: wagons
-    wait:
-        senses:
-            - verb
-    waiting:
-        senses:
-            - verb
-    waitress:
-        senses:
-            - noun
-    wall:
-        senses:
-            - noun
-        plural: walls
-    wardrobe:
-        senses:
-            - noun
-    warehouse:
-        senses:
-            - noun
-        plural: warehouses
-    watch:
-        senses:
-            - verb
-    watched:
-        senses:
-            - verb
-        verb:
-            lemma: watch
-    watcher:
-        senses:
-            - noun
-    watches:
-        senses:
-            - verb
-        verb:
-            lemma: watch
-    watching:
-        senses:
-            - verb
-        verb:
-            lemma: watch
-    watermelon:
-        senses:
-            - noun
-    watermelons:
-        senses:
-            - noun
+  t-shirt:
+    senses:
+    - noun
+    plural: t-shirts
+  table:
+    senses:
+    - noun
+    plural: tables
+  tadpole:
+    senses:
+    - noun
+    plural: tadpoles
+  tailor:
+    senses:
+    - noun
+  take-home:
+    senses:
+    - adjective
+  taken:
+    senses:
+    - verb
+    verb:
+      lemma: take
+  taking:
+    senses:
+    - verb
+    verb:
+      lemma: take
+  talent:
+    senses:
+    - noun
+  talking:
+    senses:
+    - noun
+  tape:
+    senses:
+    - noun
+    plural: tapes
+  target:
+    senses:
+    - noun
+  tasks:
+    senses:
+    - noun
+  taste:
+    senses:
+    - verb
+  taxi:
+    senses:
+    - noun
+    plural: taxis
+  teammate:
+    senses:
+    - noun
+  tees:
+    senses:
+    - noun
+  teeth:
+    senses:
+    - noun
+  telethon:
+    senses:
+    - noun
+  television:
+    senses:
+    - noun
+    plural: televisions
+  telling:
+    senses:
+    - verb
+  temperature:
+    senses:
+    - noun
+  ten:
+    senses:
+    - value
+  ten-bedroom:
+    senses:
+    - adjective
+  test:
+    senses:
+    - noun
+    plural: tests
+  text:
+    senses:
+    - noun
+  textbook:
+    senses:
+    - noun
+  theater:
+    senses:
+    - noun
+    plural: theaters
+  thermos:
+    senses:
+    - noun
+  thermoses:
+    senses:
+    - noun
+  these:
+    senses:
+    - article
+  thick:
+    senses:
+    - adjective
+  things:
+    senses:
+    - noun
+  thinking:
+    senses:
+    - verb
+  thinks:
+    senses:
+    - verb
+  thirsty:
+    senses:
+    - adjective
+  thirteen:
+    senses:
+    - value
+  thirty:
+    senses:
+    - value
+  thirty-five:
+    senses:
+    - adjective
+  thirty-six:
+    senses:
+    - value
+  thought:
+    senses:
+    - verb
+  thousand:
+    senses:
+    - value
+  three:
+    senses:
+    - value
+  three-fifths:
+    senses:
+    - adjective
+    - multiplier
+  three-fourths:
+    senses:
+    - adjective
+    - multiplier
+  three-layer:
+    senses:
+    - adjective
+  three-quarters:
+    senses:
+    - adjective
+    - multiplier
+  threw:
+    senses:
+    - verb
+  thrice:
+    senses:
+    - multiplier
+  throw:
+    senses:
+    - noun
+  throwing:
+    senses:
+    - noun
+  thrown:
+    senses:
+    - verb
+  throws:
+    senses:
+    - verb
+    verb:
+      lemma: throw
+  tic-tac-toe:
+    senses:
+    - noun
+  tick:
+    senses:
+    - noun
+    plural: ticks
+  ties:
+    senses:
+    - verb
+  tile:
+    senses:
+    - noun
+  tip:
+    senses:
+    - noun
+    plural: tips
+  tire:
+    senses:
+    - noun
+    plural: tires
+  tired:
+    senses:
+    - adjective
+  tithe:
+    senses:
+    - noun
+  toast:
+    senses:
+    - noun
+    plural: toasts
+  token:
+    senses:
+    - noun
+    plural: tokens
+  tomatoes:
+    senses:
+    - noun
+  tonight:
+    senses:
+    - time
+  too:
+    senses:
+    - adverb
+  toothpick:
+    senses:
+    - noun
+    plural: toothpicks
+  tortilla:
+    senses:
+    - adjective
+  totals:
+    senses:
+    - verb
+  tough:
+    senses:
+    - adjective
+  tour:
+    senses:
+    - noun
+    plural: tours
+  tournament:
+    senses:
+    - noun
+  towel:
+    senses:
+    - noun
+    plural: towels
+  tower:
+    senses:
+    - noun
+    plural: towers
+  track:
+    senses:
+    - noun
+  trackball:
+    senses:
+    - noun
+    plural: trackballs
+  tracking:
+    senses:
+    - verb
+  tractor:
+    senses:
+    - noun
+    plural: tractors
+  trade:
+    senses:
+    - verb
+    number: plural
+    verb:
+      lemma: trade
+  traded:
+    senses:
+    - verb
+    verb:
+      lemma: trade
+  trades:
+    senses:
+    - verb
+    number: singular
+    verb:
+      lemma: trade
+  trading:
+    senses:
+    - noun
+  traffic:
+    senses:
+    - noun
+  trail:
+    senses:
+    - noun
+  trailer:
+    senses:
+    - noun
+  train:
+    senses:
+    - noun
+    plural: trains
+  transport:
+    senses:
+    - noun
+  trash:
+    senses:
+    - noun
+  traveler:
+    senses:
+    - noun
+    plural: travelers
+  traveling:
+    senses:
+    - verb
+    verb:
+      lemma: travel
+  tray:
+    senses:
+    - noun
+  treadmill:
+    senses:
+    - noun
+  treehouse:
+    senses:
+    - noun
+  tribes:
+    senses:
+    - noun
+  trick-or-treat:
+    senses:
+    - noun
+  tricycle:
+    senses:
+    - noun
+    plural: tricycles
+  triple-flip:
+    senses:
+    - noun
+  triple-flips:
+    senses:
+    - noun
+  tripled:
+    senses:
+    - verb
+    verb:
+      lemma: triple
+  triples:
+    senses:
+    - verb
+    verb:
+      lemma: triple
+  trying:
+    senses:
+    - verb
+    verb:
+      lemma: try
+  tuition:
+    senses:
+    - noun
+  turned:
+    senses:
+    - verb
+    verb:
+      lemma: turn
+  turning:
+    senses:
+    - verb
+    verb:
+      lemma: turn
+  turtle:
+    senses:
+    - noun
+    plural: turtles
+  tutorial:
+    senses:
+    - noun
+  twelve:
+    senses:
+    - value
+  twelve-pound:
+    senses:
+    - adjective
+  twenty:
+    senses:
+    - value
+  twenty-eight:
+    senses:
+    - value
+  twice:
+    senses:
+    - multiplier
+  twin:
+    senses:
+    - adjective
+  two:
+    senses:
+    - value
+  two-day:
+    senses:
+    - adjective
+  two-fifths:
+    senses:
+    - adjective
+    - multiplier
+  two-pound:
+    senses:
+    - adjective
+  two-thirds:
+    senses:
+    - adjective
+    - multiplier
+  type:
+    senses:
+    - noun
+    plural: types
+  umbrella:
+    senses:
+    - noun
+  umbrellas:
+    senses:
+    - noun
+  uncle:
+    senses:
+    - noun
+    plural: uncles
+  uncovered:
+    senses:
+    - verb
+  underground:
+    senses:
+    - noun
+  uniformly:
+    senses:
+    - manner
+  units:
+    senses:
+    - noun
+  unless:
+    senses:
+    - conjunction
+  unloaded:
+    senses:
+    - noun
+  unusual:
+    senses:
+    - adjective
+  upcoming:
+    senses:
+    - adjective
+  upstairs:
+    senses:
+    - noun
+  utility:
+    senses:
+    - adjective
+  vacant:
+    senses:
+    - adjective
+  vacation:
+    senses:
+    - noun
+    plural: vacations
+  vacuum:
+    senses:
+    - adjective
+  vacuumed:
+    senses:
+    - verb
+  value:
+    senses:
+    - noun
+  value-added:
+    senses:
+    - adjective
+  vampire:
+    senses:
+    - noun
+  van:
+    senses:
+    - noun
+    plural: vans
+  vanilla:
+    senses:
+    - noun
+  various:
+    senses:
+    - adjective
+  varsity:
+    senses:
+    - noun
+  vase:
+    senses:
+    - noun
+    plural: vases
+  vegan:
+    senses:
+    - adjective
+  vegetable:
+    senses:
+    - noun
+    plural: vegetables
+  vehicle:
+    senses:
+    - noun
+    plural: vehicles
+  vending:
+    senses:
+    - adjective
+  version:
+    senses:
+    - noun
+  vertically:
+    senses:
+    - noun
+  vet:
+    senses:
+    - noun
+    plural: vets
+  video:
+    senses:
+    - noun
+    plural: videos
+  visit:
+    senses:
+    - verb
+  visited:
+    senses:
+    - verb
+    verb:
+      lemma: visit
+  visiting:
+    senses:
+    - verb
+  visitor:
+    senses:
+    - noun
+    plural: visitors
+  visits:
+    senses:
+    - verb
+    verb:
+      lemma: visit
+  volleyball:
+    senses:
+    - noun
+  volunteer:
+    senses:
+    - verb
+  volunteers:
+    senses:
+    - verb
+  wagon:
+    senses:
+    - noun
+    plural: wagons
+  wait:
+    senses:
+    - verb
+  waiting:
+    senses:
+    - verb
+  waitress:
+    senses:
+    - noun
+  wall:
+    senses:
+    - noun
+    plural: walls
+  wardrobe:
+    senses:
+    - noun
+  warehouse:
+    senses:
+    - noun
+    plural: warehouses
+  watch:
+    senses:
+    - verb
+  watched:
+    senses:
+    - verb
+    verb:
+      lemma: watch
+  watcher:
+    senses:
+    - noun
+  watches:
+    senses:
+    - verb
+    verb:
+      lemma: watch
+  watching:
+    senses:
+    - verb
+    verb:
+      lemma: watch
+  watermelon:
+    senses:
+    - noun
+  watermelons:
+    senses:
+    - noun
     # scibench: the quantity head in the eponymic physics ask. Formula selection
     # still uses the full "de broglie wavelength" key, not this bare noun.
-    wavelength:
-        senses:
-            - noun
-        plural: wavelengths
-    watt:
-        senses:
-            - noun
-        plural: watts
-    way:
-        senses:
-            - noun
-    wedding:
-        senses:
-            - noun
-    weekday:
-        senses:
-            - noun
-        plural: weekdays
-    weekly:
-        senses:
-            - adjective
-    well:
-        senses:
-            - noun
-    west:
-        senses:
-            - noun
-    whatever:
-        senses:
-            - noun
-    wheat:
-        senses:
-            - adjective
-    wheel:
-        senses:
-            - noun
-        plural: wheels
-    wheelchair:
-        senses:
-            - noun
-    whiskers:
-        senses:
-            - noun
-    white:
-        senses:
-            - adjective
-    whiteboard:
-        senses:
-            - noun
-        plural: whiteboards
-    whole:
-        senses:
-            - adjective
-    wicks:
-        senses:
-            - noun
-    wide:
-        senses:
-            - adjective
-    width:
-        senses:
-            - noun
-        plural: widths
-    wife:
-        senses:
-            - noun
-        plural: wives
-    windfall:
-        senses:
-            - noun
-    winding:
-        senses:
-            - verb
-    winner:
-        senses:
-            - noun
-        plural: winners
-    winning:
-        senses:
-            - noun
-    winnings:
-        senses:
-            - noun
-    wireless:
-        senses:
-            - adjective
-    wish:
-        senses:
-            - verb
-    wishes:
-        senses:
-            - verb
-    withdraws:
-        senses:
-            - verb
-    withdrew:
-        senses:
-            - verb
-    woman:
-        senses:
-            - noun
-        plural: women
-    wonderful:
-        senses:
-            - adjective
-    woodblock:
-        senses:
-            - noun
-        plural: woodblocks
-    wooden:
-        senses:
-            - adjective
-    workplace:
-        senses:
-            - noun
-    workweek:
-        senses:
-            - noun
-    worm:
-        senses:
-            - noun
-        plural: worms
-    worth:
-        senses:
-            - adjective
-    wrap:
-        senses:
-            - verb
-    wrapping:
-        senses:
-            - verb
-    writer:
-        senses:
-            - noun
-    yard:
-        senses:
-            - noun
-        plural: yards
-    yarn:
-        senses:
-            - noun
-    yet:
-        senses:
-            - noun
-    yield:
-        senses:
-            - noun
-    yoga:
-        senses:
-            - adjective
-    youngest:
-        senses:
-            - adjective
-    zit:
-        senses:
-            - noun
-        plural: zits
-    zoo:
-        senses:
-            - noun
-        plural: zoos
+  wavelength:
+    senses:
+    - noun
+    plural: wavelengths
+  watt:
+    senses:
+    - noun
+    plural: watts
+  way:
+    senses:
+    - noun
+  wedding:
+    senses:
+    - noun
+  weekday:
+    senses:
+    - noun
+    plural: weekdays
+  weekly:
+    senses:
+    - adjective
+  well:
+    senses:
+    - noun
+  west:
+    senses:
+    - noun
+  whatever:
+    senses:
+    - noun
+  wheat:
+    senses:
+    - adjective
+  wheel:
+    senses:
+    - noun
+    plural: wheels
+  wheelchair:
+    senses:
+    - noun
+  whiskers:
+    senses:
+    - noun
+  white:
+    senses:
+    - adjective
+  whiteboard:
+    senses:
+    - noun
+    plural: whiteboards
+  whole:
+    senses:
+    - adjective
+  wicks:
+    senses:
+    - noun
+  wide:
+    senses:
+    - adjective
+  wife:
+    senses:
+    - noun
+    plural: wives
+  windfall:
+    senses:
+    - noun
+  winding:
+    senses:
+    - verb
+  winner:
+    senses:
+    - noun
+    plural: winners
+  winning:
+    senses:
+    - noun
+  winnings:
+    senses:
+    - noun
+  wireless:
+    senses:
+    - adjective
+  wish:
+    senses:
+    - verb
+  wishes:
+    senses:
+    - verb
+  withdraws:
+    senses:
+    - verb
+  withdrew:
+    senses:
+    - verb
+  woman:
+    senses:
+    - noun
+    plural: women
+  wonderful:
+    senses:
+    - adjective
+  woodblock:
+    senses:
+    - noun
+    plural: woodblocks
+  wooden:
+    senses:
+    - adjective
+  workplace:
+    senses:
+    - noun
+  workweek:
+    senses:
+    - noun
+  worm:
+    senses:
+    - noun
+    plural: worms
+  worth:
+    senses:
+    - adjective
+  wrap:
+    senses:
+    - verb
+  wrapping:
+    senses:
+    - verb
+  writer:
+    senses:
+    - noun
+  yard:
+    senses:
+    - noun
+    plural: yards
+  yarn:
+    senses:
+    - noun
+  yet:
+    senses:
+    - noun
+  yield:
+    senses:
+    - noun
+  yoga:
+    senses:
+    - adjective
+  youngest:
+    senses:
+    - adjective
+  zit:
+    senses:
+    - noun
+    plural: zits
+  zoo:
+    senses:
+    - noun
+    plural: zoos

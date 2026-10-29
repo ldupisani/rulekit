@@ -1,22 +1,4 @@
 format: rulekit/geometry@1
-# Declarative geometry formulas: (shape, quantity) -> an expression over the named
-# dimensions and the constant `pi`. The `geometry` consumer (answer.py) binds the
-# dimensions from ask/geometry-formula and evaluates. NO per-domain Python branch
-# (constitution: formulas are DATA + synthesizers). Adding a shape/quantity is a
-# one-line data change. `**` is power, `**0.5` is sqrt (evaluate() supports both).
-formulas:
-  - {shape: circle, quantity: area, expr: "pi * radius**2"}
-  - {shape: circle, quantity: circumference, expr: "2 * pi * radius"}
-  - {shape: rectangle, quantity: perimeter, expr: "2 * (length + width)"}
-  - {shape: rectangle, quantity: diagonal, expr: "(length**2 + width**2)**0.5"}
-  - {shape: triangle, quantity: area, expr: "0.5 * base * height"}
-  - {shape: cube, quantity: volume, expr: "side**3"}
-  - {shape: sphere, quantity: volume, expr: "(4.0 / 3.0) * pi * radius**3"}
-  - {shape: cylinder, quantity: volume, expr: "pi * radius**2 * height"}
-  - {shape: sphere, quantity: area, expr: "4 * pi * radius**2"}
-  - {shape: square, quantity: area, expr: "side**2"}
-  # The two legs are SYMMETRIC roles, unlike length/width, so they are
-  # named leg1/leg2 and the ask binds them positionally. A hypotenuse
-  # presupposes the right angle, which is why its ask matches the merged
-  # compound 'right triangle' exactly and never a bare 'triangle'.
-  - {shape: right triangle, quantity: hypotenuse, expr: "(leg1**2 + leg2**2)**0.5"}
+# Shared category properties own the definitions, including the optional
+# right-angle compound. The registry derives the legacy compatibility table.
+formulas: []

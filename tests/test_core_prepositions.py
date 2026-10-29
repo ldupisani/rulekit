@@ -77,7 +77,7 @@ DEFERRED_OVERLOADED_FORMS = {
 }
 CORE_PREPOSITIONS = (
     REQUESTED_SINGLE_FORMS - DEFERRED_OVERLOADED_FORMS
-) | MULTIWORD_PREPOSITIONS
+) | MULTIWORD_PREPOSITIONS | {"de"}
 
 
 def test_general_preposition_inventory_is_owned_by_core_english() -> None:

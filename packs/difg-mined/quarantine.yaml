@@ -227,11 +227,6 @@ words:
     - animal
     reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
       Re-admit only through the firewall.'
-  giraffe:
-    tags:
-    - animal
-    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
-      Re-admit only through the firewall.'
   goose:
     tags:
     - animal
@@ -265,11 +260,6 @@ words:
   hamsters:
     tags:
     - pet
-    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
-      Re-admit only through the firewall.'
-  hen:
-    tags:
-    - animal
     reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
       Re-admit only through the firewall.'
   hike:
@@ -313,11 +303,6 @@ words:
     reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
       Re-admit only through the firewall.'
   lambs:
-    tags:
-    - animal
-    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
-      Re-admit only through the firewall.'
-  lion:
     tags:
     - animal
     reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).

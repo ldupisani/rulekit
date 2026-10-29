@@ -139,7 +139,7 @@ def test_unknown_pair_declines(reg):
 
 def test_a_non_convert_imperative_is_not_a_question(reg):
     """'convert' was admitted as a task cue; 'find'/'solve'/'evaluate' were NOT
-    (they open 4 GSM8K TEST and 69 SciBench sentences — see lexicon/a-f.yaml).
+    (the shared dictionary declares this sense only for supported task cues).
     Pin that the admission stayed scoped to the one measured word."""
     r = solve("Find 2 feet in inches", reg, tracing=False)
     assert not r.answer.committed

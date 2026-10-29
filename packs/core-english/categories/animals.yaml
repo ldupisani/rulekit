@@ -1,0 +1,70 @@
+format: rulekit/categories@1
+categories:
+  animal:
+    parent: membership_member_noun
+    coordinated_superordinate: true
+    notes: >
+      A countable superclass for authored animal subtypes. An explicit total
+      ask can add multiple animal kinds stated together. Unlike a closed
+      subtype family, separate premises do not imply an exhaustive inventory.
+      A single known subtype, an outside holding, or an existing animal total
+      prevents that coordinated-subtype inference.
+  pet: {parent: animal}
+  bird:
+    parent: animal
+    disjoint_with: [insect, person]
+    notes: Avian subtypes; membership does not make the authored list exhaustive.
+    attrs:
+      legs: 2
+  insect:
+    parent: animal
+    disjoint_with: [person]
+    notes: Insect subtypes remain animals and are separate from birds and people.
+    attrs:
+      legs: 6
+  fish:
+    parent: animal
+    superordinate: true
+    notes: >-
+      Fish subtypes available to explicit inventory totals; membership does not assert any unstated count.
+    attrs:
+      legs: 0
+  quadruped:
+    parent: animal
+    attrs:
+      legs: 4
+    notes: Typical adult anatomy of explicitly classified four-legged animals; no mammal-wide leg
+      count.
+  legless_animal:
+    parent: animal
+    attrs:
+      legs: 0
+members:
+  animal: [alligator, alpaca, bear, bird, blue-gill, bunny, camel, cat, cattle, chicken, chihuahua,
+      conch, cow, crab, dinosaur, doe, dog, dolphin, duck, elephant, fish, fox, frog, gecko, giraffe,
+    goat, hamster, hare, hen, hog, horse, iguana, insect, jaguar, kangaroo, kitten, koala, lion,
+      lizard, monkey, mouse, oyster, panda, penguin, pig, puppy, rabbit, rat, rooster, salmon, shark,
+    snail, snake, swordfish]
+  pet: [bird, cat, dog, fish, frog, goldfish, hamster, rabbit, snail]
+  bird: [bluebird, chicken, crow, duck, hen, jay, kingfisher, parrot, pelican, penguin, pigeon,
+      robin, rooster, seagull, sparrow]
+  insect: [ant, bee, beetle, butterfly, grasshopper]
+  fish: [angelfish, blue-gill, goldfish, guppy, pufferfish, salmon, shark, swordfish]
+  quadruped:
+  - bear
+  - camel
+  - cat
+  - cow
+  - dog
+  - elephant
+  - fox
+  - frog
+  - goat
+  - horse
+  - koala
+  - lion
+  - pig
+  - rabbit
+  legless_animal:
+  - snail
+  - snake

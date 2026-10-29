@@ -30,6 +30,32 @@ categories:
     parent: verb
   commercial_object_anaphor:
     parent: pronoun
+  coin:
+    parent: noun
+  discount:
+    parent: noun
+    notes: >-
+      An explicitly stated adjustment to a quoted price or payment.
+  cashtoken:
+    parent: noun
+  charge:
+    parent: noun
+  tender_verb:
+    parent: verb
+    notes: >
+      'pay'/'give' when their object is a stated currency amount ("pays
+      with a $50 bill" / "gave $250 [to the cashier]" — mining candidate
+      change-asks) is the buyer's TENDER, a narrower concept than the
+      general 'lose' polarity event both verbs already carry (spending
+      money is a loss for the general money fold; a change ask needs the
+      specific "amount handed over" isolated from that, the same
+      multi-membership pattern as 'sell' beside 'lose'). The already-
+      general SVO fold emits the plain currency Quantity event on its
+      own (no learn.py change needed); this category only lets the
+      change consumer (answer.py) name tender events specifically
+      without picking up 'ate'/'sold'/'spent'/etc, which also live under
+      'lose'. Gated additionally on the fact's measure resolving to
+      `currency` — an ordinary "gives 3 apples" never qualifies.
 members:
   audio_product: [album, cd]
   audiovisual_product: [dvd, film, movie]
@@ -60,9 +86,7 @@ members:
   visual_product:
   - painting
   - picture
-  sale_revenue_noun:
-  - sale
-  - sales
+  sale_revenue_noun: [sale]
   commercial_quote_verb:
   - charge
   - charged
@@ -70,5 +94,10 @@ members:
   commercial_object_anaphor:
   - it
   - them
+  coin: [dime, nickel, penny, quarter]
+  discount: [coupon, discount]
+  cashtoken: [bill, coin]
+  charge: [bill, cost, expense, fee, price]
+  tender_verb: [gave, give, gives, paid, pay, pays]
 attribute_compatibility:
   income_modifier: [income_resource_noun]

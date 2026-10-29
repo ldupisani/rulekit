@@ -7,7 +7,7 @@ reading test written with invented vocabulary passes or fails for reasons
 unrelated to the rule under test).
 
 WHY IT EXISTS. 'baker'/'carpenter' are lexically COMMON NOUNS (occupations),
-so "Baker made 157 cakes. He sold 158." found no antecedent and declined —
+so "The baker made 157 cakes. He sold 158." found no antecedent and declined —
 while the same story with 'Ana' reads, because an unknown word defaults to
 NAME. That asymmetry is an artifact of the lexicon, not of the English.
 
@@ -50,7 +50,7 @@ def _qty(result):
 def test_pronoun_binds_to_an_animate_common_noun(reg):
     """The gap itself: 'baker' is a common noun, so this minted nothing for
     the second sentence."""
-    q = _qty(solve("Baker made 157 cakes. He sold 158 cakes.", reg))
+    q = _qty(solve("The baker made 157 cakes. He sold 158 cakes.", reg))
     assert q[("baker", "cake")] == 157.0 or ("baker", "cake") in q
     assert any(e == "baker" for e, _ in q)
 
@@ -65,7 +65,7 @@ def test_an_inanimate_holder_is_never_an_antecedent(reg):
 def test_it_never_binds_to_a_person_noun(reg):
     """The pronoun-side gate: the kernel has no gender feature, so
     `animate_pronoun` is what stops 'it' taking a person antecedent."""
-    r = solve("Baker made 157 cakes. It sold 158 cakes.", reg)
+    r = solve("The baker made 157 cakes. It sold 158 cakes.", reg)
     assert any("refers" in d for d in r.deficiencies())
 
 

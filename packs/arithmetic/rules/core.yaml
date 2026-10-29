@@ -3742,6 +3742,7 @@ rules:
 
   - id: arithmetic/existential-premise-bare-conjoined
     phase: read
+    question_assumption: true
     description: >
       "There are 34 girls and 841 boys." — the CONJOINED sibling of
       arithmetic/existential-premise-bare. That rule matches a single

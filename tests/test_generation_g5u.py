@@ -180,6 +180,7 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
     )
     assert project.registry.word_categories.get("then", ()) == (
         "conditional_consequent_marker",
+        "flexible_holding_anchor_adverb",
         "narration_sequence_adverb",
     )
     assert project.registry.word_categories.get("finally", ()) == (
@@ -193,10 +194,11 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
         word
         for word, entry in sorted(project.registry.lexicon.items())
         if "adverb" in entry.senses
-    ] == [
+    ] == sorted([
+        "afterward", "all-around", "already", "always", "back", "continuously", "correctly", "downhill", "earlier", "exactly", "forever", "forth", "initially", "instead", "later", "normally", "otherwise", "quickly", "separately", "strictly",
         "again", "ago", "also", "away", "back and forth", "completely", MOVED_WORD, "daily", "down", "entirely", "equally", "far", "finally", "fully", "further", "however", "immediately", "individually",
         "just", "next", "off", "once again", "online", "only", "originally", "out", "outside", "recently", "respectively", "safely", "still", "then", "thereafter", "up",
-    ]
+    ])
 
 
 def test_combined_pack_semantics_are_identical_to_legacy_ownership() -> None:
@@ -246,9 +248,9 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
     project = load_project(CURATED)
     availability = list_rule_availability(project)
 
-    assert len(availability) == 633
-    assert sum(item.supported for item in availability) == 569
-    assert sum(not item.supported for item in availability) == 64
+    assert len(availability) == 638
+    assert sum(item.supported for item in availability) == 562
+    assert sum(not item.supported for item in availability) == 76
     assert all(
         not item.blockers
         or item.id
@@ -261,6 +263,11 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
             'arithmetic/account-relative-full-settlement',
             'arithmetic/capacity-progress-anaphoric-multiplier-safety',
             'arithmetic/collected-qualified-nested-population',
+            'arithmetic/existential-inventory-bare',
+            'arithmetic/existential-inventory-leading-location',
+            'arithmetic/existential-inventory-trailing-location',
+            'arithmetic/with-inventory-bare',
+            'arithmetic/with-inventory-located',
             'arithmetic/fractional-resource-remainder-use-continuation',
             'arithmetic/fractional-resource-use-continuation',
             'arithmetic/population-average-rate-rest',
@@ -277,6 +284,13 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
             'arithmetic/income-increase-with-expense-copula',
             'arithmetic/income-increase-with-expense-share',
             'arithmetic/measured-content-resulting-total-gapped',
+            'arithmetic/cut-measured-region-continuation',
+            'arithmetic/measured-resource-removal-length-continuation',
+            'arithmetic/measured-resource-removal-length-continuation-counted-purpose',
+            'arithmetic/measured-resource-removal-mass-continuation',
+            'arithmetic/measured-resource-removal-mass-continuation-counted-purpose',
+            'arithmetic/measured-resource-removal-volume-continuation',
+            'arithmetic/measured-resource-removal-volume-continuation-counted-purpose',
             'arithmetic/named-allocation-group',
             'arithmetic/named-group-collection-shopping-intention',
             'arithmetic/named-group-item-shopping-intention',
@@ -319,7 +333,7 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
             'logic-arithmetic/universal-all-have-quantity-pp-incompatible-item-safety'}
         for item in availability
     )
-    assert len(exploration_status(project)["fillers"]) == 948
+    assert len(exploration_status(project)["fillers"]) == 2372
 
 
 def test_currently_generates_a_matcher_confirmed_anchor() -> None:

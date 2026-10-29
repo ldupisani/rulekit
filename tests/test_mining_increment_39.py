@@ -3,7 +3,7 @@ question sentence embeds a leading dependent clause introduced by a
 temporal subordinator instead of the conditional 'if'. `_split_leading_clause`
 (engine.py) only recognized the literal 'if' marker; this candidate adds
 `_split_leading_temporal_clause`, a sibling that recognizes 'when'/'after'
-via category membership (packs/difg-mined/categories/clauses.yaml's
+via category membership (packs/core-english/categories/clauses.yaml's
 'clause_marker'/'clause_marker_prep' categories — never a Python word list)
 and splits the clause into a premise ahead of the wh-question, exactly like
 the 'if' form but gated (mirroring increment 12's trailing-if safety

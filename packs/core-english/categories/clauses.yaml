@@ -1,12 +1,4 @@
 format: rulekit/categories@1
-# Clause-boundary markers. Lives here (not core-english/categories) because
-# the member words ('when'/'after') are only lexically defined in THIS
-# pack's own lexicon — a core-english category naming them would fail to
-# compile whenever core-english is loaded without difg-mined (several unit
-# tests build exactly that minimal registry). Engine.py's leading-clause
-# split (packs/core-english's 'if'-clause precedent, generalized to
-# temporal subordinators) tests membership in these categories rather than
-# enumerating words in Python.
 categories:
   clause_marker:
     parent: conjunction

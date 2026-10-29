@@ -275,7 +275,7 @@ def test_pet_scenario_blast_radius(tmp_path):
     # the pet member 'dog' satisfies the broader animal gate — the report
     # names the rule that a pet-membership change can newly activate
     assert "r/category-sum" in report.gating_rules
-    assert report.member_words == ["dog"]
+    assert report.member_words == ["dog", "dogs"]
     report_animal = blast_radius(reg, "animal")
     assert "r/category-sum" in report_animal.gating_rules
 

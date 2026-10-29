@@ -49,7 +49,7 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
     assert any("antecedent discourse group" in blocker for blocker in contextual.blockers)
     # The reusable physics pack adds the independently generatable
     # ask/physics-quantity surface to curated.
-    assert sum(item.supported for item in availability.values()) == 343
+    assert sum(item.supported for item in availability.values()) == 352
     assert availability["ask/how-many-of-collection-are-label"].supported
     assert availability["ask/how-many-of-collection-are-label"].supported_modes == (
         "ask_only",
@@ -73,7 +73,7 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
     assert availability["ask/measured-content-in-container-unit"].blockers == (
         "ask requires generated premise evidence; standalone realization is disabled",
     )
-    assert len(availability) == 387
+    assert len(availability) == 393
     assert {
         item.id for item in availability.values() if not item.supported
     } == {'ask/chem-cost-of-moles',
@@ -91,9 +91,6 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
           'ask/how-many-content-progress-fraction-of-remainder-with-of',
           'ask/how-many-individually-discourse-group',
           'ask/how-many-individually-discourse-group-postverbal',
-          'ask/how-much-credit-need-pay',
-          'ask/how-much-need-pay',
-          'ask/how-much-need-repay',
           'ask/how-much-noun-entity-uninverted',
           'ask/how-old-discourse-group-now',
           'ask/if-content-progress-fraction-of-remainder-how-many',
@@ -121,7 +118,7 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
           'ask/threshold-population-count-strict',
           'ask/what-combined-age-at-year',
           'ask/which-discourse-group-at-day'}
-    unfilled_deadlines = {
+    deadline_asks = {
         "ask/how-much-credit-need-pay", "ask/how-much-need-pay", "ask/how-much-need-repay",
     }
     unfilled_ordinals = {
@@ -173,11 +170,14 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
         "answerable" in item.supported_modes
         for item in availability.values()
         if not item.supported and not item.id.startswith("ask/chem-")
-        and item.id not in unfilled_deadlines | unfilled_ordinals | unfilled_scale_labels | unfilled_collections | unfilled_powered_units | unfilled_production | unfilled_process_indices
+        and item.id not in unfilled_ordinals | unfilled_scale_labels | unfilled_collections | unfilled_powered_units | unfilled_production | unfilled_process_indices
     )
-    for ask_id in unfilled_deadlines:
-        assert availability[ask_id].supported_modes == ()
-        assert availability[ask_id].blockers == ("no project-backed ask filler exists for deadline",)
+    for ask_id in deadline_asks:
+        assert availability[ask_id].supported
+        assert availability[ask_id].blockers == ()
+        assert availability[ask_id].supported_modes == (
+            "ask_only", "answerable", "validated_premises", "missing_evidence",
+        )
     assert all(
         item.supported_modes == ()
         and item.blockers == ("no project-backed ask filler exists for f",)
@@ -353,12 +353,16 @@ def test_uninverted_ask_is_generated_inside_a_conditional_clause(curated) -> Non
 def test_contextual_ask_families_round_trip_through_ordinary_documents(
     curated, ask_id: str
 ) -> None:
+    # Volume vocabulary also includes units without a declared density bridge.
+    # This fixture tests contextual composition with an available conversion.
+    locks = {"unit": "liters"} if ask_id == "ask/measured-content-in-container-unit" else {}
     candidate = generate_ask_scenario(
         curated,
         ask_id=ask_id,
         seed=8242026,
         scenario_mode="answerable",
         reference_year=2026,
+        locked_bindings=locks,
         max_search_attempts=192,
     )
 

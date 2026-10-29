@@ -20,18 +20,6 @@ categories:
       Predicate nouns licensed beneath an explicit remainder-membership
       superclass. `animal` is the first declared member family; other
       ontologies can extend this category without widening `animal`.
-  animal:
-    parent: membership_member_noun
-    coordinated_superordinate: true
-    notes: >
-      A countable superclass for authored animal subtypes. This lets an
-      explicit total ask add two or more animal kinds stated together,
-      such as penguins plus bears. Unlike a closed subtype family, animal
-      kinds stated in separate premises are not assumed exhaustive. The
-      generic consumer also declines when only one subtype is known, when
-      any held measure is outside this family, or when a direct animal
-      total is already present. Member words remain pack-owned below.
-  pet: {parent: animal}
   quantity_holder:
     parent: noun
     notes: >
@@ -82,7 +70,7 @@ categories:
     parent: quantity_event_participant
     notes: >
       PERSON-DENOTING common nouns — the antecedent-eligibility signal for
-      a singular personal pronoun, and the ONLY thing separating "Baker
+      a singular personal pronoun, and the ONLY thing separating "The baker
       made 157 cakes. He sold 158." (bindable) from "The basket has 7
       peaches. He ..." (must stay unbound). Read ONLY by document.py's
       zero-name coreference fallback.
@@ -857,13 +845,14 @@ categories:
       retain a destination; a bare object-only arithmetic comparison is
       not a complete use of this predicate.
   animate_subject_verb:
-    parent: quantity_ask_verb
+    parent: verb
     notes: >
       Verbs whose grammatical subject must denote an animate participant.
       Rules opt into this role boundary explicitly; ordinary quantity
       holders do not become sentient merely because they can hold facts.
+      This role constraint alone does not license a quantitative predicate.
   teaching_quantity_verb:
-    parent: animate_subject_verb
+    parent: quantity_ask_verb
     selectional_roles:
       actor: animate
       theme: teaching_quantity_object
@@ -1554,10 +1543,8 @@ categories:
       would also match directly via the degenerate-sense fallback): this
       ask family names its own precondition explicitly so a FUTURE
       imperative-sensed word admitted for an unrelated purpose never
-      silently widens it too. 'compute' is core-english (tagged in this
-      file's own `members:` below); 'calculate'/'determine' are
-      difg-mined words, so their membership lives in packs/difg-mined/
-      categories/semantic.yaml.
+      silently widens it too. These imperative members and their lexical
+      senses are shared core-English data.
   dimension_noun:
     parent: noun
     notes: >
@@ -1574,9 +1561,8 @@ categories:
       `time_measure`/`currency_measure` below, a deliberately SEPARATE
       set of categories — see `dimension` in data/schemas.py's
       CategoryDef for why resolution needs its own opt-in flag rather
-      than reusing `interchangeable`). Generic `age` is core-owned below;
-      the remaining corpus-mined members extend this category from
-      packs/difg-mined/categories/semantic.yaml.
+      than reusing `interchangeable`). Shared dimension nouns live here;
+      optional physics vocabulary extends this category beside its lexicon.
   length_measure:
     parent: noun
     dimension: true
@@ -1597,21 +1583,19 @@ categories:
       via a SEPARATE registry set (`dimension_categories`, never
       `interchangeable_categories`) so this never widens
       `_resolve_measure`/`_resolve_measure_against`, which every OTHER
-      consumer keeps calling unchanged. Generic `inch` and its
-      membership are core-owned; the remaining measurement and dimension terms
-      extend this category from packs/difg-mined/categories/semantic.yaml.
+      consumer keeps calling unchanged. Shared units and dimension nouns
+      live here; optional packs extend this family beside their vocabulary.
   length_unit:
     parent: noun
-    notes: Concrete linear formula units. Quantity-dimension resolution and
-      holder compatibility require their separate, explicit measure-family membership.
+    notes: Concrete linear formula units. Quantity-dimension resolution and holder compatibility require their
+      separate, explicit measure-family membership.
   mass_measure:
     parent: noun
     dimension: true
     notes: >
       sibling of `length_measure` for WEIGHT — concrete units
       ('pound'/'ounce'/'kilogram'/'gram') plus the dimension noun
-      'weight'. Generic `pound` is core-owned; the remaining
-      corpus-mined members extend this category from difg-mined. See
+      'weight'. Their shared memberships live here. See
       `length_measure`'s note for the shared mechanism.
       'pound' is ALSO a member of the pre-existing `currency` category
       (British pounds sterling) — harmless multi-category membership,
@@ -1828,8 +1812,7 @@ categories:
       sibling of `length_measure`/`mass_measure`/`time_measure` for
       MONEY — the concrete unit 'dollar' (tagged in this file's own
       `members:` below, a core-english word) plus the dimension nouns
-      'cent'/'balance'/'earnings' and core-owned 'cost' (memberships in
-      the difg-mined extension pack). Deliberately a SEPARATE category from
+      'cent'/'balance'/'earnings'/'cost' (shared memberships below). Deliberately a SEPARATE category from
       the pre-existing `currency` (`interchangeable: true`): adding
       'balance'/'earnings'/'cost' to `currency` itself would widen
       `_resolve_measure_against`, consulted by every non-opted-in ask,
@@ -2213,8 +2196,7 @@ categories:
       ORs membership in this category alongside 'comparative'/'multiplier'
       to recognize a comparative/ratio clause structurally — the SAME
       "test a category, never enumerate the word in Python" shape as
-      'clause_marker'/'clause_marker_prep' (packs/difg-mined/categories/
-      clauses.yaml). 'particle' was added to registry.ROOT_SENSES to let
+      'clause_marker'/'clause_marker_prep' (core-english/categories/clauses.yaml). 'particle' was added to registry.ROOT_SENSES to let
       this category resolve, purely additive (mirrors the earlier 'modal'
       root-sense addition) — 'than' keeps its single existing sense, so no
       new ambiguity is introduced for the many sentences that use it.
@@ -2233,13 +2215,8 @@ categories:
       increment-45 invariant): an untagged verb + particle ("looked up")
       stays exactly as today, decline-safe by construction. Deliberately
       NOT "every adverb" — that would risk merging manner/locative adverbs
-      after an unrelated polarity verb ("sold quickly"). The four members
-      (away/out/off/up) are difg-mined-only words — no core-english word
-      carries the 'adverb' sense — so, mirroring 'future_modal'/
-      'relational_marker's sibling pattern, this category has NO members
-      here; they live in packs/difg-mined/categories/semantic.yaml. A
-      core-english-only registry (no difg-mined) compiles with this
-      category simply empty.
+      after an unrelated polarity verb ("sold quickly"). Shared particle
+      memberships live below alongside their adverb senses in the dictionary.
   temporal_marker:
     parent: time
     notes: >
@@ -2335,7 +2312,7 @@ categories:
     antonym: complement_boy
     notes: the symmetric half of complement_boy — see its notes.
   child:
-    parent: noun
+    parent: person
         # mining candidate subtype-total-asks: only a category EXPLICITLY
         # opted in here may feed answer.py's `_superordinate_total` — see
         # `superordinate`'s own schema docstring (data/schemas.py CategoryDef)
@@ -2358,31 +2335,16 @@ categories:
       `interchangeable`: subtypes are not signed and are never
       interchangeable stand-ins for each other (that would let a 'son'
       fact answer a 'daughter' ask) — they only ever SUM into the
-      superordinate. 'daughter'/'son' are difg-mined-only words, so
-      (mirroring complement_boy/girl's sibling pattern above) this
-      category has NO members here; they live in packs/difg-mined/
-      categories/semantic.yaml. A core-english-only registry compiles with
-      this category simply empty (the consumer then never fires,
-      decline-safe).
+      superordinate. Shared subtype memberships live here; membership alone
+      never supplies a count.
   toy:
     parent: noun
     superordinate: true
     notes: >
       sibling of 'child' (subtype-total-asks) — subtypes: toy soldier / toy
       car ("James buys twice as many toy soldiers as toy cars... how many
-      total toys does he buy?"). Same structural-only definition; members
-      ('soldier'/'car', difg-mined-only) live in packs/difg-mined/
-      categories/semantic.yaml. See child's note for the full mechanism.
-  fish:
-    parent: noun
-    superordinate: true
-    notes: >
-      sibling of 'child' (subtype-total-asks) — subtypes: goldfish /
-      angelfish / guppy ("Catriona has 8 goldfish... 4 more angelfish than
-      goldfish... twice as many guppies as angelfish... how many fish does
-      Catriona have?"). Same structural-only definition; members (difg-
-      mined-only) live in packs/difg-mined/categories/semantic.yaml. See
-      child's note for the full mechanism.
+      total toys does he buy?"). Its shared members live here.
+      See child's note for the full mechanism.
   litter:
     parent: noun
     superordinate: true
@@ -2390,10 +2352,8 @@ categories:
       sibling of 'child'/'toy'/'fish' (subtype-total-asks) — a discarded-item
       superordinate whose subtypes are the container nouns a cleanup problem
       counts as litter ("picked up 10 bottles and 8 cans... how many pieces of
-      litter altogether?" -> 18). Members 'bottle'/'can' are difg-mined-only
-      words, so (mirroring child/toy/fish above) they live in packs/difg-mined/
-      categories/semantic.yaml, and a core-english-only registry compiles with
-      this category simply empty (decline-safe). Same _superordinate_total guard
+      litter altogether?" -> 18). Shared container members live here.
+      Same _superordinate_total guard
       (fires only when EVERY held measure is a subtype and >=2 are held), so a
       lone "5 bottles of water" never reads as a litter total.
   indefinite_article:
@@ -2455,8 +2415,7 @@ categories:
       mining candidate measure-noun-anaphor (infrastructure): the measure-
       NOUN sibling of 'quantity_anaphor' — where 'amount'/'number' stand in
       for a whole prior QUANTITY (a demonstrative standard, "twice THAT
-      NUMBER"), this category's member ('ones', difg-mined-only — extends
-      from packs/difg-mined/categories/semantic.yaml) is the elided HEAD
+      NUMBER"), this category's shared pronoun member ('ones') is the elided HEAD
       NOUN of a counted, qualified NP ("12 yellow ONES", "twice as many
       green ONES as yellow ones"): the word itself never denotes the real
       measure, only its color/qualifier is genuine. Rooted at 'pronoun',
@@ -2488,6 +2447,34 @@ categories:
       CANNOT MOVE A NUMBER ALONE: it only makes the anaphor resolvable;
       summing the qualified variants it produces is the conjunct-
       comparative class's job, built on top of this.
+  contribute:
+    parent: quantity_comparison_verb
+  produce:
+    parent: quantity_comparison_verb
+    polarity: 1
+  accompany:
+    parent: verb
+  receive:
+    parent: quantity_comparison_verb
+    polarity: 1
+  retain:
+    parent: quantity_comparison_verb
+  divide:
+    parent: verb
+  attach:
+    parent: verb
+  multiplier_marker:
+    parent: noun
+    notes: >
+      the multiplicative-ratio clause marker 'times' (as in "N times as
+      many/much/the number of X as Y") — sensed 'noun' in the lexicon
+      (t-z.yaml); the merged 'N times' MULTIPLIER value itself is assigned
+      structurally in kernel/numbers.py and is unrelated to this category.
+      engine.py's `_is_relational_clause` (mining candidate conjoined-
+      clause-holdings) ORs membership in this category alongside
+      'comparative'/'multiplier' to recognize a comparative/ratio clause
+      structurally — the SAME "test a category, never enumerate the word
+      in Python" shape as 'clause_marker_prep' below.
 modifier_attachment_compatibility:
 - preposition_category: quantity_surface_preposition
   object_category: tree_quantity_surface_location
@@ -2600,47 +2587,40 @@ members:
   mean_context_preposition: [on]
   a_article_membership_predicate: [bird, book, cat, child, coin, dog, fish, friend, hamster, student, teacher]
   academic_course_modifier: [business, humanities, science]
-  accompaniment_compatible_verb: [jumped, ran, taught, teach, teaches, travel, traveled, travels, walked]
+  accompaniment_compatible_verb: [help, helped, helps, jumped, ran, taught, teach, teaches, travel, traveled,
+      travels, walked, work, worked, works]
   accompaniment_preposition: [with, without]
-  acquire: [bought, buy, buys, find, finds, found, get, gets, got, receive, received, receives, win, wins, won]
+  acquire: [add, added, adds, bought, bring, brings, brought, buy, buys, catch, catches, caught, collect,
+      collected, collects, earn, earned, earns, find, finds, found, gathered, get, gets, getting, got, order,
+      ordered, orders, pick, picked, picks, purchase, purchased, purchases, receive, received, receives, start,
+    started, starts, win, wins, won]
   activity_duration_verb: [did]
   age_comparative: [older, younger]
   age_measure: [year]
   age_noun: [age]
   age_projection_preposition: [after, in]
-  aggregate_contents_label: [content, contents, goodie]
+  aggregate_contents_label: [content, goodie]
   aggregate_noun: [amount, number]
-  animal: [monkey, alpaca, beetle, bird, cat, dog, fish, hamster, jaguar, rabbit, snake]
-  animate:
-  - brother
-  - child
-  - coworker
-  - friend
-  - gardener
-  - grandparent
-  - grandma
-  - guardian
-  - librarian
-  - mom
-  - parent
-  - partner
-  - person
-  - shopper
-  - student
-  - teacher
-  - violinist
+  animate: [artist, athlete, aunt, baby, babysitter, baker, bodyguard, boy, boyfriend, brother, brunette,
+      buyer, cannoneer, captain, carpenter, chef, child, citizen, classmate, clerk, contestant, cousin,
+      cowgirl, coworker, customer, dad, dancer, daughter, doctor, dog-walker, driver, employee, farmer, father,
+    fisherman, friend, gardener, girl, goalkeeper, granddaughter, grandfather, grandkid, grandma, grandmother,
+      grandpa, grandparent, guardian, guest, gymnast, housewife, hunter, kid, kindergartner, lady, librarian,
+      magician, man, manager, mason, merchandiser, mom, mother, mum, neighbor, nurse, painter, pal, parent,
+      partner, person, roommate, salesman, scientist, seller, senior, shopkeeper, shopper, sister, soldier,
+      son, spectator, student, teacher, violinist, worker]
   animate_object_pronoun: [her, him, them]
-  animate_object_verb: [taught, teach, teaches]
+  animate_object_verb: [meet, meets, met, taught, teach, teaches]
   animate_possessive_determiner: [her, his, my, their, your]
   animate_pronoun: [he, she]
-  animate_subject_verb: [enroll, enrolled, enrolling, enrolls, own, owns, take, takes, taught, teach, teaches,
-      took]
+  animate_subject_verb: [cough, coughed, coughs, enroll, enrolled, enrolling, enrolls, knew, know, knowing,
+      knows, own, owns, take, takes, taught, teach, teaches, took]
   arrival_goal_preposition: [at]
   arrival_motion_verb: [arrive, arrived, arrives]
   attribute_class_diversity_adjective: [different]
   attribute_class_noun: [color]
   bare_possession_incompatible_noun: [number]
-  bare_pp_object: [town, pi]
+  bare_pp_object: [class, pi, town]
   capacity_assessment_activity: [examine, examined, examines, examining, measure, measured, measures,
       measuring, studied, studies, study, studying]
   capacity_inquiry_activity: [check, checked, checking, checks]
@@ -2653,10 +2633,14 @@ members:
   clause_subject_possessive_determiner: [her, his, its, their]
   collection_addition_quantity_verb: [add, added, adding, adds]
   ripeness_attribute: [ripe, unripe]
-  color_attribute: [beige, blue, green, pink, purple, red, turquoise, violet, yellow]
-  colorable_noun: [alpaca, apple, apricot, ball, bench, bird, book, card, cat, coin, cookie, cupboard, dog,
-      dollar, drum, egg, envelope, fish, flower, garden, grape, hamster, hard hat, hat, key, marble, pantry,
-      paper, pear, pencil, plum, puzzle, rabbit, rose, sticker, storeroom, tomato, toy]
+  color_attribute: [beige, black, black-and-white, blue, brown, gold, gray, green, grey, pink, purple, red,
+      silver, turquoise, violet, yellow]
+  colorable_noun: [alpaca, apple, apricot, backpack, badge, ball, balloon, beanie, bench, bird, blanket, book,
+      boot, bracelet, cabinet, cap, card, cat, chair, chest, coin, cookie, crayon, cupboard, diary, dog, doll,
+      dollar, drum, earring, egg, envelope, fish, flower, folder, garden, gem, gemstone, grape, hamster, hard
+      hat, hat, jacket, key, kite, magazine, marble, marker, mitten, mug, necklace, notebook, notepad, pantry,
+      paper, pear, pencil, phone, pillowcase, pin, plum, puzzle, quilt, rabbit, ribbon, rose, scarf, skirt,
+      sofa, sticker, storeroom, sweater, ticket, tomato, toy]
   committed_transfer_decision_verb: [decide, decided, decides]
   compensated_activity: [babysitting, gardening, tutoring]
   complement_boy: [boy]
@@ -2670,7 +2654,7 @@ members:
   container_capacity_noun: [capacity]
   container_capacity_transitive_placement_verb: [fit, fits, fitting]
   container_content_state_verb: [contain, contained, containing, contains, had, has, have]
-  container_contents_noun: [content, contents]
+  container_contents_noun: [content]
   container_fill_participle: [fill, filled, filling, fills]
   container_totality_transfer_verb: [put, puts, putting]
   content_progress_measure: [page]
@@ -2683,8 +2667,8 @@ members:
   count_intensifier: [more]
   count_quantity_delta: [fewer, more]
   cultivation_quantity_verb: [plant, planted, planting, plants]
-  currency: [dollar, money]
-  currency_measure: [dollar]
+  currency: [dollar, money, pound]
+  currency_measure: [balance, cent, cost, dollar, earnings]
   currency_quantity_verb: [bought, buy, buys, find, finds, found, get, gets, got, had, has, have, lose, loses,
       lost, own, owns, receive, received, receives, sell, sells, sold, spend, spends, spent, win, wins, won]
   current_day_marker: [today]
@@ -2697,101 +2681,41 @@ members:
   deictic_temporal_marker: [now, today, tomorrow, yesterday]
   destination_preposition: [to]
   difference_preposition: [between, in]
-  dimension_difference_measure: [inch, pound]
+  dimension_difference_measure: [centimeter, foot, gram, inch, kilogram, kilometer, meter, mile, ounce, pound]
   dimension_less: [lighter, shorter, smaller]
-  dimension_more: [heavier, higher, larger, longer, taller, wider]
-  dimension_noun: [age]
+  dimension_more: [farther, heavier, higher, larger, longer, taller, wider]
+  dimension_noun: [age, balance, cost, distance, earnings, weight]
   direct_quantity_goal_predicate: [need, needed, needs, require, required, requires]
   discourse_group_pronoun: [them]
   discourse_subject_group_pronoun: [they]
   distributive_quantifier: [each, every]
   drop_quantity_verb: [dropped, drops]
-  droppable_quantity_object:
-  - bolt
-  - banana
-  - apple
-  - apricot
-  - ball
-  - book
-  - cake
-  - candy
-  - card
-  - charcuterie
-  - cheddar cheese
-  - cheese
-  - clip
-  - coin
-  - cold cut
-  - cookie
-  - cream cheese
-  - drum
-  - egg
-  - envelope
-  - grape
-  - hamburger
-  - key
-  - marble
-  - pack
-  - paper
-  - peach
-  - pear
-  - pencil
-  - pickle
-  - plum
-  - puzzle
-  - rose
-  - stamp
-  - sticker
-  - tomato
-  - toy
+  droppable_quantity_object: [apple, apricot, badge, bagel, ball, balloon, banana, battery, beanie, beignet,
+      blanket, bolt, book, boot, bracelet, brochure, brush, cable, cake, candle, candy, cap, card, cellphone,
+      charcuterie, charm, cheddar cheese, cheese, clamp, clip, coin, cold cut, cookie, crayon, cream cheese,
+      crepe, crown, cupcake, diary, dice, doll, donut, drum, earring, egg, envelope, eraser, folder, football,
+      fork, frisbee, gem, gemstone, grape, gumball, hamburger, highlighter, ipod, jacket, jellybean, key,
+      knife, laptop, lego, lens, lollipop, magazine, marble, marker, match, mitten, mug, nail, necklace,
+      netbook, newspaper, notebook, notepad, novel, pack, pad, paintbrush, paper, pastry, peach, pear, pebble,
+      pen, pencil, phone, pickle, pill, pin, plug, plum, present, pretzel, puzzle, quilt, ribbon, rock, rose,
+      scarf, scoop, scrapbook, seed, smartphone, snowball, softball, spoon, stamp, stick, sticker, stone,
+      sword, tomato, toy]
   duration_dimension_comparative: [longer, shorter]
-  duration_measure: [day, hour, minute, month, week, year, second, seconds]
-  duration_total_subject: [time]
+  duration_measure: [day, hour, minute, month, second, seconds, week, year]
+  duration_total_subject: [gap, journey, time, trip]
   duration_verb: [takes, took]
-  earnable_quantity_object: [dollar, money]
-  earning_quantity_verb: [earn, earned, earns]
+  earnable_quantity_object: [dollar, money, point]
+  earning_quantity_verb: [earn, earned, earns, score, scored, scores]
   eating_quantity_verb: [ate, eat, eats]
-  edible_quantity_object:
-  - banana
-  - apple
-  - apricot
-  - beetle
-  - bird
-  - cake
-  - candy
-  - charcuterie
-  - cheddar cheese
-  - cheese
-  - coffee
-  - cold cut
-  - cookie
-  - cream cheese
-  - egg
-  - fish
-  - food
-  - fries
-  - grape
-  - hamburger
-  - pear
-  - pickle
-  - piece
-  - pizza
-  - plum
-  - rabbit
-  - slice
-  - snake
-  - soda
-  - spaghetti
-  - sugar
-  - tea
-  - tomato
-  - treat
-  - ice cream
-  - frozen yoghurt
-  - frozen yogurt
-  - yoghurt
-  - yogurt
-  - milkshake
+  edible_quantity_object: [apple, apricot, avocado, bagel, banana, bean, beetle, beignet, berry, bird,
+      blackberry, blueberry, bread, burger, cake, candy, carrot, charcuterie, cheddar cheese, cheese,
+      coffee, cold cut, conch, cookie, corn, crab, cream cheese, crepe, cucumber, cupcake, dessert,
+      donut, egg, entree, fish, food, fries, frozen yoghurt, frozen yogurt, grape, gumball, hamburger,
+      ice cream, jellybean, lemon, loaf, lollipop, macaron, macaroon, macaroons, meal, meatball,
+      milkshake, muffin, nachos, nut, olive, orange, oyster, pakora, pancake, pancakes, pastry, pear,
+      pepper, pickle, pie, piece, pineapple, pistachio, pizza, plum, potato, pretzel, provisions,
+      rabbit, raspberry, salad, salmon, samosa, sandwich, slice, snack, snake, soda, spaghetti, steak,
+      strawberry, sugar, sweets, tea, tomato, treat, yoghurt, yogurt]
   enrollment_quantity_object: [course, student]
   enrollment_quantity_verb: [enroll, enrolled, enrolling, enrolls]
   epistemic_report_verb: [said, say, saying, says]
@@ -2800,7 +2724,7 @@ members:
   externally_deictic_possessive_determiner: [my, your]
   final_measurement_attribute: [final]
   find_quantity_verb: [find, finds, found]
-  finishable_quantity_object: [course, puzzle, task]
+  finishable_quantity_object: [course, homework, project, puzzle, task]
   finite_infinitival_goal_predicate: [hope, hoped, hopes, intend, intended, intends, want, wanted, wants]
   first_person_plural_pronoun: [we]
   food_addition_quantity_verb: [add, added, adding, adds]
@@ -2812,10 +2736,10 @@ members:
   group_total_marker: [altogether, combined, together, total]
   group_total_preposition: [in]
   group_total_quantifier: [all]
-  group_total_scope: [area, cupboard, farm, garden, pantry, storeroom, university]
+  group_total_scope: [area, beach, cupboard, farm, garden, lake, pantry, storeroom, university]
   group_total_scope_preposition: [in, on]
   holder_list_conjunction: [and]
-  increase_verb: [rose]
+  increase_verb: [increase, increased, increases, rise, rose]
   indefinite_a_exception: [university]
   indefinite_an_exception: [hour]
   indefinite_article: [a, an]
@@ -2824,14 +2748,16 @@ members:
   initiation_quantity_verb: [began, begin, beginning, begins, start, started, starting, starts]
   inquiry_cognition_verb: [knew, know, knowing, knows, saw, see, seeing, sees]
   institution_quantity_measure: [university]
-  instrument_noun: [key, pencil]
+  instrument_noun: [brush, clamp, crayon, eraser, fork, highlighter, hose, key, knife, laser, lawnmower,
+      marker, mower, paintbrush, pen, pencil, scanner, spoon, sword]
   instrument_preposition: [with, without]
-  length_measure: [inch]
+  length_measure: [centimeter, distance, foot, inch, kilometer, meter, mile]
   length_unit: [foot, inch, meter, centimeter, millimeter]
   less_dir: [fewer, less, younger]
-  linear_dimension_comparative: [higher, larger, longer, shorter, smaller, taller, wider]
-  linear_dimension_holder: [book, tree]
-  linear_unit_dimension_adjective: [tall]
+  linear_dimension_comparative: [farther, higher, larger, longer, shorter, smaller, taller, wider]
+  linear_dimension_holder: [book, box, cable, gift, hose, pipe, plank, pyramid, ribbon, rope, snake, string,
+      tree]
+  linear_unit_dimension_adjective: [high, tall]
   literal_containment_verb: [contain, contained, contains]
   livestock_raising_quantity_verb: [raise, raised, raises, raising]
   location_impossibility_modal: [can]
@@ -2840,28 +2766,37 @@ members:
   location_state_verb: [be]
   location_terminating_past_verb: [left]
   location_terminating_verb: [leave, leaves, leaving, left]
-  lose: [ate, dropped, drops, eat, eats, gave, give, gives, lose, loses, lost, sell, sells, sold, spend,
-      spends, spent]
+  lose: [ate, broke, drank, drink, drinks, drop, dropped, drops, eat, eats, gave, give, gives, lose, loses,
+      lost, paid, pay, pays, sell, sells, sold, spend, spends, spent, use, used, uses]
   magnitude_noun: [area, litter]
-  manner_compatible_verb: [jumped, ran, travel, traveled, travels, walked]
+  manner_compatible_verb: [jumped, ran, travel, traveled, travels, walked, work, worked, works]
   manner_preposition: [in, with, without]
   many_incompatible_noun: [age, litter, percentage, price, rest, science]
-  mass_currency_noun: [money]
+  mass_currency_noun: [balance, cash, earnings, money]
   mass_dimension_comparative: [heavier, lighter]
-  mass_dimension_holder: [book]
+  mass_dimension_holder: [book, box, gift, macaron, pyramid]
   mass_dimension_noun: [weight]
-  mass_measure: [gram, kilogram, pound, weight]
+  mass_measure: [gram, kilogram, ounce, pound, weight]
   mass_quantity_delta: [less, more]
-  mass_quantity_noun: [cardboard, clay, cloth, fabric, ice cream, litter, money, paper, rest, sand, sugar, vinegar, water, wool, yoghurt, yogurt, frozen yoghurt, frozen yogurt]
-  mass_unit: ["gram", "kilogram", "ounce", "pound"]
+  mass_quantity_noun: [air, airflow, applesauce, bacon, bamboo, basil, batter, beef, beeswax, blood, bread,
+      buttercream, cardboard, charcoal, chicken, clay, cloth, coffee, custard, data, dough, electricity,
+      fabric, flour, food, frosting, frozen yoghurt, frozen yogurt, fudge, fur, garbage, gas, gluten, grass,
+      guacamole, gum, ice, ice cream, jam, jelly, jewelry, juice, junk, land, lassi, laundry, lemonade,
+      lettuce, litter, makeup, meat, milk, money, music, oatmeal, oregano, paper, popcorn, pork, rain,
+      rainfall, rest, rice, sand, sauce, silk, snow, soup, storage, string, sugar, vinegar, water, wool,
+      yoghurt, yogurt]
+  mass_unit: [gram, kilogram, ounce, pound]
   material_addition_quantity_verb: [add, added, adding, adds]
   means_compatible_verb: [jumped, ran, travel, traveled, travels, walked]
   means_preposition: [aboard, by, via]
-  measured_comparative: [fewer, heavier, higher, larger, less, lighter, longer, more, older, shorter, smaller,
-      taller, wider, younger]
-  measured_comparative_offset_measure: [day, gram, hour, kilogram, minute, pound, week, year]
+  measured_comparative: [farther, fewer, heavier, higher, larger, less, lighter, longer, more, older, shorter,
+      smaller, taller, wider, younger]
+  measured_comparative_offset_measure: [day, gram, hour, kilogram, minute, month, pound, week, year]
   measured_content_adjustment_verb: [add, added, adding, adds]
-  measured_content_substance: [brownie, clay, gummy worm, jelly bean, sand, sugar, vinegar, water]
+  measured_content_substance: [applesauce, bacon, basil, batter, beef, beeswax, bread, brownie, buttercream,
+      charcoal, clay, custard, dough, flour, frosting, fudge, gas, gluten, guacamole, gum, gummy worm, ice,
+      jam, jelly, jelly bean, juice, lassi, lemonade, lettuce, makeup, meat, milk, oatmeal, oregano, popcorn,
+      pork, rain, rainfall, rice, salad, sand, sauce, silk, snow, soup, sugar, vinegar, water]
   measured_content_transfer_verb: [pour, poured, pouring, pours, put, puts, putting]
   measurement_container: [barrel, beaker, bottle, bowl, box, bucket, canister, container, drum, flask, jar,
       jug, tank, vessel, vial]
@@ -2875,7 +2810,7 @@ members:
   membership_collection_noun: [animal]
   membership_predicate_incompatible_noun: [time]
   more_dir: [more, older]
-  motion_comparison_measure: [inch, time]
+  motion_comparison_measure: [centimeter, distance, foot, inch, kilometer, meter, mile, time]
   motion_comparison_verb: [travel, traveled, travels]
   named_calendar_period: [april, august, december, february, friday, january, july, june, march, may, monday,
       november, october, saturday, september, sunday, thursday, tuesday, wednesday]
@@ -2883,19 +2818,37 @@ members:
       september]
   named_weekday: [friday, monday, saturday, sunday, thursday, tuesday, wednesday]
   narration_sequence_adverb: [finally, next, then]
-  negation: [not]
+  negation: [never, not]
   negative_person_pronoun: [nobody]
-  non_event_verb: [be]
-  non_quantity_holder: [amount, clay, cost, day, dollar, gram, inch, kilogram, liter, money, number, paper,
-      pound, price, remainder, rest, sand, time, wool, year]
-  non_quantity_object_verb: [are, arrive, arrived, arrives, be, cost, is, jumped, need, needed, needs, put,
-      puts, putting, ran, rose, take, takes, took, walked, want, wanted, wanting, wants, was, were, wilted]
+  non_event_verb: [be, been, being]
+  non_quantity_holder: [amount, calorie, cent, centimeter, clay, cost, day, degree, dollar,
+      electronvolt, foot, gallon, gram, half-hour, hour, inch, kelvin, kilogram, kilojoule, kilometer,
+      kilowatts, kw/h, lb, lbs, liter, meter, mile, minute, money, month, mpg, nanometer, number,
+      ounce, paper, pint, pound, price, quart, radian, remainder, rest, sand, time, week, wool, year]
+  non_quantity_object_verb: [afford, affords, are, arrive, arrived, arrives, be, came, come, comes, cost,
+      equals, is, jumped, measure, measured, measures, need, needed, needs, put, puts, putting, ran, rose,
+      take, takes, took, walked, want, wanted, wanting, wants, was, were, wilted]
   output_quantity_measure: [page]
   output_quantity_product: [book]
   output_quantity_verb: [write, writes, wrote]
-  ownable_quantity_object: [dress, business, hard hat, money, shoe, wallet]
+  ownable_quantity_object: [accessory, advertisement, airplane, application, backpack, badge, bagel,
+      balloon, basketball, battery, beanie, bed, beignet, bicycle, binder, blanket, boat, boot,
+      bouquet, bracelet, brochure, brush, bunch, burger, bus, business, cabinet, cable, caboose, cage,
+      candle, canteen, cap, cartridge, case, cellphone, chair, chalkboard, charm, chest, clamp,
+      console, copy, costume, couch, counter, crayon, credit card, crepe, crown, cupcake, cutlery,
+      cuttlebone, deck, desk, desktop, diary, dice, dodgeball, doll, donut, drawer, drawing, dress,
+      earring, elevator, engine, eraser, exhibit, face-mask, fan, fertilizer, folder, football, fork,
+      frame, frisbee, gem, gemstone, gift, gumball, handlebar, hard hat, heater, helicopter,
+      highlighter, hoop, hose, ipod, jacket, jeans, jellybean, jet, jewelry, kite, knife, laptop,
+      laser, lawnmower, lego, lens, locker, lollipop, magazine, makeup, marker, match, matchbox,
+      minibus, mitten, mixtape, money, monitor, mower, mug, nail, necklace, netbook, newspaper,
+      notebook, notepad, novel, outfit, packet, pad, pail, paintball, paintbrush, pastry, pebble, pen,
+      phone, pill, pillowcase, pin, pipe, plug, pocket, pot, present, pretzel, printer, pufferfish,
+      pyramid, quilt, record, ribbon, rock, rocket, rope, scanner, scarf, scoop, scrapbook, seat, seed,
+    sharpener, shelf, shoe, shoebox, skateboard, skirt, smartphone, snowball, sofa, softball, spoon,
+      statue, stick, stone, string, strip, sweater, sword, wallet]
   owned_collection_location: [cupboard, garden, pantry, storeroom]
-  ownership_state: [own, owns]
+  ownership_state: [own, owned, owns]
   package_content_preposition: [of, with]
   package_group_total_quantifier: [both]
   pairable_partitive_substance: [pants, shoe, shorts, sock]
@@ -2904,17 +2857,17 @@ members:
   partitive: [of]
   partitive_pair_measure: [pair]
   partitive_piece_measure: [piece]
-  partitive_volume_measure: [liter]
+  partitive_volume_measure: [bottle, cup, gallon, liter, pint, quart, sack]
   partitive_weight_measure: [pound]
-  passive_quantity_object: [alpaca, animal, apple, apricot, ball, bird, book, card, cat, coin, cookie, course,
-      dog, dollar, drum, egg, envelope, fish, flower, grape, hamster, key, marble, number, paper, pear, pencil,
-    plum, pound, puzzle, rabbit, rose, sticker, student, tomato, toy]
-  passive_quantity_participle: [bought, sold]
+  passive_quantity_object: [alpaca, animal, apple, apricot, ball, bar, bird, book, candle, card, cat, coin,
+      cookie, course, cup, dog, dollar, drum, egg, envelope, fish, flower, grape, hamster, key, marble, number,
+    pair, paper, pear, pencil, pie, piece, plum, pound, puzzle, quart, rabbit, rose, sticker, student, ticket,
+      tomato, toy]
+  passive_quantity_participle: [bought, eaten, given, picked, sold]
   past_copula: [was, were]
   past_day_marker: [yesterday]
   past_departure_quantity_verb: [left]
-  past_possession_state: [had]
-  pet: [cat, dog, hamster]
+  past_possession_state: [had, owned]
   physical_size_noun: [alpaca, animal, apple, apricot, bag, ball, bench, bird, book, card, cat, child, coin,
       cookie, cupboard, dog, drum, egg, envelope, fish, flower, friend, garden, gardener, grape, guardian,
       hamster, key, librarian, marble, pantry, paper, pear, pencil, plum, puzzle, rabbit, rose, shopper,
@@ -2943,81 +2896,42 @@ members:
   price_anaphor: [cost, price]
   price_relation_verb: [are, cost, costs, is, was, were]
   price_verb: [cost, costs]
-  producible_quantity_object: [book, business, coin, cookie, pencil, toy]
+  producible_quantity_object: [book, business, button, coin, cookie, page, pencil, toy]
   production_quantity_verb: [made, make, makes, write, writes, wrote]
   progressive_inquiry_cognition_verb: [wonder, wondered, wondering, wonders]
-  purchase: [bought, buy, buying, buys, purchase, purchased, purchases, purchasing]
-  purpose_compatible_verb: [jumped, ran, travel, traveled, travels, walked]
+  purchase: [bought, buy, buying, buys, order, ordered, orders, purchase, purchased, purchases, purchasing]
+  purpose_compatible_verb: [jumped, ran, travel, traveled, travels, walked, work, worked, works]
   purpose_noun: [purpose]
   purpose_preposition: [for]
   purpose_resource_goal_activity: [raise, raised, raises, raising, save, saved, saves, saving]
   quantified_group_total_marker: [together]
-  quantity_anaphor: [amount, number]
-  quantity_ask_verb: [had, has, have]
-  quantity_container: [house, piñata]
+  quantity_anaphor: [amount, distance, number]
+  quantity_ask_verb: [enroll, enrolled, enrolling, enrolls, had, has, have, own, owns, take, takes, took]
+  quantity_container: [aquarium, backpack, binder, box, bunch, cabinet, cage, canteen, case, chest, cooler,
+      drawer, folder, house, locker, matchbox, mug, packet, pail, piñata, pot, scoop, shelf, shoebox]
   quantity_delta: [fewer, less, more]
   quantity_event_participant: [animal, dragon, monster]
-  quantity_event_verb: [leave, leaves, leaving]
-  quantity_holder: [book, head]
-  quantity_interior_location:
-  - area
-  - bag
-  - barrel
-  - beaker
-  - bottle
-  - bowl
-  - box
-  - bucket
-  - canister
-  - container
-  - cupboard
-  - flask
-  - forest
-  - fridge
-  - garden
-  - house
-  - jar
-  - jug
-  - mall
-  - neighborhood
-  - pantry
-  - store
-  - storeroom
-  - subdivision
-  - tank
-  - truck
-  - university
-  - vessel
-  - vial
-  quantity_location:
-  - area
-  - bench
-  - cupboard
-  - farm
-  - forest
-  - garden
-  - pantry
-  - park
-  - post office
-  - sea
-  - storeroom
-  - tree
-  - university
-  - waters
+  quantity_event_verb: [leave, leaves, leaving, meet, meets, met, repaint, repainted, repainting, repaints]
+  quantity_holder: [book, head, house, machine, plank, store]
+  quantity_interior_location: [aquarium, arcade, area, arena, auditorium, backpack, backyard, bag, barrel,
+      basket, beaker, binder, bookstore, bottle, bowl, box, bucket, cabinet, cage, camp, canister, canteen,
+      case, castle, chest, church, city, class, classroom, classrooms, closet, college, container, cooler,
+      country, cupboard, drawer, factory, flask, forest, fridge, gallery, garage, garden, gym, hall, home,
+      house, jar, jug, kitchen, lake, library, locker, mall, market, museum, neighborhood, office, orchard,
+      packet, pail, pantry, party, pharmacy, plantation, playground, pool, pot, ranch, sandbox, school,
+      schoolyard, shelter, shoebox, stadium, station, store, storeroom, studio, subdivision, supermarket, tank,
+    truck, university, vessel, vial]
+  quantity_location: [aquarium, area, bag, basket, bench, binder, bowl, box, city, class, classroom, country,
+      cupboard, farm, forest, garden, jar, kitchen, mall, office, pantry, park, party, post office, school,
+      sea, side, storeroom, tree, university, waters]
   quantity_location_preposition: [in, into]
   quantity_remainder_preposition: [with]
-  quantity_site_location:
-  - bench
-  - farm
-  - forest
-  - garden
-  - park
-  - post office
-  - tree
-  - university
-  - seashore
+  quantity_site_location: [beach, bench, camp, church, class, classroom, college, factory, farm, festival,
+      forest, gallery, garage, garden, gym, library, mall, museum, office, park, party, pharmacy, playground,
+      post office, ranch, school, seashore, stadium, station, supermarket, tree, university]
   quantity_site_preposition: [at]
-  quantity_surface_location: [avenue, bench, boulevard, farm, lane, road, street, tree]
+  quantity_surface_location: [aisle, alley, avenue, beach, bench, boulevard, deck, desk, farm, field, floor,
+      ground, highway, hill, lane, patio, road, roof, shelf, side, sidewalk, street, tree]
   quantity_surface_preposition: [on]
   quantity_topic: [topic]
   quantity_topic_preposition: [about]
@@ -3044,11 +2958,11 @@ members:
   singular_auxiliary: [does]
   singular_copula: [is, was]
   singular_location_anaphor: [it]
-  size_attribute: [large, small]
+  size_attribute: [big, giant, huge, large, massive, medium, mini, oversized, small]
   sized_content_bearing_whole: [bag, barrel, beaker, bottle, bowl, box, bucket, canister, container, flask,
       jar, jug, tank, vessel, vial]
-  sized_quantity_container: [bag, barrel, basket, bin, beaker, bottle, bowl, box, bucket, canister, carton, container, flask, jar,
-      jug, tank, tub, vessel, vial]
+  sized_quantity_container: [bag, barrel, basket, bin, beaker, bottle, bowl, box, bucket, canister, carton,
+      container, flask, jar, jug, tank, tub, vessel, vial]
   span_preposition: [in]
   spatial_copular_verb: [are, is, was, were]
   spatial_goal_preposition: [into, onto, to, toward, towards]
@@ -3094,35 +3008,71 @@ members:
   temporal_deadline_preposition: [by]
   temporal_duration_preposition: [during, for, throughout]
   temporal_end_preposition: [through, to, until]
-  temporal_in_point_object: [april, august, day, december, february, january, july, june, march, may, november,
-    october, september, year]
+  temporal_in_point_object: [afternoon, april, august, day, decade, december, evening, february, january, july,
+    june, march, may, month, morning, night, november, october, season, semester, september, week, weekend,
+      year]
   temporal_in_point_preposition: [in]
   temporal_marker: [now, today]
-  temporal_on_point_object: [day, friday, monday, saturday, sunday, thursday, tuesday, wednesday]
+  temporal_on_point_object: [day, friday, monday, saturday, sunday, thursday, tuesday, wednesday, weekend]
   temporal_on_point_preposition: [on]
   temporal_start_preposition: [from, since]
   third_person_animate_possessive_determiner: [her, his]
-  time_measure: [age, day, year]
-  timeperiod: [april, august, day, december, february, friday, january, july, june, march, may, monday,
-      november, october, saturday, september, sunday, thursday, tuesday, wednesday, year]
+  time_measure: [age, day, hour, minute, month, week, year]
+  timeperiod: [afternoon, april, august, day, decade, december, evening, february, friday, january, july, june,
+    march, may, monday, month, morning, night, november, october, saturday, season, semester, september,
+      sunday, thursday, tuesday, wednesday, week, weekend, year]
   topical_quantity_host: [book, course]
   transfer_out: [gave, give, gives, sell, sells, sold]
-  transferable_quantity_object: [alpaca, animal, belt, bird, box, can, cat, clay, clothes, coat, course, dog,
-      dollar, fish, flower, gnome, hamster, hat, litter, money, number, page, pants, paper, rabbit, sand,
-      shirt, shorts, sock, sugar, suit, tennis ball, top, tree, vinegar, water, wool, piñata, shell, seashell]
+  transferable_quantity_object: [alpaca, animal, bar, belt, bird, box, can, cat, clay, clothes, coat, course,
+      dog, dollar, fish, flower, gnome, hamster, hat, kite, litter, money, number, orange, page, pants, paper,
+      piñata, rabbit, sand, seashell, shell, shirt, shorts, sock, sugar, suit, tennis ball, ticket, top, tree,
+      vinegar, water, wool]
   tree_borne_quantity: [apple, apricot, pear, plum]
   tree_quantity_surface_location: [tree]
   unit_recipient_output_product: [letter]
   unit_recipient_output_verb: [write, writes, wrote]
   unit_recipient_transfer_verb: [sell, sells, sold]
   volume_convertible_measured_content: [water]
-  volume_measure: [liter, milliliter, ml]
-  volume_partitive_substance: [sand]
+  volume_measure: [gallon, liter, milliliter, ml, pint, quart]
+  volume_partitive_substance: [applesauce, batter, coffee, custard, dough, flour, frosting, guacamole, ice,
+      jam, jelly, juice, lassi, lemonade, milk, oatmeal, oil, rice, salad, sand, sauce, snow, soup, sugar]
   wage_verb: [earn, earned, earns, made, make, makes]
-  weighable_partitive_substance: [clay, paper, sand, wool]
+  weighable_partitive_substance: [applesauce, bacon, basil, batter, beef, beeswax, bread, buttercream,
+      charcoal, chicken, clay, coffee, custard, dough, flour, food, frosting, fudge, gluten, guacamole, gum,
+      ice, jam, jelly, lettuce, meat, milk, oatmeal, oregano, paper, popcorn, pork, rice, salad, sand, sauce,
+      silk, snow, soup, sugar, wool]
   win_quantity_verb: [win, wins, won]
   winnable_quantity_object: [dollar, money]
   written_production_verb: [write, writes, wrote]
+  quantity_comparison_verb: [cover, covered, covers, held, hold, holds]
+  decrease_verb: [decrease, decreased, decreases, fall, fell]
+  flexible_holding_anchor_adverb: [already, also, always, initially, later, originally, recently, still, then]
+  shuckable_item: [corn, ear, oyster, peas]
+  child: [daughter, son]
+  contribute: [contribute, contributed, paid, pay, pays]
+  produce: [bake, baked, bakes, brew, build, builds, built, cook, cooks, create, created, creates, draw, made,
+      make, makes, paint, painted, paints, sew, sews, write, writes, wrote]
+  means_noun: [boat, bus, car]
+  cause_noun: [accident]
+  cause_compatible_verb: [died, dies]
+  bare_entity_reference: [bill, mark]
+  duration_holder: [gap, journey, trip]
+  accompany: [bring, brings, brought, had, has, have, invite, invited, invites, take, takes, took]
+  mass_unit_dimension_adjective: [heavy]
+  receive: [get, gets, given, got, had, has, have, receive, received, receives]
+  retain: [keep, keeping, keeps, kept]
+  shucking_verb: [shuck, shucked, shucking, shucks]
+  toy: [car, soldier]
+  dimension_adjective: [short]
+  divide: [cut, cuts, divide, divides, share, shared, shares, split, splits]
+  temporal_at_point_object: [night]
+  consumable_quantity_object: [pill]
+  litter: [bottle, can]
+  attach: [add, added, adds, put, puts]
+  multiplier_marker: [times]
+  measure_anaphor: [ones]
+  instrument_compatible_verb: [cut, cuts, use, used, uses, write, writes, wrote]
+  verb_particle: [away, off, out, up]
 attribute_compatibility:
   length_unit: [rectangular_shape]
   prenominal_remnant_adj: [mass_currency_noun, quantity_dimension_noun, material_resource]

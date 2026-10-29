@@ -1,11 +1,5 @@
 format: rulekit/categories@1
 attrs:
-  bird:
-    legs: 2
-  cat:
-    legs: 4
-  dog:
-    legs: 4
   fifth:
     ordinal_index: 5
   final:
@@ -30,17 +24,54 @@ attrs:
   third:
     batch_index: 3
     ordinal_index: 3
+  dime:
+    cents: 10
+  nickel:
+    cents: 5
+  penny:
+    cents: 1
+  quarter:
+    cents: 25
 categories:
   preference_attribute:
     parent: adjective
   intrinsic_attribute:
     parent: adjective
-    notes: An intrinsic property such as colour, size or ripeness; excludes
-      discourse order and remainder references.
+    notes: An intrinsic property such as colour, size or ripeness; excludes discourse order and
+      remainder references.
 
+  quality_bearer_noun:
+    parent: noun
+    notes: Inanimate nouns with a measured ordinary quality predicate.
+  quality_attribute:
+    parent: adjective
+    notes: >
+      Broad evaluative adjectives. Compatibility is still explicit: the
+      adjective may describe either a declared quality bearer or an animate
+      noun without making those noun categories equivalent.
+  marital_status_attribute:
+    parent: adjective
+    notes: Marital-status predicates licensed only for animate nouns.
+  capacity_attribute:
+    parent: adjective
+    notes: Capacity-state predicates such as 'full'.
+  capacity_noun:
+    parent: noun
+    notes: Container nouns that license a capacity-state predicate.
 members:
   preference_attribute:
   - favorite
 
+  quality_bearer_noun: [carrot]
+  quality_attribute: [good]
+  marital_status_attribute: [married]
+  capacity_attribute: [full]
+  capacity_noun: [box]
 attribute_compatibility:
   preference_attribute: [purchase_collection_noun]
+  quality_attribute: [quality_bearer_noun, animate]
+  marital_status_attribute: [animate]
+  capacity_attribute: [capacity_noun]
+part_counts:
+  appendage: legs
+  wheels: wheels

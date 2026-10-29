@@ -50,7 +50,7 @@ from .sample import (
 )
 
 ASK_GENERATOR_VERSION = (
-    f"{GENERATOR_VERSION}+g7-validated-evidence-frontier-source-alignment"
+    f"{GENERATOR_VERSION}+g7-validated-evidence-frontier-source-alignment+property-contracts"
 )
 _MAX_RANDOM_ANSWERABLE_ASKS = 8
 _MAX_RANDOM_VALIDATED_ASKS = 32
@@ -164,6 +164,16 @@ def _ask_token_domain(
     ask: AskRule,
     token: MatchToken,
 ) -> list[_Filler]:
+    def with_property_qualifiers(domain):
+        spec = ask.generation.property_bindings
+        if spec is not None and token.slot == spec.property and token.cat and not token.qualified:
+            # Property names may carry a declared compatible modifier. The
+            # reader already preserves those modifiers; offer the same
+            # bounded compounds to contract-driven generation.
+            qualified = token.model_copy(update={"qualified": True})
+            return [*domain, *_ask_token_domain(project, ask, qualified)]
+        return domain
+
     source = ask.generation.slot_sources.get(token.slot or "")
     if source == "reference_group":
         return [
@@ -222,7 +232,7 @@ def _ask_token_domain(
         return list(
             {
                 (filler.surface, filler.identity, filler.number): filler
-                for filler in domain
+                for filler in with_property_qualifiers(domain)
             }.values()
         )
     if token.span:
@@ -240,7 +250,7 @@ def _ask_token_domain(
     return list(
         {
             (filler.surface, filler.identity, filler.number): filler
-            for filler in domain
+            for filler in with_property_qualifiers(domain)
         }.values()
     )
 
@@ -584,12 +594,61 @@ def _optional_choices(
     return choices
 
 
+def _property_generation_plan(project, ask, rng, locked_bindings):
+    """Constrain surface generation from the same compiled property contracts."""
+    spec = ask.generation.property_bindings
+    if spec is None:
+        return ask, locked_bindings
+    tokens = {token.slot: token for _, token, _ in _leaf_tokens(ask.match["question"]) if token.slot}
+    def domain(slot):
+        result = _ask_token_domain(project, ask, tokens[slot])
+        lock = locked_bindings.get(slot)
+        if lock is not None:
+            result = [f for f in result if lock.casefold() in (f.surface.casefold(), f.identity.casefold())]
+        return result
+    subjects = domain(spec.subject)
+    quantities = domain(spec.property)
+    def property_key(quantity):
+        return " ".join(part for part in (quantity.qualifier, quantity.identity) if part)
+    candidates = [(subject, quantity) for subject in subjects for quantity in quantities
+                  if project.registry.derived_attribute(subject.identity, property_key(quantity)) is not None]
+    rng.shuffle(candidates)
+    for subject, quantity in candidates:
+        roles = project.registry.property_inputs(subject.identity, property_key(quantity))
+        if len(roles) > len(spec.parameters):
+            continue
+        locks = {**locked_bindings, spec.subject: subject.surface, spec.property: quantity.surface}
+        omitted = set(ask.generation.omit_slots)
+        remaining = set(roles)
+        valid = True
+        for index, parameter in enumerate(spec.parameters):
+            if index >= len(roles):
+                if parameter.slot in locked_bindings:
+                    valid = False
+                    break
+                omitted.add(parameter.slot)
+                continue
+            options = [(f, getattr(f, parameter.component)) for f in domain(parameter.slot)]
+            options = [(f, role) for f, role in options if role in remaining]
+            if not options:
+                valid = False
+                break
+            filler, role = options[rng.randrange(len(options))]
+            locks[parameter.slot] = filler.surface
+            remaining.remove(role)
+        if valid:
+            generation = ask.generation.model_copy(update={"omit_slots": sorted(omitted)})
+            return ask.model_copy(update={"generation": generation}), locks
+    raise GenerationError("no property contract satisfies the requested generation bindings")
+
+
 def _realize_ask(
     project: Project,
     ask: AskRule,
     rng: random.Random,
     locked_bindings: dict[str, str],
 ) -> tuple[str, dict[str, str]]:
+    ask, locked_bindings = _property_generation_plan(project, ask, rng, locked_bindings)
     sequence = ask.match["question"]
     declared_slots = {
         token.slot
@@ -723,6 +782,12 @@ def _realize_ask(
                     f"ask constraints left no filler for {token.slot or token.lit!r}"
                 )
             filler = domain[rng.randrange(len(domain))]
+            spec = ask.generation.property_bindings
+            if spec is not None and any(p.slot == token.slot and p.component == "qualifier" for p in spec.parameters):
+                if filler.value is not None and filler.qualifier:
+                    noun = (filler.identity if filler.value == 1 else
+                            project.registry.singular_to_plural.get(filler.identity, filler.identity))
+                    filler = replace(filler, surface=f"{filler.qualifier} {filler.value:g} {noun}")
             if token.slot is not None:
                 chosen[token.slot] = filler
             surfaces.append(filler.surface)
@@ -1266,7 +1331,13 @@ def _search_answerable_scenario(
     # their slots to query fields. This is still grammar-driven generation:
     # no sentence template or expected answer appears here, and ``solve`` is
     # the sole oracle for whether the realized evidence actually suffices.
-    for _plan_attempt in range(12 if ask.generation.evidence_rules else 0):
+    # Give the authored evidence family the caller's search budget. A wider
+    # vocabulary changes deterministic draws, and independently valid premises
+    # can describe an impossible combined balance. A fixed small retry count
+    # could abandon the required family before finding compatible quantities.
+    evidence_steps = len(ask.generation.evidence_rules)
+    plan_attempts = max_search_attempts // evidence_steps if evidence_steps else 0
+    for _plan_attempt in range(plan_attempts):
         planned: list[dict[str, Any]] = []
         for step in ask.generation.evidence_rules:
             if step.rule not in supported:

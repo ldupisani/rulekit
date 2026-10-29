@@ -25,8 +25,7 @@ demonstrably riskier interaction deferred to the relation-family
 increments. `than`/`times` are recognized as clause markers via the
 `relational_marker`/`multiplier_marker` categories (packs/core-english,
 packs/difg-mined) — never a Python word list, mirroring
-`clause_marker`/`clause_marker_prep` (packs/difg-mined/categories/
-clauses.yaml).
+`clause_marker`/`clause_marker_prep` (packs/core-english/categories/clauses.yaml).
 
 MUST NOT touch `_conjoined_purchase_items`/`_is_rate`/`_price_each_value`
 (learn.py's existing NP-conjunction walkers) — this is a purely textual

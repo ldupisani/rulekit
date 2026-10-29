@@ -3,12 +3,11 @@ categories:
   living_agent:
     parent: noun
     includes: [person, animal]
-    notes: A living actor; unlike personal-pronoun eligibility, this includes
-      animals.
+    notes: A living actor; unlike personal-pronoun eligibility, this includes animals.
+    disjoint_with: [building, clothes, vehicle]
   social_group:
     parent: quantity_holder
-    notes: A collective group of people; the noun does not assert its members or
-      their count.
+    notes: A collective group of people; the noun does not assert its members or their count.
   person:
     parent: quantity_event_participant
     includes: [animate]
@@ -24,15 +23,14 @@ categories:
       productive activity. Membership is not personal-pronoun eligibility.
   educational_institution:
     parent: organization
-    notes: An educational organization; a stated student count is an
-      association.
+    notes: An educational organization; a stated student count is an association.
   role_location:
     parent: noun
     includes:
     - organization
     - activity_site
-    notes: A location associated with a stated personal role; no employment or
-      organizational membership is implied.
+    notes: A location associated with a stated personal role; no employment or organizational membership is
+      implied.
   role_location_preposition:
     parent: preposition
   intentional_agent:
@@ -48,42 +46,43 @@ categories:
       Production capability does not imply earning, intention, or personhood.
   geographic_area:
     parent: quantity_holder
-    notes: A geographic scope that can contain a stated institutional
-      population.
+    notes: A geographic scope that can contain a stated institutional population.
   named_city:
     parent: geographic_area
   situated_role:
     parent: person
-    notes: A stated occupational, educational or organizational role; kinship is
-      relational and excluded.
+    notes: A stated occupational, educational or organizational role; kinship is relational and excluded.
   office_role:
     parent: situated_role
-    notes: An office title also licensed without an indefinite article after a
-      copula.
+    notes: An office title also licensed without an indefinite article after a copula.
   activity_site:
     parent: noun
     notes: A physical site at which a person can carry out a stated role.
+  persongroup:
+    parent: quantity_holder
+    notes: A collection of people; membership does not supply a group size.
 members:
   role_location_preposition: [at]
-  social_group: [family, household, team]
-  educational_institution: [university, school]
-  geographic_area: [area, neighborhood, subdivision, town]
-  production_device: [machine, robot, pump]
-  person:
-  - painter
-  - son
-  - worker
-  - technician
+  social_group: [couple, crew, crowd, family, household, team]
+  educational_institution: [college, high school, school, university]
+  geographic_area: [area, city, country, neighborhood, subdivision, town]
+  production_device: [desktop, heater, laptop, lawnmower, machine, monitor, mower, printer, pump, robot,
+      scanner]
+  person: [adult, artist, athlete, attendee, aunt, baby, babysitter, baker, bodyguard, boss, boy,
+      boyfriend, brunette, buyer, camper, cannoneer, captain, carpenter, chef, child, citizen,
+      classmate, clerk, clown, contestant, cousin, cowgirl, customer, dad, dancer, daughter, delegate,
+      doctor, dog-walker, driver, employee, farmer, father, fisherman, friend, girl, goalkeeper,
+      grandchild, granddaughter, grandfather, grandkid, grandmother, grandpa, guest, gymnast,
+      housewife, hunter, husband, kid, kindergartner, lady, magician, man, manager, mason, member,
+      merchandiser, mother, mum, neighbor, nephew, nerd, nurse, painter, pal, partner, passenger,
+      person, roommate, salesman, scientist, senior, sibling, soldier, son, spectator, student,
+      technician, worker]
   named_city:
   - chicago
-  situated_role:
-  - student
-  - teacher
-  - worker
-  - painter
-  - gardener
-  - librarian
-  - violinist
+  situated_role: [artist, athlete, babysitter, baker, bodyguard, cannoneer, captain, carpenter, chef, clerk,
+      contestant, dancer, doctor, dog-walker, driver, employee, farmer, fisherman, gardener, goalkeeper,
+      gymnast, hunter, kindergartner, librarian, magician, manager, mason, merchandiser, nurse, painter,
+      salesman, scientist, soldier, student, teacher, violinist, worker]
   office_role:
   - president
   activity_site:
@@ -91,7 +90,5 @@ members:
   - garden
   - restaurant
   - store
-  organization:
-  - business
-  - company
-  - workshop
+  organization: [administration, business, club, college, company, government, workshop]
+  persongroup: [couple, crew, family, group, household, party, team]

@@ -751,6 +751,16 @@ def _qualified_fillers(
         *_lexical_fillers(reg, sense="adjective"),
         *_lexical_fillers(reg, sense="noun"),
     ]
+    # Most dictionary nouns are not declared modifiers. Eliminate that axis
+    # before the cross product; the pair predicate below remains authoritative.
+    modifiers = [
+        modifier for modifier in modifiers
+        if any(
+            ancestor in reg.attribute_compatibility
+            for category in reg.word_categories.get(modifier.identity, ())
+            for ancestor in reg.cat_ancestors(category)
+        )
+    ]
     heads = [
         *_lexical_fillers(reg, sense="noun"),
         *[
@@ -5081,6 +5091,7 @@ _WHERE_FIELDS = (
     "name_count",
     "absent",
     "slot_not_category",
+    "preceding_verb_category",
     "unbound",
 )
 
@@ -5854,7 +5865,17 @@ def _explain_candidate(
             for ancestor in optional_ancestors
         )
         if token.opt is not None:
-            if not parent_active:
+            if path in unbound_optional_paths:
+                state = "omitted"
+                included = False
+                sentinels = ", ".join(
+                    repr(name) for name in unbound_optional_paths[path]
+                )
+                reason = (
+                    "this negative-lookahead branch was omitted because "
+                    f"where requires {sentinels} to remain unbound"
+                )
+            elif not parent_active:
                 state = "inactive"
                 included = False
                 reason = "an enclosing optional branch was omitted"
@@ -5864,15 +5885,7 @@ def _explain_candidate(
                     optional_group_has_match_evidence(token),
                 )
                 state = "included" if included else "omitted"
-                if path in unbound_optional_paths:
-                    sentinels = ", ".join(
-                        repr(name) for name in unbound_optional_paths[path]
-                    )
-                    reason = (
-                        "this negative-lookahead branch was omitted because "
-                        f"where requires {sentinels} to remain unbound"
-                    )
-                elif path in requested_optional_choices:
+                if path in requested_optional_choices:
                     reason = (
                         "the generator included this declared optional branch"
                         if included

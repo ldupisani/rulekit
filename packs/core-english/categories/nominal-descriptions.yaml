@@ -23,7 +23,7 @@ categories:
     notes: Common modifiers whose conventional capitalization does not introduce a person name.
 members:
   depictable_noun: [flower, rose, snowflake, tree, truck]
-  depiction_bearing_noun: [card, design, pattern, stamp]
+  depiction_bearing_noun: [card, design, drawing, pattern, portraits, stamp]
   indefinite_subset_quantifier: [some]
   nominal_attribute_noun: [design, pattern]
   nominal_attribute_preposition: [with]

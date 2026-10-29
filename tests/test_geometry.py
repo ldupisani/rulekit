@@ -4,9 +4,9 @@ SYNTHETIC ONLY (constitution rule 3): different values/shapes than any difg
 CASES item — the mechanism, not the benchmark strings.
 
 "What is the AREA of a CIRCLE with RADIUS r?" -> look up the (shape, quantity)
-formula in the declarative table (packs/difg-mined/geometry.yaml), bind the named
-dimensions, evaluate. The formulas are DATA; answer.py's `geometry` consumer is
-the generic evaluator (no per-domain Python branch)."""
+formula in the shared category properties, bind the named dimensions, evaluate.
+The formulas are DATA; the geometry consumer delegates to the shared typed
+property evaluator without a per-shape Python branch."""
 
 from pathlib import Path
 
@@ -44,8 +44,7 @@ def test_square_shape_noun(reg):
 
 
 def test_surface_area_merges_to_the_area_quantity(reg):
-    """'surface area' merges (adjective+noun) to the 'area' quantity; a sphere's
-    area IS its surface area, so (sphere, area) answers it."""
+    """The qualified phrase selects surface_area, distinct from base area."""
     r = solve("What is the surface area of a sphere with radius 3?", reg, tracing=False)
     assert r.answer.committed and r.answer.value == 113.1  # 4*pi*9, 2dp
 

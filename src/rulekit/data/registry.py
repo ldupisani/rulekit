@@ -15,11 +15,13 @@ from __future__ import annotations
 
 import hashlib
 import re
+from math import isfinite
 from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import Mapping
 
 from .packs import LoadedPack, PackError
+from .properties import DerivedAttribute, PropertyOrigin, PropertyError, compile_properties
 from .schemas import (
     AskRule,
     LexiconEntry,
@@ -189,6 +191,58 @@ class Registry:
     guard_config: Mapping[str, Mapping[str, object]]
     fingerprint: str
     pack_names: tuple[str, ...] = field(default=())
+    category_disjoint: Mapping[str, tuple[str, ...]] = field(
+        default_factory=lambda: MappingProxyType({})
+    )
+    property_formulas: Mapping[str, Mapping[str, DerivedAttribute]] = field(default_factory=lambda: MappingProxyType({}))
+    property_sources: Mapping[tuple[str, str], tuple[PropertyOrigin, ...]] = field(default_factory=lambda: MappingProxyType({}))
+    parameter_bindings: Mapping[str, Mapping[str, str]] = field(default_factory=lambda: MappingProxyType({}))
+    formula_units: Mapping[str, str] = field(default_factory=lambda: MappingProxyType({}))
+    formula_unit_categories: Mapping[str, str] = field(default_factory=lambda: MappingProxyType({}))
+    property_aliases: Mapping[str, str] = field(default_factory=lambda: MappingProxyType({}))
+    formula_constants: Mapping[str, float] = field(default_factory=lambda: MappingProxyType({}))
+
+    def attribute_value(self, term: str, attribute: str) -> float | None:
+        return self.attrs.get(term.casefold(), {}).get(self.property_aliases.get(attribute, attribute))
+
+    def derived_attribute(self, term: str, attribute: str) -> DerivedAttribute | None:
+        return self.property_formulas.get(term.casefold(), {}).get(self.property_aliases.get(attribute, attribute))
+
+    def attribute_sources(self, term: str, attribute: str) -> tuple[PropertyOrigin, ...]:
+        return self.property_sources.get((term.casefold(), self.property_aliases.get(attribute, attribute)), ())
+
+    def spatial_quantities(self, shape: str) -> set[str]:
+        """Quantities matching the shape's declared spatial measure, not its boundary."""
+        quantities = {quantity for term, quantity in self.geometry_formulas if term == shape}
+        spatial = self.attribute_value(shape, "spatial_dimension")
+        if spatial is None:
+            return quantities
+        # Untyped legacy formulas remain ambiguity candidates: a missing
+        # dimension contract is not evidence that their basis is different.
+        return {quantity for quantity in quantities
+                if (definition := self.derived_attribute(shape, quantity)) is None
+                or (len(definition.result_dimension) == 1
+                and definition.result_dimension[0][1] == spatial
+                and self.word_in_category(self.formula_units.get(definition.result_dimension[0][0], ""), "length_unit"))}
+
+    def property_inputs(self, term: str, attribute: str) -> tuple[str, ...]:
+        """Leaf roles after declared equalities, scalar defaults and dependencies."""
+        table = self.property_formulas.get(term, {})
+        scalars = self.attrs.get(term, {})
+        bindings = self.parameter_bindings.get(term, {})
+        leaves = set()
+        def walk(key):
+            while key in bindings:
+                key = bindings[key]
+            if key in scalars:
+                return
+            if key in table:
+                for parameter in table[key].inputs:
+                    walk(parameter)
+            else:
+                leaves.add(key)
+        walk(self.property_aliases.get(attribute, attribute))
+        return tuple(sorted(leaves))
 
     # -- category helpers (the _cat machinery) -------------------------------
 
@@ -209,17 +263,34 @@ class Registry:
         )
 
     def cat_members_deep(self, category: str) -> list[str]:
-        """All member words of a category and its subcategories, sorted."""
+        """Member surfaces, including declared noun plurals, sorted.
+
+        Authored membership stays on the noun lemma. Enumeration must expose
+        the same inflections accepted by ``word_in_category``; noun morphology
+        must never expand a verb or other grammatical category.
+        """
         words: set[str] = set()
         for c in self.cat_descendants(category):
             words.update(self.category_members.get(c, ()))
+        if self.root_sense(category) == "noun":
+            for word in tuple(words):
+                entry = self.lexicon.get(word)
+                if entry is not None:
+                    words.update(entry.plurals())
         return sorted(words)
 
     def category_membership_path(self, word: str, category: str) -> tuple[str, ...]:
         """A deterministic lexical/ancestry/inclusion route for source links."""
         if not self.word_in_category(word, category):
             return ()
-        lemma = self.plural_to_singular.get(word, word)
+        lemma = (
+            self.plural_to_singular.get(word, word)
+            if self.root_sense(category) == "noun" else word
+        )
+        if lemma != word and not self.word_in_category(lemma, category):
+            # A surface-only grammatical marker must link to its own authored
+            # membership, rather than an unclassified singular.
+            lemma = word
         for source in self.category_includes.get(category, ()):
             path = self.category_membership_path(lemma, source)
             if path:
@@ -232,18 +303,22 @@ class Registry:
         return (lemma, category)
 
     def word_in_category(self, word: str, category: str) -> bool:
-        """difg's _cat: word satisfies category directly, via a subcategory,
-        via its singular form, or (for root senses) via its lexicon senses."""
-        lemma = self.plural_to_singular.get(word, word)
-        for w in (word, lemma):
+        """Membership through ancestry and sense-scoped noun morphology."""
+        lemma = (
+            self.plural_to_singular.get(word, word)
+            if self.root_sense(category) == "noun" else word
+        )
+        forms = (word,) if lemma == word else (word, lemma)
+        for w in forms:
             for tag in self.word_categories.get(w, ()):
                 if category in self.cat_ancestors(tag):
                     return True
         # base categories derived from lexicon senses: any sense name acts as
         # a degenerate category (noun, verb, aggregate, particle, ...)
-        entry = self.lexicon.get(word) or self.lexicon.get(lemma)
-        if entry is not None and category in entry.senses:
-            return True
+        for w in forms:
+            entry = self.lexicon.get(w)
+            if entry is not None and category in entry.senses:
+                return True
         if category == "plural":
             return word in self.plural_to_singular
         return False
@@ -311,11 +386,25 @@ class Registry:
 
         collection = self.plural_to_singular.get(collection, collection)
         member = self.plural_to_singular.get(member, member)
-        categories = set(self.category_parents) | set(self.category_members)
         return (
-            collection in categories
+            (collection in self.category_parents or collection in self.category_members)
             and self.root_sense(collection) == "noun"
             and self.word_in_category(member, collection)
+        )
+
+    def category_terms_disjoint(self, left: str, right: str) -> bool:
+        """Prove separation from declarations, never from absent membership."""
+        left = self.plural_to_singular.get(left, left)
+        right = self.plural_to_singular.get(right, right)
+
+        def within(term: str, category: str) -> bool:
+            if term in self.category_parents:
+                return category in self.cat_ancestors(term)
+            return self.word_in_category(term, category)
+
+        return any(
+            within(left, category) and any(within(right, other) for other in others)
+            for category, others in self.category_disjoint.items()
         )
 
     def attribute_compatibility_pairs(
@@ -622,6 +711,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
     # -- categories ----------------------------------------------------------
     category_parents: dict[str, str] = {}
     category_includes: dict[str, tuple[str, ...]] = {}
+    declared_disjoint: dict[str, tuple[str, ...]] = {}
     category_antonyms: dict[str, str] = {}
     category_polarity: dict[str, int] = {}
     declared_selectional_roles: dict[str, dict[str, str]] = {}
@@ -645,6 +735,14 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
     category_members: dict[str, list[str]] = {}
     context_synonyms: dict[str, tuple[str, tuple[str, ...]]] = {}
     attrs: dict[str, dict[str, float]] = {}
+    category_defs = {}
+    word_formulas = {}
+    word_bindings = {}
+    property_word_origins = {}
+    formula_units = {}
+    formula_unit_categories = {}
+    property_aliases = {}
+    formula_constants = {}
     part_counts: dict[str, str] = {}
     for pack in packs:
         for doc in pack.categories:
@@ -652,8 +750,11 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                 if name in category_parents:
                     raise CompileError(f"category {name!r} defined twice")
                 category_parents[name] = cdef.parent
+                category_defs[name] = (cdef, pack.name)
                 if cdef.includes:
                     category_includes[name] = tuple(sorted(set(cdef.includes)))
+                if cdef.disjoint_with:
+                    declared_disjoint[name] = tuple(sorted(set(cdef.disjoint_with)))
                 if cdef.antonym:
                     category_antonyms[name] = cdef.antonym
                 if cdef.polarity is not None:
@@ -764,7 +865,46 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
             for concept, syn in doc.context_synonyms.items():
                 context_synonyms[concept] = (syn.gate, tuple(syn.forms))
             for word, table in doc.attrs.items():
-                attrs.setdefault(word, {}).update(table)
+                for key, value in table.items():
+                    prior = attrs.setdefault(word, {}).get(key)
+                    if prior is not None and prior != value:
+                        raise CompileError(f"word attribute {(word, key)!r} has conflicting values")
+                    attrs[word][key] = value
+                    property_word_origins[(word, key)] = pack.name
+            for word, table in doc.formulas.items():
+                for key, value in table.items():
+                    prior = word_formulas.setdefault(word, {}).get(key)
+                    if prior is not None and prior != value:
+                        raise CompileError(f"word formula {(word, key)!r} has conflicting definitions")
+                    word_formulas[word][key] = value
+                    property_word_origins[(word, key)] = pack.name
+            for word, table in doc.parameter_bindings.items():
+                for key, value in table.items():
+                    prior = word_bindings.setdefault(word, {}).get(key)
+                    if prior is not None and prior != value:
+                        raise CompileError(f"word binding {(word, key)!r} has conflicting definitions")
+                    word_bindings[word][key] = value
+                    property_word_origins[(word, "binding:" + key)] = pack.name
+            for basis, contract in doc.formula_units.items():
+                unit = contract if isinstance(contract, str) else contract.unit
+                category = None if isinstance(contract, str) else contract.category
+                if basis in formula_units and (
+                    formula_units[basis] != unit or formula_unit_categories.get(basis) != category
+                ):
+                    raise CompileError(f"formula dimension {basis!r} has conflicting unit contracts")
+                formula_units[basis] = unit
+                if category is not None:
+                    formula_unit_categories[basis] = category
+            for surface, key in doc.property_aliases.items():
+                if surface in property_aliases and property_aliases[surface] != key:
+                    raise CompileError(f"property alias {surface!r} has conflicting targets")
+                property_aliases[surface] = key
+            for name, value in doc.formula_constants.items():
+                if name in formula_constants and formula_constants[name] != value:
+                    raise CompileError(f"formula constant {name!r} has conflicting values")
+                if not name.isidentifier() or not isfinite(value):
+                    raise CompileError("formula constants need identifier names and finite values")
+                formula_constants[name] = value
             part_counts.update(doc.part_counts)
 
     # invariant: every category chain terminates in a root sense
@@ -837,6 +977,41 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
 
     for category in sorted(category_parents):
         _included_members(category)
+
+    # A disjoint family excludes its descendants and included families too.
+    # Validate both structural overlap and lexical overlap after extensions
+    # have contributed their members, including currently empty subclasses.
+    regions: dict[str, frozenset[str]] = {}
+
+    def _category_region(category: str) -> frozenset[str]:
+        if category not in regions:
+            descendants = {category}
+            for child in (*children.get(category, ()), *category_includes.get(category, ())):
+                descendants.update(_category_region(child))
+            regions[category] = frozenset(descendants)
+        return regions[category]
+
+    category_disjoint: dict[str, set[str]] = {}
+    for left, others in sorted(declared_disjoint.items()):
+        for right in others:
+            if right not in category_parents:
+                raise CompileError(f"category {left!r} declares disjointness with unknown category {right!r}")
+            if _category_root(left) != "noun" or _category_root(right) != "noun":
+                raise CompileError("category disjointness requires noun-rooted categories")
+            left_region, right_region = _category_region(left), _category_region(right)
+            if left_region & right_region:
+                raise CompileError(f"disjoint categories {left!r}/{right!r} have overlapping families")
+            left_members = {plural_to_singular.get(word, word) for word in deep_members[left]}
+            right_members = {plural_to_singular.get(word, word) for word in deep_members[right]}
+            overlap = (left_members & right_members
+                       | left_region & right_members
+                       | right_region & left_members)
+            if overlap:
+                raise CompileError(f"disjoint categories {left!r}/{right!r} share members {sorted(overlap)}")
+            for a in left_region:
+                for b in right_region:
+                    category_disjoint.setdefault(a, set()).add(b)
+                    category_disjoint.setdefault(b, set()).add(a)
 
     def _effective_selectional_contract(
         category: str,
@@ -1125,6 +1300,33 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                 "deictic_temporal_marker membership"
             )
 
+    try:
+        attrs, property_formulas, property_sources, parameter_bindings = compile_properties(
+            lexicon=lexicon, plurals=plural_to_singular, parents=category_parents,
+            word_categories=word_categories, category_defs=category_defs,
+            word_attrs=attrs, word_formulas=word_formulas, word_bindings=word_bindings,
+            word_origins=property_word_origins, constants=formula_constants)
+    except PropertyError as exc:
+        raise CompileError(str(exc)) from exc
+    for basis, unit in formula_units.items():
+        if not basis.isidentifier() or unit not in lexicon or "noun" not in lexicon[unit].senses:
+            raise CompileError(f"formula dimension {basis!r} needs a declared canonical noun unit")
+        category = formula_unit_categories.get(basis)
+        if category is not None and (
+            category not in category_parents or _category_root(category) != "noun"
+            or not any(tag in _category_region(category) for tag in word_categories.get(unit, ()))
+        ):
+            raise CompileError(f"formula dimension {basis!r} needs a noun unit family containing {unit!r}")
+    for alias in property_aliases:
+        chain = set()
+        target = alias
+        while target in property_aliases:
+            if target in chain:
+                raise CompileError("property alias cycle")
+            chain.add(target)
+            target = property_aliases[target]
+        property_aliases[alias] = target
+
     # invariant: context-synonym gates are real categories
     for concept, (gate, _forms) in sorted(context_synonyms.items()):
         if gate not in category_parents:
@@ -1187,6 +1389,19 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                         f"geometry formula {key} declared twice with different expressions"
                     )
                 geometry_formulas[key] = f.expr
+
+    # Compatibility view for existing geometry consumers. Definitions and
+    # inheritance are compiled once by the general property machinery.
+    shape_scope = _category_region("geometry_shape") if "geometry_shape" in category_parents else frozenset()
+    for term, table in property_formulas.items():
+        tags = list(word_categories.get(term, ()))
+        shape = term in shape_scope or any(tag in shape_scope for tag in tags)
+        if shape or term in word_formulas:
+            for quantity, definition in table.items():
+                key = (term, quantity)
+                if key in geometry_formulas and geometry_formulas[key] != definition.expr:
+                    raise CompileError(f"geometry formula {key!r} conflicts with a derived attribute")
+                geometry_formulas[key] = definition.expr
 
     # affine scale pairs, stored in BOTH directions like `conversions` above:
     # forward is (x + offset) * factor, so the inverse is x / factor - offset,
@@ -2376,6 +2591,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
         role_obligations=_freeze(role_obligations),
         category_parents=_freeze(category_parents),
         category_includes=_freeze(category_includes),
+        category_disjoint=_freeze({k: tuple(sorted(v)) for k, v in category_disjoint.items()}),
         category_members=_freeze({k: tuple(sorted(set(v))) for k, v in category_members.items()}),
         word_categories=_freeze({k: tuple(sorted(set(v))) for k, v in word_categories.items()}),
         category_antonyms=_freeze(category_antonyms),
@@ -2436,6 +2652,13 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
         temporal_offsets=_freeze(temporal_offsets),
         context_synonyms=_freeze(context_synonyms),
         attrs=_freeze({k: _freeze(v) for k, v in attrs.items()}),
+        property_formulas=_freeze({k: _freeze(v) for k, v in property_formulas.items()}),
+        property_sources=_freeze(property_sources),
+        parameter_bindings=_freeze({k: _freeze(v) for k, v in parameter_bindings.items()}),
+        formula_units=_freeze(formula_units),
+        formula_unit_categories=_freeze(formula_unit_categories),
+        property_aliases=_freeze(property_aliases),
+        formula_constants=_freeze(formula_constants),
         part_counts=_freeze(part_counts),
         conversions=_freeze(conversions),
         substance_conversions=_freeze(substance_conversions),

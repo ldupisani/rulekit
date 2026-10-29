@@ -86,6 +86,19 @@ def test_same_moment_with_different_markers_remains_distinguishable() -> None:
     assert on.key() != by.key()
 
 
+@pytest.mark.parametrize("sentence,verb,role", [
+    ("Tom wants to save during the year.", "save", "temporal-duration"),
+    ("Tom wants to save before Monday.", "save", "temporal-before"),
+])
+def test_infinitival_marker_does_not_reach_the_complements_time_object(
+    sentence, verb, role,
+) -> None:
+    relations = _relations(sentence)
+    assert len(relations) == 1
+    assert relations[0].verb == verb
+    assert relations[0].role == role
+
+
 @pytest.mark.parametrize(
     "sentence",
     [
@@ -93,6 +106,7 @@ def test_same_moment_with_different_markers_remains_distinguishable() -> None:
         "Tom worked during the garden.",  # spatial noun is not a timeperiod
         "On Monday Tom sold apples.",  # fronted adjunct needs its boundary
         "On Monday, Tom and Mary sold apples.",  # subject remains ambiguous
+        "Tom wants to work before Monday.",  # unresolved noun/verb is not transparent
     ],
 )
 def test_unlicensed_temporal_interpretations_emit_no_relation(sentence: str) -> None:

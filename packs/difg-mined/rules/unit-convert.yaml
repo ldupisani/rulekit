@@ -26,9 +26,9 @@ format: rulekit/rules@1
 # THE IMPERATIVE FORM needed no kernel change after all: `imperative` is already
 # an ASK_CUE_SENSE (engine.py), so "Convert 5 kilometers to meters" becomes a
 # question the moment 'convert' carries that sense in the LEXICON — data, exactly
-# as 'compute'/'calculate'/'determine' already do. See lexicon/a-f.yaml's
-# 'convert' entry for why the other difg imperatives ('find'/'evaluate'/'solve')
-# are deliberately NOT admitted.
+# as 'compute'/'calculate'/'determine' already do. The shared dictionary
+# declares that sense for 'convert'; other verbs do not inherit it merely
+# because they can open an instruction.
 rules: []
 asks:
   - id: ask/unit-convert-how-many-in
@@ -108,7 +108,7 @@ asks:
   - id: ask/unit-convert-imperative
     # "Convert 5 kilometers to meters" / "Convert 500 grams to kilograms" — the
     # imperative frame. Reachable only because 'convert' carries the `imperative`
-    # sense (lexicon/a-f.yaml); the ask itself is the same shape as the
+    # sense in the shared dictionary; the ask itself is the same shape as the
     # interrogative ones, one frame over.
     match:
       question:

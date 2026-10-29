@@ -1,13 +1,9 @@
 format: rulekit/categories@1
-# The geometry formula-selection gates: which nouns name a SHAPE, a QUANTITY to
-# compute, and a DIMENSION to bind. ask/geometry-formula gates its slots on these
-# (structural category names, not word lists in Python — constitution rule 1), and
-# the `geometry` consumer looks up (shape, quantity) in the formula table.
-categories:
-  geometry_shape: {parent: noun}
-  geometry_quantity: {parent: noun}
-  geometry_dimension: {parent: noun}
-members:
-  geometry_shape: [circle, rectangle, triangle, square, cube, sphere, cylinder]
-  geometry_quantity: [area, perimeter, volume, circumference, diagonal]
-  geometry_dimension: [radius, length, width, side, base, height]
+# Exact compound selected by the existing right-angle question. The declaration
+# does not classify bare triangles or admit an unstated right angle.
+formulas:
+  right triangle:
+    hypotenuse:
+      inputs: {leg1: length, leg2: length}
+      expr: (leg1**2 + leg2**2)**0.5
+      result_dimension: length

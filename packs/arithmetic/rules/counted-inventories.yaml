@@ -1,0 +1,103 @@
+format: rulekit/rules@1
+templates:
+  counted-inventory:
+    parameters:
+      introduction:
+        - {lit: there, at_start: true}
+        - {slot: verb, cat: plural_copula}
+      satisfaction: {verb: [subject]}
+      opening: []
+      location: []
+      holder: world
+      minimum: 3
+      guards: []
+      consumes: []
+      emits: []
+    rule:
+      question_assumption: true
+      description: >
+        A coordinated inventory retains one quantity per counted nominal.
+        A shared location may follow the first member or the entire list;
+        a locative phrase inside a later member requires separate grammar.
+        Bare pairs retain the existing conjoined existential reader.
+      match:
+        sentence:
+          - {parameter: introduction}
+          - {parameter: opening}
+          - slot: items
+            span: true
+            enumeration_cat: noun
+            enumeration_counted: true
+            enumeration_min_members: {parameter: minimum}
+            span_blocks: [existential_incompatible_noun, many_incompatible_noun, mass_measure]
+          - {parameter: location}
+          - {lit: '.', consume_skipped: true}
+      where:
+        - absent: {cat: aggregate}
+        - {parameter: guards}
+      consumes: [items, {parameter: consumes}]
+      satisfies: {parameter: satisfaction}
+      emits:
+        - fact: quantity
+          each: items
+          entity: {parameter: holder}
+          measure: '{item}'
+          measure_qualifier: '{item.qualifier}'
+          value: item
+          verb: have
+        - {parameter: emits}
+variants:
+  - id: arithmetic/existential-inventory-bare
+    template: counted-inventory
+  - id: arithmetic/existential-inventory-trailing-location
+    template: counted-inventory
+    arguments:
+      minimum: 2
+      holder: '{place}'
+      location:
+        - {slot: prep, cat: spatial_location_preposition}
+        - {slot: place, cat: quantity_location, uncounted: true, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
+      guards:
+        - slot_not_category: {slot: prep, cat: spatial_goal_preposition}
+        - attribute_compatible: {attribute: prep, noun: place}
+  - id: arithmetic/existential-inventory-leading-location
+    template: counted-inventory
+    arguments:
+      minimum: 1
+      holder: '{place}'
+      opening:
+        - {slot: first, type: counted}
+        - {slot: prep, cat: spatial_location_preposition}
+        - {slot: place, cat: quantity_location, uncounted: true, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
+        - {lit: [',', and], consume_skipped: true}
+      location: []
+      consumes: [first]
+      guards:
+        - slot_not_category: {slot: first, cat: existential_incompatible_noun}
+        - slot_not_category: {slot: first, cat: many_incompatible_noun}
+        - slot_not_category: {slot: first, cat: mass_measure}
+        - slot_not_category: {slot: prep, cat: spatial_goal_preposition}
+        - attribute_compatible: {attribute: prep, noun: place}
+        - modifier_host_compatible: {modifier: prep, host: first}
+      emits:
+        - {fact: quantity, entity: '{place}', measure: '{first}',
+            measure_qualifier: '{first.qualifier}', value: first, verb: have}
+  - id: arithmetic/with-inventory-bare
+    template: counted-inventory
+    arguments:
+      introduction: [{lit: with, at_start: true}]
+      satisfaction: {}
+      minimum: 2
+  - id: arithmetic/with-inventory-located
+    template: counted-inventory
+    arguments:
+      introduction: [{lit: with, at_start: true}]
+      satisfaction: {}
+      minimum: 2
+      holder: '{place}'
+      location:
+        - {slot: prep, cat: spatial_location_preposition}
+        - {slot: place, cat: quantity_location, uncounted: true, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
+      guards:
+        - slot_not_category: {slot: prep, cat: spatial_goal_preposition}
+        - attribute_compatible: {attribute: prep, noun: place}

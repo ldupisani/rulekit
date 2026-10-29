@@ -20,19 +20,12 @@ categories:
       actor: information_operator
       theme: information_quantity_object
 members:
-  information_recall_verb: [memorize, memorized, memorizes, memorizing, memorise, memorised, memorises, memorising]
-  information_quantity_object:
-  - digit
-  - poem
-  - word
-  - document
-  - file
-  - image
-  - photo
-  - photograph
-  computing_device:
-  - computer
-  - server
+  information_recall_verb: [memorize, memorized, memorizes, memorizing, memorise, memorised, memorises,
+      memorising]
+  information_quantity_object: [advertisement, brochure, copy, diary, digit, document, drawing, file,
+      folder, image, magazine, mixtape, newspaper, notebook, notepad, novel, photo, photograph,
+      playlist, poem, program, record, report, scrapbook, song, story, word]
+  computing_device: [computer, desktop, laptop, netbook, server, smartphone]
   information_deletion_verb:
   - delete
   - deleted

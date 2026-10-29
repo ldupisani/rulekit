@@ -1,0 +1,139 @@
+format: rulekit/categories@1
+categories:
+  geometry_dimension: {parent: noun}
+  angle_degrees: {parent: noun}
+  area_measure: {parent: noun, notes: A resource whose explicitly priced use can depend on area.}
+  perimeter_measure: {parent: noun, notes: A resource whose explicitly priced use can depend on
+      perimeter.}
+  geometry_quantity: {parent: noun}
+  geometry_shape: {parent: noun}
+  plane_shape:
+    parent: geometry_shape
+    attrs: {spatial_dimension: 2}
+  solid_shape:
+    parent: geometry_shape
+    attrs: {spatial_dimension: 3}
+  rectangle_geometry:
+    parent: plane_shape
+    formulas:
+      area:
+        inputs: {length: length, width: length}
+        expr: length * width
+        result_dimension: {length: 2}
+      perimeter:
+        inputs: {length: length, width: length}
+        expr: 2 * (length + width)
+        result_dimension: length
+      diagonal:
+        inputs: {length: length, width: length}
+        expr: (length**2 + width**2)**0.5
+        result_dimension: length
+  square_geometry:
+    parent: rectangle_geometry
+    parameter_bindings: {length: side, width: side}
+  circular_geometry:
+    parent: plane_shape
+    formulas:
+      area:
+        inputs: {radius: length}
+        constants:
+        - pi
+        expr: pi * radius**2
+        result_dimension: {length: 2}
+      circumference:
+        inputs: {radius: length}
+        constants:
+        - pi
+        expr: 2 * pi * radius
+        result_dimension: length
+  triangular_geometry:
+    parent: plane_shape
+    formulas:
+      area:
+        inputs: {base: length, height: length}
+        expr: 0.5 * base * height
+        result_dimension: {length: 2}
+  uniform_section_solid:
+    parent: solid_shape
+    notes: Volume uses the perpendicular height and a constant base section.
+    formulas:
+      volume:
+        inputs: {base_area: {length: 2}, height: length}
+        expr: base_area * height
+        result_dimension: {length: 3}
+  cuboid_geometry:
+    parent: uniform_section_solid
+    formulas:
+      base_area:
+        inputs: {length: length, width: length}
+        expr: length * width
+        result_dimension: {length: 2}
+      surface_area:
+        inputs: {length: length, width: length, height: length}
+        expr: 2 * (length * width + length * height + width * height)
+        result_dimension: {length: 2}
+  cube_geometry:
+    parent: cuboid_geometry
+    parameter_bindings: {length: side, width: side, height: side}
+  cylinder_geometry:
+    parent: uniform_section_solid
+    formulas:
+      base_area:
+        inputs: {radius: length}
+        constants:
+        - pi
+        expr: pi * radius**2
+        result_dimension: {length: 2}
+      surface_area:
+        inputs: {radius: length, height: length}
+        constants:
+        - pi
+        expr: 2 * pi * radius * (radius + height)
+        result_dimension: {length: 2}
+  sphere_geometry:
+    parent: solid_shape
+    formulas:
+      volume:
+        inputs: {radius: length}
+        constants:
+        - pi
+        expr: (4 / 3) * pi * radius**3
+        result_dimension: {length: 3}
+      surface_area:
+        inputs: {radius: length}
+        constants:
+        - pi
+        expr: 4 * pi * radius**2
+        result_dimension: {length: 2}
+  quantity_extent_modifier: {parent: noun}
+  quantity_extent_adjective: {parent: adjective}
+members:
+  geometry_dimension: [base, length, side, radius, width]
+  angle_degrees: [degree]
+  area_measure: [carpet]
+  perimeter_measure: [fence]
+  geometry_quantity: [area, perimeter, volume, circumference, diagonal]
+  rectangle_geometry: [rectangle]
+  square_geometry: [square]
+  circular_geometry: [circle]
+  triangular_geometry: [triangle]
+  cuboid_geometry: [cuboid]
+  cube_geometry: [cube]
+  cylinder_geometry: [cylinder]
+  sphere_geometry: [sphere]
+  quantity_extent_modifier: [surface, base]
+  quantity_extent_adjective: [cross-sectional]
+formula_units:
+  length: {unit: meter, category: length_unit}
+property_aliases:
+  surface area: surface_area
+  base area: base_area
+  cross-sectional area: cross_section_area
+attribute_compatibility:
+  quantity_extent_adjective: [geometry_quantity]
+  geometry_dimension:
+  - length_unit
+  quantity_extent_modifier:
+  - geometry_quantity
+formula_constants:
+  pi: 3.141592653589793

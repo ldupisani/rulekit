@@ -6,17 +6,14 @@ format: rulekit/categories@1
 # consumer holds only the general math operations (mean/median/max/min/product/
 # mode), never a word list (constitution rule 1). Synonyms group under one op.
 categories:
-  statistic: {parent: noun}
   stat_mean: {parent: statistic}
   stat_median: {parent: statistic}
-  stat_max: {parent: statistic}
-  stat_min: {parent: statistic}
   stat_product: {parent: statistic}
   stat_mode: {parent: statistic}
 members:
   stat_mean: [mean]
   stat_median: [median]
-  stat_max: [highest, maximum]
-  stat_min: [minimum, lowest]
+  stat_max: [highest]
+  stat_min: [lowest]
   stat_product: [product]
   stat_mode: [mode]

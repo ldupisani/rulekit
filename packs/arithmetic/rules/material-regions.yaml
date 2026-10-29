@@ -1,7 +1,7 @@
 format: rulekit/rules@1
 rules:
 - id: arithmetic/material-fabrication-context
-  description: An explicit participant and material govern subsequent cut regions; the intended product is not 
+  description: An explicit participant and material govern subsequent cut regions; the intended product is not
     another measured removal.
   match:
     sentence:
@@ -17,10 +17,10 @@ rules:
       - {lit: for}
       - {slot: purpose, cat: fabrication_product, uncounted: true}
     - {lit: ., consume_skipped: true}
-  where: [{number_compatible: [who, aux]}, {mutually_exclusive: [make, purpose]}]
+  where: [number_compatible: [who, aux], mutually_exclusive: [make, purpose]]
   consumes: [aux, cut, make]
   emits:
-  - {fact: region_evidence, stage: context, material: '{material}', entity: '{who}', shape: '', dimension: '', 
+  - {fact: region_evidence, stage: context, material: '{material}', entity: '{who}', shape: '', dimension: '',
       value: 0, unit: '', position: '{who.uid}', quantity: ''}
 - id: arithmetic/material-stock-dimensions
   description: A rectangular stock has two explicit linear measurements, including an unrolled sheet or roll.
@@ -39,12 +39,12 @@ rules:
   satisfies: {be: [subject]}
   consumes: [first, second, be]
   emits:
-  - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: rectangle, dimension: length,
-    value: first, unit: '{first}', position: '{first.uid}', quantity: ''}
-  - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: rectangle, dimension: width, 
-      value: second, unit: '{second}', position: '{first.uid}', quantity: ''}
+  - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: rectangle, dimension:
+      length, value: first, unit: '{first}', position: '{first.uid}', quantity: ''}
+  - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: rectangle, dimension:
+      width, value: second, unit: '{second}', position: '{first.uid}', quantity: ''}
 - id: arithmetic/cut-measured-region
-  description: A cut rectangle preserves both unit-labelled dimensions and any explicit material or purpose 
+  description: A cut rectangle preserves both unit-labelled dimensions and any explicit material or purpose
     location.
   match:
     sentence:
@@ -52,35 +52,37 @@ rules:
     - {slot: cut, cat: region_cutting_verb, finite_form: true}
     - {slot: first, cat: length_unit, counted: true}
     - {lit: by}
-    - {slot: second, cat: rectangular_shape, counted: true, qualified: true, qualifier_cat: length_unit, number: 
-        singular}
+    - {slot: second, cat: rectangular_shape, counted: true, qualified: true, qualifier_cat: length_unit,
+        number: singular}
     - opt: [lit: of, {slot: material, cat: material_resource, uncounted: true, bare: true}]
     - opt: [lit: for, {slot: place, cat: quantity_location, uncounted: true}]
   where: [number_compatible: [who, cut]]
   consumes: [first, second, cut]
   emits:
-  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '{who}', shape: '{second}', 
-      dimension: length, value: first, unit: '{first}', position: '{first.uid}', quantity: ''}
-  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '{who}', shape: '{second}', 
-      dimension: width, value: second, unit: '{second.qualifier}', position: '{first.uid}', quantity: ''}
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '{who}', shape: '{second}',
+    dimension: length, value: first, unit: '{first}', position: '{first.uid}', quantity: ''}
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '{who}', shape: '{second}',
+    dimension: width, value: second, unit: '{second.qualifier}', position: '{first.uid}', quantity: ''}
 - id: arithmetic/cut-measured-region-continuation
-  description: A coordinated cut list preserves each rectangle as a distinct removal; its actor needs a 
+  description: A coordinated cut list preserves each rectangle as a distinct removal; its actor needs a
     same-sentence anchor.
   match:
     sentence:
     - {lit: and}
     - {slot: first, cat: length_unit, counted: true}
     - {lit: by}
-    - {slot: second, cat: rectangular_shape, counted: true, qualified: true, qualifier_cat: length_unit, number: 
-        singular}
+    - {slot: second, cat: rectangular_shape, counted: true, qualified: true, qualifier_cat: length_unit,
+        number: singular}
     - opt: [lit: of, {slot: material, cat: material_resource, uncounted: true, bare: true}]
     - opt: [lit: for, {slot: place, cat: quantity_location, uncounted: true}]
   consumes: [first, second]
   emits:
-  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: '{second}', 
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: '{second}',
       dimension: length, value: first, unit: '{first}', position: '{first.uid}', quantity: ''}
-  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: '{second}', 
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: '{second}',
       dimension: width, value: second, unit: '{second.qualifier}', position: '{first.uid}', quantity: ''}
+  where:
+  - preceding_verb_category: {slot: first, cat: measured_resource_removal_verb}
 - id: arithmetic/measured-removal-2d
   match:
     sentence:
@@ -101,11 +103,11 @@ rules:
       - {lit: out}
     - {lit: ., consume_skipped: true}
   emits:
-  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: rectangle, 
-      dimension: length, value: first, unit: '{first}', position: '{first.uid}', quantity: '', source_scope: 
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: rectangle,
+      dimension: length, value: first, unit: '{first}', position: '{first.uid}', quantity: '', source_scope:
       opening}
-  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: rectangle, 
-      dimension: width, value: second, unit: '{second}', position: '{first.uid}', quantity: '', source_scope: 
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: rectangle,
+      dimension: width, value: second, unit: '{second}', position: '{first.uid}', quantity: '', source_scope:
       opening}
   consumes:
   - first
@@ -137,11 +139,11 @@ rules:
       - {lit: out}
     - {lit: ., consume_skipped: true}
   emits:
-  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: rectangle, 
-      dimension: length, value: first, unit: '{second}', position: '{first.uid}', quantity: '', source_scope: 
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: rectangle,
+      dimension: length, value: first, unit: '{second}', position: '{first.uid}', quantity: '', source_scope:
       opening}
-  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: rectangle, 
-      dimension: width, value: second, unit: '{second}', position: '{first.uid}', quantity: '', source_scope: 
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: rectangle,
+      dimension: width, value: second, unit: '{second}', position: '{first.uid}', quantity: '', source_scope:
       opening}
   consumes:
   - first
@@ -177,12 +179,15 @@ rules:
       - {lit: out}
     - {lit: ., consume_skipped: true}
   emits:
-  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: cuboid, dimension: 
-      length, value: first, unit: '{first}', position: '{first.uid}', quantity: '', source_scope: opening}
-  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: cuboid, dimension: 
-      width, value: second, unit: '{second}', position: '{first.uid}', quantity: '', source_scope: opening}
-  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: cuboid, dimension: 
-      height, value: third, unit: '{third}', position: '{first.uid}', quantity: '', source_scope: opening}
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: cuboid,
+      dimension: length, value: first, unit: '{first}', position: '{first.uid}', quantity: '', source_scope:
+      opening}
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: cuboid,
+      dimension: width, value: second, unit: '{second}', position: '{first.uid}', quantity: '', source_scope:
+      opening}
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: cuboid,
+      dimension: height, value: third, unit: '{third}', position: '{first.uid}', quantity: '', source_scope:
+      opening}
   consumes:
   - first
   - second
@@ -216,12 +221,15 @@ rules:
       - {lit: out}
     - {lit: ., consume_skipped: true}
   emits:
-  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: cuboid, dimension: 
-      length, value: first, unit: '{third}', position: '{first.uid}', quantity: '', source_scope: opening}
-  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: cuboid, dimension: 
-      width, value: second, unit: '{third}', position: '{first.uid}', quantity: '', source_scope: opening}
-  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: cuboid, dimension: 
-      height, value: third, unit: '{third}', position: '{first.uid}', quantity: '', source_scope: opening}
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: cuboid,
+      dimension: length, value: first, unit: '{third}', position: '{first.uid}', quantity: '', source_scope:
+      opening}
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: cuboid,
+      dimension: width, value: second, unit: '{third}', position: '{first.uid}', quantity: '', source_scope:
+      opening}
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: cuboid,
+      dimension: height, value: third, unit: '{third}', position: '{first.uid}', quantity: '', source_scope:
+      opening}
   consumes:
   - first
   - second
@@ -247,7 +255,7 @@ rules:
     - {slot: material, cat: material_resource, uncounted: true, bare: true}
     - {lit: ., consume_skipped: true}
   emits:
-  - {fact: region_evidence, stage: opening, material: '{material}', entity: '{who}', shape: '', dimension: '', 
+  - {fact: region_evidence, stage: opening, material: '{material}', entity: '{who}', shape: '', dimension: '',
       value: first, unit: '{first}', position: '{first.uid}', quantity: length}
   consumes:
   - have
@@ -269,8 +277,8 @@ rules:
       - {slot: purpose_prep, cat: purpose_preposition}
       - {lit: another, consume_skipped: true}
   emits:
-  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '{who.optional}', shape: '', 
-      dimension: '', value: first, unit: '{first}', position: '{first.uid}', quantity: length}
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '{who.optional}', shape: '',
+    dimension: '', value: first, unit: '{first}', position: '{first.uid}', quantity: length}
   consumes:
   - first
   - use
@@ -291,13 +299,15 @@ rules:
       - {slot: purpose_prep, cat: purpose_preposition}
       - {lit: another, consume_skipped: true}
   emits:
-  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: '', dimension: '', 
-      value: first, unit: '{first}', position: '{first.uid}', quantity: length, source_scope: previous}
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: '', dimension: '',
+    value: first, unit: '{first}', position: '{first.uid}', quantity: length, source_scope: previous}
   consumes:
   - first
   satisfies:
     purpose_prep:
     - object
+  where:
+  - preceding_verb_category: {slot: first, cat: measured_resource_removal_verb}
 - id: arithmetic/measured-resource-opening-mass
   match:
     sentence:
@@ -308,7 +318,7 @@ rules:
     - {slot: material, cat: material_resource, uncounted: true, bare: true}
     - {lit: ., consume_skipped: true}
   emits:
-  - {fact: region_evidence, stage: opening, material: '{material}', entity: '{who}', shape: '', dimension: '', 
+  - {fact: region_evidence, stage: opening, material: '{material}', entity: '{who}', shape: '', dimension: '',
       value: first, unit: '{first}', position: '{first.uid}', quantity: mass}
   consumes:
   - have
@@ -330,8 +340,8 @@ rules:
       - {slot: purpose_prep, cat: purpose_preposition}
       - {lit: another, consume_skipped: true}
   emits:
-  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '{who.optional}', shape: '', 
-      dimension: '', value: first, unit: '{first}', position: '{first.uid}', quantity: mass}
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '{who.optional}', shape: '',
+    dimension: '', value: first, unit: '{first}', position: '{first.uid}', quantity: mass}
   consumes:
   - first
   - use
@@ -350,13 +360,15 @@ rules:
       - {slot: purpose_prep, cat: purpose_preposition}
       - {lit: another, consume_skipped: true}
   emits:
-  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: '', dimension: '', 
-      value: first, unit: '{first}', position: '{first.uid}', quantity: mass}
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: '', dimension: '',
+    value: first, unit: '{first}', position: '{first.uid}', quantity: mass}
   consumes:
   - first
   satisfies:
     purpose_prep:
     - object
+  where:
+  - preceding_verb_category: {slot: first, cat: measured_resource_removal_verb}
 - id: arithmetic/measured-resource-opening-volume
   match:
     sentence:
@@ -367,7 +379,7 @@ rules:
     - {slot: material, cat: material_resource, uncounted: true, bare: true}
     - {lit: ., consume_skipped: true}
   emits:
-  - {fact: region_evidence, stage: opening, material: '{material}', entity: '{who}', shape: '', dimension: '', 
+  - {fact: region_evidence, stage: opening, material: '{material}', entity: '{who}', shape: '', dimension: '',
       value: first, unit: '{first}', position: '{first.uid}', quantity: volume}
   consumes:
   - have
@@ -389,8 +401,8 @@ rules:
       - {slot: purpose_prep, cat: purpose_preposition}
       - {lit: another, consume_skipped: true}
   emits:
-  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '{who.optional}', shape: '', 
-      dimension: '', value: first, unit: '{first}', position: '{first.uid}', quantity: volume}
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '{who.optional}', shape: '',
+    dimension: '', value: first, unit: '{first}', position: '{first.uid}', quantity: volume}
   consumes:
   - first
   - use
@@ -409,18 +421,20 @@ rules:
       - {slot: purpose_prep, cat: purpose_preposition}
       - {lit: another, consume_skipped: true}
   emits:
-  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: '', dimension: '', 
-      value: first, unit: '{first}', position: '{first.uid}', quantity: volume}
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: '', dimension: '',
+    value: first, unit: '{first}', position: '{first.uid}', quantity: volume}
   consumes:
   - first
   satisfies:
     purpose_prep:
     - object
+  where:
+  - preceding_verb_category: {slot: first, cat: measured_resource_removal_verb}
 - id: arithmetic/coordinated-measured-removals-counted
   match:
     sentence:
-    - {slot: regions, cat: rectangular_shape, counted: true, uncounted: false, number: plural, qualified: true, 
-        qualifier_cat: separate_region_attribute}
+    - {slot: regions, cat: rectangular_shape, counted: true, uncounted: false, number: plural, qualified: true,
+      qualifier_cat: separate_region_attribute}
     - {slot: measuring, cat: material_stock_state, present_participle: true}
     - {slot: first, type: number, standalone: true}
     - {lit: by}
@@ -435,15 +449,15 @@ rules:
       - {lit: out}
     - {lit: ., consume_skipped: true}
   emits:
-  - {fact: region_evidence, stage: removal, material: '', entity: '', shape: rectangle, dimension: length, value: 
-      first, unit: '{second}', position: '{first.uid}', quantity: '', source_scope: opening}
-  - {fact: region_evidence, stage: removal, material: '', entity: '', shape: rectangle, dimension: width, value: 
-      second, unit: '{second}', position: '{first.uid}', quantity: '', source_scope: opening}
-  - {fact: region_evidence, stage: removal, material: '', entity: '', shape: rectangle, dimension: length, value: 
-      third, unit: '{fourth}', position: '{third.uid}', quantity: '', source_scope: opening}
-  - {fact: region_evidence, stage: removal, material: '', entity: '', shape: rectangle, dimension: width, value: 
-      fourth, unit: '{fourth}', position: '{third.uid}', quantity: '', source_scope: opening}
-  - {fact: region_evidence, stage: removal-count, material: '', entity: '', shape: '', dimension: '', value: 
+  - {fact: region_evidence, stage: removal, material: '', entity: '', shape: rectangle, dimension: length,
+      value: first, unit: '{second}', position: '{first.uid}', quantity: '', source_scope: opening}
+  - {fact: region_evidence, stage: removal, material: '', entity: '', shape: rectangle, dimension: width,
+      value: second, unit: '{second}', position: '{first.uid}', quantity: '', source_scope: opening}
+  - {fact: region_evidence, stage: removal, material: '', entity: '', shape: rectangle, dimension: length,
+      value: third, unit: '{fourth}', position: '{third.uid}', quantity: '', source_scope: opening}
+  - {fact: region_evidence, stage: removal, material: '', entity: '', shape: rectangle, dimension: width,
+      value: fourth, unit: '{fourth}', position: '{third.uid}', quantity: '', source_scope: opening}
+  - {fact: region_evidence, stage: removal-count, material: '', entity: '', shape: '', dimension: '', value:
       regions, unit: '', position: '{regions.uid}', quantity: ''}
   consumes:
   - regions
@@ -465,14 +479,15 @@ rules:
     - quantifies
   overrides:
     rule: arithmetic/coordinated-measured-removals
-    reason: Explicit count and uncounted noun shapes are disjoint; the counted frame also verifies list 
+    reason: Explicit count and uncounted noun shapes are disjoint; the counted frame also verifies list
       cardinality.
-  description: An explicit count must equal the complete coordinated list; counted and uncounted noun shapes are 
-    disjoint.
+  description: An explicit count must equal the complete coordinated list; counted and uncounted noun shapes
+    are disjoint.
 - id: arithmetic/coordinated-measured-removals
   match:
     sentence:
-    - {slot: regions, cat: rectangular_shape, counted: false, uncounted: true, number: plural, qualified: false}
+    - {slot: regions, cat: rectangular_shape, counted: false, uncounted: true, number: plural, qualified:
+        false}
     - {slot: measuring, cat: material_stock_state, present_participle: true}
     - {slot: first, type: number, standalone: true}
     - {lit: by}
@@ -487,14 +502,14 @@ rules:
       - {lit: out}
     - {lit: ., consume_skipped: true}
   emits:
-  - {fact: region_evidence, stage: removal, material: '', entity: '', shape: rectangle, dimension: length, value: 
-      first, unit: '{second}', position: '{first.uid}', quantity: '', source_scope: opening}
-  - {fact: region_evidence, stage: removal, material: '', entity: '', shape: rectangle, dimension: width, value: 
-      second, unit: '{second}', position: '{first.uid}', quantity: '', source_scope: opening}
-  - {fact: region_evidence, stage: removal, material: '', entity: '', shape: rectangle, dimension: length, value: 
-      third, unit: '{fourth}', position: '{third.uid}', quantity: '', source_scope: opening}
-  - {fact: region_evidence, stage: removal, material: '', entity: '', shape: rectangle, dimension: width, value: 
-      fourth, unit: '{fourth}', position: '{third.uid}', quantity: '', source_scope: opening}
+  - {fact: region_evidence, stage: removal, material: '', entity: '', shape: rectangle, dimension: length,
+      value: first, unit: '{second}', position: '{first.uid}', quantity: '', source_scope: opening}
+  - {fact: region_evidence, stage: removal, material: '', entity: '', shape: rectangle, dimension: width,
+      value: second, unit: '{second}', position: '{first.uid}', quantity: '', source_scope: opening}
+  - {fact: region_evidence, stage: removal, material: '', entity: '', shape: rectangle, dimension: length,
+      value: third, unit: '{fourth}', position: '{third.uid}', quantity: '', source_scope: opening}
+  - {fact: region_evidence, stage: removal, material: '', entity: '', shape: rectangle, dimension: width,
+      value: fourth, unit: '{fourth}', position: '{third.uid}', quantity: '', source_scope: opening}
   consumes:
   - regions
   - measuring
@@ -523,8 +538,8 @@ rules:
     - {slot: material, cat: material_resource, uncounted: true, bare: true}
     - {lit: ., consume_skipped: true}
   emits:
-  - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: '', dimension: '', value: 
-      first, unit: '{first}', position: '{first.uid}', quantity: length}
+  - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: '', dimension: '',
+      value: first, unit: '{first}', position: '{first.uid}', quantity: length}
   consumes:
   - have
   - first
@@ -543,8 +558,9 @@ rules:
       - {lit: of}
       - {slot: material, cat: material_resource, uncounted: true, bare: true}
   emits:
-  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '{who}', shape: '', dimension: '',
-    value: first, unit: '{first}', position: '{first.uid}', quantity: length, source_scope: opening}
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '{who}', shape: '',
+      dimension: '', value: first, unit: '{first}', position: '{first.uid}', quantity: length, source_scope:
+      opening}
   consumes:
   - first
   - cut
@@ -560,9 +576,9 @@ rules:
     - {lit: for}
     - {slot: purpose, cat: fabrication_product, counted: true}
   emits:
-  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '{who.optional}', shape: '', 
-      dimension: '', value: first, unit: '{first}', position: '{first.uid}', quantity: length}
-  - {fact: region_evidence, stage: purpose-count, material: '', entity: '', shape: '', dimension: '', value: 
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '{who.optional}', shape: '',
+    dimension: '', value: first, unit: '{first}', position: '{first.uid}', quantity: length}
+  - {fact: region_evidence, stage: purpose-count, material: '', entity: '', shape: '', dimension: '', value:
       purpose, unit: '', position: '{purpose.uid}', quantity: ''}
   consumes:
   - first
@@ -581,13 +597,15 @@ rules:
     - {lit: for}
     - {slot: purpose, cat: fabrication_product, counted: true}
   emits:
-  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: '', dimension: '', 
-      value: first, unit: '{first}', position: '{first.uid}', quantity: length, source_scope: previous}
-  - {fact: region_evidence, stage: purpose-count, material: '', entity: '', shape: '', dimension: '', value: 
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: '', dimension: '',
+    value: first, unit: '{first}', position: '{first.uid}', quantity: length, source_scope: previous}
+  - {fact: region_evidence, stage: purpose-count, material: '', entity: '', shape: '', dimension: '', value:
       purpose, unit: '', position: '{purpose.uid}', quantity: ''}
   consumes:
   - first
   - purpose
+  where:
+  - preceding_verb_category: {slot: first, cat: measured_resource_removal_verb}
 - id: arithmetic/measured-resource-removal-mass-counted-purpose
   match:
     sentence:
@@ -600,9 +618,9 @@ rules:
     - {lit: for}
     - {slot: purpose, cat: fabrication_product, counted: true}
   emits:
-  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '{who.optional}', shape: '', 
-      dimension: '', value: first, unit: '{first}', position: '{first.uid}', quantity: mass}
-  - {fact: region_evidence, stage: purpose-count, material: '', entity: '', shape: '', dimension: '', value: 
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '{who.optional}', shape: '',
+    dimension: '', value: first, unit: '{first}', position: '{first.uid}', quantity: mass}
+  - {fact: region_evidence, stage: purpose-count, material: '', entity: '', shape: '', dimension: '', value:
       purpose, unit: '', position: '{purpose.uid}', quantity: ''}
   consumes:
   - first
@@ -619,13 +637,15 @@ rules:
     - {lit: for}
     - {slot: purpose, cat: fabrication_product, counted: true}
   emits:
-  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: '', dimension: '', 
-      value: first, unit: '{first}', position: '{first.uid}', quantity: mass}
-  - {fact: region_evidence, stage: purpose-count, material: '', entity: '', shape: '', dimension: '', value: 
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: '', dimension: '',
+    value: first, unit: '{first}', position: '{first.uid}', quantity: mass}
+  - {fact: region_evidence, stage: purpose-count, material: '', entity: '', shape: '', dimension: '', value:
       purpose, unit: '', position: '{purpose.uid}', quantity: ''}
   consumes:
   - first
   - purpose
+  where:
+  - preceding_verb_category: {slot: first, cat: measured_resource_removal_verb}
 - id: arithmetic/measured-resource-removal-volume-counted-purpose
   match:
     sentence:
@@ -638,9 +658,9 @@ rules:
     - {lit: for}
     - {slot: purpose, cat: fabrication_product, counted: true}
   emits:
-  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '{who.optional}', shape: '', 
-      dimension: '', value: first, unit: '{first}', position: '{first.uid}', quantity: volume}
-  - {fact: region_evidence, stage: purpose-count, material: '', entity: '', shape: '', dimension: '', value: 
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '{who.optional}', shape: '',
+    dimension: '', value: first, unit: '{first}', position: '{first.uid}', quantity: volume}
+  - {fact: region_evidence, stage: purpose-count, material: '', entity: '', shape: '', dimension: '', value:
       purpose, unit: '', position: '{purpose.uid}', quantity: ''}
   consumes:
   - first
@@ -657,13 +677,15 @@ rules:
     - {lit: for}
     - {slot: purpose, cat: fabrication_product, counted: true}
   emits:
-  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: '', dimension: '', 
-      value: first, unit: '{first}', position: '{first.uid}', quantity: volume}
-  - {fact: region_evidence, stage: purpose-count, material: '', entity: '', shape: '', dimension: '', value: 
+  - {fact: region_evidence, stage: removal, material: '{material.optional}', entity: '', shape: '', dimension: '',
+    value: first, unit: '{first}', position: '{first.uid}', quantity: volume}
+  - {fact: region_evidence, stage: purpose-count, material: '', entity: '', shape: '', dimension: '', value:
       purpose, unit: '', position: '{purpose.uid}', quantity: ''}
   consumes:
   - first
   - purpose
+  where:
+  - preceding_verb_category: {slot: first, cat: measured_resource_removal_verb}
 asks:
 - id: ask/material-area-remainder
   match:
@@ -744,9 +766,9 @@ variants:
     - {lit: by}
     - {slot: second, cat: length_unit, counted: true}
     dimensions:
-    - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: rectangle, dimension: 
+    - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: rectangle, dimension:
         length, value: first, unit: '{first}', position: '{first.uid}', quantity: ''}
-    - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: rectangle, dimension: 
+    - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: rectangle, dimension:
         width, value: second, unit: '{second}', position: '{first.uid}', quantity: ''}
     agreement:
     - number_compatible:
@@ -766,9 +788,9 @@ variants:
     - {lit: by}
     - {slot: second, cat: length_unit, counted: true}
     dimensions:
-    - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: rectangle, dimension: 
+    - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: rectangle, dimension:
         length, value: first, unit: '{second}', position: '{first.uid}', quantity: ''}
-    - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: rectangle, dimension: 
+    - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: rectangle, dimension:
         width, value: second, unit: '{second}', position: '{first.uid}', quantity: ''}
     agreement:
     - number_compatible:
@@ -795,12 +817,12 @@ variants:
     - {lit: by}
     - {slot: third, cat: length_unit, counted: true}
     dimensions:
-    - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: cuboid, dimension: length, 
-        value: first, unit: '{first}', position: '{first.uid}', quantity: ''}
-    - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: cuboid, dimension: width, 
-        value: second, unit: '{second}', position: '{first.uid}', quantity: ''}
-    - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: cuboid, dimension: height, 
-        value: third, unit: '{third}', position: '{first.uid}', quantity: ''}
+    - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: cuboid, dimension:
+        length, value: first, unit: '{first}', position: '{first.uid}', quantity: ''}
+    - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: cuboid, dimension:
+        width, value: second, unit: '{second}', position: '{first.uid}', quantity: ''}
+    - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: cuboid, dimension:
+        height, value: third, unit: '{third}', position: '{first.uid}', quantity: ''}
     agreement:
     - number_compatible:
       - stock
@@ -826,12 +848,12 @@ variants:
     - {lit: by}
     - {slot: third, cat: length_unit, counted: true}
     dimensions:
-    - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: cuboid, dimension: length, 
-        value: first, unit: '{third}', position: '{first.uid}', quantity: ''}
-    - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: cuboid, dimension: width, 
-        value: second, unit: '{third}', position: '{first.uid}', quantity: ''}
-    - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: cuboid, dimension: height, 
-        value: third, unit: '{third}', position: '{first.uid}', quantity: ''}
+    - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: cuboid, dimension:
+        length, value: first, unit: '{third}', position: '{first.uid}', quantity: ''}
+    - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: cuboid, dimension:
+        width, value: second, unit: '{third}', position: '{first.uid}', quantity: ''}
+    - {fact: region_evidence, stage: opening, material: '{material}', entity: '', shape: cuboid, dimension:
+        height, value: third, unit: '{third}', position: '{first.uid}', quantity: ''}
     agreement:
     - number_compatible:
       - stock
@@ -1128,7 +1150,7 @@ ask_variants:
     head:
     - {lit: what, at_start: true}
     - {slot: be, cat: singular_copula}
-    - {slot: dimension, cat: quantity_dimension_noun, qualified: true, qualifier_cat: prenominal_remnant_adj, 
+    - {slot: dimension, cat: quantity_dimension_noun, qualified: true, qualifier_cat: prenominal_remnant_adj,
         uncounted: true}
     - {lit: of}
     - {slot: material, cat: material_resource, uncounted: true, bare: true}
@@ -1595,8 +1617,8 @@ ask_variants:
     - {lit: how, at_start: true}
     - {slot: extent, cat: length_interrogative_adjective}
     - {slot: be, cat: singular_copula}
-    - {slot: material, cat: material_resource, uncounted: true, number: singular,
-        qualified: true, qualifier_cat: prenominal_remnant_adj, all_qualifiers: true, class_only: true}
+    - {slot: material, cat: material_resource, uncounted: true, number: singular, qualified: true,
+        qualifier_cat: prenominal_remnant_adj, all_qualifiers: true, class_only: true}
     tail:
     - opt:
       - {lit: in}
@@ -1661,8 +1683,8 @@ ask_variants:
     - {slot: be, cat: singular_copula}
     - {slot: dimension, cat: quantity_dimension_noun, uncounted: true, number: singular, bare: true}
     - {lit: of}
-    - {slot: material, cat: material_resource, uncounted: true, number: singular,
-        qualified: true, qualifier_cat: prenominal_remnant_adj, all_qualifiers: true, class_only: true}
+    - {slot: material, cat: material_resource, uncounted: true, number: singular, qualified: true,
+        qualifier_cat: prenominal_remnant_adj, all_qualifiers: true, class_only: true}
     tail: []
     quantity: '{dimension}'
     satisfies: {be: [subject]}
@@ -1717,7 +1739,7 @@ ask_variants:
     - {slot: material, cat: material_resource, uncounted: true, bare: true}
     tail:
     - {slot: remain, cat: resource_remnant_verb, finite_form: true}
-    agreement: [{number_compatible: [material, remain]}]
+    agreement: [number_compatible: [material, remain]]
     quantity: inferred
     satisfies: {remain: [subject]}
     disambiguates: [amount_word]
@@ -1727,8 +1749,8 @@ ask_variants:
     head:
     - {lit: how, at_start: true}
     - {slot: amount_word, cat: mass_amount_interrogative}
-    - {slot: material, cat: material_resource, uncounted: true, qualified: true,
-        qualifier_cat: resource_remnant_attribute, all_qualifiers: true, class_only: true}
+    - {slot: material, cat: material_resource, uncounted: true, qualified: true, qualifier_cat:
+        resource_remnant_attribute, all_qualifiers: true, class_only: true}
     tail:
     - {slot: be, cat: copula}
     - {slot: remnant, cat: remnant_adj}
@@ -1741,8 +1763,8 @@ ask_variants:
     head:
     - {lit: how, at_start: true}
     - {slot: amount_word, cat: mass_amount_interrogative}
-    - {slot: material, cat: material_resource, uncounted: true, qualified: true,
-        qualifier_cat: resource_remnant_attribute, all_qualifiers: true, class_only: true}
+    - {slot: material, cat: material_resource, uncounted: true, qualified: true, qualifier_cat:
+        resource_remnant_attribute, all_qualifiers: true, class_only: true}
     tail:
     - {slot: be, cat: copula}
     - {slot: remnant, cat: remnant_adj}
@@ -1759,8 +1781,8 @@ ask_variants:
     head:
     - {lit: how, at_start: true}
     - {slot: amount_word, cat: mass_amount_interrogative}
-    - {slot: material, cat: material_resource, uncounted: true, qualified: true,
-        qualifier_cat: resource_remnant_attribute, all_qualifiers: true, class_only: true}
+    - {slot: material, cat: material_resource, uncounted: true, qualified: true, qualifier_cat:
+        resource_remnant_attribute, all_qualifiers: true, class_only: true}
     tail:
     - {slot: be, cat: copula}
     - {slot: remnant, cat: remnant_adj}

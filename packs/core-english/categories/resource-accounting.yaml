@@ -57,7 +57,7 @@ members:
   transaction_channel: [online]
   transaction_channel_descriptor: [online]
   transaction_price_preposition: [for]
-  transaction_supplier: [retailer, shop, store]
+  transaction_supplier: [retailer, shop, store, supplier]
   transaction_supplier_preposition: [from]
   transaction_unit_price_preposition: [at, for]
   uniform_price_attribute: [same]

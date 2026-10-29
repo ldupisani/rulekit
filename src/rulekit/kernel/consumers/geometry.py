@@ -1,56 +1,69 @@
-"""`geometry` — a (shape, quantity) formula from the declarative table.
-
-Moved out of `answer.py` UNCHANGED. The only edits are `query`/`reg`/`log`
-becoming `ctx.` lookups.
-
-⚠ FINDING THE BLOCK'S END IS NOT "the next `if consumer ==`". `answer()` has
-SHARED code between consumer branches — the temporal origo sits just below this
-one — so a boundary drawn to the next branch would have swallowed it and moved
-code that must run for every consumer into a single one. The boundary is the
-first line that is not indented into the branch.
-"""
-
+"""Shape properties use the shared typed-property resolver and arithmetic log."""
 from __future__ import annotations
 
+from math import isfinite
+
 from . import ConsumerContext, consumer
+from ..answer import Answer, AnswerProof, ProofStep, SemanticNode
+from ..properties import Measurement, evaluate_property
+from ..evaluate import EvaluationError
+from ...data.properties import PropertyError
 
 
 @consumer("geometry")
 def geometry(ctx: ConsumerContext):
-    from ..answer import Answer
-    from ..evaluate import evaluate
-
-    # Formula-selection (difg geometry domain): "what is the AREA of a CIRCLE
-    # with RADIUS 5?" -> look up the (shape, quantity) formula in the pack's
-    # declarative table, bind the named dimensions from the ask, evaluate.
-    # NO per-domain Python (constitution): the formulas are DATA, this branch
-    # is the generic evaluator. Definitive-or-decline: a formula whose named
-    # dimensions are not all bound (wrong/missing dimension for the shape)
-    # evaluates to a NameError and declines rather than guess.
     shape, quantity = ctx.query.get("shape"), ctx.query.get("quantity")
-    expr = ctx.reg.geometry_formulas.get((shape, quantity))
-    if expr is None:
-        return Answer(
-            "decline", None,
-            f"no geometry formula for {quantity!r} of a {shape!r}",
-        )
-    env = {"pi": 3.141592653589793}
-    for d, v in ((ctx.query.get("dim1"), ctx.query.get("val1")),
-                 (ctx.query.get("dim2"), ctx.query.get("val2"))):
-        if d and v not in (None, ""):
-            env[d] = float(v)
+    definition = ctx.reg.derived_attribute(shape or "", quantity or "")
+    legacy = ctx.reg.geometry_formulas.get((shape, quantity))
+    if definition is None and legacy is None:
+        return Answer("decline", None, f"no geometry formula for {quantity!r} of a {shape!r}")
+    values = {}
+    units_present = []
+    for index in range(1, 4):
+        role, raw = ctx.query.get(f'dim{index}'), ctx.query.get(f'val{index}')
+        if not role or raw in (None, ""):
+            continue
+        if role in values:
+            return Answer("decline", None, "each geometry parameter must be stated once")
+        value = float(raw)
+        if not isfinite(value) or value < 0:
+            return Answer("decline", None, "geometry measurements must be finite and nonnegative")
+        slot = ctx.match.slots.get(f'val{index}') if ctx.match is not None else None
+        features = slot.features if slot is not None else {}
+        unit = features.get("lemma") if features.get("value_kind") == "count" else None
+        if unit == role and ctx.reg.word_in_category(unit, "geometry_dimension"):
+            unit = None
+        power = ctx.reg.attribute_value(features.get("qualifier", ""), "measurement_power") or 1
+        values[role] = Measurement(value, unit, power)
+        units_present.append(bool(unit))
+    if any(units_present) and not all(units_present):
+        return Answer("decline", None, "geometry measurements need an explicit common unit basis")
+    output_unit = ctx.query.get("output_unit")
+    if output_unit:
+        slot = ctx.match.slots.get("output_unit") if ctx.match is not None else None
+        qualifier = ctx.query.get("output_power") or (slot.features.get("qualifier", "") if slot is not None else "")
+        power = ctx.reg.attribute_value(qualifier, "measurement_power") or 1
+        if (not units_present or not all(units_present) or definition is None
+                or len(definition.result_dimension) != 1 or definition.result_dimension[0][1] != power):
+            return Answer("decline", None, "requested geometry units must match the measured result dimension")
     try:
-        value = evaluate(expr, env, ctx.log, source="geometry")
-    except Exception:
-        return Answer(
-            "decline", None,
-            f"{quantity!r} of a {shape!r} needs dimensions its given ones "
-            "do not supply",
-        )
-    # A pi-bearing area/volume is irrational; present it to 2 decimals, the
-    # conventional precision for a geometry answer (and difg's own gold
-    # rounding). Exact integer results (rectangle area 24, cube volume 27)
-    # are unchanged by the round.
-    return Answer(
-        "number", round(value, 2), f"geometry: {quantity} of {shape} = {expr}"
-    )
+        if definition is None:
+            # Existing external packs retain the legacy geometry table. It is
+            # deliberately unitless: typed inheritance is opt-in, never guessed.
+            if any(units_present) or output_unit:
+                raise PropertyError("a legacy formula has no declared unit contract")
+            from ..evaluate import evaluate
+            value = evaluate(legacy, {**ctx.reg.formula_constants,
+                                     **{key: measurement.value for key, measurement in values.items()}},
+                             ctx.log, source="geometry")
+            sources = ()
+        else:
+            result = evaluate_property(ctx.reg, shape, quantity, values, ctx.log, output_unit=output_unit)
+            value, sources = result.value, result.sources
+    except (PropertyError, ArithmeticError, ValueError, EvaluationError) as exc:
+        return Answer("decline", None,
+                      f"{quantity!r} of a {shape!r} needs dimensions its given ones do not supply: {exc}")
+    node = SemanticNode("derived-property", (("subject", shape), ("property", quantity)))
+    description = "; ".join(f'{origin.pack}:{origin.kind}:{origin.owner}' for origin in sources)
+    return Answer("number", round(value, 2), f'geometry: {quantity} of {shape} = {value:g}',
+                  AnswerProof(node, (ProofStep("derived-property", node, detail=description),)))

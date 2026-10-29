@@ -144,7 +144,9 @@ def test_declared_hyphenated_adjective_is_not_two_unknown_words(registry):
     reading = analyze("A button-up shirt.", registry)
     assert not reading.unknown_words()
     assert any(u.features.get("qualifier") == "button-up" for u in reading.units)
-    assert analyze("A button up shirt.", registry).unknown_words()
+    unhyphenated = analyze("A button up shirt.", registry)
+    assert not unhyphenated.unknown_words()
+    assert not any(u.features.get("qualifier") == "button-up" for u in unhyphenated.units)
 
 
 def test_progressive_auxiliary_does_not_create_membership(registry):

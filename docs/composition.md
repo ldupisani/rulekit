@@ -236,8 +236,19 @@ remaining side length from area or volume. Explicit length units permit
 conversion; omitted units still require a unique stated unit.
 
 Implementation: [region rules](../packs/arithmetic/rules/material-regions.yaml),
-[shared formulas](../packs/arithmetic/geometry.yaml), and
+[shared shape properties](../packs/core-english/categories/geometry.yaml), and
 [resource remainder](../src/rulekit/kernel/consumers/material_region_remainder.py).
+
+Shape properties use the same inheritance and typed evaluation contract as
+other category properties. The resource consumer converts axes, then calls the
+shared property evaluator, including declared equal-side constraints and formula
+dependencies. An omitted spatial basis selects the shape's spatial measure:
+adding a perimeter, diagonal, or surface-area formula cannot make an existing
+area or volume balance ambiguous. Scalar spatial dimension and the physical
+dimension of a derived result remain separate.
+
+Implementation and boundaries: [property evaluator](../src/rulekit/kernel/properties.py),
+[property contracts](../tests/test_category_properties.py).
 
 A measured acquisition can also establish stock for ordered fractional uses.
 Each use preserves whether its fraction applies to the opening stock or the
@@ -253,15 +264,43 @@ and [fractional resource composition](../src/rulekit/kernel/consumers/fractional
 ## Category inventory percentages
 
 A category-percentage question can use an explicit category total or a
-document-local enumeration of distinct subtypes. Every state count must belong
-to that category and one inventory scope; overlapping descriptions, duplicate
-counts, unrelated facts and mixed locations decline. A single subtype alone
+document-local enumeration of distinct subtypes. The denominator includes only
+counts belonging to the requested category and one compatible inventory scope.
+Other state counts can be excluded only when YAML category declarations prove
+their separation from that category. They remain in the fact store and retain
+full source and numeric accounting. Unknown membership, overlapping descriptions,
+duplicate counts, extra events and mixed relevant locations decline. A single subtype alone
 does not establish the category total. Negation selects the complement before
 division. This does not close the category's taxonomy or enable general
 superordinate totals from incidental mentions.
 
-Implementation: [inventory asks](../packs/arithmetic/rules/category-populations.yaml)
+Coordinated counted lists retain every member, including lists longer than
+three items. A shared location may follow the first item or the entire list.
+An introductory `with` can supply a stated inventory, with an optional shared
+location after the list. This frame consumes the complete inventory fragment;
+it does not reinterpret accompaniment, absence, or instruments as holdings.
+The same inventory can be supplied as the current question's conditional
+antecedent, including an immediately preceding detached conditional sentence;
+its facts retain assumption provenance and never persist beyond that solve.
+Disjunctions, missing counts, and additional item-specific locations do not
+become a shared inventory.
+
+Implementation: [inventory asks](../packs/arithmetic/rules/category-populations.yaml),
+[coordinated inventory grammar](../packs/arithmetic/rules/counted-inventories.yaml)
 and [percentage consumers](../src/rulekit/kernel/consumers/partition_percentage.py).
+Executable analogues and boundaries: [inventory tests](../tests/test_existential_inventories.py).
+Category filtering and separation contracts: [scoped inventories](../tests/test_scoped_inventory_percentages.py)
+and [category declarations](../tests/test_category_disjointness.py).
+
+The shared vocabulary classifies [flowers and fruit](../packs/core-english/categories/plants.yaml),
+[birds and insects](../packs/core-english/categories/animals.yaml), and
+[people](../packs/core-english/categories/agents.yaml). Birds and insects inherit
+animal membership. Botanical families are separate from living agents; birds
+and insects are separate from each other and from people. These declarations
+do not separate all animals from people or infer separation from an unclassified
+noun. Lexical plurals reuse the same membership and separation evidence.
+Vocabulary ownership and role boundaries are checked by the
+[core taxonomy tests](../tests/test_core_inventory_taxonomy.py).
 
 ## Partitioned process durations
 

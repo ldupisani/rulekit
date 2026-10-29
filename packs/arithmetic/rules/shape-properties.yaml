@@ -1,0 +1,381 @@
+format: rulekit/rules@1
+rules: []
+asks:
+  - id: ask/geometry-formula
+    match:
+      question:
+        - {lit: what}
+        - {slot: copula, cat: singular_copula}
+        - {slot: quantity, cat: geometry_quantity}
+        - {lit: of}
+        - {slot: shape, cat: geometry_shape}
+        - {lit: with}
+        - {slot: dim1, cat: geometry_dimension}
+        - {slot: val1, type: number, standalone: true}
+        - opt:
+            - {lit: and}
+            - {slot: dim2, cat: geometry_dimension}
+            - {slot: val2, type: number, standalone: true}
+        - opt:
+            - {lit: and}
+            - {slot: dim3, cat: geometry_dimension}
+            - {slot: val3, type: number, standalone: true}
+        - opt:
+            - {lit: in}
+            - opt:
+                - {slot: output_power, cat: spatial_unit_modifier}
+            - {slot: output_unit, cat: length_unit}
+    satisfies:
+      copula:
+        - subject
+        - object
+      val1:
+        - quantifies
+      val2:
+        - quantifies
+      val3:
+        - quantifies
+    disambiguates:
+      - quantity
+      - shape
+      - output_power
+    resolves:
+      consumer: geometry
+      shape: '{shape}'
+      quantity: '{quantity.qualified}'
+      dim1: '{dim1}'
+      val1: '{val1.value}'
+      dim2: '{dim2}'
+      val2: '{val2.value}'
+      dim3: '{dim3}'
+      val3: '{val3.value}'
+      output_unit: '{output_unit}'
+      output_power: '{output_power}'
+    generation:
+      requires_committed_answer: true
+      omit_slots:
+        - output_unit
+        - output_power
+      property_bindings:
+        subject: shape
+        property: quantity
+        parameters:
+          - slot: dim1
+            component: identity
+          - slot: dim2
+            component: identity
+          - slot: dim3
+            component: identity
+  - id: ask/geometry-formula-value-first
+    match:
+      question:
+        - {lit: what}
+        - {slot: copula, cat: singular_copula}
+        - {slot: quantity, cat: geometry_quantity}
+        - {lit: of}
+        - {slot: shape, cat: geometry_shape}
+        - {lit: with}
+        - {slot: val1, cat: geometry_dimension, counted: true, bare: true}
+        - opt:
+            - {lit: and}
+            - {slot: val2, cat: geometry_dimension, counted: true, bare: true}
+        - opt:
+            - {lit: and}
+            - {slot: val3, cat: geometry_dimension, counted: true, bare: true}
+        - opt:
+            - {lit: in}
+            - opt:
+                - {slot: output_power, cat: spatial_unit_modifier}
+            - {slot: output_unit, cat: length_unit}
+    satisfies:
+      copula:
+        - subject
+        - object
+      val1:
+        - quantifies
+      val2:
+        - quantifies
+      val3:
+        - quantifies
+    disambiguates:
+      - quantity
+      - shape
+      - output_power
+    resolves:
+      consumer: geometry
+      shape: '{shape}'
+      quantity: '{quantity.qualified}'
+      dim1: '{val1}'
+      val1: '{val1.value}'
+      dim2: '{val2}'
+      val2: '{val2.value}'
+      dim3: '{val3}'
+      val3: '{val3.value}'
+      output_unit: '{output_unit}'
+      output_power: '{output_power}'
+    generation:
+      requires_committed_answer: true
+      omit_slots:
+        - output_unit
+        - output_power
+      property_bindings:
+        subject: shape
+        property: quantity
+        parameters:
+          - slot: val1
+            component: identity
+          - slot: val2
+            component: identity
+          - slot: val3
+            component: identity
+  - id: ask/geometry-formula-measured
+    match:
+      question:
+        - {lit: what}
+        - {slot: copula, cat: singular_copula}
+        - {slot: quantity, cat: geometry_quantity}
+        - {lit: of}
+        - {slot: shape, cat: geometry_shape}
+        - {lit: with}
+        - {slot: val1, cat: length_unit, counted: true, qualified: true, qualifier_cat:
+            geometry_dimension}
+        - opt:
+            - {lit: and}
+            - {slot: val2, cat: length_unit, counted: true, qualified: true, qualifier_cat:
+                geometry_dimension}
+        - opt:
+            - {lit: and}
+            - {slot: val3, cat: length_unit, counted: true, qualified: true, qualifier_cat:
+                geometry_dimension}
+        - opt:
+            - {lit: in}
+            - opt:
+                - {slot: output_power, cat: spatial_unit_modifier}
+            - {slot: output_unit, cat: length_unit}
+    satisfies:
+      copula:
+        - subject
+        - object
+      val1:
+        - quantifies
+      val2:
+        - quantifies
+      val3:
+        - quantifies
+    disambiguates:
+      - quantity
+      - shape
+      - output_power
+    resolves:
+      consumer: geometry
+      shape: '{shape}'
+      quantity: '{quantity.qualified}'
+      dim1: '{val1.qualifier}'
+      val1: '{val1.value}'
+      dim2: '{val2.qualifier}'
+      val2: '{val2.value}'
+      dim3: '{val3.qualifier}'
+      val3: '{val3.value}'
+      output_unit: '{output_unit}'
+      output_power: '{output_power}'
+    generation:
+      requires_committed_answer: true
+      omit_slots:
+        - output_unit
+        - output_power
+      property_bindings:
+        subject: shape
+        property: quantity
+        parameters:
+          - slot: val1
+            component: qualifier
+          - slot: val2
+            component: qualifier
+          - slot: val3
+            component: qualifier
+  - id: ask/compute-shape-property
+    match:
+      question:
+        - {slot: compute, cat: compute_verb}
+        - {slot: quantity, cat: geometry_quantity}
+        - {lit: of}
+        - {slot: shape, cat: geometry_shape}
+        - {lit: with}
+        - {slot: dim1, cat: geometry_dimension}
+        - {slot: val1, type: number, standalone: true}
+        - opt:
+            - {lit: and}
+            - {slot: dim2, cat: geometry_dimension}
+            - {slot: val2, type: number, standalone: true}
+        - opt:
+            - {lit: and}
+            - {slot: dim3, cat: geometry_dimension}
+            - {slot: val3, type: number, standalone: true}
+        - opt:
+            - {lit: in}
+            - opt:
+                - {slot: output_power, cat: spatial_unit_modifier}
+            - {slot: output_unit, cat: length_unit}
+    satisfies:
+      compute:
+        - object
+      val1:
+        - quantifies
+      val2:
+        - quantifies
+      val3:
+        - quantifies
+    disambiguates:
+      - quantity
+      - shape
+      - output_power
+    resolves:
+      consumer: geometry
+      shape: '{shape}'
+      quantity: '{quantity.qualified}'
+      dim1: '{dim1}'
+      val1: '{val1.value}'
+      dim2: '{dim2}'
+      val2: '{val2.value}'
+      dim3: '{dim3}'
+      val3: '{val3.value}'
+      output_unit: '{output_unit}'
+      output_power: '{output_power}'
+    generation:
+      requires_committed_answer: true
+      omit_slots:
+        - output_unit
+        - output_power
+      property_bindings:
+        subject: shape
+        property: quantity
+        parameters:
+          - slot: dim1
+            component: identity
+          - slot: dim2
+            component: identity
+          - slot: dim3
+            component: identity
+  - id: ask/compute-shape-property-value-first
+    match:
+      question:
+        - {slot: compute, cat: compute_verb}
+        - {slot: quantity, cat: geometry_quantity}
+        - {lit: of}
+        - {slot: shape, cat: geometry_shape}
+        - {lit: with}
+        - {slot: val1, cat: geometry_dimension, counted: true, bare: true}
+        - opt:
+            - {lit: and}
+            - {slot: val2, cat: geometry_dimension, counted: true, bare: true}
+        - opt:
+            - {lit: and}
+            - {slot: val3, cat: geometry_dimension, counted: true, bare: true}
+        - opt:
+            - {lit: in}
+            - opt:
+                - {slot: output_power, cat: spatial_unit_modifier}
+            - {slot: output_unit, cat: length_unit}
+    satisfies:
+      compute:
+        - object
+      val1:
+        - quantifies
+      val2:
+        - quantifies
+      val3:
+        - quantifies
+    disambiguates:
+      - quantity
+      - shape
+      - output_power
+    resolves:
+      consumer: geometry
+      shape: '{shape}'
+      quantity: '{quantity.qualified}'
+      dim1: '{val1}'
+      val1: '{val1.value}'
+      dim2: '{val2}'
+      val2: '{val2.value}'
+      dim3: '{val3}'
+      val3: '{val3.value}'
+      output_unit: '{output_unit}'
+      output_power: '{output_power}'
+    generation:
+      requires_committed_answer: true
+      omit_slots:
+        - output_unit
+        - output_power
+      property_bindings:
+        subject: shape
+        property: quantity
+        parameters:
+          - slot: val1
+            component: identity
+          - slot: val2
+            component: identity
+          - slot: val3
+            component: identity
+  - id: ask/compute-shape-property-measured
+    match:
+      question:
+        - {slot: compute, cat: compute_verb}
+        - {slot: quantity, cat: geometry_quantity}
+        - {lit: of}
+        - {slot: shape, cat: geometry_shape}
+        - {lit: with}
+        - {slot: val1, cat: length_unit, counted: true, qualified: true, qualifier_cat:
+            geometry_dimension}
+        - opt:
+            - {lit: and}
+            - {slot: val2, cat: length_unit, counted: true, qualified: true, qualifier_cat:
+                geometry_dimension}
+        - opt:
+            - {lit: and}
+            - {slot: val3, cat: length_unit, counted: true, qualified: true, qualifier_cat:
+                geometry_dimension}
+        - opt:
+            - {lit: in}
+            - opt:
+                - {slot: output_power, cat: spatial_unit_modifier}
+            - {slot: output_unit, cat: length_unit}
+    satisfies:
+      compute:
+        - object
+      val1:
+        - quantifies
+      val2:
+        - quantifies
+      val3:
+        - quantifies
+    disambiguates:
+      - quantity
+      - shape
+      - output_power
+    resolves:
+      consumer: geometry
+      shape: '{shape}'
+      quantity: '{quantity.qualified}'
+      dim1: '{val1.qualifier}'
+      val1: '{val1.value}'
+      dim2: '{val2.qualifier}'
+      val2: '{val2.value}'
+      dim3: '{val3.qualifier}'
+      val3: '{val3.value}'
+      output_unit: '{output_unit}'
+      output_power: '{output_power}'
+    generation:
+      requires_committed_answer: true
+      omit_slots:
+        - output_unit
+        - output_power
+      property_bindings:
+        subject: shape
+        property: quantity
+        parameters:
+          - slot: val1
+            component: qualifier
+          - slot: val2
+            component: qualifier
+          - slot: val3
+            component: qualifier

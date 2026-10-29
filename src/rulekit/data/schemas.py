@@ -9,6 +9,7 @@ JSON Schema is exported from them.
 from __future__ import annotations
 
 from typing import Literal
+import math
 
 from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, model_validator
 
@@ -45,7 +46,7 @@ class AnaphoricForm(StrictModel):
 class LexiconEntry(StrictModel):
     senses: list[str]
     plural: str | list[str] | None = None  # noun senses: plural surface(s)
-    number: Literal["singular", "plural"] | None = None  # grammatical number (pronouns)
+    number: Literal["singular", "plural"] | None = None  # grammatical number of this surface
     anaphoric_form: AnaphoricForm | None = None
     verb: VerbInfo | None = None  # for verb senses: irregular lemma etc.
     # An explicitly indivisible multiword noun/adverb. Unlike an ordinary
@@ -81,11 +82,46 @@ class LexiconDoc(StrictModel):
 # ---------------------------------------------------------------------------
 
 
+DimensionSpec = str | dict[str, int]
+
+
+class DerivedAttributeDef(StrictModel):
+    """A typed arithmetic property; names bind to roles, never text positions."""
+
+    inputs: dict[str, DimensionSpec]
+    expr: str = Field(min_length=1)
+    result_dimension: DimensionSpec
+    constants: dict[str, float] | list[str] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def _well_formed(self) -> "DerivedAttributeDef":
+        for name in (*self.inputs, *self.constants):
+            if not name.isidentifier():
+                raise ValueError("formula parameter and constant names must be identifiers")
+        if self.inputs.keys() & set(self.constants):
+            raise ValueError("formula inputs and constants must be distinct")
+        if isinstance(self.constants, dict) and any(not math.isfinite(v) for v in self.constants.values()):
+            raise ValueError("formula constants must be finite")
+        for dimension in (*self.inputs.values(), self.result_dimension):
+            names = (dimension,) if isinstance(dimension, str) else dimension
+            if any(not name.isidentifier() for name in names):
+                raise ValueError("dimension names must be identifiers")
+        return self
+
+
 class CategoryDef(StrictModel):
     parent: str
+    attrs: dict[str, float] = Field(default_factory=dict)
+    formulas: dict[str, DerivedAttributeDef] = Field(default_factory=dict)
+    # Explicit parameter equalities, e.g. both rectangle sides bind to a
+    # square's side. Membership alone never supplies these relationships.
+    parameter_bindings: dict[str, str] = Field(default_factory=dict)
     # Nominal role sets may include other nominal families (and descendants)
     # without inheriting their taxonomy or behavioral flags. No word copying.
     includes: list[str] = Field(default_factory=list)
+    # Explicitly separate nominal families. Non-membership is otherwise
+    # unknown; sibling categories and incomplete word lists are not negation.
+    disjoint_with: list[str] = Field(default_factory=list)
     antonym: str | None = None
     # Direction for polarity-pair categories (lose=-1/acquire=+1, fewer=-1/
     # more=+1). Consumed by sign(<slot>) in rule emit expressions — the
@@ -156,6 +192,12 @@ class CategoryDef(StrictModel):
 
     @model_validator(mode="after")
     def _one_superordinate_contract(self) -> "CategoryDef":
+        if self.attrs.keys() & self.formulas.keys():
+            raise ValueError("a property cannot be both scalar and derived")
+        if any(not math.isfinite(value) for value in self.attrs.values()):
+            raise ValueError("category attributes must be finite")
+        if any(not name.isidentifier() for pair in self.parameter_bindings.items() for name in pair):
+            raise ValueError("parameter bindings must name identifiers")
         if self.superordinate and self.coordinated_superordinate:
             raise ValueError(
                 "a category cannot be both closed and coordinated-only "
@@ -244,6 +286,13 @@ class ModifierAttachmentDef(StrictModel):
     host_category: str
 
 
+class FormulaUnitDef(StrictModel):
+    """Canonical unit and the lexical family through which it may convert."""
+
+    unit: str
+    category: str
+
+
 class CategoriesDoc(StrictModel):
     format: Literal["rulekit/categories@1"]
     categories: dict[str, CategoryDef] = Field(default_factory=dict)
@@ -314,6 +363,13 @@ class CategoriesDoc(StrictModel):
     temporal_offsets: dict[str, float] = Field(default_factory=dict)
     context_synonyms: dict[str, ContextSynonym] = Field(default_factory=dict)
     attrs: dict[str, dict[str, float]] = Field(default_factory=dict)
+    formulas: dict[str, dict[str, DerivedAttributeDef]] = Field(default_factory=dict)
+    parameter_bindings: dict[str, dict[str, str]] = Field(default_factory=dict)
+    # Canonical units for the physical bases used by derived properties.
+    # Existing conversion machinery supplies all scale factors.
+    formula_units: dict[str, str | FormulaUnitDef] = Field(default_factory=dict)
+    formula_constants: dict[str, float] = Field(default_factory=dict)
+    property_aliases: dict[str, str] = Field(default_factory=dict)
     part_counts: dict[str, str] = Field(default_factory=dict)
 
     @model_validator(mode="after")
@@ -641,6 +697,10 @@ class MatchToken(StrictModel):
     span: bool = False
     enumeration_cat: str | None = None
     enumeration_min_members: int = Field(default=1, ge=1)
+    # Each list member is one counted nominal rather than an uncounted
+    # class/name. Per-item emission retains that nominal's scalar value and
+    # reference; it does not flatten a count into a textual class key.
+    enumeration_counted: bool = False
     # OPT-IN, span-only: name a CATEGORY whose members may never be swallowed
     # into the captured phrase (e.g. packs/logic's `negation`) — a polarity
     # word hidden inside a phrase key would bury the negation where no
@@ -910,6 +970,8 @@ class MatchToken(StrictModel):
             )
         if self.enumeration_min_members != 1 and self.enumeration_cat is None:
             raise ValueError("enumeration_min_members requires enumeration_cat")
+        if self.enumeration_counted and self.enumeration_cat is None:
+            raise ValueError("enumeration_counted requires enumeration_cat")
         if self.enumeration_cat is not None and not self.span:
             raise ValueError("enumeration_cat requires a span")
         if self.span_blocks is not None and not self.span:
@@ -1612,6 +1674,8 @@ class FactEmit(StrictModel):
     # ("There are six types of wild turkeys: A, B, …, and F" → one fact per
     # listed type). Declared here so it never falls into `fields` via the
     # extra-collector below.
+    # An enumeration_counted span binds each counted member as a scalar Unit,
+    # retaining its numeric value, modifiers and reference identity.
     each: str | None = None
     # Stage 9h: whole-list emission over an ENUMERATION span. Names a span
     # slot; the emit fires ONCE with every comma/conjunction-separated
@@ -1802,6 +1866,17 @@ class AskValidatedSlotBinding(StrictModel):
     value_field: str | None = Field(default=None, min_length=1)
 
 
+class PropertyParameterSlot(StrictModel):
+    slot: str
+    component: Literal["identity", "qualifier"] = "identity"
+
+
+class PropertyGenerationDef(StrictModel):
+    subject: str
+    property: str
+    parameters: list[PropertyParameterSlot]
+
+
 class AskGenerationDef(StrictModel):
     """Declarative constraints that apply only to ask realization.
 
@@ -1840,6 +1915,7 @@ class AskGenerationDef(StrictModel):
     # prefix. Ask generation must never realize those capture-only branches.
     omit_slots: list[str] = Field(default_factory=list)
     requires_committed_answer: bool = False
+    property_bindings: PropertyGenerationDef | None = None
 
     @model_validator(mode="after")
     def _context_strategy_is_explicit(self) -> "AskGenerationDef":
@@ -1943,6 +2019,11 @@ class AskRule(StrictModel):
                     f"ask {self.id!r}: pattern satisfaction obligations "
                     "must be non-empty and unique"
                 )
+        if self.generation.property_bindings is not None:
+            binding = self.generation.property_bindings
+            names = [binding.subject, binding.property, *(p.slot for p in binding.parameters)]
+            if len(names) != len(set(names)) or set(names) - declared_slots:
+                raise ValueError("property generation bindings need distinct declared slots")
         unknown_generation_slots = (
             set(self.generation.slot_sources)
             | set(self.generation.slot_categories)

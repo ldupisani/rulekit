@@ -21,7 +21,7 @@ templates:
         collection: '{collection}'
         subtype: '{subtype}'
         negated: {parameter: negated}
-        unlocated_sources: [arithmetic/existential-premise-bare, arithmetic/existential-premise-bare-conjoined, arithmetic/holder-population-bare]
+        unlocated_sources: [arithmetic/existential-premise-bare, arithmetic/existential-premise-bare-conjoined, arithmetic/existential-inventory-bare, arithmetic/with-inventory-bare, arithmetic/holder-population-bare]
 ask_variants:
   - id: ask/category-population-percentage
     template: category-population-percentage

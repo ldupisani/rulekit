@@ -123,9 +123,9 @@ def test_g5k_profiles_the_complete_absent_predicate_class() -> None:
             for rule in project.registry.rules
             if any(predicate.absent is not None for predicate in rule.where)
         }
-    ) == 21
+    ) == 26
     assert Counter(predicates) == {
-        "aggregate": 4,
+        "aggregate": 9,
         "multiplier_marker": 3,
         "partitive": 6,
         "relational_marker": 6,
@@ -142,9 +142,9 @@ def test_g5k_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 633
-    assert sum(item.supported for item in availability.values()) == 569
-    assert sum(not item.supported for item in availability.values()) == 64
+    assert len(availability) == 638
+    assert sum(item.supported for item in availability.values()) == 562
+    assert sum(not item.supported for item in availability.values()) == 76
     assert all(availability[rule_id].supported for rule_id in NEWLY_SUPPORTED)
     # G5s subsequently supplied the future-modal domain for this historical
     # G5k frontier, so these rules must remain unlocked.
@@ -154,7 +154,7 @@ def test_g5k_unlocks_exactly_the_preregistered_frontier() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 948
+    assert len(exploration_status(project)["fillers"]) == 2372
 
 
 @pytest.mark.parametrize("rule_id", sorted(NEWLY_SUPPORTED))

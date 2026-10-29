@@ -10,6 +10,8 @@ from ..numeric_evidence import audit_numeric_mentions
 from ..dimensions import conversion_factor
 from ..resource_equations import resource_residual
 from ..source_coverage import uncovered_document_units
+from ..properties import evaluate_property
+from ...data.properties import PropertyError
 
 
 @consumer("material-region-remainder", applicable=lambda s: bool(s.by_kind(RegionEvidence)))
@@ -45,7 +47,7 @@ def consume(ctx):
         candidates = None
         for group in (opening, *removals):
             row = group[0]
-            bases = ({basis for shape, basis in ctx.reg.geometry_formulas if shape == row.shape}
+            bases = (ctx.reg.spatial_quantities(row.shape)
                      if row.shape else {row.quantity} - {""})
             candidates = bases if candidates is None else candidates & bases
         if not candidates or len(candidates) != 1:
@@ -107,9 +109,12 @@ def consume(ctx):
             if formula is None:
                 return decline("the stated shape needs a declared formula for this quantity")
             try:
-                values[key] = evaluate(formula, dict(zip((r.dimension for r in group), operands)),
-                                       ctx.log, source="measured-resource-formula")
-            except (EvaluationError, NameError, KeyError):
+                parameters = dict(zip((r.dimension for r in group), operands))
+                if ctx.reg.derived_attribute(row.shape, quantity) is not None:
+                    values[key] = evaluate_property(ctx.reg, row.shape, quantity, parameters, ctx.log).value
+                else:
+                    values[key] = evaluate(formula, parameters, ctx.log, source="measured-resource-formula")
+            except (EvaluationError, NameError, KeyError, PropertyError):
                 return decline("the formula needs dimensions that were not supplied")
             dimensions[key] = sorted(operands)
         else:

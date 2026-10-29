@@ -12,7 +12,7 @@ categories:
   collection_loading_target: {parent: noun}
   initial_state_verb: {parent: verb}
   discrete_object_event_verb:
-    parent: animate_subject_verb
+    parent: quantity_ask_verb
     selectional_roles: {actor: quantity_event_participant, theme: ownable_quantity_object}
 members:
   accomplishment_verb: [manage, managed, manages]

@@ -6,7 +6,7 @@ from math import isfinite
 from . import consumer
 from ..answer import Answer
 from ..evaluate import evaluate
-from ..model import BatchEvidence, EarningRate, Rate, ServiceScope
+from ..model import BatchEvidence, EarningRate, Rate, ServiceScope, VerbalRelation
 from ..numeric_evidence import audit_numeric_mentions
 from ..rate_calculation import apply_rate, convert_duration
 from ..source_coverage import uncovered_document_units
@@ -24,13 +24,27 @@ def consume(ctx):
     if (len(scopes) > 1 or len(rows) != 3 + len(scopes)
             or any(sum(r.kind == k for r in rows) != 1 for k in kinds)
             or len(costs) != 1 or len(tariffs) != 1 or not tasks
-            or any(not isinstance(f, (BatchEvidence, Rate, EarningRate, ServiceScope)) for f in ctx.store.facts)
+            or any(not isinstance(f, (BatchEvidence, Rate, EarningRate, ServiceScope, VerbalRelation)) for f in ctx.store.facts)
             or ctx.store.collisions or ctx.store.quarantined):
         return decline("one recurring cost, active period, complementary saving plan and uniform task price are required")
     purpose, active, plan = (next(r for r in rows if r.kind == k) for k in kinds)
     cost, tariff = costs[0], tariffs[0]
     who = ctx.query["entity"]
     scope = scopes[0] if scopes else None
+    # The general reader can also preserve the saving plan's duration as a
+    # temporal relation. Only an exact restatement of this typed plan is
+    # redundant; another participant, time window or predicate is additional
+    # evidence that this consumer does not account for.
+    if any(
+        relation.entity != plan.entity
+        or relation.provenance.sentence != plan.provenance.sentence
+        or relation.obj != plan.measure
+        or relation.role != "temporal-duration"
+        or not relation.polarity
+        or not ctx.reg.word_in_category(relation.verb, "resource_accumulation_verb")
+        for relation in ctx.store.by_kind(VerbalRelation)
+    ):
+        return decline("a temporal adjunct must restate the same participant's saving window")
 
     def period_reference(row):
         ref = row.container_ref

@@ -1,0 +1,17 @@
+format: rulekit/categories@1
+categories:
+  lower:
+    parent: comparative
+    antonym: higher
+    polarity: -1
+    notes: An explicitly lower comparative amount; paired with higher.
+  higher:
+    parent: comparative
+    antonym: lower
+    polarity: 1
+    notes: An explicitly higher comparative amount; paired with lower.
+  change_direction: {parent: verb}
+members:
+  lower: [cheaper, fewer, less, lighter, lower, poorer, shorter, smaller, younger]
+  change_direction: [decrease, increase]
+  higher: [bigger, heavier, higher, larger, longer, more, older, richer, taller]

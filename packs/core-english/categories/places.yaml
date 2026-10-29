@@ -1,0 +1,31 @@
+format: rulekit/categories@1
+categories:
+  building:
+    parent: noun
+    notes: A physical building; membership does not assert occupancy or ownership.
+members:
+  building: [apartment, building, castle, church, factory, garage, home, hotel, house, library, museum,
+    school]
+context_synonyms:
+  contains:
+    gate: building
+    forms:
+    - contain
+    - contains
+    - has
+    - have
+    - hold
+    - holds
+    - house
+    - houses
+  storey:
+    gate: building
+    forms:
+    - floor
+    - floors
+    - level
+    - levels
+    - storey
+    - storeys
+    - stories
+    - story

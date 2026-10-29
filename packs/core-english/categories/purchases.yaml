@@ -32,6 +32,7 @@ categories:
   clothes:
     parent: noun
     notes: Clothing and wearable accessories grouped as one shopping collection.
+    disjoint_with: [building, vehicle]
   ingredient:
     parent: noun
     notes: Purchased food inputs, not a license to include unrelated purchases.
@@ -59,7 +60,8 @@ categories:
     parent: noun
   charge_record_noun:
     parent: shared_cost_noun
-    notes: A document or account identifying charges in an explicit priced-list and sharing context. These words are not global synonyms and do not imply payment, settlement, or a known balance.
+    notes: A document or account identifying charges in an explicit priced-list and sharing context. These
+      words are not global synonyms and do not imply payment, settlement, or a known balance.
   purchase_context_activity:
     parent: verb
     notes: A stated group activity preceding an explicit itemized acquisition.
@@ -69,6 +71,9 @@ categories:
     - quantity_interior_location
     - organization
     - nominal_location
+  clothing:
+    parent: clothes
+    notes: Wearable garments, separate from any particular purchase or owner.
 members:
   new_purchase_condition: [new]
   price_at_marker: [at]
@@ -76,12 +81,14 @@ members:
   price_quote_participle: [costing]
   marked_price_participle: [priced, listed]
   sale_offer_participle: [selling]
-  clothes: [belt, coat, dress, hat, pants, shirt, shoe, shorts, sock, suit, top]
+  clothes: [beanie, belt, boot, cap, coat, costume, dress, hat, jacket, jeans, leggings, mitten,
+      outfit, pants, scarf, shirt, shoe, shorts, skirt, sock, suit, sunglass, sweater, top]
   generic_purchase_collection_noun: [goods, item, merchandise, stuff, thing]
   ingredient: [apple, charcuterie, cheddar cheese, cheese, cold cut, cream cheese, sugar]
   mass_purchase_collection_noun: [merchandise, stuff]
   purchase_collection_noun: [clothes, ingredient, treat]
-  purchase_lot_measure: [bottle, box, carton, gram, kilogram, pack, pound, tub]
+  purchase_lot_measure: [bottle, box, bunch, carton, gallon, gram, kilogram, pack, packet, pint, pound, quart,
+      sack, tub]
   equal_division_verb:
   - split
   - share
@@ -100,11 +107,7 @@ members:
   - purchase
   - purchases
   - purchased
-  purchase_count_measure:
-  - bottle
-  - box
-  - pack
-  - tub
+  purchase_count_measure: [bottle, box, bunch, pack, packet, sack, scoop, tub]
   shared_cost_noun:
   - cost
   - expense
@@ -121,6 +124,8 @@ members:
   - work
   - worked
   - works
+  clothing: [beanie, boot, cap, clothes, coat, costume, dress, jacket, jeans, leggings, mitten, outfit,
+    pants, scarf, shirt, shorts, skirt, sunglass, sweater]
 adverb_verb_compatibility:
   equal_division_adverb:
   - equal_division_verb

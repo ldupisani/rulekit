@@ -1024,7 +1024,10 @@ def _try_match_at(
             for end in range(len(units), i, -1):
                 captured = tuple(units[i:end])
                 if token.enumeration_cat:
-                    members = _category_enumeration(captured, token.enumeration_cat, reg)
+                    members = _category_enumeration(
+                        captured, token.enumeration_cat, reg,
+                        counted=token.enumeration_counted,
+                    )
                     if members is None or len(members) < token.enumeration_min_members:
                         continue
                 if not any(u.sense() not in SKIPPABLE_SENSES for u in captured):
@@ -1928,7 +1931,7 @@ def _named_enumeration(span: tuple, reg: Registry) -> list[str] | None:
     return list(members) if members and len(members) >= 2 else None
 
 
-def _category_enumeration(span, category, reg):
+def _category_enumeration(span, category, reg, *, counted=False):
     """An exact singleton or conjunctive list of category-compatible heads."""
     segments = _enumeration_segments(span)
     if not segments:
@@ -1939,7 +1942,10 @@ def _category_enumeration(span, category, reg):
         if len(content) != 1:
             return None
         unit = content[0]
-        if unit.features.get("reference_qualifiers") or "value" in unit.features:
+        if counted:
+            if unit.sense() != "noun" or unit.features.get("value_kind") != "count":
+                return None
+        elif unit.features.get("reference_qualifiers") or "value" in unit.features:
             return None
         if not (unit.sense() == category or reg.word_in_category(_lemma_of(unit), category)):
             return None
@@ -1950,6 +1956,19 @@ def _category_enumeration(span, category, reg):
         return None
     if any(u.sense() == "punct" and u.surface != "," for u in span):
         return None
+    if counted:
+        # A numeric enumeration must consume complete, separated members.
+        # The legacy segment splitter drops empty segments; do not let that
+        # turn a doubled separator or dangling conjunction into valid stock.
+        heads = [i for i, u in enumerate(span)
+                 if u.sense() not in SKIPPABLE_SENSES and u.sense() != "conjunction"]
+        if (not heads or any(u.sense() != "article" for u in span[:heads[0]])
+                or any(u.sense() != "article" for u in span[heads[-1] + 1:])):
+            return None
+        for left, right in zip(heads, heads[1:]):
+            separators = [u.sense() for u in span[left + 1:right] if u.sense() != "article"]
+            if separators not in (["punct"], ["conjunction"], ["punct", "conjunction"]):
+                return None
     if len(names) > 1:
         heads = [i for i, u in enumerate(span) if u.sense() not in SKIPPABLE_SENSES and u.sense() != "conjunction"]
         if not conjunctions or not heads[-2] < conjunctions[-1] < heads[-1]:
@@ -2513,6 +2532,13 @@ def run_rules(
             if t.lit is not None
         ):
             continue
+        counted_enumerations = set()
+        pending = list(seq)
+        while pending:
+            token = pending.pop()
+            if token.enumeration_counted:
+                counted_enumerations.add(token.slot)
+            pending.extend(token.opt or ())
         for m in match_all(reading, seq, reg, overlapping=rule.overlapping):
             m.rule = rule
             m.specificity = specificity(m, reg)
@@ -2579,7 +2605,11 @@ def run_rules(
                         continue
                     for seg in _enumeration_segments(span):
                         sub_slots = dict(effective_slots)
-                        sub_slots["item"] = seg
+                        content = tuple(u for u in seg if u.sense() not in SKIPPABLE_SENSES)
+                        # A counted member is a scalar nominal, so ordinary
+                        # numeric expressions, qualifiers and reference
+                        # identities work just as they do for scalar slots.
+                        sub_slots["item"] = (content[0] if e.each in counted_enumerations else seg)
                         fact = _build_fact(
                             e.fields, e.fact, sub_slots, reg, emit_provenance,
                             log, rule.id, reading=reading,

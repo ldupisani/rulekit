@@ -5,7 +5,7 @@ categories:
   rectangular_shape: {parent: noun}
   region_cutting_verb: {parent: verb}
   room_location: {parent: quantity_interior_location}
-  area_unit_modifier: {parent: adjective}
+  area_unit_modifier: {parent: spatial_unit_modifier, attrs: {measurement_power: 2}}
   fabrication_product: {parent: ownable_quantity_object}
   mass_amount_interrogative: {parent: interrogative}
   material_resource:
@@ -33,7 +33,9 @@ categories:
   resource_remnant_attribute:
     parent: adjective
   volume_unit_modifier:
-    parent: adjective
+    parent: spatial_unit_modifier
+    attrs:
+      measurement_power: 3
   rectangular_attribute:
     parent: adjective
   separate_region_attribute:
@@ -44,6 +46,12 @@ categories:
     parent: noun
     includes: [mass_unit, length_unit, volume_measure]
   production_variety_noun: {parent: noun}
+  measured_resource_removal_verb:
+    parent: verb
+    notes: Licenses a same-sentence elliptical measured removal; this does not give a verb a general loss
+      polarity.
+  spatial_unit_modifier:
+    parent: adjective
 members:
   sheet_material: [fabric, cloth, paper, cardboard]
   material_stock_unit:
@@ -60,16 +68,8 @@ members:
   area_unit_modifier: [square]
   fabrication_product: [curtain, panel, dress, model]
   mass_amount_interrogative: [much]
-  material_resource:
-  - metal
-  - glass
-  - wire
-  - foam
-  - rubber
-  - wood
-  - clay
-  - fuel
-  - material
+  material_resource: [bamboo, beeswax, cable, charcoal, clay, foam, fuel, fur, glass, ice, material, metal,
+      ribbon, rope, rubber, silk, string, wire, wood]
   production_variety_noun: [kind]
   solid_stock_unit:
   - block
@@ -121,6 +121,7 @@ members:
   - holds
   - held
   - having
+  measured_resource_removal_verb: [cut, cuts, cutting, remove, removed, removes, use, used, uses]
 attribute_compatibility:
   resource_remnant_attribute: [material_resource]
   rectangular_attribute:

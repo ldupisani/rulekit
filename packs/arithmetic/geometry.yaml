@@ -1,6 +1,4 @@
 format: rulekit/geometry@1
-formulas:
-- {shape: rectangle, quantity: area, expr: length * width}
-- shape: cuboid
-  quantity: volume
-  expr: length * width * height
+# Legacy document shape retained for extensions; shared category properties
+# own the geometry definitions used by the arithmetic and physics consumers.
+formulas: []

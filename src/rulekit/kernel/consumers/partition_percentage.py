@@ -111,24 +111,32 @@ def enumerated_category_percentage(ctx):
             or collection == subtype):
         return decline("one explicit category inventory and a strict subtype are required")
     unlocated = set(ctx.query["unlocated_sources"])
-    holders = {q.entity_ref for q in rows if q.provenance.source not in unlocated}
-    if len(holders) > 1:
-        return decline("the inventory cannot merge different holders or locations")
     expected = defaultdict(Counter)
     keyed = {}
+    seen = set()
+    scoped_rows = []
     for row in rows:
-        if (not row.is_state or row.provenance.assumption or row.time is not None
+        if (not row.is_state
+                or row.provenance.assumption and row.provenance.sentence != ctx.question.sentence_index - 1
+                or row.time is not None
                 or any((row.owner, row.qualifier, row.measure_qualifier, row.label))
                 or not isfinite(row.value) or row.value < 0 or not float(row.value).is_integer()
-                or row.measure in keyed
-                or row.measure != collection and not ctx.reg.word_in_category(row.measure, collection)):
-            return decline("counts must enumerate distinct unqualified subtypes of the same category")
-        keyed[row.measure] = row.value
+                or row.measure in seen):
+            return decline("inventory counts must be distinct, unqualified, nonnegative integers")
+        seen.add(row.measure)
         expected[row.provenance.sentence][row.value] += 1
+        if row.measure == collection or ctx.reg.word_in_category(row.measure, collection):
+            keyed[row.measure] = row.value
+            scoped_rows.append(row)
+        elif not ctx.reg.category_terms_disjoint(collection, row.measure):
+            return decline("an inventory term has neither known membership nor declared category separation")
+    holders = {q.entity_ref for q in scoped_rows if q.provenance.source not in unlocated}
+    if len(holders) > 1:
+        return decline("the inventory cannot merge different holders or locations")
     parts = {key: value for key, value in keyed.items() if key != collection}
     if subtype not in parts:
         return decline("the selected subtype needs an explicit count")
-    keys = list(parts)
+    keys = sorted(seen - {collection})
     if any(ctx.reg.category_terms_overlap(a, b) for i, a in enumerate(keys) for b in keys[i + 1:]):
         return decline("overlapping subtype descriptions cannot form disjoint inventory parts")
     subtotal = resource_residual(parts.values(), [], ctx.log, source="enumerated-category-total")
@@ -156,4 +164,7 @@ def enumerated_category_percentage(ctx):
         selected = resource_residual([total], [selected], ctx.log, source="category-complement")
     value = evaluate("100 * selected / total", {"selected": selected, "total": total},
                      ctx.log, source="category-population-percentage")
-    return Answer("number", value, "percentage of the explicitly enumerated inventory or stated category total")
+    reason = "percentage of the explicitly enumerated inventory or stated category total"
+    if len(scoped_rows) != len(rows):
+        reason += "; outside counts excluded using declared category separation"
+    return Answer("number", value, reason)

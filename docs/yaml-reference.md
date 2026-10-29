@@ -112,7 +112,7 @@ entries:
 ```
 
 An entry declares `senses`; it may also declare `plural` (one surface or a
-list), pronoun `number`, verb `lemma`, `anaphoric_form`, `lexical_phrase`,
+list), surface `number`, verb `lemma`, `anaphoric_form`, `lexical_phrase`,
 and `notes`. Morphological fields are sense-scoped: a plural requires a noun
 sense, verb information requires a verb sense, and an anaphoric form requires
 a pronoun sense.
@@ -141,6 +141,20 @@ category does not replace its lexical sense declaration.
 `members` adds lexical surfaces to categories. Descendant membership is
 available through ancestors, subject to sense/root validation.
 
+For semantic noun categories, list the singular lemma and declare its plural
+forms once in the lexicon. A declaration such as `snail: {senses: [noun],
+plural: snails}` makes both forms members of any category containing `snail`,
+including ancestor categories and nominal `includes` unions. Category
+enumeration exposes both forms too; repeating `snails` in each membership
+list is unnecessary. Irregular and alternative plurals use the same declared
+mapping; the engine does not guess them from spelling.
+
+Noun morphology does not grant verb, name, or other grammatical categories.
+Use rule-slot `number` constraints for singular/plural agreement. Genuine
+plural-only nouns can carry `number: plural` without an invented singular.
+A grammatical surface set may still explicitly select a plural marker such
+as `times`; this does not classify its singular as that marker.
+
 For example, after declaring a noun-sensed `token` in the lexicon, a
 category document can classify it like this:
 
@@ -155,8 +169,30 @@ members:
 This classifies a word; it does not state that a participant owns any tokens.
 The same declaration must not duplicate a category already owned by a pack.
 
+Shared English vocabulary has one alphabetized owner in
+[`core-english/lexicon/core.yaml`](../packs/core-english/lexicon/core.yaml).
+Its noun and verb roles, attributes, and compatibility belong beside their
+category definitions, rather than in alphabetic category files or a benchmark
+pack. A word may have several justified roles: a container may also be an
+ownable object and an interior location. Neither lexical recognition nor a
+basic noun sense grants every arithmetic role. Ambiguous people/device heads
+do not become personal-pronoun antecedents merely because one reading is human.
+An animate-subject constraint also does not grant a verb a quantitative use;
+quantitative predicates require their own category membership.
+The [shared vocabulary tests](../tests/test_shared_vocabulary_categories.py)
+check these distinctions and ordinary inflections. Core English also compiles
+without optional science or benchmark packs.
+
 Use hierarchy for an “is a” relation. Use compatibility tables for “can fill
 this role.” Neither statement asserts an event or affiliation in the text.
+
+Noun categories may declare `disjoint_with: [other_category]` to prove that
+their members cannot belong to the other family. The compiler makes this
+relation symmetric and carries it through descendants and included families.
+Unknown or non-noun targets, overlapping families, and shared members fail
+compilation, including contradictions introduced by extension packs. Missing
+membership and sibling categories alone never establish separation. Consumers
+opt into this proof explicitly; it does not close a category's vocabulary.
 
 ### Nominal family composition
 
@@ -257,7 +293,68 @@ These are fields on a `rulekit/categories@1` document:
 | `context_synonyms` | Named gated surface equivalences |
 | `temporal_offsets` | Deictic temporal lemma → numeric offset |
 | `attrs` | Word → numeric attributes |
+| `formulas` | Word → typed derived attributes; explicit word definitions override category defaults |
+| `parameter_bindings` | Word → declared parameter equalities |
+| `formula_units` | Physical basis → canonical unit and optional conversion category |
+| `formula_constants` | Shared identifier → finite numeric constant |
+| `property_aliases` | Authored quantity phrase → property identifier |
 | `part_counts` | Part word → dimension key |
+
+### Scalar and derived category properties
+
+Category definitions may declare `attrs`, `formulas`, and `parameter_bindings`.
+Parent definitions flow downward to members and subclasses; a union's included
+families do not copy their properties onto the union or its other members.
+The most specific category definition wins. Equal unrelated definitions retain
+all sources; conflicting unrelated definitions require an explicit resolution.
+Word-level definitions override defaults. Duplicate conflicting word definitions
+across documents fail compilation instead of depending on pack order.
+
+A formula declares `inputs`, `expr`, `result_dimension`, and optional numeric
+`constants` (a local numeric map or a list of names from `formula_constants`).
+An input dimension is a basis name or an exponent map; `{}` is
+dimensionless. Expressions support numeric constants, named inputs, arithmetic
+`+`, `-`, `*`, `/`, constant powers, and unary signs. Inputs and constants must
+all be used. Addition requires equal dimensions; products and powers compose
+dimensions, and the result must match the declared dimension.
+
+An input may name another derived property or a scalar default. Compilation
+rejects dependency cycles, binding cycles, incompatible dimensions, and unsafe
+expressions. Runtime evaluation uses the shared arithmetic logger, rejects
+missing or unused measurements, and checks declared equalities. Unit-bearing
+values convert through the existing conversion tables and `formula_units`.
+For example, `length: {unit: meter, category: length_unit}` confines conversion
+paths to the declared family, including intermediate units. A legacy string
+such as `length: meter` permits only identity or direct declared conversions;
+it cannot infer a physical family from an ambiguous conversion graph.
+Area and volume conversions raise the scale factor to the appropriate power.
+Bare mathematical inputs use the declared canonical basis. Geometry questions
+cannot mix stated units with omitted units or select incompatible output units.
+
+`parameter_bindings` maps equal parameter roles to a common name. The shared
+square class maps rectangle length and width to `side`; the cube class does the
+same for three cuboid axes. These relationships are declared knowledge and
+must never follow from generic shape membership alone. Spatial dimension is
+a separate scalar: a solid's surface area has squared-length dimension while
+its volume has cubed-length dimension. An absent formula is unknown, not zero.
+
+Noun properties follow declared plural morphology; grammatical metadata on a
+mixed-sense word does not become a property of its noun plural. Effective
+values, formula definitions, and origins are available through Registry's
+property accessors. SourceIndex retains editable declarations for authoring.
+
+Implementation: [property compiler](../src/rulekit/data/properties.py),
+[property evaluator](../src/rulekit/kernel/properties.py),
+[shared geometry definitions](../packs/core-english/categories/geometry.yaml),
+and [executable contracts](../tests/test_category_properties.py).
+
+Ask generation may declare `property_bindings` with `subject`, `property`,
+and an ordered `parameters` list of `{slot, component}` records. A component
+is `identity` or `qualifier`. The generator reads the same compiled property
+contract to choose compatible quantities and leaf parameters and omit unused
+optional parameter groups. `requires_committed_answer` keeps each generated
+property question subject to ordinary solve verification. Reader coverage can
+include output-unit variants even when generation omits those optional slots.
 
 For example, a category-document fragment:
 
@@ -384,6 +481,7 @@ arbitrary definite plural references. Live schemas lists all `SLOT_TYPES`.
 | `bare_form, finite_form, present_participle, past_participle` | Verb morphology |
 | `span, span_blocks, span_blocks_counted` | Bounded span capture and barriers |
 | `enumeration_cat` | Span-only: an exact singleton or conjunctive list of heads in this category |
+| `enumeration_counted` | Require one counted nominal per enumeration member; per-item emission retains its value and reference |
 | `at_start` | Anchor the first match token |
 | `consume_skipped, blocks_skipped` | Control permitted skipped material |
 
@@ -707,7 +805,9 @@ multiplicative conversions.
 
 - `formulas` declares `dimensions` and entries with `quantity, expr, scope`
   (`question` or `document`).
-- `geometry` entries have `shape, quantity, expr`.
+- Legacy `geometry` entries have `shape, quantity, expr`. Shared shape formulas
+  now belong to typed category properties; contradictory legacy declarations
+  fail compilation. Legacy entries without a unit contract remain unitless.
 - `calendar` supplies `span_units` and optional month numbers.
 - `elements` supplies atomic `masses`.
 - `contractions` supplies explicit `expansions`.
