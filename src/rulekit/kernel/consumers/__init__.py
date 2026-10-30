@@ -127,6 +127,7 @@ def consumer(name: str, *, time_scoped: bool = False,
 
 
 from . import (  # noqa: E402,F401  (import registers each handler)
+    uniform_partition_duration as _uniform_partition_duration,
     process_part_remainder as _process_part_remainder,
     population_rate_total as _population_rate_total,
     periodic_resource_balance as _periodic_resource_balance,

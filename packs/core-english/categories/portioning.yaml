@@ -3,7 +3,7 @@ categories:
   portion_acquisition_verb:
     parent: verb
   portion_division_verb:
-    parent: verb
+    parent: whole_partition_verb
   portion_unconsumed_attribute:
     parent: adjective
   portion_size_descriptor:
@@ -29,6 +29,7 @@ members:
   - have
   portion_division_verb:
   - cut
+  - sliced
   portion_unconsumed_attribute:
   - uneaten
   portion_size_descriptor:

@@ -1,5 +1,8 @@
 format: rulekit/categories@1
 categories:
+  question_assumption_introducer:
+    parent: verb
+    notes: Participial introductions of a question-local assumed clause.
   clause_marker:
     parent: conjunction
     notes: >
@@ -16,5 +19,6 @@ categories:
       second sense to either word. engine.py ORs membership across both
       categories to recognize a leading temporal-clause marker.
 members:
+  question_assumption_introducer: [assuming]
   clause_marker: [when]
   clause_marker_prep: [after]

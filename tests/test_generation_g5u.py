@@ -248,8 +248,8 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
     project = load_project(CURATED)
     availability = list_rule_availability(project)
 
-    assert len(availability) == 638
-    assert sum(item.supported for item in availability) == 562
+    assert len(availability) == 642
+    assert sum(item.supported for item in availability) == 566
     assert sum(not item.supported for item in availability) == 76
     assert all(
         not item.blockers

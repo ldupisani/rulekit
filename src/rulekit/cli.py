@@ -30,6 +30,9 @@ def cmd_solve(args) -> int:
         print(f"  reason: {a.reason}")
         if args.trace:
             for event in result.trace():
+                if event["kind"] == "question-assumption":
+                    print(f"  [{event['sentence']}] question-assumption {event['text']}")
+                    continue
                 if event["kind"] == "agreement-ambiguity":
                     retained = event["retained"]
                     deduped = event["deduped"]

@@ -49,7 +49,7 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
     assert any("antecedent discourse group" in blocker for blocker in contextual.blockers)
     # The reusable physics pack adds the independently generatable
     # ask/physics-quantity surface to curated.
-    assert sum(item.supported for item in availability.values()) == 352
+    assert sum(item.supported for item in availability.values()) == 361
     assert availability["ask/how-many-of-collection-are-label"].supported
     assert availability["ask/how-many-of-collection-are-label"].supported_modes == (
         "ask_only",
@@ -73,12 +73,14 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
     assert availability["ask/measured-content-in-container-unit"].blockers == (
         "ask requires generated premise evidence; standalone realization is disabled",
     )
-    assert len(availability) == 393
+    assert len(availability) == 404
     assert {
         item.id for item in availability.values() if not item.supported
     } == {'ask/chem-cost-of-moles',
           'ask/measured-remainder-after-production-varieties',
           'ask/process-part-remainder-numeric-index',
+          'ask/process-part-remainder-in-duration-numeric-index',
+          'ask/process-part-remainder-how-long-numeric-index',
           'ask/process-part-remainder-time-spent-numeric-index',
 
           'ask/chem-molar-mass',
@@ -161,6 +163,8 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
                for ask_id in unfilled_powered_units)
     unfilled_production = {"ask/measured-remainder-after-production-varieties"}
     unfilled_process_indices = {"ask/process-part-remainder-numeric-index",
+                                "ask/process-part-remainder-in-duration-numeric-index",
+                                "ask/process-part-remainder-how-long-numeric-index",
                                 "ask/process-part-remainder-time-spent-numeric-index"}
     assert availability[next(iter(unfilled_production))].blockers == (
         "no project-backed ask filler exists for make",)
@@ -184,6 +188,33 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
         for item in availability.values()
         if item.id.startswith("ask/chem-")
     )
+
+
+@pytest.mark.parametrize("suffix", ["in-duration", "how-long", "how-long-word-index"])
+def test_process_duration_paraphrases_generate_the_shared_remainder_contract(curated, suffix):
+    part = "first" if suffix == "how-long" else "second"
+    locks = {"who": "Cato", "aux": "did", "part": f"the {part} part", "whole": "project",
+             "owner": "his", "unit": "minutes", "finish": "finish"}
+    if suffix.startswith("how-long"):
+        locks.update(long="long", take="take")
+    if suffix.endswith("word-index"):
+        locks.update(part="part", part_index=part)
+    candidate = generate_ask_scenario(
+        curated,
+        ask_id=f"ask/process-part-remainder-{suffix}",
+        seed=1423,
+        scenario_mode="ask_only",
+        locked_bindings=locks,
+    )
+    assert candidate.consumer == "process-part-remainder"
+    assert not candidate.answer["committed"]
+    known = "second" if part == "first" else "first"
+    result = solve("Cato's project had three parts. "
+                   f"Cato finished the {known} part in 30 minutes. "
+                   "Cato finished the third part in 50 minutes. "
+                   "Cato finished the project in 2 hours. " + candidate.question, curated.registry)
+    assert result.value == 40
+    assert result.deficiencies() == []
 
 
 @pytest.mark.parametrize(

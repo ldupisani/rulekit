@@ -191,12 +191,22 @@ def _is_complete_declared_ask(question: str, reg: Registry) -> bool:
     return meaningful.issubset(matched[2].consumed)
 
 
+def _leading_assumption_marker(text: str, reg: Registry | None) -> str | None:
+    """Literal conditional or a pack-declared participial introducer."""
+    first = text.split(maxsplit=1)[0].casefold() if text.split() else ""
+    if first == "if" or reg is not None and reg.word_in_category(
+            first, "question_assumption_introducer"):
+        return first
+    return None
+
+
 def _split_leading_clause(question: str, reg: Registry) -> tuple[str | None, str]:
-    """'If <clause>, <wh…>?' → the clause is a PREMISE, the wh-part the
-    question. Split at the first comma whose next word carries an ask-cue
-    sense. 'If'/',' are grammatical skeleton; the cues are lexicon data."""
-    lowered = question.lower()
-    if not lowered.startswith("if "):
+    """A leading assumption clause becomes a PREMISE, the wh-part the
+    question. A cue sense licenses the usual boundary. Other openings need
+    a complete declared ask and a complete question-assumption reader.
+    'If'/',' are grammatical skeleton; other markers and cues are pack data."""
+    marker = _leading_assumption_marker(question, reg)
+    if marker is None:
         return None, question
     if _is_complete_declared_ask(question, reg):
         return None, question
@@ -211,8 +221,16 @@ def _split_leading_clause(question: str, reg: Registry) -> tuple[str | None, str
                       and len(rest.split()) > 1
                       and _has_ask_cue_sense(rest.split()[1], reg)
                       and _is_complete_declared_ask(rest, reg))
-        if _has_ask_cue_sense(first, reg) or marked_ask:
-            clause = ",".join(parts[: i + 1])[2:].strip().lstrip()
+        clause = ",".join(parts[: i + 1])[len(marker):].strip()
+        # Participial introductions require explicit end-to-end licensing;
+        # merely preceding a question does not assert the embedded clause.
+        if marker != "if" and not _is_declared_question_assumption(
+                clause.rstrip(".") + ".", reg, probe_references=True):
+            continue
+        if (_has_ask_cue_sense(first, reg) or marked_ask
+                or _is_complete_declared_ask(rest, reg)
+                and _is_declared_question_assumption(
+                    clause.rstrip(".") + ".", reg, probe_references=True)):
             return clause.rstrip(".") + ".", rest
     return _split_leading_clause_commaless(question, reg)
 
@@ -697,7 +715,7 @@ def _split_question_scoped(
     """Split a document while retaining question-local premise scope.
 
     The boolean beside each premise is true only for a clause introduced by
-    the current question's literal conditional frame. Temporal and fused
+    the current question's conditional or declared assumption frame. Temporal and fused
     premise recovery remain asserted: they describe source-text boundaries,
     not a hypothetical context.
     """
@@ -712,7 +730,7 @@ def _split_question_scoped(
     )
     # "If she worked 50 hours, calculate her total income." — no question
     # mark, no leading cue, but the post-comma part leads with one
-    if not is_question and reg is not None and last.lower().startswith("if "):
+    if not is_question and reg is not None and _leading_assumption_marker(last, reg):
         clause, rest = _split_leading_clause(last, reg)
         is_question = clause is not None
     # same shape, for a pack-registered temporal marker ("When she finds 4
@@ -728,8 +746,9 @@ def _split_question_scoped(
     # it is not sufficient by itself: the stripped clause must be consumed
     # end-to-end by exactly one rule that explicitly opts into question scope.
     # This keeps ordinary logical conditionals in the asserted document.
-    if premises and premises[-1][0].lower().startswith("if "):
-        detached = premises[-1][0][2:].strip().lstrip()
+    marker = _leading_assumption_marker(premises[-1][0], reg) if premises else None
+    if marker is not None:
+        detached = premises[-1][0][len(marker):].strip()
         detached = detached.rstrip(".").strip()
         if detached and _is_declared_question_assumption(detached + ".", reg):
             premises[-1] = (detached + ".", True)

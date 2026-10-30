@@ -60,6 +60,6 @@ members:
   - ms
 attribute_compatibility:
   initial_sequence_ordinal: [progress_measure]
-  holder_ordinal: [ordinal_quantity_holder, path_checkpoint, local_yield_site, process_part, duration_measure]
+  holder_ordinal: [ordinal_quantity_holder, path_checkpoint, local_yield_site, process_part, component_quantity_measure, duration_measure]
   holder_prefix_order: [ordinal_quantity_holder]
   holder_terminal_order: [ordinal_quantity_holder]

@@ -15,6 +15,13 @@ and trailing conditional frames. Grammar can also own a complete question,
 preventing a convenient text split from changing its meaning. Declared
 question-assumption permission governs supported promotions.
 
+Pack-defined `question_assumption_introducer` markers also support a leading
+participial assumption followed by a comma and a question. Promotion requires
+one complete read rule with `question_assumption: true`; an arbitrary embedded
+clause does not qualify. The unchanged-pace projection grammar uses this for
+`assuming`, alongside a conditional or a standalone ability statement. The
+continuation licenses a projection rather than asserting completed work.
+
 An accepted conditional premise is read with `Reading.assumption`; emitted
 facts carry `Provenance.assumption`. These facts belong to that solve. They
 do not establish an actual holding or persist as learned knowledge for the

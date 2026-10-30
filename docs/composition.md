@@ -311,9 +311,32 @@ preceding part and a compatible actor reference. Word and numeric ordinals
 share the existing ordinal-index machinery. The total may be asserted or an
 adjacent question-local condition; subtraction cannot produce a negative
 duration. No unspecified gaps, overlaps or concurrent work are inferred.
+The partition may be introduced by possession or explicit division. Duration
+questions accept a fronted unit phrase or an elapsed-time construction.
+When an elapsed-time question omits its output unit, the answer uses the first
+directly measured part's unit and records that unit in its proof. An explicit
+output unit takes precedence; all stated durations are converted before
+subtraction. Capability, negation and duration bounds do not establish an
+exact completed total.
 
 Implementation: [process grammar](../packs/arithmetic/rules/process-parts.yaml)
 and [duration remainder](../src/rulekit/kernel/consumers/process_part_remainder.py).
+
+An explicit unchanged-pace continuation supports a separate duration
+projection from a timed first component. The partition must state equal
+component sizes; a component count alone does not establish that equality.
+Without it, the decline records the missing equality in its reason and proof,
+separately from vocabulary or grammar deficiencies. The supported scope is
+the whole or its remaining components, with compatible elapsed-time units
+and matching participant, activity and whole references. This applies to
+divisible objects and partitioned work. The rate is constructed only after
+these conditions hold and is never stored as an observed general rate or
+completed whole duration.
+
+Implementation: [projection grammar](../packs/arithmetic/rules/uniform-processes.yaml)
+and [equal-part projection](../src/rulekit/kernel/consumers/uniform_partition_duration.py).
+Paraphrases, generated surfaces and ambiguity boundaries are covered in
+[projection tests](../tests/test_uniform_partition_duration.py).
 
 ## Population-weighted periodic amounts
 

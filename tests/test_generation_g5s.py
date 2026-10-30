@@ -115,8 +115,9 @@ def test_modal_occurrence_and_core_ownership_maps_are_complete() -> None:
     } == {expected_source}
     assert all(
         project.registry.word_categories[word] == ("capacity_modal",)
-        for word in CAPACITY - {"can", "may", "should", "must"}
+        for word in CAPACITY - {"can", "could", "may", "should", "must"}
     )
+    assert project.registry.word_categories["could"] == ("ability_modal", "capacity_modal")
     assert project.registry.word_categories["must"] == ("capacity_modal", "settlement_modal")
     assert project.registry.word_categories["may"] == (
         "capacity_modal",
@@ -131,6 +132,7 @@ def test_modal_occurrence_and_core_ownership_maps_are_complete() -> None:
         "planned_progress_modal",
     )
     assert project.registry.word_categories["can"] == (
+        "ability_modal",
         "capacity_modal",
         "litter",
         "location_impossibility_modal",
@@ -208,6 +210,7 @@ def test_combined_pack_semantics_are_identical_to_legacy_ownership() -> None:
         if getattr(project.registry, name) != getattr(legacy, name)
     } == set()
     assert project.registry.word_categories["can"] == (
+        "ability_modal",
         "capacity_modal",
         "litter",
         "location_impossibility_modal",
@@ -225,8 +228,8 @@ def test_g5s_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 638
-    assert sum(item.supported for item in availability.values()) == 562
+    assert len(availability) == 642
+    assert sum(item.supported for item in availability.values()) == 566
     assert sum(not item.supported for item in availability.values()) == 76
     assert availability["arithmetic/periodic-rate-every-span"].supported
     assert all(availability[rule_id].supported for rule_id in FUTURE_RULES)
@@ -251,11 +254,14 @@ def test_periodic_rule_exposes_every_loaded_modal(modal: str) -> None:
     )
     premise = next(row for row in candidate.premises if row.slot == "aux")
     direct = "capacity_modal" if modal in CAPACITY else "future_modal"
+    path = (modal, direct, "modal")
+    if modal in {"can", "could"}:
+        path = (modal, "ability_modal", direct, "modal")
 
     assert candidate.generator_version == "g6-strict-boundary-modes"
     assert candidate.target_status == "matched"
     assert premise.binding == modal
-    assert premise.category_path == (modal, direct, "modal")
+    assert premise.category_path == path
     assert {
         "rule-token",
         "lexicon",

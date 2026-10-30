@@ -2127,6 +2127,9 @@ categories:
       rate-span consumer's aux slot instead of a factual ask's. The six
       generic lexical declarations and their capacity membership live
       in core.
+  ability_modal:
+    parent: capacity_modal
+    notes: Ability forms, distinct from possibility, permission and obligation.
   planned_progress_modal:
     parent: modal
     notes: >
@@ -2584,6 +2587,7 @@ temporal_offsets:
   today: 0
   tomorrow: 1
 members:
+  ability_modal: [can, could]
   mean_aggregate: [average]
   mean_context_preposition: [on]
   a_article_membership_predicate: [bird, book, cat, child, coin, dog, fish, friend, hamster, student, teacher]

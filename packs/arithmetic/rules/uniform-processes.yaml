@@ -1,0 +1,146 @@
+format: rulekit/rules@1
+rules:
+  - id: arithmetic/partitioned-activity-opening
+    description: One participant acts on a whole with an explicitly counted partition.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, bare: true, at_start: true}
+        - {slot: activity, cat: partition_progress_activity_verb, finite_form: true}
+        - {slot: whole, cat: partitioned_activity_whole, uncounted: true, number: singular}
+        - {slot: divide, cat: whole_partition_verb, past_participle: true}
+        - {lit: into}
+        - {slot: parts, cat: partition_component_measure, counted: true, class_only: true}
+        - {lit: '.', consume_skipped: true}
+    where:
+      - number_compatible: [who, activity]
+      - verb_roles_compatible:
+          verb: activity
+          roles: {actor: [who], theme: [whole]}
+          allow_proper_name: [who]
+          require_declared_frame: true
+    consumes: [activity, divide, parts]
+    satisfies: {activity: [subject], divide: [subject]}
+    emits:
+      - {fact: batch_evidence, kind: process-population, entity: '{who}', container: '{whole}',
+          measure: '{parts}', value: parts, attribute: '{parts.qualifier}', verb: '{activity}', position: '{parts.span_start}'}
+
+  - id: arithmetic/unchanged-rate-continuation
+    description: An explicit ability to continue the remaining extent at the preceding rate, not an observed completion.
+    question_assumption: true
+    generation: contextual
+    generation_context:
+      before:
+        - sentence:
+            - {slot: context_actor, type: name, at_start: true}
+            - {slot: context_finish, cat: task_completion_verb, finite_form: true}
+            - {slot: context_part, cat: process_part, uncounted: true, number: singular, referential: true, qualified: true, qualifier_cat: initial_sequence_ordinal, all_qualifiers: true}
+            - {lit: of}
+            - {slot: context_whole, cat: partitioned_process, uncounted: true, referential: true}
+            - {lit: in}
+            - {slot: context_duration, cat: duration_measure, counted: true, bare: true}
+            - {lit: '.', consume_skipped: true}
+          where: [{number_compatible: [context_actor, context_finish]}]
+      target_identity_links: {context_actor: who, context_whole: whole}
+      required_fact_counts: {batch_evidence: 1}
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, bare: true, at_start: true}
+        - {slot: modal, cat: ability_modal}
+        - {slot: activity, cat: partition_progress_activity_verb, bare_form: true}
+        - {slot: rest, cat: partition_remnant, uncounted: true, bare: true, referential: true}
+        - {lit: of}
+        - opt: [{slot: owner, cat: possessive_determiner}]
+        - {slot: whole, cat: partitioned_activity_whole, uncounted: true, referential: true}
+        - {lit: at}
+        - {slot: rate, cat: continuation_rate_noun, uncounted: true, referential: true, qualified: true, qualifier_cat: rate_continuity_attribute, all_qualifiers: true}
+        - {lit: '.', consume_skipped: true}
+    where:
+      - verb_roles_compatible:
+          verb: activity
+          roles: {actor: [who], theme: [whole]}
+          allow_proper_name: [who]
+          require_declared_frame: true
+    consumes: [activity]
+    satisfies: {activity: [subject]}
+    emits:
+      - {fact: batch_evidence, kind: uniform-rate-continuation, entity: '{who}', container: '{whole}',
+          measure: '', value: 0, verb: '{activity}', position: '{who.span_start}'}
+
+templates:
+  projected-partition-duration:
+    parameters:
+      head:
+        - {lit: how, at_start: true}
+        - {slot: long, cat: elapsed_extent_adjective}
+        - opt:
+            - {lit: in}
+            - {slot: unit, cat: duration_measure, uncounted: true, number: plural, bare: true}
+      subject: [{slot: dummy, cat: impersonal_subject_pronoun}]
+      entity: ''
+      satisfaction: {dummy: [refers], take: [subject], activity: [subject], inf: [object]}
+      extent:
+        - {slot: whole, cat: partitioned_activity_whole, uncounted: true, referential: true, qualified: true, qualifier_cat: complete_extent_attribute}
+      scope: whole
+    rule:
+      match:
+        question:
+          - {parameter: head}
+          - {slot: modal, cat: future_modal}
+          - {parameter: subject}
+          - {slot: take, cat: process_elapsed_predicate, bare_form: true}
+          - {slot: inf, cat: infinitival_marker}
+          - {slot: activity, cat: partition_progress_activity_verb, bare_form: true}
+          - {parameter: extent}
+          - {lit: '?', consume_skipped: true}
+      where:
+        - verb_roles_compatible:
+            verb: activity
+            roles: {theme: [whole]}
+            require_declared_frame: true
+      satisfies: {parameter: satisfaction}
+      disambiguates: [activity]
+      resolves:
+        consumer: uniform-partition-duration
+        entity: {parameter: entity}
+        whole: '{whole}'
+        verb: '{activity}'
+        measure: '{unit}'
+        scope: {parameter: scope}
+
+ask_variants:
+  - {id: ask/projected-whole-duration, template: projected-partition-duration}
+  - id: ask/projected-whole-duration-unit
+    template: projected-partition-duration
+    arguments:
+      head: &projected_duration_unit_head
+        - {lit: how, at_start: true}
+        - {lit: many}
+        - {slot: unit, cat: duration_measure, uncounted: true, number: plural, bare: true}
+  - id: ask/projected-whole-duration-named
+    template: projected-partition-duration
+    arguments:
+      subject: &projected_duration_actor [{slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, bare: true}]
+      entity: '{who}'
+      satisfaction: &projected_duration_actor_satisfaction {take: [subject], activity: [subject], inf: [object]}
+  - id: ask/projected-remaining-duration
+    template: projected-partition-duration
+    arguments:
+      extent: &projected_remaining_extent
+        - {slot: rest, cat: partition_remnant, uncounted: true, bare: true, referential: true}
+        - {lit: of}
+        - {slot: whole, cat: partitioned_activity_whole, uncounted: true, referential: true}
+      scope: remaining
+  - id: ask/projected-remaining-duration-unit
+    template: projected-partition-duration
+    arguments:
+      head: *projected_duration_unit_head
+      extent: *projected_remaining_extent
+      scope: remaining
+  - id: ask/projected-remaining-duration-named
+    template: projected-partition-duration
+    arguments:
+      subject: *projected_duration_actor
+      entity: '{who}'
+      satisfaction: *projected_duration_actor_satisfaction
+      extent: *projected_remaining_extent
+      scope: remaining

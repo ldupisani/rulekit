@@ -61,7 +61,10 @@ def test_separate_took_finish_paraphrases_and_reordered_names(registry):
 
 def test_dedicated_vocabulary_is_bounded_and_not_quarantined(registry):
     for form in ("finish", "finished", "finishes"):
-        assert registry.word_categories[form] == ("task_completion_verb",)
+        # Component progress shares completion vocabulary without making it
+        # a general quantity-changing event.
+        assert registry.word_categories[form] == (
+            "partition_progress_activity_verb", "task_completion_verb")
         assert form not in registry.quarantine
     assert registry.word_categories["faster"] == ("task_completion_faster",)
     assert registry.word_categories["slower"] == ("task_completion_slower",)

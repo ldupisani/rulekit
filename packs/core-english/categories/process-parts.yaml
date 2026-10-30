@@ -2,7 +2,7 @@ format: rulekit/categories@1
 categories:
   partitioned_process: {parent: duration_holder}
   process_part: {parent: duration_holder}
-  process_partition_verb: {parent: verb}
+  process_partition_verb: {parent: whole_partition_verb}
   process_elapsed_predicate: {parent: verb}
   completion_ability_descriptor: {parent: adjective}
 members:

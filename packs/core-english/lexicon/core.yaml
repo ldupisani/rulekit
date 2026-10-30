@@ -6612,7 +6612,7 @@ entries:
     senses:
     - adjective
     - noun
-  seconds: {senses: [noun]}
+  seconds: {senses: [noun], number: plural}
   section:
     senses:
     - noun
@@ -6952,7 +6952,8 @@ entries:
     - verb
     verb:
       lemma: sleep
-  slice: {senses: [noun], plural: slices}
+  slice: {senses: [noun, verb], plural: slices}
+  sliced: {senses: [verb], verb: {lemma: slice}}
   slower: {senses: [comparative]}
   small: {senses: [adjective]}
   smaller: {senses: [comparative]}

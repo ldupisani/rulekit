@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 
 from rulekit.data.project import load_project
+from rulekit.generation import generate_candidate
 from rulekit.kernel.engine import analyze, solve
 
 
@@ -81,6 +82,115 @@ def process():
 ])
 def test_process_duration_partition_and_paraphrases(registry, before, after):
     number(process().replace(before, after), registry, 100)
+
+
+@pytest.mark.parametrize("numeric_indices", [False, True])
+@pytest.mark.parametrize("unit,expected", [("minutes", 100), ("seconds", 6000), ("hours", 5 / 3)])
+def test_fronted_elapsed_duration_question_reuses_the_process_partition(registry, numeric_indices, unit, expected):
+    text = process().replace("was able to finish", "finished").replace(
+        "how many minutes", f"in how many {unit}")
+    if numeric_indices:
+        text = text.replace("first part", "1st part").replace("second part", "2nd part").replace("third part", "3rd part")
+    result = number(text, registry, expected)
+    assert [reading.text for reading in result.assumptions] == ["she finished her project in 3 hours."]
+
+
+def test_fronted_elapsed_duration_question_supports_an_organization(registry):
+    number("The company's task was divided into three parts. "
+           "The company finished the first part in 15 minutes. "
+           "The company finished the second part in 20 minutes. "
+           "The company finished the task in 1 hour. "
+           "In how many minutes did the company finish the third part?", registry, 25)
+
+
+@pytest.mark.parametrize("before,after", [
+    ("was able to finish", "could finish"),
+    ("was able to finish", "can finish"),
+    ("was able to finish", "might finish"),
+    ("was able to finish", "could have finished"),
+    ("was able to finish", "did not finish"),
+    ("3 hours", "at most 3 hours"),
+    ("3 hours", "at least 3 hours"),
+    ("3 hours", "less than 3 hours"),
+    ("in how many minutes", "in how many meters"),
+    ("in how many minutes", "after how many minutes"),
+    ("in how many minutes", "in how many minute"),
+    ("in how many minutes did Fia finish", "in how many minutes did Fia spend on"),
+])
+def test_fronted_duration_query_does_not_invent_exact_elapsed_time(registry, before, after):
+    text = process().replace("how many minutes", "in how many minutes").replace(before, after)
+    assert not solve(text, registry).answer.committed
+
+
+@pytest.mark.parametrize("opening", ["was divided into", "had", "has"])
+@pytest.mark.parametrize("part", ["third", "3rd"])
+@pytest.mark.parametrize("unit,expected,measure", [("", 100, "minute"),
+    (" in seconds", 6000, "seconds"), (", in hours,", 5 / 3, "hour")])
+def test_elapsed_time_question_with_optional_output_unit(registry, opening, part, unit, expected, measure):
+    text = process().replace("was divided into", opening).replace("was able to finish", "finished").replace(
+        "how many minutes did Fia finish the third", f"how long{unit} did Fia take to finish the {part}")
+    result = number(text, registry, expected)
+    assert dict(result.answer.proof.query.fields)["measure"] == measure
+
+
+def test_owned_process_part_count_is_not_limited_to_schoolwork(registry):
+    number("The company's task had three parts. "
+           "The company finished the first part in 2 hours. "
+           "The company finished the second part in 30 minutes. "
+           "The company finished the task in 180 minutes. "
+           "How long did the company take to finish the third part?", registry, 0.5)
+
+
+@pytest.mark.parametrize("actor,possessor", [("Fia", "Fia's"), ("The company", "The company's")])
+@pytest.mark.parametrize("part", ["first", "second", "third", "1st", "2nd", "3rd"])
+def test_elapsed_time_can_ask_for_any_part_with_either_ordinal_form(registry, actor, possessor, part):
+    indices = ["first", "second", "third"]
+    index = indices.index(part) if part in indices else int(part[0]) - 1
+    durations = [20, 60, 100]
+    known = " ".join(f"{actor} finished the {word} part in {duration} minutes."
+                     for i, (word, duration) in enumerate(zip(indices, durations)) if i != index)
+    text = (f"{possessor} task had three parts. {known} "
+            f"{actor} finished the task in 3 hours. "
+            f"How long did {actor} take to finish the {part} part?")
+    number(text, registry, durations[index])
+
+
+def test_elapsed_duration_uses_declared_conversion_paths(registry):
+    text = process().replace("20 minutes", "1 day").replace("3 hours", "1 week").replace(
+        "how many minutes did Fia finish", "how long did Fia take to finish")
+    number(text, registry, 3)
+    assert not solve(text.replace("1 week", "1 month"), registry).answer.committed
+
+
+def test_possessed_process_parts_are_generatable(project):
+    candidate = generate_candidate(project, rule_id="arithmetic/process-parts-possession", seed=0)
+    assert candidate.target_status == "matched"
+    assert len(candidate.facts) == 1
+
+
+@pytest.mark.parametrize("before,after", [
+    ("had three parts", "could have three parts"),
+    ("had three parts", "had at least three parts"),
+    ("had three parts", "did not have three parts"),
+    ("had three parts", "had three overlapping parts"),
+    ("had three parts", "had three parts remaining"),
+    ("had three parts", "had three tasks"),
+    ("Fia's project had", "Cato's project had"),
+    ("Fia's project had", "Fia's house had"),
+    ("finished her project", "could finish her project"),
+    ("the third part of the project", "the third part of the assignment"),
+    ("how long did Fia take", "how far did Fia take"),
+    ("how long did Fia take", "how long did Cato take"),
+    ("how long", "how long in meters"),
+    ("how long", "how long in minute"),
+    ("how long did Fia", "how long do Fia"),
+    ("take to finish", "took to finish"),
+    ("take to finish", "take to finished"),
+])
+def test_elapsed_time_and_part_count_need_exact_compatible_evidence(registry, before, after):
+    text = process().replace("was divided into", "had").replace("was able to finish", "finished").replace(
+        "how many minutes did Fia finish", "how long did Fia take to finish")
+    assert not solve(text.replace(before, after), registry).answer.committed
 
 
 def test_four_part_process_and_duration_conversion(registry):

@@ -4,11 +4,11 @@ from math import isfinite
 
 from . import consumer
 from .indexed_path import ordinal_index
-from ..answer import Answer
+from ..answer import Answer, AnswerProof, ProofStep, SemanticNode
+from ..dimensions import conversion_factor
 from ..evaluate import evaluate
 from ..model import BatchEvidence
 from ..numeric_evidence import audit_numeric_mentions
-from ..rate_calculation import convert_duration
 from ..reference_bindings import anaphoric_forms_agree
 from ..reference_identity import constrains, reference_from_unit
 from ..resource_equations import resource_residual
@@ -30,6 +30,18 @@ def consume(ctx):
             or ctx.store.collisions or ctx.store.quarantined):
         return decline('one process partition, its total and complete known parts are required')
     population, total = populations[0], totals[0]
+    # An unqualified elapsed-time question uses the first directly measured
+    # part's unit. This is an output convention, not an assumed duration;
+    # every part and the total still need compatible stated measurements.
+    measure = ctx.query.get('measure') or parts[0].measure
+
+    def duration_in_output_unit(row, source):
+        factor = conversion_factor(ctx.reg, row.measure, measure, category='duration_measure')
+        if factor is None:
+            return None
+        return evaluate('duration * factor', {'duration': row.value, 'factor': factor}, ctx.log,
+                        source=source) if factor != 1 else row.value
+
     count = ordinal_index(population.value, ctx.reg)
     requested = ordinal_index(ctx.query['index'], ctx.reg)
     whole = population.container_ref
@@ -71,8 +83,7 @@ def consume(ctx):
             if (row.entity != population.entity or row.container_ref is not None
                     and not constrains(row.container_ref, whole)):
                 return decline('a known part describes a different participant or process')
-            value = convert_duration(row.value, row.measure, ctx.query['measure'], ctx.reg, ctx.log,
-                                     source='process-part-duration-unit')
+            value = duration_in_output_unit(row, 'process-part-duration-unit')
             if value is None:
                 return decline('part durations must have compatible elapsed-time units')
         values[index] = value
@@ -82,12 +93,15 @@ def consume(ctx):
     if (uncovered_document_units(ctx.premises, ctx.question, ctx.match.consumed)
             or audit_numeric_mentions((*ctx.premises, ctx.question), expected, missing='missing', duplicate='duplicate')):
         return decline('every process condition and duration must be read')
-    converted = convert_duration(total.value, total.measure, ctx.query['measure'], ctx.reg, ctx.log,
-                                 source='whole-process-duration-unit')
+    converted = duration_in_output_unit(total, 'whole-process-duration-unit')
     if converted is None:
         return decline('the whole process needs compatible elapsed-time units')
     remaining = resource_residual([converted], values.values(), ctx.log, source='process-part-remainder')
     if remaining < 0:
         return decline('known parts exceed the total duration')
     ctx.log.consumed_batch_keys.update(r.key() for r in rows)
-    return Answer('number', remaining, 'total process duration minus every other part, with units normalized')
+    node = SemanticNode('process-part-remainder', (('entity', population.entity),
+                        ('index', str(requested)), ('measure', measure)))
+    detail = f'Total process duration minus every other part, with units normalized: {remaining:g} {measure}.'
+    return Answer('number', remaining, detail, proof=AnswerProof(node, (
+        ProofStep('complete-process-residual', node, tuple(rows), detail),)))

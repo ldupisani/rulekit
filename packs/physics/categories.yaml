@@ -9,3 +9,4 @@ members:
   dimension_noun: [height]
   length_measure: [height]
   manner_noun: [speed]
+  continuation_rate_noun: [speed]
