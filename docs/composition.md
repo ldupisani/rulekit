@@ -368,7 +368,7 @@ Paraphrases, generated surfaces and ambiguity boundaries are covered in
 
 A reported per-member average and its population share establish a subgroup
 total. An explicit complementary group completes the binary partition. The
-observer, population descriptions, repeated population count, attribute,
+population descriptions, any repeated count, stated observer, attribute,
 currency and periods must agree. Group sizes must be positive whole counts;
 missing complements and overlapping unnamed shares decline. The reported
 averages are per member, rather than a second aggregate amount. Inquiry and
@@ -376,12 +376,20 @@ source-attribution clauses add context without asserting additional receipts.
 Total-amount and how-much questions share rate wording (per, each, every) and
 single-interval wording (a/an, in a/an). Both use the same declared period
 conversions and population checks; mixed or missing period frames decline.
+A counted fraction-of-population clause can establish the whole directly.
+Its complementary rates remain tied to that same whole and sentence; a
+complete immediately adjacent conditional reuses question-scoped assumptions.
+Later definite plural references can reuse the uniquely stated population
+without repeating its number. Calculation and determination activities preserve
+the same inquiry scope without asserting a computed result or another receipt.
 
 Implementation: [population rate grammar](../packs/arithmetic/rules/population-rates.yaml)
 and [weighted amounts](../src/rulekit/kernel/consumers/population_rate_total.py).
 
 Invented examples, paraphrases and ambiguity boundaries for these compositions
 live in [partitioned resource tests](../tests/test_partitioned_resource_questions.py).
+Counted wholes, assessment context and population-reference boundaries are covered
+in [population tests](../tests/test_population_partitive_rates.py).
 
 ## Indexed acquisition balances
 
@@ -397,6 +405,10 @@ The ordinary caller interpretation selects a block-total or per-period reading;
 it cannot override explicit evidence or bypass identity and coverage checks.
 Multiple independently ambiguous blocks require explicit wording. A recurring
 duty supplies context without silently making the observed amounts uniform.
+A single indexed-period amount does not create this scope ambiguity. Block
+totals do not establish a breakdown within the block. Examples and boundaries
+live in
+[partitioned resource tests](../tests/test_partitioned_resource_questions.py).
 
 Implementation: [period grammar](../packs/arithmetic/rules/periodic-resource-balances.yaml)
 and [acquisition balance](../src/rulekit/kernel/consumers/periodic_resource_balance.py).

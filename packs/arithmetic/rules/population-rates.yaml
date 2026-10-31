@@ -65,9 +65,60 @@ rules:
     emits:
       - {fact: batch_evidence, kind: population-rate-count, entity: '{who}', measure: '{population}',
           container: '{population}', acquisition: '{who.surface}', value: population, position: '{population.span_start}'}
+  - id: arithmetic/population-average-rates-counted-whole
+    question_assumption: true
+    description: A counted whole and complementary per-member average rates in one complete clause.
+    match:
+      sentence:
+        - {slot: fraction, type: fraction, fraction_within_whole: true, at_start: true}
+        - {lit: of}
+        - {slot: population, cat: rate_population, counted: true, value_positive: true}
+        - {slot: receive, cat: periodic_income_verb, finite_form: true}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: average, cat: mean_aggregate}
+        - {lit: of}
+        - {slot: amount, cat: currency_unit, counted: true, bare: true}
+        - opt: [{slot: attribute, cat: periodic_rate_attribute, uncounted: true, bare: true}]
+        - {lit: [a, an, per, each, every], consume_skipped: true}
+        - {slot: period, cat: duration_measure, uncounted: true, bare: true}
+        - {slot: coordinator, cat: population_partition_coordinator}
+        - {lit: the, consume_skipped: true}
+        - {slot: rest, cat: partition_remnant, uncounted: true, bare: true}
+        - {slot: rest_receive, cat: periodic_income_verb, finite_form: true}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: rest_average, cat: mean_aggregate}
+        - {lit: of}
+        - {slot: rest_amount, cat: currency_unit, counted: true, bare: true}
+        - opt: [{slot: rest_attribute, cat: periodic_rate_attribute, uncounted: true, bare: true}]
+        - {lit: [a, an, per, each, every], consume_skipped: true}
+        - {slot: rest_period, cat: duration_measure, uncounted: true, bare: true}
+        - {lit: '.', consume_skipped: true}
+    consumes: [fraction, population, receive, average, amount, rest_receive, rest_average, rest_amount]
+    satisfies: {receive: [subject], rest_receive: [subject]}
+    where:
+      - {number_compatible: [population, receive]}
+      - {number_compatible: [rest, rest_receive]}
+    emits:
+      - {fact: batch_evidence, kind: population-rate-whole, entity: '', measure: '{population}',
+          container: '{population}', value: population, position: '{population.span_start}'}
+      - {fact: batch_evidence, kind: population-rate-share, entity: '{population}', measure: '{amount}',
+          value: amount, fraction: fraction, marker: '{period}', container: '{attribute.optional}',
+          position: '{fraction.span_start}'}
+      - {fact: batch_evidence, kind: population-rate-rest, entity: '', measure: '{rest_amount}',
+          value: rest_amount, marker: '{rest_period}', container: '{rest_attribute.optional}',
+          position: '{rest_amount.span_start}'}
 templates:
   population-rate-inquiry:
     parameters:
+      activity:
+        tokens:
+          - {slot: want, cat: finite_infinitival_goal_predicate, finite_form: true}
+          - {lit: to}
+          - {slot: find, cat: discovery_verb, bare_form: true}
+          - opt: [{slot: particle, cat: discovery_particle}]
+        consumed: [want, find]
+        satisfaction: {want: [subject], find: [subject]}
+        constraints: []
       specification:
         - {slot: average, cat: mean_aggregate}
         - opt: [{slot: frequency, cat: periodic_statistic_frequency}]
@@ -79,16 +130,14 @@ templates:
       match:
         sentence:
           - {slot: who, type: entity, common_noun_cat: intentional_agent, at_start: true}
-          - {slot: want, cat: finite_infinitival_goal_predicate, finite_form: true}
-          - {lit: to}
-          - {slot: find, cat: discovery_verb, bare_form: true}
-          - opt: [{slot: particle, cat: discovery_particle}]
+          - {parameter: activity.tokens}
           - {parameter: specification}
           - {lit: of}
           - {slot: population, cat: rate_population, uncounted: true, number: plural}
           - {lit: '.', consume_skipped: true}
-      consumes: [want, find, {parameter: consumed}]
-      satisfies: {want: [subject], find: [subject]}
+      consumes: [{parameter: activity.consumed}, {parameter: consumed}]
+      satisfies: {parameter: activity.satisfaction}
+      where: {parameter: activity.constraints}
       emits:
         - {fact: batch_evidence, kind: population-rate-inquiry, entity: '{who}', measure: '{attribute}',
             container: '{population}', marker: {parameter: frequency}, value: 0, position: '{who.span_start}'}
@@ -103,8 +152,7 @@ templates:
           - {slot: amount, cat: aggregate_noun, uncounted: true, bare: true, number: singular}
           - {lit: of}
           - {slot: money, cat: currency, uncounted: true, bare: true}
-          - opt: [{lit: the, consume_skipped: true}]
-          - {slot: population, cat: rate_population, counted: true}
+        predicate:
           - {slot: receive, cat: periodic_income_verb, finite_form: true}
         satisfaction: {be: [subject], receive: [subject]}
         disambiguation: []
@@ -113,6 +161,9 @@ templates:
           slot_categories:
             amount: [allocation_amount_noun]
             money: [mass_currency_noun]
+      population_frame:
+        - opt: [{lit: the, consume_skipped: true}]
+        - {slot: population, cat: rate_population, counted: true}
       period_frame:
         - opt: [{lit: in, blocks_skipped: article}]
         - {lit: [a, an], consume_skipped: true, blocks_skipped: article}
@@ -121,6 +172,8 @@ templates:
       match:
         question:
           - {parameter: question_frame.tokens}
+          - {parameter: population_frame}
+          - {parameter: question_frame.predicate}
           - {parameter: period_frame}
           - {lit: '?', consume_skipped: true}
       satisfies: {parameter: question_frame.satisfaction}
@@ -142,6 +195,40 @@ variants:
         - {slot: attribute, cat: periodic_rate_attribute, uncounted: true, qualified: true, qualifier_cat: mean_aggregate, all_qualifiers: true}
       consumed: []
       frequency: ''
+  - id: arithmetic/population-rate-assessment-progressive
+    template: population-rate-inquiry
+    arguments:
+      activity: &population_progressive_assessment
+        tokens:
+          - {slot: cop, cat: copula, finite_form: true}
+          - {slot: assess, cat: statistic_assessment_verb, present_participle: true}
+        consumed: [cop, assess]
+        satisfaction: {cop: [subject], assess: [subject]}
+        constraints: [{number_compatible: [who, cop]}]
+  - id: arithmetic/population-rate-assessment-progressive-qualified-attribute
+    template: population-rate-inquiry
+    arguments:
+      activity: *population_progressive_assessment
+      specification: &population_qualified_statistic
+        - {slot: attribute, cat: periodic_rate_attribute, uncounted: true, qualified: true, qualifier_cat: mean_aggregate, all_qualifiers: true}
+      consumed: []
+      frequency: ''
+  - id: arithmetic/population-rate-assessment-finite
+    template: population-rate-inquiry
+    arguments:
+      activity: &population_finite_assessment
+        tokens:
+          - {slot: assess, cat: statistic_assessment_verb, finite_form: true}
+        consumed: [assess]
+        satisfaction: {assess: [subject]}
+        constraints: [{number_compatible: [who, assess]}]
+  - id: arithmetic/population-rate-assessment-finite-qualified-attribute
+    template: population-rate-inquiry
+    arguments:
+      activity: *population_finite_assessment
+      specification: *population_qualified_statistic
+      consumed: []
+      frequency: ''
 ask_variants:
   - id: ask/population-total-periodic-amount
     template: population-total-periodic
@@ -160,8 +247,7 @@ ask_variants:
           - {slot: much, cat: mass_amount_interrogative}
           - {slot: money, cat: currency, uncounted: true, bare: true}
           - {slot: aux, cat: auxiliary}
-          - opt: [{lit: the, consume_skipped: true}]
-          - {slot: population, cat: rate_population, counted: true}
+        predicate:
           - {slot: receive, cat: periodic_income_verb, bare_form: true}
         satisfaction: {receive: [subject]}
         disambiguation: [much]
@@ -174,3 +260,25 @@ ask_variants:
     template: population-total-periodic
     arguments:
       question_frame: *population_periodic_money_question
+  - id: ask/population-total-periodic-amount-reference
+    template: population-total-periodic
+    arguments:
+      population_frame: &population_plural_reference
+        - {lit: [the, these, those], consume_skipped: true}
+        - {slot: population, cat: rate_population, uncounted: true, number: plural, referential: true, generation_bare_reference: true}
+  - id: ask/population-total-periodic-amount-rate-reference
+    template: population-total-periodic
+    arguments:
+      population_frame: *population_plural_reference
+      period_frame: *population_periodic_rate_frame
+  - id: ask/population-total-periodic-money-reference
+    template: population-total-periodic
+    arguments:
+      question_frame: *population_periodic_money_question
+      population_frame: *population_plural_reference
+      period_frame: *population_periodic_rate_frame
+  - id: ask/population-total-periodic-money-interval-reference
+    template: population-total-periodic
+    arguments:
+      question_frame: *population_periodic_money_question
+      population_frame: *population_plural_reference

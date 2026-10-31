@@ -359,8 +359,43 @@ def test_period_balances_reuse_information_acquisition_roles(registry):
     assert not solve(text, registry).answer.committed
 
 
-def test_unscoped_multi_period_amount_requires_confirmation(registry):
-    text = collections().replace("20 marbles in total", "20 marbles")
+@pytest.mark.parametrize("prep", ["For", "Over", "During", "In", "Throughout"])
+@pytest.mark.parametrize("scope,multiplier", [(" in total", 1), (" per hour", 2),
+                                           (" each hour", 2), (" every hour", 2)])
+def test_bounded_acquisitions_distinguish_block_amounts_from_rates(registry, prep, scope, multiplier):
+    text = collections().replace("For the next", f"{prep} the next").replace(
+        "20 marbles in total", f"20 marbles{scope}")
+    result = number(text, registry, 35 + 20 * multiplier)
+    assert result.answer.clarification is None
+
+
+@pytest.mark.parametrize("prep", ["For", "Over", "During", "In", "Throughout"])
+@pytest.mark.parametrize("scope,expected", [(" in total", 38), (" per hour", 56)])
+def test_bounded_information_acquisitions_use_the_same_period_scope(registry, prep, scope, expected):
+    text = ("During the first hour, Fia downloaded 8 files. "
+            f"{prep} the next two hours, she downloaded 18 files{scope}. "
+            "In the fourth hour, she downloaded 12 files. "
+            "How many files did she have after the fourth hour?")
+    result = number(text, registry, expected)
+    assert result.answer.clarification is None
+
+
+def test_multiple_unscoped_blocks_need_independently_stated_scopes(registry):
+    text = ("During the first hour, Fia collected 10 marbles. "
+            "For the next two hours, she collected 20 marbles. "
+            "Over the next two hours, she collected 30 marbles. "
+            "In the sixth hour, she collected 40 marbles. "
+            "How many marbles did she have after the sixth hour?")
+    result = solve(text, registry)
+    assert not result.answer.committed
+    assert result.answer.clarification is None
+    assert result.answer.reason == 'multiple blocks need independently stated total or per-period scopes'
+
+
+@pytest.mark.parametrize("prep", ["For", "Over", "During", "In", "Throughout"])
+def test_unscoped_multi_period_amount_requires_confirmation(registry, prep):
+    text = collections().replace("20 marbles in total", "20 marbles").replace(
+        "For the next", f"{prep} the next")
     result = solve(text, registry)
     assert not result.answer.committed
     assert result.deficiencies() == []
@@ -374,10 +409,38 @@ def test_unscoped_multi_period_amount_requires_confirmation(registry):
     assert not solve(text, registry, interpretation="unsupported").answer.committed
 
 
+@pytest.mark.parametrize("prep", ["For", "Over", "During", "In", "Throughout"])
+def test_unscoped_information_acquisitions_keep_both_readings(registry, prep):
+    text = ("During the first hour, Fia downloaded 8 files. "
+            f"{prep} the next two hours, she downloaded 18 files. "
+            "In the fourth hour, she downloaded 12 files. "
+            "How many files did she have after the fourth hour?")
+    result = solve(text, registry)
+    assert not result.answer.committed
+    assert not result.deficiencies()
+    assert result.answer.clarification is not None
+    assert {o.id for o in result.answer.clarification.options} == {"block-total", "per-period"}
+    for interpretation, expected in [("block-total", 38), ("per-period", 56)]:
+        result = solve(text, registry, interpretation=interpretation)
+        assert result.answer.committed and result.value == expected, result.answer
+        assert not result.deficiencies()
+        assert result.answer.clarification.selected == interpretation
+
+
 def test_confirmation_cannot_override_an_explicit_scope_or_invalid_evidence(registry):
     assert solve(collections(), registry, interpretation="per-period").value == 55
     text = collections().replace("20 marbles in total", "20 marbles").replace("5 of them", "35 of them")
     assert not solve(text, registry, interpretation="per-period").answer.committed
+
+
+@pytest.mark.parametrize("before,after", [
+    ("20 marbles in total", "20 marbles in total per hour"),
+    ("20 marbles in total", "20 marbles per meter"),
+    ("collected 20", "might collect 20"),
+    ("after the fourth hour?", "after the second hour?"),
+])
+def test_bounded_amounts_do_not_invent_rates_events_or_partial_period_breakdowns(registry, before, after):
+    assert not solve(collections().replace(before, after), registry).answer.committed
 
 
 @pytest.mark.parametrize("before,after", [

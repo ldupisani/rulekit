@@ -1,5 +1,8 @@
 format: rulekit/categories@1
 categories:
+  statistic_assessment_verb:
+    parent: verb
+    notes: Evaluating an explicitly named statistic; this activity alone does not assert a result.
   observation_record: {parent: noun}
   population_observation_verb: {parent: verb}
   evidence_attribution_preposition: {parent: preposition}
@@ -13,6 +16,7 @@ categories:
   stat_min: {parent: statistic}
   percent_word: {parent: noun}
 members:
+  statistic_assessment_verb: [calculate, calculates, calculated, calculating, determine, determines, determined, determining]
   observation_record: [survey]
   population_observation_verb: [survey, surveys, surveyed, surveying]
   evidence_attribution_preposition: [according to]

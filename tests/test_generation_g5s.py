@@ -228,9 +228,9 @@ def test_g5s_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 648
-    assert sum(item.supported for item in availability.values()) == 569
-    assert sum(not item.supported for item in availability.values()) == 79
+    assert len(availability) == 653
+    assert sum(item.supported for item in availability.values()) == 572
+    assert sum(not item.supported for item in availability.values()) == 81
     assert availability["arithmetic/periodic-rate-every-span"].supported
     assert all(availability[rule_id].supported for rule_id in FUTURE_RULES)
     # G5t subsequently supplied the temporal-marker domain for the fourth
@@ -241,7 +241,7 @@ def test_g5s_unlocks_exactly_the_preregistered_frontier() -> None:
     assert availability[
         "arithmetic/anchored-relation-conjoined-anchor"
     ].supported
-    assert len(exploration_status(project)["fillers"]) == 2554
+    assert len(exploration_status(project)["fillers"]) == 2553
 
 
 @pytest.mark.parametrize("modal", sorted(MOVED_WORDS))

@@ -75,7 +75,9 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
         )
     }
 
-    assert occurrences == {'arithmetic/population-rate-inquiry': ((6, 0), 'frequency', ((6,),)),
+    assert occurrences == {'arithmetic/population-rate-assessment-finite': ((3, 0), 'frequency', ((3,),)),
+                           'arithmetic/population-rate-assessment-progressive': ((4, 0), 'frequency', ((4,),)),
+                           'arithmetic/population-rate-inquiry': ((6, 0), 'frequency', ((6,),)),
                            'arithmetic/population-rate-inquiry-qualified-attribute': ((4, 0), 'particle', ((4,),)),
                            'arithmetic/acquired-batch-counted-classify': ((4, 0), 'again', ((4,),)),
                            'arithmetic/acquired-batch-counted-classify-negative': ((4, 0), 'again', ((4,),)),
@@ -248,9 +250,9 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
     project = load_project(CURATED)
     availability = list_rule_availability(project)
 
-    assert len(availability) == 648
-    assert sum(item.supported for item in availability) == 569
-    assert sum(not item.supported for item in availability) == 79
+    assert len(availability) == 653
+    assert sum(item.supported for item in availability) == 572
+    assert sum(not item.supported for item in availability) == 81
     assert all(
         not item.blockers
         or item.id
@@ -276,6 +278,8 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
             'arithmetic/population-average-rate-rest',
             'arithmetic/population-rate-attribution',
             'arithmetic/population-rate-inquiry-qualified-attribute',
+            'arithmetic/population-rate-assessment-finite-qualified-attribute',
+            'arithmetic/population-rate-assessment-progressive-qualified-attribute',
             'arithmetic/process-part-duration-numeric-index',
             'arithmetic/process-relative-part-duration-numeric-index',
 
@@ -336,7 +340,7 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
             'logic-arithmetic/universal-all-have-quantity-pp-incompatible-item-safety'}
         for item in availability
     )
-    assert len(exploration_status(project)["fillers"]) == 2554
+    assert len(exploration_status(project)["fillers"]) == 2553
 
 
 def test_currently_generates_a_matcher_confirmed_anchor() -> None:

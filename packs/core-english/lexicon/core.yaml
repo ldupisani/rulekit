@@ -1022,15 +1022,17 @@ entries:
     senses:
     - noun
     plural: cakes
-  calculate: {senses: [verb, imperative]}
+  calculate: {senses: [verb, imperative], number: plural}
   calculated:
     senses:
     - verb
     verb:
       lemma: calculate
+  calculates: {senses: [verb], number: singular, verb: {lemma: calculate}}
   calculating:
     senses:
     - verb
+    verb: {lemma: calculate}
   call:
     senses:
     - verb
@@ -2093,6 +2095,10 @@ entries:
     senses:
     - verb
     - imperative
+    number: plural
+  determined: {senses: [verb], verb: {lemma: determine}}
+  determines: {senses: [verb], number: singular, verb: {lemma: determine}}
+  determining: {senses: [verb], verb: {lemma: determine}}
   detour:
     senses:
     - noun

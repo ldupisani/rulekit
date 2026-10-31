@@ -22,7 +22,7 @@ def consume(ctx):
     rows = list(ctx.store.by_kind(BatchEvidence))
     contexts = [r for r in rows if r.kind == 'population-rate-inquiry']
     sources = [r for r in rows if r.kind == 'population-rate-attribution']
-    counts = [r for r in rows if r.kind == 'population-rate-count']
+    counts = [r for r in rows if r.kind in {'population-rate-count', 'population-rate-whole'}]
     shares = [r for r in rows if r.kind == 'population-rate-share']
     rests = [r for r in rows if r.kind == 'population-rate-rest']
     if (len(contexts) > 1 or len(sources) > 1 or len(counts) != 1 or len(shares) != 1 or len(rests) != 1
@@ -31,24 +31,44 @@ def consume(ctx):
             or ctx.store.collisions or ctx.store.quarantined):
         return decline('one observed population and exhaustive subgroup average rates are required')
     count = counts[0]
+    inline_whole = count.kind == 'population-rate-whole'
     population_ref = contexts[0].container_ref if contexts else count.container_ref
     observer_ref = contexts[0].entity_ref if contexts else count.entity_ref
-    query_population = reference_from_unit(ctx.match.slots['population'])
+    population_unit = ctx.match.slots['population']
+    query_population = reference_from_unit(population_unit)
+    repeated_count = None
+    if population_unit.features.get('value_kind') == 'count':
+        try:
+            repeated_count = float(ctx.query['population'])
+        except (KeyError, TypeError, ValueError):
+            return decline('the observer, population count and requested population must agree')
     forms = [r.acquisition for r in (*sources, count)
              if getattr(ctx.reg.lexicon.get(r.acquisition.casefold()), 'anaphoric_form', None)]
     if (population_ref is None or count.container_ref is None or not constrains(count.container_ref, population_ref)
             or not constrains(query_population, population_ref)
-            or observer_ref is None or count.entity_ref is None or not constrains(count.entity_ref, observer_ref)
+            or not inline_whole and (observer_ref is None or count.entity_ref is None
+                                     or not constrains(count.entity_ref, observer_ref))
             or forms and not anaphoric_forms_agree(forms, 'singular', ctx.reg)
-            or count.value <= 0 or not float(count.value).is_integer()
-            or count.measure != ctx.query['member'] or count.value != float(ctx.query['population'])
+            or not isfinite(count.value) or count.value <= 0 or not float(count.value).is_integer()
+            or count.measure != ctx.query['member']
+            or repeated_count is not None and count.value != repeated_count
             or count.provenance.assumption and count.provenance.sentence != ctx.question.sentence_index - 1
-            or any(s.entity_ref is None or not constrains(s.entity_ref, observer_ref) for s in sources)
-            or any(r.provenance.assumption for r in rows if r is not count)):
+            or any(observer_ref is None or s.entity_ref is None
+                   or not constrains(s.entity_ref, observer_ref) for s in sources)
+            or any(r.provenance.assumption for r in rows
+                   if r is not count and not (inline_whole and r in (*shares, *rests)))):
         return decline('the observer, population count and requested population must agree')
+    if inline_whole and (
+        count.container_ref != shares[0].entity_ref
+        or not shares[0].position < count.position < rests[0].position
+        or any(r.provenance.sentence != count.provenance.sentence
+               or r.provenance.assumption != count.provenance.assumption for r in (*shares, *rests))
+    ):
+        return decline('the counted whole and complementary rates must form one complete population partition')
     expected = defaultdict(Counter)
     expected[count.provenance.sentence][count.value] += 1
-    expected[ctx.question.sentence_index][float(ctx.query['population'])] += 1
+    if repeated_count is not None:
+        expected[ctx.question.sentence_index][repeated_count] += 1
     unit = shares[0].measure
     total_share = 0
     weighted = []
