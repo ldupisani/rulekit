@@ -422,7 +422,12 @@ class Registry:
                         pairs.add((attribute_category, noun_category))
         return tuple(sorted(pairs))
 
-    def attribute_applies_to(self, attribute: str, noun: str) -> bool:
+    def attribute_applies_to(self, attribute: str, noun: str, *, when_declared: bool = False) -> bool:
+        if when_declared and not any(
+            self.word_in_category(attribute, category)
+            for category in self.attribute_compatibility
+        ):
+            return True
         return bool(self.attribute_compatibility_pairs(attribute, noun))
 
     def modifier_host_compatibility_pairs(
@@ -2228,6 +2233,18 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                         f"rule {rule.id!r} slot exclusion names unknown slot "
                         f"{slot_name!r}"
                     )
+        for source, needs in rule.bindings.items():
+            token = slots.get(source)
+            root = _slot_root(token) if token is not None else None
+            role = role_obligations.get(root)
+            for need, target in needs.items():
+                if (token is None or token.span or target == source
+                        or target not in slots or slots[target].span
+                        or role is None or need not in role.needs
+                        or (need == "collection" and _slot_root(slots[target]) not in {"noun", "pronoun"})):
+                    raise CompileError(f"rule {rule.id!r}: invalid unit obligation binding {source}.{need} -> {target}")
+                if need in rule.satisfies.get(source, ()):
+                    raise CompileError(f"rule {rule.id!r}: a bound need cannot also use pattern satisfaction")
         for source, target in rule.references.items():
             for slot_name in (source, target):
                 token = slots.get(slot_name)

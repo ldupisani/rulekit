@@ -26,11 +26,17 @@ categories:
   sequence_result_conjunction: {parent: conjunction}
   sequence_passive_auxiliary: {parent: verb}
   abstract_time_noun: {parent: noun}
+  completion_boundary_noun:
+    parent: noun
+    notes: A final boundary of the stated sequence, not an unstated later event.
+  completion_frame_preposition: {parent: preposition}
 context_synonyms:
   carrier_consumption:
     gate: sequence_carrier
     forms: [eat, consume, feast]
 members:
+  completion_boundary_noun: [end]
+  completion_frame_preposition: [at, in]
   abstract_time_noun: [time]
   carrier_event_object_preposition: [on]
   carrier_prepositional_event_verb: [feast, feasted, feasts]

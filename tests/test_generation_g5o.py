@@ -18,6 +18,15 @@ ROOT = Path(__file__).resolve().parents[1]
 CURATED = ROOT / "projects" / "curated"
 
 EXPECTED_OCCURRENCES = {
+    "arithmetic/holder-prefix-0": ((0,), "each"),
+    "arithmetic/holder-prefix-1": ((2,), "each"),
+    "arithmetic/holder-prefix-2": ((4,), "each"),
+    "arithmetic/holder-prefix-combined-0-bare": ((4,), "each"),
+    "arithmetic/holder-prefix-combined-0-located": ((6,), "each"),
+    "arithmetic/holder-prefix-combined-1-bare": ((6,), "each"),
+    "arithmetic/holder-prefix-combined-1-located": ((8,), "each"),
+    "arithmetic/holder-prefix-combined-2-bare": ((8,), "each"),
+    "arithmetic/holder-prefix-combined-2-located": ((10,), "each"),
     "arithmetic/periodic-collection-duty": ((0,), "every"),
     "arithmetic/recipient-content-passive-each": ((4,), "each"),
     "arithmetic/recipient-content-singular-each": ((0,), "each"),
@@ -162,9 +171,9 @@ def test_g5o_unlocks_only_the_preregistered_rule() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 642
-    assert sum(item.supported for item in availability.values()) == 566
-    assert sum(not item.supported for item in availability.values()) == 76
+    assert len(availability) == 648
+    assert sum(item.supported for item in availability.values()) == 569
+    assert sum(not item.supported for item in availability.values()) == 79
     assert availability[
         "arithmetic/existential-premise-distributive"
     ].supported

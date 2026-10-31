@@ -63,7 +63,7 @@ asks:
         - {slot: item, cat: ownable_quantity_object, referential: true, uncounted: true}
         - {lit: that}
         - {slot: cost, cat: price_verb, finite_form: true}
-        - {slot: amount, cat: currency_measure, counted: true}
+        - {slot: amount, cat: currency_unit, counted: true}
         - {lit: '?', consume_skipped: true}
     where:
       - number_compatible: [who, aux]

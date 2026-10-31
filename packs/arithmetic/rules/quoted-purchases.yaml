@@ -10,7 +10,7 @@ rules:
         - {lit: of}
         - {slot: item, cat: purchase_item, uncounted: true, bare: true}
         - {slot: cost, cat: price_verb, finite_form: true}
-        - {slot: price, cat: currency_measure, counted: true}
+        - {slot: price, cat: currency_unit, counted: true}
     where: [{number_compatible: [unit, cost]}]
     satisfies: {cost: [subject], each: [collection]}
     consumes: [price, cost, unit]
@@ -23,7 +23,7 @@ rules:
         - opt: [{lit: and}]
         - {slot: item, cat: purchase_item, uncounted: true, bare: true}
         - {slot: cost, cat: price_verb, finite_form: true}
-        - {slot: price, cat: currency_measure, counted: true}
+        - {slot: price, cat: currency_unit, counted: true}
         - {lit: per}
         - {slot: unit, cat: purchase_lot_measure, uncounted: true, bare: true, number: singular}
     where: [{number_compatible: [item, cost]}]

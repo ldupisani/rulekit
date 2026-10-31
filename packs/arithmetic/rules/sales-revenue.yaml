@@ -141,7 +141,7 @@ rules:
     sentence:
     - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
     - {slot: quote, cat: commercial_quote_verb, finite_form: true}
-    - {slot: price0, cat: currency_measure, counted: true}
+    - {slot: price0, cat: currency_unit, counted: true}
     - {lit: for}
     - {slot: item0, cat: commercial_product, uncounted: true}
     - {lit: ., consume_skipped: true}
@@ -162,11 +162,11 @@ rules:
     sentence:
     - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
     - {slot: quote, cat: commercial_quote_verb, finite_form: true}
-    - {slot: price0, cat: currency_measure, counted: true}
+    - {slot: price0, cat: currency_unit, counted: true}
     - {lit: for}
     - {slot: item0, cat: commercial_product, uncounted: true}
     - {lit: and}
-    - {slot: price1, cat: currency_measure, counted: true}
+    - {slot: price1, cat: currency_unit, counted: true}
     - {lit: for}
     - {slot: item1, cat: commercial_product, uncounted: true}
     - {lit: ., consume_skipped: true}

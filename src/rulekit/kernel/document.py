@@ -132,6 +132,16 @@ def _satisfy_pattern_obligations(
                     f"reference bound by complete construction {result.match.rule.id}",
                     rule_id=result.match.rule.id,
                 )
+    for slot_name, needs in getattr(result.match.rule, "bindings", {}).items():
+        unit = result.match.slots.get(slot_name)
+        if not isinstance(unit, Unit):
+            continue
+        updated = [Obligation(ob.role, ob.need,
+                   target=result.match.slots[needs[ob.need]], optional=ob.optional)
+                   if ob.need in needs else ob for ob in unit.obligations()]
+        reading.record("pattern-bind", unit, {"obligations": updated},
+                       f"unit roles bound by complete construction {result.match.rule.id}",
+                       rule_id=result.match.rule.id)
     for slot_name, needs in result.match.rule.satisfies.items():
         unit = result.match.slots.get(slot_name)
         if not isinstance(unit, Unit):

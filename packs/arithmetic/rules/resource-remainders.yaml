@@ -20,7 +20,7 @@ templates:
           - {slot: resource, cat: mass_currency_noun, uncounted: true, bare: true}
           - {parameter: location}
           - {parameter: exception}
-          - {slot: surviving, cat: currency_measure, counted: true}
+          - {slot: surviving, cat: currency_unit, counted: true}
           - {lit: '.', consume_skipped: true}
       where:
         - {parameter: agreement}
@@ -39,7 +39,7 @@ rules:
       sentence:
         - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
         - {slot: receipt, cat: resource_receipt_verb, finite_form: true}
-        - {slot: amount, cat: currency_measure, counted: true}
+        - {slot: amount, cat: currency_unit, counted: true}
         - {slot: working, cat: resource_work_context_verb, present_participle: true}
         - {slot: tasks, cat: service_task_noun, uncounted: true}
         - opt:

@@ -5706,7 +5706,7 @@ rules:
       sentence:
         - {slot: who, type: entity, common_noun_cat: earning_quantity_participant, referential: true, bare_reference_category: bare_entity_reference}
         - {slot: verb, cat: wage_verb, finite_form: true}
-        - {slot: pay, cat: currency_measure, counted: true}
+        - {slot: pay, cat: currency_unit, counted: true}
         - {lit: [a, an], consume_skipped: true}
         - {slot: span, cat: duration_measure, number: singular}
         - {lit: for}
@@ -9268,7 +9268,7 @@ asks:
         - {slot: verb, cat: purchase, bare_form: true}
         - opt:
             - {lit: with}
-            - {slot: budget, cat: currency_measure, counted: true}
+            - {slot: budget, cat: currency_unit, counted: true}
     where:
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - verb_roles_compatible:
@@ -9280,6 +9280,7 @@ asks:
       entity: "{who}"
       item: "{item}"
       budget_value: "{budget.value}"
+      budget_measure: "{budget}"
     generation:
       slot_categories:
         item: [transferable_quantity_object]

@@ -13,7 +13,7 @@ rules:
       cat: wage_verb
       finite_form: true
     - slot: amount
-      cat: currency_measure
+      cat: currency_unit
       counted: true
       bare: true
     - opt:
@@ -60,7 +60,7 @@ rules:
       type: fraction
     - lit: of
     - slot: amount
-      cat: currency_measure
+      cat: currency_unit
       counted: true
       bare: true
     - slot: cop
@@ -101,7 +101,7 @@ rules:
       type: fraction
     - lit: of
     - slot: amount
-      cat: currency_measure
+      cat: currency_unit
       counted: true
       bare: true
     - {lit: ., consume_skipped: true}

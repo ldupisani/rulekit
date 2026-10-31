@@ -425,6 +425,16 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
         unit.features.get("qualifier", ""), token.qualifier_cat
     ):
         return False
+    if token.counted and token.qualifier_cat and reg.word_in_category(
+            unit.features.get("qualifier", ""), "precardinal_attribute"):
+        qualifier = unit.features["qualifier"]
+        preceding = []
+        for word in unit.words:
+            if word.surface.casefold() == qualifier:
+                break
+            preceding.append(word.surface.casefold())
+        if any(not reg.word_in_category(word, "article") for word in preceding):
+            return False
     if token.all_qualifiers:
         # The ordinary qualifier gate names one modifier. Head projections
         # additionally opt in to checking the complete reference description.
@@ -448,6 +458,10 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
     if token.integer:
         value = unit.features.get("value")
         if not isinstance(value, (int, float)) or not float(value).is_integer():
+            return False
+    if token.value_positive:
+        value = unit.features.get("value")
+        if not isinstance(value, (int, float)) or not 0 < float(value) < float("inf"):
             return False
     if token.value_min is not None:
         value = unit.features.get("value")
@@ -1689,7 +1703,8 @@ def _check_where(
                 isinstance(attribute, tuple)
                 or isinstance(noun, tuple)
                 or not reg.attribute_applies_to(
-                    _lemma_of(attribute), _lemma_of(noun)
+                    _lemma_of(attribute), _lemma_of(noun),
+                    when_declared=pred.attribute_compatible.when_declared
                 )
             ):
                 return False
@@ -2459,7 +2474,11 @@ def _build_fact(
         # category). Their occurrence is the narration coordinate that keeps
         # repeated changes distinct and lets consumers apply them in order.
         kwargs["occurrence"] = provenance.sentence
-    return cls(provenance=provenance, **kwargs)
+    fact = cls(provenance=provenance, **kwargs)
+    if isinstance(fact, Price) and reading is not None:
+        from .monetary import retain_price_currency
+        fact = retain_price_currency(fact, reading, reg)
+    return fact
 
 
 def rule_specificity(rule: PatternRule, reg: Registry) -> tuple[int, int, int]:

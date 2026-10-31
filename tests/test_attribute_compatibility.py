@@ -327,6 +327,17 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
         "arithmetic/partition-rest-attribute",
     }
     assert compatible_rules == {
+        "arithmetic/holder-prefix-combined-0-bare",
+        "arithmetic/holder-prefix-combined-0-located",
+        "arithmetic/holder-prefix-0",
+        "arithmetic/holder-prefix-combined-1-bare",
+        "arithmetic/holder-prefix-combined-1-located",
+        "arithmetic/holder-prefix-1",
+        "arithmetic/holder-prefix-combined-2-bare",
+        "arithmetic/holder-prefix-combined-2-located",
+        "arithmetic/holder-prefix-2",
+        "arithmetic/holder-content-total-located",
+        "arithmetic/holder-content-total-located-trailing",
         "arithmetic/located-quantity-event-context",
         "arithmetic/collection-two-shared-attributes",
         "arithmetic/collection-three-shared-attributes",
@@ -384,7 +395,7 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
 def test_compatibility_rule_remains_supported_after_g5j_expansion() -> None:
     availability = list_rule_availability(load_project(CURATED))
 
-    assert sum(item.supported for item in availability) == 566
+    assert sum(item.supported for item in availability) == 569
     target = next(item for item in availability if item.id == RULE_ID)
     assert target.supported
     assert target.blockers == ()

@@ -248,9 +248,9 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
     project = load_project(CURATED)
     availability = list_rule_availability(project)
 
-    assert len(availability) == 642
-    assert sum(item.supported for item in availability) == 566
-    assert sum(not item.supported for item in availability) == 76
+    assert len(availability) == 648
+    assert sum(item.supported for item in availability) == 569
+    assert sum(not item.supported for item in availability) == 79
     assert all(
         not item.blockers
         or item.id
@@ -270,6 +270,9 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
             'arithmetic/with-inventory-located',
             'arithmetic/fractional-resource-remainder-use-continuation',
             'arithmetic/fractional-resource-use-continuation',
+            'arithmetic/fractional-resource-elided-use-continuation',
+            'arithmetic/fractional-resource-named-use-continuation',
+            'arithmetic/fractional-resource-residual-use-continuation',
             'arithmetic/population-average-rate-rest',
             'arithmetic/population-rate-attribution',
             'arithmetic/population-rate-inquiry-qualified-attribute',

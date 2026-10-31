@@ -124,6 +124,13 @@ and [holder consumer](../src/rulekit/kernel/consumers/holder_remainder.py).
 Executable examples, including collective versus per-holder totals:
 [holder-remainder tests](../tests/test_holder_remainder.py).
 
+Initial-group evidence requires the same holder class as the stated population,
+a definite ordinal-before-count phrase, and compatible finite agreement. Floating
+distributives retain a real `collection` binding to that group. Located frames
+require anchored location references and pack-declared preposition/object
+compatibility; carrier locations and ordinary spatial locations have separate
+category licences.
+
 ## Mixture ledgers
 
 `MixtureEvidence` preserves sample identity, component share, measurement basis,
@@ -258,6 +265,25 @@ remain required. A production-variety count checks distinct full product
 references, rather than multiplying the usage again. This extends the same
 measured-remainder asks to food ingredients and fabrication materials.
 
+An original-stock fraction may name the definite resource, refer to it by
+pronoun, or omit it when the single measured stock and its actor establish the
+source. The nominal remainder forms select the current balance; an optional
+resource name must identify that same stock. Quantity references do not also
+license a collective plural-subject construction. Omitting a production goal does
+not change these bases. After depletion, a later sentence with an unqualified
+fraction cannot silently choose between the original amount and the current
+balance. A list that switches to the remainder cannot silently revert to the
+opening base either. Uses may produce different types of products when the
+question asks only for the remaining resource. A stated variety count still
+requires the named product type and distinct full product references to agree.
+Final-balance frames use the end of the stated sequence; they cannot absorb an
+unstated later event or date. Simple mass, volume and length unit questions
+also accept a period terminator while retaining their explicit physical
+measurement basis.
+
+Invented paraphrases, nonfood analogues, and decline boundaries:
+[fractional resource references](../tests/test_fractional_resource_references.py).
+
 Implementation: [fractional use grammar](../packs/arithmetic/rules/fractional-resource-use.yaml)
 and [fractional resource composition](../src/rulekit/kernel/consumers/fractional_resource_remainder.py).
 
@@ -347,6 +373,9 @@ currency and periods must agree. Group sizes must be positive whole counts;
 missing complements and overlapping unnamed shares decline. The reported
 averages are per member, rather than a second aggregate amount. Inquiry and
 source-attribution clauses add context without asserting additional receipts.
+Total-amount and how-much questions share rate wording (per, each, every) and
+single-interval wording (a/an, in a/an). Both use the same declared period
+conversions and population checks; mixed or missing period frames decline.
 
 Implementation: [population rate grammar](../packs/arithmetic/rules/population-rates.yaml)
 and [weighted amounts](../src/rulekit/kernel/consumers/population_rate_total.py).
@@ -462,3 +491,21 @@ A generic operation is not permission to flatten every aggregate into a
 `Quantity`, infer a missing rate, or discard an unused event. The distinction
 between evidence and a coincidental arithmetic result is a
 [project design constraint](negative-results.md).
+
+## Monetary denominations
+
+`currency_measure` includes monetary dimensions and financial labels.
+`currency_unit` is its concrete denomination subset, required by counted
+transaction inputs. Cent/dollar conversion is declared in the ordinary unit
+conversion table; no foreign exchange is inferred. Legacy scalar `Price` facts
+retain their canonical denomination, while other denominations retain their
+explicit unit and must pass a consumed-conversion guard. Affordability converts
+both budget and selected unit price before division and refuses nonpositive
+prices or an incompatible package basis. Dimensionless price comparisons
+preserve the source denomination and package basis; an additive offset without
+its own unit evidence cannot bridge a noncanonical denomination.
+
+Implementation: [monetary units](../packs/core-english/categories/core.yaml),
+[conversion helpers](../src/rulekit/kernel/monetary.py),
+[capacity consumer](../src/rulekit/kernel/consumers/capacity.py), and
+[boundary regressions](../tests/test_review_language_boundaries.py).

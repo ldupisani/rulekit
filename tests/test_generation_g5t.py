@@ -208,9 +208,9 @@ def test_g5t_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 642
-    assert sum(item.supported for item in availability.values()) == 566
-    assert sum(not item.supported for item in availability.values()) == 76
+    assert len(availability) == 648
+    assert sum(item.supported for item in availability.values()) == 569
+    assert sum(not item.supported for item in availability.values()) == 79
     assert availability[TARGET_RULE].supported
     # G5u subsequently supplied the loaded direct-adverb domain.
     assert availability[

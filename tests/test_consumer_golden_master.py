@@ -58,6 +58,12 @@ def registries():
 
 # (registry, question, expected consumer, kind, value, reason prefix)
 GOLDEN = [
+    ('curated', 'A pen costs 0 dollars. How many pens can Dena buy with 3 dollars?',
+     'capacity', 'decline', None, 'capacity needs a positive price in a declared curren'),
+    ('curated', 'A pen costs 2 dollars. How many pens can Dena buy with -3 dollars?',
+     'capacity', 'decline', None, 'capacity needs a nonnegative budget in a declared cu'),
+    ('curated', 'A pen costs 0 dollars. How much did Dena pay for 3 pens?',
+     'cost-of-quantity', 'decline', None, 'the price needs a concrete convertible denomination'),
     ('curated', 'Mira owes $120. Mira repaid $18 and $27. How much does Mira still owe?',
      'liability-remainder', 'number', 75, '75 dollar still owed'),
     ('curated', 'Mira has a credit limit of $120. How much does Mira owe?',
@@ -510,7 +516,7 @@ def test_the_guards_are_the_bulk_of_the_coverage():
 
 # --- the coverage of this file, measured and enforced ----------------------
 
-_GUARD_FLOOR = 156  # guards WITH a probe: raise as probes are added, never lower
+_GUARD_FLOOR = 160  # guards WITH a probe: raise as probes are added, never lower
 _GAP_CEILING = 0    # guards WITHOUT one: lower as probes are added, never raise
 
 # The denominator is 91, and it was 92 until the boundary bug above was fixed:
@@ -526,6 +532,8 @@ _GAP_CEILING = 0    # guards WITHOUT one: lower as probes are added, never raise
 # coverage figure honest in both directions: they are not gaps, and they are
 # not silently absent either.
 _COVERED_BY_UNIT_TEST = {
+    # Public asks bind a concrete budget unit; a direct caller can omit it.
+    ("capacity", "the budget needs a concrete currency uni"),
     ("single-entity", "a qualified subset needs item-level evid"),
     # Each branch is invoked directly by test_budget_defensive_guards.
     ("budget-item-cost", "a residual cost needs one opening and on"),

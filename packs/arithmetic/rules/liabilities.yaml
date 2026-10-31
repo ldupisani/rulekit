@@ -52,7 +52,7 @@ templates:
       match:
         sentence:
           - {parameter: prefix}
-          - {slot: amount, cat: currency_measure, counted: true, value_min: 0}
+          - {slot: amount, cat: currency_unit, counted: true, value_min: 0}
           - {parameter: link}
           - opt:
               - {lit: on}
@@ -187,7 +187,7 @@ rules:
         - {slot: verb, cat: liability_grant_verb, past_participle: true}
         - {slot: account, cat: liability_limit, uncounted: true, referential: true}
         - {lit: of}
-        - {slot: amount, cat: currency_measure, counted: true, value_min: 0}
+        - {slot: amount, cat: currency_unit, counted: true, value_min: 0}
     consumes: [amount]
     where:
       - number_compatible: [who, aux]
@@ -202,7 +202,7 @@ rules:
         - {slot: verb, cat: plain_have_state, finite_form: true}
         - {slot: account, cat: liability_limit, uncounted: true, referential: true}
         - {lit: of}
-        - {slot: amount, cat: currency_measure, counted: true, value_min: 0}
+        - {slot: amount, cat: currency_unit, counted: true, value_min: 0}
     consumes: [amount]
     where:
       - number_compatible: [who, verb]
@@ -215,7 +215,7 @@ rules:
       sentence:
         - {slot: who, type: entity, common_noun_cat: animate, referential: true}
         - {slot: verb, cat: liability_state, finite_form: true}
-        - {slot: amount, cat: currency_measure, counted: true, value_min: 0}
+        - {slot: amount, cat: currency_unit, counted: true, value_min: 0}
     consumes: [amount]
     where:
       - number_compatible: [who, verb]

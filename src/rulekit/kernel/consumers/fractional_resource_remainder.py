@@ -36,6 +36,7 @@ def consume(ctx):
     expected[opening.provenance.sentence][opening.value] += 1
     balance = opening.value
     purposes = set()
+    remainder_seen = False
     for step in steps:
         anchors = [r for r in steps if r.entity and r.provenance.sentence == step.provenance.sentence]
         actor = step.entity or (anchors[0].entity if len(anchors) == 1 else '')
@@ -45,11 +46,21 @@ def consume(ctx):
                 or step.measure and step.measure != opening.material
                 or step.container_ref is None or not step.container_ref.resolved):
             return decline('each fraction must name the same stock or its current remainder')
+        # Parallel uses in one allocation clause share its opening-stock
+        # base. Across sentences, a fresh unqualified fraction may instead
+        # refer to what is now held; neither a pronoun nor a repeated resource
+        # name establishes the original amount after depletion. An explicit
+        # switch to the remainder also prevents a silent switch back.
+        if (step.marker == 'opening'
+                and (remainder_seen or step.provenance.sentence != steps[0].provenance.sentence)
+                and balance != opening.value):
+            return decline('a later fraction must distinguish the original stock from its current remainder')
         expected[step.provenance.sentence][step.value] += 1
         base = opening.value if step.marker == 'opening' else balance
         allocated = evaluate('base * fraction', {'base': base, 'fraction': step.value},
                              ctx.log, source='fractional-resource-allocation')
         balance = resource_residual([balance], [allocated], ctx.log, source='fractional-resource-balance')
+        remainder_seen |= step.marker == 'remainder'
         if balance < -1e-9:
             return decline('the stated allocations exceed the resource stock')
         purposes.add(step.container_ref)

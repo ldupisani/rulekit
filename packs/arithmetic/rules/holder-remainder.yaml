@@ -9,23 +9,31 @@ rules:
     - {slot: cop, cat: plural_copula}
     - {slot: population, cat: ordinal_quantity_holder, counted: true, bare: true}
     - {lit: and}
-    - {lit: each}
+    - {slot: each, cat: postpositive_distributive_quantifier}
     - {lit: of}
-    - {slot: holders, cat: ordinal_quantity_holder, counted: true, qualified: true, qualifier_cat: holder_prefix_order}
+    - {lit: the, consume_skipped: true}
+    - {slot: holders, cat: ordinal_quantity_holder, counted: true, qualified: true, qualifier_cat: holder_prefix_order, all_qualifiers: true}
     - {slot: verb, cat: possession_state, finite_form: true}
     - {slot: contents, cat: ownable_quantity_object, counted: true, bare: true}
     - opt:
       - {slot: local_prep, cat: spatial_location_preposition}
-      - {slot: local, cat: spatial_reference_noun, bare: true}
+      - {slot: local, cat: spatial_reference_noun, bare: true, referential: true, bare_reference_category: bare_pp_object}
     - {lit: ., consume_skipped: true}
   satisfies:
     cop: [subject]
+  bindings:
+    each: {collection: holders}
   consumes: [population, holders, contents]
   emits:
   - {fact: batch_evidence, kind: holder-population, entity: '{population}', measure: '{population}', value: population, position: '{population.span_start}',
     container: ''}
   - {fact: batch_evidence, kind: holder-share, entity: '{holders}', measure: '{contents}', value: holders, position: '{holders.span_start}',
     marker: '{holders.qualifier}', per_member: contents}
+  where:
+  - attribute_compatible: {attribute: local_prep, noun: local, when_declared: true}
+  - number_compatible: [each, verb]
+  - same_lemma: [population, holders]
+  - number_compatible: [population, cop]
 - id: arithmetic/holder-prefix-combined-0-located
   phase: read
   description: An exhaustive holder population and an equal-content initial group.
@@ -35,43 +43,58 @@ rules:
     - {slot: cop, cat: plural_copula}
     - {slot: population, cat: ordinal_quantity_holder, counted: true, bare: true}
     - {slot: place_prep, cat: spatial_location_preposition}
-    - {slot: place, cat: spatial_reference_noun, bare: true}
+    - {slot: place, cat: spatial_reference_noun, bare: true, referential: true, bare_reference_category: bare_pp_object}
     - {lit: and}
-    - {lit: each}
+    - {slot: each, cat: postpositive_distributive_quantifier}
     - {lit: of}
-    - {slot: holders, cat: ordinal_quantity_holder, counted: true, qualified: true, qualifier_cat: holder_prefix_order}
+    - {lit: the, consume_skipped: true}
+    - {slot: holders, cat: ordinal_quantity_holder, counted: true, qualified: true, qualifier_cat: holder_prefix_order, all_qualifiers: true}
     - {slot: verb, cat: possession_state, finite_form: true}
     - {slot: contents, cat: ownable_quantity_object, counted: true, bare: true}
     - opt:
       - {slot: local_prep, cat: spatial_location_preposition}
-      - {slot: local, cat: spatial_reference_noun, bare: true}
+      - {slot: local, cat: spatial_reference_noun, bare: true, referential: true, bare_reference_category: bare_pp_object}
     - {lit: ., consume_skipped: true}
   satisfies:
     cop: [subject]
+  bindings:
+    each: {collection: holders}
   consumes: [population, holders, contents]
   emits:
   - {fact: batch_evidence, kind: holder-population, entity: '{population}', measure: '{population}', value: population, position: '{population.span_start}',
     container: '{place_prep} {place}'}
   - {fact: batch_evidence, kind: holder-share, entity: '{holders}', measure: '{contents}', value: holders, position: '{holders.span_start}',
     marker: '{holders.qualifier}', per_member: contents}
+  where:
+  - attribute_compatible: {attribute: local_prep, noun: local, when_declared: true}
+  - number_compatible: [each, verb]
+  - attribute_compatible: {attribute: place_prep, noun: place, when_declared: true}
+  - same_lemma: [population, holders]
+  - number_compatible: [population, cop]
 - id: arithmetic/holder-prefix-0
   phase: read
   description: A counted initial group of holders with equal contents.
   match:
     sentence:
-    - {lit: each, at_start: true}
+    - {slot: each, cat: partitive_distributive_quantifier, at_start: true}
     - {lit: of}
-    - {slot: holders, cat: ordinal_quantity_holder, counted: true, qualified: true, qualifier_cat: holder_prefix_order}
+    - {lit: the, consume_skipped: true}
+    - {slot: holders, cat: ordinal_quantity_holder, counted: true, qualified: true, qualifier_cat: holder_prefix_order, all_qualifiers: true}
     - {slot: verb, cat: possession_state, finite_form: true}
     -  {slot: contents, cat: ownable_quantity_object, counted: true, bare: true}
     - opt:
       - {slot: local_prep, cat: spatial_location_preposition}
-      - {slot: local, cat: spatial_reference_noun, bare: true}
+      - {slot: local, cat: spatial_reference_noun, bare: true, referential: true, bare_reference_category: bare_pp_object}
     -  {lit: ., consume_skipped: true}
+  bindings:
+    each: {collection: holders}
   consumes: [holders, contents]
   emits:
   - &holder_share_evidence {fact: batch_evidence, kind: holder-share, entity: '{holders}', measure: '{contents}', value: holders, position: '{holders.span_start}',
     marker: '{holders.qualifier}', per_member: contents}
+  where:
+  - attribute_compatible: {attribute: local_prep, noun: local, when_declared: true}
+  - number_compatible: [each, verb]
 - id: arithmetic/holder-prefix-combined-1-bare
   phase: read
   description: An exhaustive holder population and an equal-content initial group.
@@ -81,22 +104,30 @@ rules:
     - {slot: cop, cat: plural_copula}
     - {slot: population, cat: ordinal_quantity_holder, counted: true, bare: true}
     - {lit: and}
-    - {slot: holders, cat: ordinal_quantity_holder, counted: true, qualified: true, qualifier_cat: holder_prefix_order}
-    - {lit: each}
+    - {lit: the, consume_skipped: true}
+    - {slot: holders, cat: ordinal_quantity_holder, counted: true, qualified: true, qualifier_cat: holder_prefix_order, all_qualifiers: true}
+    - {slot: each, cat: postpositive_distributive_quantifier}
     - {slot: verb, cat: possession_state, finite_form: true}
     - {slot: contents, cat: ownable_quantity_object, counted: true, bare: true}
     - opt:
       - {slot: local_prep, cat: spatial_location_preposition}
-      - {slot: local, cat: spatial_reference_noun, bare: true}
+      - {slot: local, cat: spatial_reference_noun, bare: true, referential: true, bare_reference_category: bare_pp_object}
     - {lit: ., consume_skipped: true}
   satisfies:
     cop: [subject]
+  bindings:
+    each: {collection: holders}
   consumes: [population, holders, contents]
   emits:
   - {fact: batch_evidence, kind: holder-population, entity: '{population}', measure: '{population}', value: population, position: '{population.span_start}',
     container: ''}
   - {fact: batch_evidence, kind: holder-share, entity: '{holders}', measure: '{contents}', value: holders, position: '{holders.span_start}',
     marker: '{holders.qualifier}', per_member: contents}
+  where:
+  - attribute_compatible: {attribute: local_prep, noun: local, when_declared: true}
+  - same_lemma: [population, holders]
+  - number_compatible: [population, cop]
+  - number_compatible: [holders, verb]
 - id: arithmetic/holder-prefix-combined-1-located
   phase: read
   description: An exhaustive holder population and an equal-content initial group.
@@ -106,41 +137,55 @@ rules:
     - {slot: cop, cat: plural_copula}
     - {slot: population, cat: ordinal_quantity_holder, counted: true, bare: true}
     - {slot: place_prep, cat: spatial_location_preposition}
-    - {slot: place, cat: spatial_reference_noun, bare: true}
+    - {slot: place, cat: spatial_reference_noun, bare: true, referential: true, bare_reference_category: bare_pp_object}
     - {lit: and}
-    - {slot: holders, cat: ordinal_quantity_holder, counted: true, qualified: true, qualifier_cat: holder_prefix_order}
-    - {lit: each}
+    - {lit: the, consume_skipped: true}
+    - {slot: holders, cat: ordinal_quantity_holder, counted: true, qualified: true, qualifier_cat: holder_prefix_order, all_qualifiers: true}
+    - {slot: each, cat: postpositive_distributive_quantifier}
     - {slot: verb, cat: possession_state, finite_form: true}
     - {slot: contents, cat: ownable_quantity_object, counted: true, bare: true}
     - opt:
       - {slot: local_prep, cat: spatial_location_preposition}
-      - {slot: local, cat: spatial_reference_noun, bare: true}
+      - {slot: local, cat: spatial_reference_noun, bare: true, referential: true, bare_reference_category: bare_pp_object}
     - {lit: ., consume_skipped: true}
   satisfies:
     cop: [subject]
+  bindings:
+    each: {collection: holders}
   consumes: [population, holders, contents]
   emits:
   - {fact: batch_evidence, kind: holder-population, entity: '{population}', measure: '{population}', value: population, position: '{population.span_start}',
     container: '{place_prep} {place}'}
   - {fact: batch_evidence, kind: holder-share, entity: '{holders}', measure: '{contents}', value: holders, position: '{holders.span_start}',
     marker: '{holders.qualifier}', per_member: contents}
+  where:
+  - attribute_compatible: {attribute: local_prep, noun: local, when_declared: true}
+  - attribute_compatible: {attribute: place_prep, noun: place, when_declared: true}
+  - same_lemma: [population, holders]
+  - number_compatible: [population, cop]
+  - number_compatible: [holders, verb]
 - id: arithmetic/holder-prefix-1
   phase: read
   description: A counted initial group of holders with equal contents.
   match:
     sentence:
-    - {slot: holders, cat: ordinal_quantity_holder, counted: true, qualified: true, qualifier_cat: holder_prefix_order, at_start:
-        true}
-    - {lit: each}
+    - {lit: the, at_start: true, consume_skipped: true}
+    - {slot: holders, cat: ordinal_quantity_holder, counted: true, qualified: true, qualifier_cat: holder_prefix_order, all_qualifiers: true}
+    - {slot: each, cat: postpositive_distributive_quantifier}
     - {slot: verb, cat: possession_state, finite_form: true}
     - {slot: contents, cat: ownable_quantity_object, counted: true, bare: true}
     - opt:
       - {slot: local_prep, cat: spatial_location_preposition}
-      - {slot: local, cat: spatial_reference_noun, bare: true}
+      - {slot: local, cat: spatial_reference_noun, bare: true, referential: true, bare_reference_category: bare_pp_object}
     - {lit: ., consume_skipped: true}
+  bindings:
+    each: {collection: holders}
   consumes: [holders, contents]
   emits:
   - *holder_share_evidence
+  where:
+  - attribute_compatible: {attribute: local_prep, noun: local, when_declared: true}
+  - number_compatible: [holders, verb]
 - id: arithmetic/holder-prefix-combined-2-bare
   phase: read
   description: An exhaustive holder population and an equal-content initial group.
@@ -150,22 +195,30 @@ rules:
     - {slot: cop, cat: plural_copula}
     - {slot: population, cat: ordinal_quantity_holder, counted: true, bare: true}
     - {lit: and}
-    - {slot: holders, cat: ordinal_quantity_holder, counted: true, qualified: true, qualifier_cat: holder_prefix_order}
+    - {lit: the, consume_skipped: true}
+    - {slot: holders, cat: ordinal_quantity_holder, counted: true, qualified: true, qualifier_cat: holder_prefix_order, all_qualifiers: true}
     - {slot: verb, cat: possession_state, finite_form: true}
     - {slot: contents, cat: ownable_quantity_object, counted: true, bare: true}
-    - {lit: each}
+    - {slot: each, cat: postpositive_distributive_quantifier}
     - opt:
       - {slot: local_prep, cat: spatial_location_preposition}
-      - {slot: local, cat: spatial_reference_noun, bare: true}
+      - {slot: local, cat: spatial_reference_noun, bare: true, referential: true, bare_reference_category: bare_pp_object}
     - {lit: ., consume_skipped: true}
   satisfies:
     cop: [subject]
+  bindings:
+    each: {collection: holders}
   consumes: [population, holders, contents]
   emits:
   - {fact: batch_evidence, kind: holder-population, entity: '{population}', measure: '{population}', value: population, position: '{population.span_start}',
     container: ''}
   - {fact: batch_evidence, kind: holder-share, entity: '{holders}', measure: '{contents}', value: holders, position: '{holders.span_start}',
     marker: '{holders.qualifier}', per_member: contents}
+  where:
+  - attribute_compatible: {attribute: local_prep, noun: local, when_declared: true}
+  - same_lemma: [population, holders]
+  - number_compatible: [population, cop]
+  - number_compatible: [holders, verb]
 - id: arithmetic/holder-prefix-combined-2-located
   phase: read
   description: An exhaustive holder population and an equal-content initial group.
@@ -175,41 +228,55 @@ rules:
     - {slot: cop, cat: plural_copula}
     - {slot: population, cat: ordinal_quantity_holder, counted: true, bare: true}
     - {slot: place_prep, cat: spatial_location_preposition}
-    - {slot: place, cat: spatial_reference_noun, bare: true}
+    - {slot: place, cat: spatial_reference_noun, bare: true, referential: true, bare_reference_category: bare_pp_object}
     - {lit: and}
-    - {slot: holders, cat: ordinal_quantity_holder, counted: true, qualified: true, qualifier_cat: holder_prefix_order}
+    - {lit: the, consume_skipped: true}
+    - {slot: holders, cat: ordinal_quantity_holder, counted: true, qualified: true, qualifier_cat: holder_prefix_order, all_qualifiers: true}
     - {slot: verb, cat: possession_state, finite_form: true}
     - {slot: contents, cat: ownable_quantity_object, counted: true, bare: true}
-    - {lit: each}
+    - {slot: each, cat: postpositive_distributive_quantifier}
     - opt:
       - {slot: local_prep, cat: spatial_location_preposition}
-      - {slot: local, cat: spatial_reference_noun, bare: true}
+      - {slot: local, cat: spatial_reference_noun, bare: true, referential: true, bare_reference_category: bare_pp_object}
     - {lit: ., consume_skipped: true}
   satisfies:
     cop: [subject]
+  bindings:
+    each: {collection: holders}
   consumes: [population, holders, contents]
   emits:
   - {fact: batch_evidence, kind: holder-population, entity: '{population}', measure: '{population}', value: population, position: '{population.span_start}',
     container: '{place_prep} {place}'}
   - {fact: batch_evidence, kind: holder-share, entity: '{holders}', measure: '{contents}', value: holders, position: '{holders.span_start}',
     marker: '{holders.qualifier}', per_member: contents}
+  where:
+  - attribute_compatible: {attribute: local_prep, noun: local, when_declared: true}
+  - attribute_compatible: {attribute: place_prep, noun: place, when_declared: true}
+  - same_lemma: [population, holders]
+  - number_compatible: [population, cop]
+  - number_compatible: [holders, verb]
 - id: arithmetic/holder-prefix-2
   phase: read
   description: A counted initial group of holders with equal contents.
   match:
     sentence:
-    - {slot: holders, cat: ordinal_quantity_holder, counted: true, qualified: true, qualifier_cat: holder_prefix_order, at_start:
-        true}
+    - {lit: the, at_start: true, consume_skipped: true}
+    - {slot: holders, cat: ordinal_quantity_holder, counted: true, qualified: true, qualifier_cat: holder_prefix_order, all_qualifiers: true}
     - {slot: verb, cat: possession_state, finite_form: true}
     - {slot: contents, cat: ownable_quantity_object, counted: true, bare: true}
-    - {lit: each}
+    - {slot: each, cat: postpositive_distributive_quantifier}
     - opt:
       - {slot: local_prep, cat: spatial_location_preposition}
-      - {slot: local, cat: spatial_reference_noun, bare: true}
+      - {slot: local, cat: spatial_reference_noun, bare: true, referential: true, bare_reference_category: bare_pp_object}
     - {lit: ., consume_skipped: true}
+  bindings:
+    each: {collection: holders}
   consumes: [holders, contents]
   emits:
   - *holder_share_evidence
+  where:
+  - attribute_compatible: {attribute: local_prep, noun: local, when_declared: true}
+  - number_compatible: [holders, verb]
 - id: arithmetic/holder-population-bare
   phase: read
   description: An explicitly counted holder population, scoped to its location.
@@ -251,13 +318,15 @@ rules:
     - {lit: of}
     - {slot: contents, cat: ownable_quantity_object, counted: true, bare: true}
     - {slot: place_prep, cat: spatial_location_preposition}
-    - {slot: place, cat: spatial_reference_noun, bare: true}
+    - {slot: place, cat: spatial_reference_noun, bare: true, referential: true, bare_reference_category: bare_pp_object}
     - {lit: ., consume_skipped: true}
   satisfies:
     cop: [subject]
   consumes: [contents]
   emits:
   - {fact: group_total, measure: '{contents}', value: contents, scope: '{place_prep} {place}', verb: have}
+  where:
+  - attribute_compatible: {attribute: place_prep, noun: place, when_declared: true}
 - id: arithmetic/holder-content-total-located-trailing
   phase: read
   description: A bounded content total with its explicit location.
@@ -267,7 +336,7 @@ rules:
     - {slot: cop, cat: plural_copula}
     - {slot: contents, cat: ownable_quantity_object, counted: true, bare: true}
     - {slot: place_prep, cat: spatial_location_preposition}
-    - {slot: place, cat: spatial_reference_noun, bare: true}
+    - {slot: place, cat: spatial_reference_noun, bare: true, referential: true, bare_reference_category: bare_pp_object}
     - opt:
       - {slot: total_prep, cat: group_total_preposition}
     - {slot: aggregate, cat: group_total_marker}
@@ -278,6 +347,7 @@ rules:
   emits:
   - {fact: group_total, measure: '{contents}', value: contents, scope: '{place_prep} {place}', verb: have}
   where:
+  - attribute_compatible: {attribute: place_prep, noun: place, when_declared: true}
   - {bound_requires_category: {bound: total_prep, slot: aggregate, cat: prepositional_group_total_marker}}
 - id: arithmetic/holder-prefix-subtotal-trailing
   phase: read

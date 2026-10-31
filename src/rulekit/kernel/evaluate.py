@@ -41,6 +41,7 @@ class LogEntry:
 @dataclass
 class ArithmeticLog:
     entries: list[LogEntry] = field(default_factory=list)
+    consumed_currency_price_keys: set[tuple] = field(default_factory=set)
     consumed_commercial_term_keys: set[tuple] = field(default_factory=set)
     consumed_component_keys: set[tuple] = field(default_factory=set)
     consumed_allocation_ratio_keys: set[tuple] = field(default_factory=set)

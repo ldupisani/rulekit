@@ -17,7 +17,7 @@ templates:
           - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: {
                 parameter: subject_start}}
           - {slot: spend, cat: spend_verb, finite_form: true}
-          - {slot: amount, cat: currency_measure, counted: true}
+          - {slot: amount, cat: currency_unit, counted: true}
           - {lit: [a, per, each, every], consume_skipped: true}
           - {slot: period, cat: duration_measure, uncounted: true, bare: true}
           - {slot: on, cat: spend_target_prep}
@@ -178,7 +178,7 @@ rules:
       sentence:
         - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
         - {slot: charge, cat: service_tariff_verb, finite_form: true}
-        - {slot: amount, cat: currency_measure, counted: true}
+        - {slot: amount, cat: currency_unit, counted: true}
         - {slot: for, cat: price_for_marker}
         - {slot: each, cat: postpositive_distributive_quantifier}
         - {lit: '.', consume_skipped: true}

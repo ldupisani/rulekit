@@ -34,6 +34,7 @@ categories:
     notes: Clothing and wearable accessories grouped as one shopping collection.
     disjoint_with: [building, vehicle]
   ingredient:
+    includes: [fruit]
     parent: noun
     notes: Purchased food inputs, not a license to include unrelated purchases.
   equal_division_verb:

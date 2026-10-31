@@ -343,6 +343,11 @@ def _check_number(
 
     if _enabled(reg, "answer-accounting") and store is not None:
         from .model import Price
+        from .monetary import canonical_currency
+        if any(p.measure and not p.per and p.measure != canonical_currency(reg)
+               and p.key() not in log.consumed_currency_price_keys
+               for p in store.by_kind(Price)):
+            return GuardVeto("answer-accounting", "a concrete price denomination was not converted")
         if any(p.per and p.key() not in log.consumed_quoted_price_keys
                for p in store.by_kind(Price)):
             return GuardVeto("answer-accounting", "an explicitly scoped package price was not used")

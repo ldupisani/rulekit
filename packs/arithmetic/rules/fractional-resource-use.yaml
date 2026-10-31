@@ -14,7 +14,8 @@ templates:
           - opt:
               - {lit: to}
               - {slot: make, cat: commercial_production_verb, bare_form: true}
-              - {slot: product, cat: fabrication_product, uncounted: true, bare: true, referential: true}
+              - {slot: product, cat: fabrication_product, uncounted: true, bare: true, referential: true,
+                  bare_reference_category: mass_quantity_noun}
           - {lit: '.', consume_skipped: true}
       consumes: [acquire, amount, make]
       where:
@@ -31,7 +32,7 @@ templates:
       generation: reader-only
       context: null
       prefix: []
-      source: [{slot: pool, cat: pool_pronoun}]
+      reference: [{lit: of}, {slot: pool, cat: pool_pronoun}]
       actor: ''
       material: ''
       basis: opening
@@ -46,10 +47,10 @@ templates:
         sentence:
           - {parameter: prefix}
           - {slot: fraction, type: fraction, fraction_within_whole: true}
-          - {lit: of}
-          - {parameter: source}
+          - {parameter: reference}
           - {slot: for, cat: purpose_preposition}
-          - {slot: product, cat: fabrication_product, uncounted: true, referential: true}
+          - {slot: product, cat: fabrication_product, uncounted: true, referential: true,
+              bare_reference_category: mass_quantity_noun}
       consumes: [fraction, {parameter: predicates}]
       satisfies: {parameter: satisfaction}
       where: {parameter: guards}
@@ -69,7 +70,7 @@ variants:
     template: fractional-resource-use
     arguments:
       generation: contextual
-      context:
+      context: &fractional_opening_stock_context
         before: &measured_stock_supporting_sentences
           - sentence:
               - {slot: context_actor, type: name}
@@ -83,11 +84,11 @@ variants:
               - slot_not_category: {slot: context_acquire, cat: measured_content_adjustment_verb}
         target_identity_links: {context_actor: who}
         required_fact_counts: {region_evidence: 1}
-      prefix:
+      prefix: &fractional_use_actor_prefix
         - {slot: who, type: entity, common_noun_cat: resource_user, referential: true, bare: true, at_start: true}
         - {slot: use, cat: resource_usage_verb, finite_form: true}
       actor: '{who}'
-      guards: [{number_compatible: [who, use]}]
+      guards: &fractional_use_actor_guards [{number_compatible: [who, use]}]
       predicates: [use]
       satisfaction: {use: [subject]}
   - id: arithmetic/fractional-resource-use-continuation
@@ -109,7 +110,9 @@ variants:
       guards: [{number_compatible: [who, use]}]
       predicates: [use]
       satisfaction: {use: [subject]}
-      source:
+      reference:
+        - {lit: of}
+        - opt: [{lit: the, consume_skipped: true}]
         - {slot: source, cat: material_resource, uncounted: true, qualified: true,
             qualifier_cat: prenominal_remnant_adj, all_qualifiers: true, class_only: true}
       material: '{source}'
@@ -118,10 +121,78 @@ variants:
     template: fractional-resource-use
     arguments:
       prefix: [opt: [{lit: and}]]
-      source:
+      reference:
+        - {lit: of}
+        - opt: [{lit: the, consume_skipped: true}]
         - {slot: source, cat: material_resource, uncounted: true, qualified: true,
             qualifier_cat: prenominal_remnant_adj, all_qualifiers: true, class_only: true}
       material: '{source}'
+      basis: remainder
+  - id: arithmetic/fractional-resource-named-use
+    template: fractional-resource-use
+    arguments:
+      generation: contextual
+      context:
+        before: *measured_stock_supporting_sentences
+        target_identity_links: {context_actor: who, context_material: source}
+        required_fact_counts: {region_evidence: 1}
+      prefix: *fractional_use_actor_prefix
+      actor: '{who}'
+      guards: *fractional_use_actor_guards
+      predicates: [use]
+      satisfaction: {use: [subject]}
+      reference: &named_fractional_stock_reference
+        - {lit: of}
+        - {lit: the, consume_skipped: true}
+        - {slot: source, cat: material_resource, uncounted: true, bare: true}
+      material: '{source}'
+  - id: arithmetic/fractional-resource-named-use-continuation
+    template: fractional-resource-use
+    arguments:
+      prefix: [opt: [{lit: and}]]
+      reference: *named_fractional_stock_reference
+      material: '{source}'
+  - id: arithmetic/fractional-resource-elided-use
+    template: fractional-resource-use
+    arguments:
+      generation: contextual
+      context: *fractional_opening_stock_context
+      prefix: *fractional_use_actor_prefix
+      actor: '{who}'
+      guards: *fractional_use_actor_guards
+      predicates: [use]
+      satisfaction: {use: [subject]}
+      reference: []
+  - id: arithmetic/fractional-resource-elided-use-continuation
+    template: fractional-resource-use
+    arguments:
+      prefix: [opt: [{lit: and}]]
+      reference: []
+  - id: arithmetic/fractional-resource-residual-use
+    template: fractional-resource-use
+    arguments:
+      generation: contextual
+      context: *fractional_opening_stock_context
+      prefix: *fractional_use_actor_prefix
+      actor: '{who}'
+      guards: *fractional_use_actor_guards
+      predicates: [use]
+      satisfaction: {use: [subject]}
+      reference: &residual_fractional_stock_reference
+        - {lit: of}
+        - {lit: the, consume_skipped: true}
+        - {slot: residue, cat: quantity_remnant_noun, uncounted: true, bare: true}
+        - opt:
+            - {lit: of}
+            - {slot: source, cat: material_resource, uncounted: true, bare: true, referential: true}
+      material: '{source.optional}'
+      basis: remainder
+  - id: arithmetic/fractional-resource-residual-use-continuation
+    template: fractional-resource-use
+    arguments:
+      prefix: [opt: [{lit: and}]]
+      reference: *residual_fractional_stock_reference
+      material: '{source.optional}'
       basis: remainder
 asks:
   - id: ask/measured-remainder-after-production-varieties

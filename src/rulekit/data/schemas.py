@@ -618,6 +618,7 @@ class MatchToken(StrictModel):
     # OPT-IN inclusive scalar bounds. These are generic numeric structure;
     # the meaning of a bound (for example, a four-digit calendar year) stays
     # in the rule pack that declares it.
+    value_positive: bool = False
     value_min: float | None = None
     value_max: float | None = None
     # OPT-IN: a fraction used as a part of one finite whole must remain in
@@ -846,6 +847,7 @@ class MatchToken(StrictModel):
                 or self.number is not None
                 or self.standalone
                 or self.integer
+                or self.value_positive
                 or self.value_min is not None
                 or self.value_max is not None
                 or self.fraction_within_whole
@@ -917,10 +919,10 @@ class MatchToken(StrictModel):
         if self.integer and self.type != "number":
             raise ValueError("`integer` only qualifies a `type: number` slot")
         if (
-            self.value_min is not None or self.value_max is not None
+            self.value_positive or self.value_min is not None or self.value_max is not None
         ) and self.type not in {"number", "counted"} and not self.counted:
             raise ValueError(
-                "`value_min`/`value_max` only qualify a `type: number` "
+                "`value_positive`/`value_min`/`value_max` only qualify a `type: number` "
                 "or counted slot"
             )
         if (
@@ -1018,6 +1020,8 @@ class AttributeCompatibilityPredicate(StrictModel):
 
     attribute: str
     noun: str
+    # Optional boundary: undeclared descriptors retain the existing open frame.
+    when_declared: bool = False
 
 
 class ModifierHostCompatibilityPredicate(StrictModel):
@@ -1788,6 +1792,10 @@ class PatternRule(StrictModel):
     # slot. Unlike `satisfies`, this retains a real Unit target. All forms
     # sharing a target need a declared compatible anaphoric paradigm; a
     # repeated explicit name must denote that exact target.
+    # Complete-construction role links retain real Unit targets. Unlike
+    # references these bind a grammatical need (e.g. each.collection), not
+    # an anaphoric identity; unlike satisfies they never use a sentinel.
+    bindings: dict[str, dict[str, str]] = Field(default_factory=dict)
     references: dict[str, str] = Field(default_factory=dict)
     emits: list[FactEmit] = Field(default_factory=list)
     overrides: dict[str, str] | None = None  # {"rule": id, "reason": ...}

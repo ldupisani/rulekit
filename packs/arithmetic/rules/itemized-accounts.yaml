@@ -306,7 +306,7 @@ templates:
         - parameter: subject.tokens
         - parameter: quote
         - bare: true
-          cat: currency_measure
+          cat: currency_unit
           counted: true
           slot: price
         - parameter: ending

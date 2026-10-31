@@ -1202,6 +1202,10 @@ def _qualify_domain(
             if isinstance(filler.value, (int, float))
             and float(filler.value) > 0.0
         ]
+    if token.value_positive:
+        fillers = [filler for filler in fillers
+                   if isinstance(filler.value, (int, float))
+                   and 0 < float(filler.value) < float("inf")]
     if token.value_min is not None:
         fillers = [
             filler
@@ -1970,7 +1974,8 @@ def _rule_blockers(
                 attribute_token is None
                 or noun_token is None
                 or not any(
-                    reg.attribute_applies_to(attribute.identity, noun.identity)
+                    reg.attribute_applies_to(attribute.identity, noun.identity,
+                                             when_declared=pred.attribute_compatible.when_declared)
                     for attribute in safe_domain(attribute_token)
                     for noun in safe_domain(noun_token)
                 )
@@ -2466,7 +2471,7 @@ def _constraint_groups(
     category_bound_requirements: list[tuple[str, str, str]] = []
     bound_form_requirements: list[tuple[str, str, str]] = []
     same_presence: list[set[str]] = []
-    attribute_pairs: list[tuple[str, str]] = []
+    attribute_pairs: list[tuple[str, str, bool]] = []
     adverb_verb_pairs: list[tuple[str, str]] = []
     modifier_host_pairs: list[tuple[str, str, str | None, str, str | None]] = []
     verb_role_requirements: list[
@@ -2575,6 +2580,7 @@ def _constraint_groups(
                 (
                     pred.attribute_compatible.attribute,
                     pred.attribute_compatible.noun,
+                    pred.attribute_compatible.when_declared,
                 )
             )
         if pred.adverb_verb_compatible is not None:
@@ -2666,7 +2672,7 @@ def _allowed_fillers(
     category_nonoverlap_groups: list[set[str]],
     distinct_owner_groups: list[set[str]],
     distinct_measure_groups: tuple[tuple[str, ...], ...],
-    attribute_pairs: list[tuple[str, str]],
+    attribute_pairs: list[tuple[str, str, bool]],
     adverb_verb_pairs: list[tuple[str, str]],
     tokens_by_slot: dict[str, MatchToken],
     active_slots: set[str],
@@ -3144,12 +3150,12 @@ def _allowed_fillers(
                 ):
                     return False
 
-        for attribute_name, noun_name in attribute_pairs:
+        for attribute_name, noun_name, when_declared in attribute_pairs:
             noun = known_identity(noun_name)
             attribute = known_identity(attribute_name)
             if token.slot == attribute_name and noun is not None:
                 if not reg.attribute_applies_to(
-                    filler.identity, noun
+                    filler.identity, noun, when_declared=when_declared
                 ):
                     return False
             if (
@@ -3157,14 +3163,14 @@ def _allowed_fillers(
                 and noun is None
                 and noun_name in active_slots
                 and not any(
-                    reg.attribute_applies_to(filler.identity, candidate)
+                    reg.attribute_applies_to(filler.identity, candidate, when_declared=when_declared)
                     for candidate in possible_identities(noun_name)
                 )
             ):
                 return False
             if token.slot == noun_name and attribute is not None:
                 if not reg.attribute_applies_to(
-                    attribute, filler.identity
+                    attribute, filler.identity, when_declared=when_declared
                 ):
                     return False
             if (
@@ -3172,7 +3178,7 @@ def _allowed_fillers(
                 and attribute is None
                 and attribute_name in active_slots
                 and not any(
-                    reg.attribute_applies_to(candidate, filler.identity)
+                    reg.attribute_applies_to(candidate, filler.identity, when_declared=when_declared)
                     for candidate in possible_identities(attribute_name)
                 )
             ):
@@ -4399,7 +4405,7 @@ def _bindings(result: RuleMatchResult) -> dict[str, str]:
     }
 
 
-def _binding_key(surface: str, reg: Registry) -> tuple[str, ...]:
+def _binding_key(surface: str, reg: Registry, sense: str | None = None) -> tuple[str, ...]:
     """Canonical content units for one requested or matched slot surface.
 
     Generated fillers may include an article that the ordinary matcher skips,
@@ -4410,11 +4416,16 @@ def _binding_key(surface: str, reg: Registry) -> tuple[str, ...]:
     """
 
     reading = analyze(surface, reg, tracing=False)
-    return tuple(
-        _unit_lemma(unit, reg).casefold()
-        for unit in reading.units
-        if unit.sense() not in SKIPPABLE_SENSES
-    )
+    def content(unit):
+        if unit.sense() not in SKIPPABLE_SENSES:
+            return True
+        entry = reg.lexicon.get(unit.features.get("fold", ""))
+        # An isolated demonstrative can prefer its determiner sense. The
+        # matched slot supplies its grammatical role; retain that licensed
+        # content sense rather than dropping a correctly bound pronoun.
+        return bool(sense and sense not in SKIPPABLE_SENSES and entry
+                    and sense in entry.senses)
+    return tuple(_unit_lemma(unit, reg).casefold() for unit in reading.units if content(unit))
 
 
 def _strict_round_trip_result(
@@ -4439,7 +4450,9 @@ def _strict_round_trip_result(
     }
     if any(
         slot not in actual
-        or _binding_key(surface, reg) != actual[slot]
+        or _binding_key(surface, reg,
+                        result.match.slots[slot].sense()
+                        if isinstance(result.match.slots[slot], Unit) else None) != actual[slot]
         for slot, surface in requested_bindings.items()
     ):
         return False
@@ -4913,6 +4926,8 @@ def _token_expression(token: MatchToken) -> str:
         gates.append("standalone")
     if token.integer:
         gates.append("integer")
+    if token.value_positive:
+        gates.append("value > 0")
     if token.value_min is not None:
         gates.append(f"value >= {token.value_min:g}")
     if token.value_max is not None:
@@ -5114,7 +5129,7 @@ def _where_expression(rule: PatternRule, index: int) -> tuple[str, tuple[str, ..
     elif kind == "attribute_compatible":
         names = (value.attribute, value.noun)
         rendered = (
-            f"attribute={value.attribute!r}, noun={value.noun!r}"
+            f"attribute={value.attribute!r}, noun={value.noun!r}, when_declared={value.when_declared!r}"
         )
     elif kind == "modifier_host_compatible":
         names = tuple(
@@ -5579,6 +5594,8 @@ def _where_reason(
         attribute = _unit_lemma(attribute_units[0], reg)
         noun = _unit_lemma(noun_units[0], reg)
         pairs = reg.attribute_compatibility_pairs(attribute, noun)
+        if not pairs and pred.attribute_compatible.when_declared:
+            return f"{attribute_name}={attribute!r} has no declared descriptor boundary"
         rendered = ", ".join(
             f"{attribute_category} → {noun_category}"
             for attribute_category, noun_category in pairs

@@ -50,7 +50,7 @@ rules:
       number: singular
     - lit: for
     - slot: price
-      cat: currency_measure
+      cat: currency_unit
       counted: true
     - lit: .
       consume_skipped: true
@@ -103,7 +103,7 @@ rules:
       uncounted: true
     - lit: for
     - slot: price
-      cat: currency_measure
+      cat: currency_unit
       counted: true
     - lit: per
     - slot: unit
@@ -154,7 +154,7 @@ rules:
       uncounted: true
     - lit: for
     - slot: price
-      cat: currency_measure
+      cat: currency_unit
       counted: true
     - lit: per
     - slot: unit
@@ -205,7 +205,7 @@ rules:
       uncounted: true
     - lit: for
     - slot: price
-      cat: currency_measure
+      cat: currency_unit
       counted: true
     - lit: per
     - slot: unit
@@ -282,7 +282,7 @@ rules:
       number: singular
     - lit: for
     - slot: price
-      cat: currency_measure
+      cat: currency_unit
       counted: true
     - lit: and
     - slot: fill

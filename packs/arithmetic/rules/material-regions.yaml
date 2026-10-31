@@ -737,12 +737,16 @@ templates:
       disambiguates: []
       material: '{material}'
       agreement: []
+      terminator: '?'
     rule:
       match:
         question:
         - {parameter: head}
         - {parameter: tail}
-        - {lit: '?', consume_skipped: true}
+        - opt:
+            - {slot: final_prep, cat: completion_frame_preposition}
+            - {slot: boundary, cat: completion_boundary_noun, uncounted: true, bare: true, referential: true}
+        - {lit: {parameter: terminator}, consume_skipped: true}
       satisfies: {parameter: satisfies}
       disambiguates: {parameter: disambiguates}
       where: {parameter: agreement}
@@ -1792,3 +1796,75 @@ ask_variants:
     unit: '{unit}'
     satisfies: {be: [subject]}
     disambiguates: [amount_word, remnant]
+- id: ask/measured-remainder-mass-period-left
+  template: measured-remainder-question
+  arguments:
+    head: &mass_remainder_unit_head
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: unit, cat: mass_unit, uncounted: true, number: plural, bare: true}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail: &measured_left_predicate
+    - {slot: be, cat: copula}
+    - {slot: remaining, cat: remnant_adj}
+    quantity: mass
+    unit: '{unit}'
+    satisfies: {be: [subject]}
+    disambiguates: [remaining]
+    terminator: '.'
+- id: ask/measured-remainder-mass-period-remains
+  template: measured-remainder-question
+  arguments:
+    head: *mass_remainder_unit_head
+    tail: &measured_remains_predicate
+    - {slot: remain, cat: resource_remnant_verb, finite_form: true}
+    quantity: mass
+    unit: '{unit}'
+    terminator: '.'
+- id: ask/measured-remainder-volume-period-left
+  template: measured-remainder-question
+  arguments:
+    head: &volume_remainder_unit_head
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: unit, cat: volume_measure, uncounted: true, number: plural, bare: true}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail: *measured_left_predicate
+    quantity: volume
+    unit: '{unit}'
+    satisfies: {be: [subject]}
+    disambiguates: [remaining]
+    terminator: '.'
+- id: ask/measured-remainder-volume-period-remains
+  template: measured-remainder-question
+  arguments:
+    head: *volume_remainder_unit_head
+    tail: *measured_remains_predicate
+    quantity: volume
+    unit: '{unit}'
+    terminator: '.'
+- id: ask/measured-remainder-length-period-left
+  template: measured-remainder-question
+  arguments:
+    head: &length_remainder_unit_head
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: unit, cat: length_unit, uncounted: true, number: plural, bare: true}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    tail: *measured_left_predicate
+    quantity: length
+    unit: '{unit}'
+    satisfies: {be: [subject]}
+    disambiguates: [remaining]
+    terminator: '.'
+- id: ask/measured-remainder-length-period-remains
+  template: measured-remainder-question
+  arguments:
+    head: *length_remainder_unit_head
+    tail: *measured_remains_predicate
+    quantity: length
+    unit: '{unit}'
+    terminator: '.'

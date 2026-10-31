@@ -152,7 +152,7 @@ rules:
     sentence:
     - {slot: who, type: entity, common_noun_cat: resource_user, referential: true, at_start: true}
     - {slot: keep, cat: retention_verb, finite_form: true}
-    - {slot: amount, cat: currency_measure, counted: true}
+    - {slot: amount, cat: currency_unit, counted: true}
     - {lit: and}
     - {slot: divide, cat: allocation_transfer_verb, finite_form: true}
     - {slot: rest, cat: remnant}

@@ -2419,13 +2419,10 @@ class Price(Fact):
     per: str | None = None
 
     def key(self) -> tuple:
-        if self.per:
+        if self.per or self.measure:
             return ("price", self.item, self.qualifier, self.per, self.measure,
                     self.verb, self.occurrence)
         return ("price", self.item, self.verb, self.occurrence)
-
-    def value_part(self) -> Any:
-        return self.value
 
     def value_part(self) -> Any:
         return self.value

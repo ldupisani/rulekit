@@ -379,12 +379,20 @@ def _purchase_total(
     ):
         return None
     prices = {p.item: p for p in store.by_kind(Price)}
+    from .monetary import price_terms
+    if any(len({price_terms(p, reg) for p in store.by_kind(Price) if p.item == item}) != 1
+           for item in prices):
+        return None
     lines: list[tuple[float, float]] = []
     for q in buys:
         price = prices.get(q.measure)
         if price is None:
             return None
-        lines.append((q.value, price.value))
+        from .monetary import canonical_price
+        unit_price = canonical_price(price, reg, log)
+        if unit_price is None:
+            return None
+        lines.append((q.value, unit_price))
     if any(isinstance(f, Discount) for f in store.quarantined):
         return None  # two or more stated discounts — ambiguous, decline
     discounts = store.by_kind(Discount)

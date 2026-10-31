@@ -1,5 +1,8 @@
 format: rulekit/conversions@1
 conversions:
+- from: cent
+  to: dollar
+  factor: 0.01
 - from: year
   to: month
   factor: 12

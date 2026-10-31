@@ -2410,7 +2410,7 @@ entries:
     - noun
   during: {senses: [preposition]}
   dvd: {senses: [noun], plural: dvds}
-  each: {senses: [quantifier], notes: distributive; singular agreement}
+  each: {senses: [quantifier], number: singular, notes: distributive; singular agreement}
   ear:
     senses:
     - noun

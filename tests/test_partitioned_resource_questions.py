@@ -468,3 +468,82 @@ def test_evidence_generation_preserves_an_explicit_task_reference(project):
                                    identity_bindings=identities, locked_bindings=surfaces)
     assert candidate.target_status == "matched"
     assert any(f["fields"].get("task") == "puzzle" for f in candidate.facts)
+
+
+@pytest.mark.parametrize("front", [
+    "What is the total amount of money those 48 workers get",
+    "How much money do those 48 workers receive",
+])
+@pytest.mark.parametrize("period", ["per day", "each day", "every day", "a day", "in a day"])
+def test_population_total_questions_share_period_wording(registry, front, period):
+    premises = population().split("what is", 1)[0]
+    number(premises + f"{front} {period}?", registry, 312)
+
+
+def test_qualified_population_and_unattributed_rates_compose(registry):
+    text = population().replace("of the workers", "of farm workers", 1)
+    text = text.replace("According to her survey, half", "Half")
+    text = text.replace("get in a day?", "get per day?")
+    result = number(text, registry, 312)
+    assert any(getattr(f, "kind", None) == "population-rate-inquiry"
+               and f.container_ref.qualifiers == ("farm",) for f in result.facts())
+
+
+@pytest.mark.parametrize("period,expected", [("per hour", 78), ("each hour", 78), ("every hour", 78),
+                                            ("an hour", 78), ("in an hour", 78), ("per day", 1872)])
+def test_other_recipients_and_converted_periods_use_the_same_total(registry, period, expected):
+    text = ("Fia surveyed 12 machines. Half of the machines receive an average of $8 per hour "
+            "while the rest gets an average of $5 an hour. "
+            f"What is the total amount of money those 12 machines get {period}?")
+    number(text, registry, expected)
+
+
+def test_population_rate_total_can_request_a_larger_period(registry):
+    number(population().replace("get in a day?", "get per week?"), registry, 2184)
+
+
+@pytest.mark.parametrize("ending", [
+    "in per day", "per a day", "per the day", "each a day", "in the a day",
+    "per meter", "per two days", "per day and per hour", "per day at the end", "",
+])
+def test_population_period_questions_reject_incomplete_or_conflicting_bases(registry, ending):
+    text = population().replace("get in a day?", f"get {ending}?")
+    assert not solve(text, registry).answer.committed
+
+
+@pytest.mark.parametrize("change", [
+    ("those 48 workers", "those 50 workers"),
+    ("those 48 workers", "those 48 students"),
+    ("those 48 workers", "those 48 farm workers"),
+    ("48 workers,", "48 students,"),
+    ("half of the workers", "2/5 of the workers"),
+    ("while the rest gets an average of $5 a day", ""),
+])
+def test_rate_wording_preserves_population_and_partition_boundaries(registry, change):
+    text = population().replace("get in a day?", "get per day?").replace(*change)
+    assert not solve(text, registry).answer.committed
+
+
+@pytest.mark.parametrize("ask_id", [
+    "ask/population-total-periodic-amount", "ask/population-total-periodic-amount-rate",
+    "ask/population-total-periodic-money", "ask/population-total-periodic-money-interval",
+])
+def test_population_period_ask_variants_generate_and_round_trip(project, ask_id):
+    from rulekit.generation import generate_ask_scenario
+    candidate = generate_ask_scenario(project, ask_id=ask_id, seed=307)
+    result = solve(candidate.question, project.registry)
+    from rulekit.kernel.patterns import match_ask
+    matched = match_ask(result.question, project.registry)
+    assert matched is not None
+    assert matched[0].id == ask_id
+    assert matched[1]['consumer'] == 'population-rate-total'
+    assert matched[1]['period']
+
+
+@pytest.mark.parametrize("front", [
+    "What is the total amount of money those 48 workers gets per day?",
+    "What is the total amounts of money those 48 workers get per day?",
+    "How much money does those 48 workers receive per day?",
+])
+def test_population_period_questions_require_number_agreement(registry, front):
+    assert not solve(population().split('what is', 1)[0] + front, registry).answer.committed

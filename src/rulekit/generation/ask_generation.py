@@ -430,7 +430,7 @@ def _ask_filler_satisfies_known_where(
                 attribute is not None
                 and noun is not None
                 and not reg.attribute_applies_to(
-                    attribute.identity, noun.identity
+                    attribute.identity, noun.identity, when_declared=compatibility.when_declared
                 )
             ):
                 return False

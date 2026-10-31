@@ -21,7 +21,7 @@ rules:
         - {slot: receive, cat: periodic_income_verb, finite_form: true}
         - {slot: average, cat: mean_aggregate}
         - {lit: of}
-        - {slot: amount, cat: currency_measure, counted: true, bare: true}
+        - {slot: amount, cat: currency_unit, counted: true, bare: true}
         - opt: [{slot: attribute, cat: periodic_rate_attribute, uncounted: true, bare: true}]
         - {lit: [a, an, per, each, every], consume_skipped: true}
         - {slot: period, cat: duration_measure, uncounted: true, bare: true}
@@ -42,7 +42,7 @@ rules:
         - {slot: receive, cat: periodic_income_verb, finite_form: true}
         - {slot: average, cat: mean_aggregate}
         - {lit: of}
-        - {slot: amount, cat: currency_measure, counted: true, bare: true}
+        - {slot: amount, cat: currency_unit, counted: true, bare: true}
         - opt: [{slot: attribute, cat: periodic_rate_attribute, uncounted: true, bare: true}]
         - {lit: [a, an, per, each, every], consume_skipped: true}
         - {slot: period, cat: duration_measure, uncounted: true, bare: true}
@@ -92,6 +92,47 @@ templates:
       emits:
         - {fact: batch_evidence, kind: population-rate-inquiry, entity: '{who}', measure: '{attribute}',
             container: '{population}', marker: {parameter: frequency}, value: 0, position: '{who.span_start}'}
+  # Combined periodic amounts share the population and unit contract across question fronts.
+  population-total-periodic:
+    parameters:
+      question_frame:
+        tokens:
+          - {lit: what, at_start: true}
+          - {slot: be, cat: singular_copula}
+          - {slot: total, cat: prenominal_group_total_marker}
+          - {slot: amount, cat: aggregate_noun, uncounted: true, bare: true, number: singular}
+          - {lit: of}
+          - {slot: money, cat: currency, uncounted: true, bare: true}
+          - opt: [{lit: the, consume_skipped: true}]
+          - {slot: population, cat: rate_population, counted: true}
+          - {slot: receive, cat: periodic_income_verb, finite_form: true}
+        satisfaction: {be: [subject], receive: [subject]}
+        disambiguation: []
+        constraints: [{number_compatible: [population, receive]}]
+        generation:
+          slot_categories:
+            amount: [allocation_amount_noun]
+            money: [mass_currency_noun]
+      period_frame:
+        - opt: [{lit: in, blocks_skipped: article}]
+        - {lit: [a, an], consume_skipped: true, blocks_skipped: article}
+        - {slot: period, cat: duration_measure, uncounted: true, bare: true}
+    rule:
+      match:
+        question:
+          - {parameter: question_frame.tokens}
+          - {parameter: period_frame}
+          - {lit: '?', consume_skipped: true}
+      satisfies: {parameter: question_frame.satisfaction}
+      disambiguates: {parameter: question_frame.disambiguation}
+      generation: {parameter: question_frame.generation}
+      where: {parameter: question_frame.constraints}
+      resolves:
+        consumer: population-rate-total
+        member: '{population}'
+        population: '{population.value}'
+        measure: '{money}'
+        period: '{period}'
 variants:
   - {id: arithmetic/population-rate-inquiry, template: population-rate-inquiry}
   - id: arithmetic/population-rate-inquiry-qualified-attribute
@@ -101,46 +142,35 @@ variants:
         - {slot: attribute, cat: periodic_rate_attribute, uncounted: true, qualified: true, qualifier_cat: mean_aggregate, all_qualifiers: true}
       consumed: []
       frequency: ''
-asks:
+ask_variants:
   - id: ask/population-total-periodic-amount
-    match:
-      question:
-        - {lit: what, at_start: true}
-        - {slot: be, cat: singular_copula}
-        - {slot: total, cat: group_total_marker}
-        - {slot: amount, cat: aggregate_noun, uncounted: true, bare: true}
-        - {lit: of}
-        - {slot: money, cat: currency, uncounted: true, bare: true}
-        - {slot: population, cat: rate_population, counted: true}
-        - {slot: receive, cat: periodic_income_verb, finite_form: true}
-        - {lit: in}
-        - {lit: [a, an], consume_skipped: true}
-        - {slot: period, cat: duration_measure, uncounted: true, bare: true}
-        - {lit: '?', consume_skipped: true}
-    satisfies: {be: [subject], receive: [subject]}
-    resolves:
-      consumer: population-rate-total
-      member: '{population}'
-      population: '{population.value}'
-      measure: '{money}'
-      period: '{period}'
+    template: population-total-periodic
+  - id: ask/population-total-periodic-amount-rate
+    template: population-total-periodic
+    arguments:
+      period_frame: &population_periodic_rate_frame
+        - {lit: [per, each, every], consume_skipped: true, blocks_skipped: article}
+        - {slot: period, cat: duration_measure, uncounted: true, bare: true, blocks_skipped: article}
   - id: ask/population-total-periodic-money
-    match:
-      question:
-        - {lit: how, at_start: true}
-        - {slot: much, cat: mass_amount_interrogative}
-        - {slot: money, cat: currency, uncounted: true, bare: true}
-        - {slot: aux, cat: auxiliary}
-        - {slot: population, cat: rate_population, counted: true}
-        - {slot: receive, cat: periodic_income_verb, bare_form: true}
-        - {lit: per}
-        - {slot: period, cat: duration_measure, uncounted: true, bare: true}
-        - {lit: '?', consume_skipped: true}
-    satisfies: {receive: [subject]}
-    disambiguates: [much]
-    resolves:
-      consumer: population-rate-total
-      member: '{population}'
-      population: '{population.value}'
-      measure: '{money}'
-      period: '{period}'
+    template: population-total-periodic
+    arguments:
+      question_frame: &population_periodic_money_question
+        tokens:
+          - {lit: how, at_start: true}
+          - {slot: much, cat: mass_amount_interrogative}
+          - {slot: money, cat: currency, uncounted: true, bare: true}
+          - {slot: aux, cat: auxiliary}
+          - opt: [{lit: the, consume_skipped: true}]
+          - {slot: population, cat: rate_population, counted: true}
+          - {slot: receive, cat: periodic_income_verb, bare_form: true}
+        satisfaction: {receive: [subject]}
+        disambiguation: [much]
+        constraints: [{number_compatible: [population, aux]}]
+        generation:
+          slot_categories:
+            money: [mass_currency_noun]
+      period_frame: *population_periodic_rate_frame
+  - id: ask/population-total-periodic-money-interval
+    template: population-total-periodic
+    arguments:
+      question_frame: *population_periodic_money_question

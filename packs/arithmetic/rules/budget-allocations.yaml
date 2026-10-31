@@ -15,7 +15,7 @@ rules:
       bare: true
     - lit: of
     - slot: amount
-      cat: currency_measure
+      cat: currency_unit
       counted: true
       bare: true
     - opt:

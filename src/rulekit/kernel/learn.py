@@ -1617,7 +1617,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
             dobj is not None
             and dobj.features.get("value_kind") == "count"
             and dobj.sense() == "noun"
-            and reg.word_in_category(_lemma(dobj), "currency")
+            and reg.word_in_category(_lemma(dobj), "currency_unit")
         )
         if is_price_verb and dobj_is_currency:
             # "ITEM cost(s) $PRICE each" — the ITEM is the SUBJECT (not the
@@ -2297,4 +2297,6 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                     polarity=polarity,
                 )
             )
-    return facts
+    from .monetary import retain_price_currency
+    return [retain_price_currency(f, reading, reg) if isinstance(f, Price) else f
+            for f in facts]

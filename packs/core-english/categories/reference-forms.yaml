@@ -30,14 +30,19 @@ categories:
     - quantity_holder
     - quantity_container
   holder_prefix_order:
-    parent: adjective
+    parent: precardinal_attribute
   holder_ordinal:
     parent: adjective
   holder_terminal_order:
     parent: adjective
   person_title:
     parent: title
+  quantity_remnant_noun:
+    parent: noun
+    includes: [partition_remnant]
+    notes: A remaining quantity reference, without licensing a collective plural subject.
 members:
+  quantity_remnant_noun: [remainder]
   singular_animate_object_pronoun: [her, him]
   precardinal_attribute: [next]
   universal_item_reference: [everything]

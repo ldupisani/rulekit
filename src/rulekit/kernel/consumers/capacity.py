@@ -41,10 +41,14 @@ def capacity(ctx: ConsumerContext):
             "ask needs exactly one",
         )
     price = prices[0]
+    from math import isfinite
+    from ..monetary import canonical_currency, canonical_price, convert_money
+    unit_price = canonical_price(price, ctx.reg, ctx.log)
+    if unit_price is None:
+        return Answer("decline", None, "capacity needs a positive price in a declared currency unit")
     from ..account_totals import AccountTotal, has_resource_account, resolve_account
     if has_resource_account(ctx.store):
         from ..learn import price_quote_evidence
-        from math import isfinite
         if ctx.query.get("budget_value") is not None:
             return Answer("decline", None, "an additional asked budget cannot replace the stated account")
         if not isfinite(price.value) or price.value <= 0:
@@ -59,21 +63,26 @@ def capacity(ctx: ConsumerContext):
         account = resolve_account(ctx, extra_evidence=(price,))
         if not isinstance(account, AccountTotal):
             return account
-        if quote[0] != account.opening.measure:
-            return Answer("decline", None, "the unit price and resource account use different currencies")
-        count = evaluate(f"round({account.value} / {price.value}, 6) // 1", {}, ctx.log,
+        account_price = convert_money(price.value, quote[0], account.opening.measure, ctx.reg, ctx.log)
+        if account_price is None or account_price <= 0:
+            return Answer("decline", None, "the unit price and resource account use unrelated currencies")
+        count = evaluate(f"round({account.value} / {account_price}, 6) // 1", {}, ctx.log,
                          source="account-capacity")
         return Answer("number", count,
                       f"floor({account.value:g} remaining in {account.opening.account} / "
-                      f"{price.value:g} per {item})")
+                      f"{account_price:g} per {item})")
     budget_raw = ctx.query.get("budget_value")
     if budget_raw is not None:
         budget = evaluate(str(budget_raw), {}, ctx.log, source="capacity-budget")
+        budget_unit = ctx.query.get("budget_measure")
+        if not budget_unit:
+            return Answer("decline", None, "the budget needs a concrete currency unit")
+        budget = convert_money(budget, budget_unit, canonical_currency(ctx.reg), ctx.reg, ctx.log)
     else:
         holdings = [
             q for q in ctx.store.by_kind(Quantity)
             if q.entity == entity and q.is_state
-            and (q.measure == "currency" or ctx.reg.word_in_category(q.measure, "currency"))
+            and (q.measure == "currency" or ctx.reg.word_in_category(q.measure, "currency_unit"))
         ]
         if len(holdings) != 1:
             return Answer(
@@ -84,6 +93,11 @@ def capacity(ctx: ConsumerContext):
         budget = evaluate(
             str(holdings[0].value), {}, ctx.log, source="capacity-budget"
         )
+        holding_unit = (canonical_currency(ctx.reg) if holdings[0].measure == "currency"
+                        else holdings[0].measure)
+        budget = convert_money(budget, holding_unit, canonical_currency(ctx.reg), ctx.reg, ctx.log)
+    if budget is None or not isfinite(budget) or budget < 0:
+        return Answer("decline", None, "capacity needs a nonnegative budget in a declared currency unit")
     # a budget shared across SEVERAL priced purchases needs splitting —
     # this mechanism only ever does a single floor division, so any
     # OTHER priced item this entity also has a quantity of (bought,
@@ -144,9 +158,9 @@ def capacity(ctx: ConsumerContext):
             )
         budget = remaining
     count = evaluate(
-        f"round({budget} / {price.value}, 6) // 1", {}, ctx.log, source="capacity"
+        f"round({budget} / {unit_price}, 6) // 1", {}, ctx.log, source="capacity"
     )
     return Answer(
         "number", count,
-        f"floor({budget} / {price.value}) — budget ÷ unit price of {item!r}",
+        f"floor({budget} / {unit_price}) — budget ÷ unit price of {item!r}",
     )

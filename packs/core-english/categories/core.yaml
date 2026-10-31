@@ -377,6 +377,8 @@ categories:
       Prepositions with at least one declared spatial reading. Membership
       only makes a word eligible for a narrower location, source, goal,
       or path role; it never chooses among those roles by itself.
+  carrier_location_preposition:
+    parent: spatial_location_preposition
   spatial_location_preposition:
     parent: spatial_preposition
     notes: >
@@ -403,6 +405,7 @@ categories:
       Markers that can identify the path traversed by a declared motion
       event. A member may also have a static location reading.
   spatial_reference_noun:
+    includes: [vehicle]
     parent: noun
     notes: >
       Common nouns independently licensed as spatial reference objects.
@@ -1763,6 +1766,9 @@ categories:
       separate from the broad `quantifier` sense so amount and totality
       words such as "some" and "all" cannot become container
       determiners.
+  partitive_distributive_quantifier:
+    parent: distributive_quantifier
+    notes: Heads a distributive of-phrase; an ordinary universal determiner alone cannot fill this role.
   postpositive_distributive_quantifier:
     parent: quantifier
     notes: >
@@ -1805,20 +1811,21 @@ categories:
       verb or its measured amount while preserving that amount as the
       asserted upper bound. Ordinary manner and temporal adverbs remain
       outside this category.
+  currency_unit:
+    parent: currency_measure
+    notes: Concrete countable monetary units; abstract financial labels remain dimensions.
+  canonical_currency_unit:
+    parent: currency_unit
+    notes: The default denomination of legacy unit-price facts. No foreign exchange is inferred.
   currency_measure:
     parent: noun
     dimension: true
     notes: >
-      sibling of `length_measure`/`mass_measure`/`time_measure` for
-      MONEY — the concrete unit 'dollar' (tagged in this file's own
-      `members:` below, a core-english word) plus the dimension nouns
-      'cent'/'balance'/'earnings'/'cost' (shared memberships below). Deliberately a SEPARATE category from
-      the pre-existing `currency` (`interchangeable: true`): adding
-      'balance'/'earnings'/'cost' to `currency` itself would widen
-      `_resolve_measure_against`, consulted by every non-opted-in ask,
-      not just the dimension-aware single/combined/average paths —
-      exactly the shared-function blast radius `length_measure`'s note
-      above avoids.
+      Monetary dimensions include concrete denominations and abstract labels
+      such as balance, cost and earnings. Counted transactions must use the
+      currency_unit child category. This family remains separate from the
+      historical interchangeable currency category, so financial labels do
+      not become aliases for money holdings.
   count_intensifier:
     parent: comparative
     notes: >
@@ -2675,7 +2682,9 @@ members:
   count_quantity_delta: [fewer, more]
   cultivation_quantity_verb: [plant, planted, planting, plants]
   currency: [dollar, money, pound]
-  currency_measure: [balance, cent, cost, dollar, earnings]
+  currency_unit: [cent, dollar]
+  canonical_currency_unit: [dollar]
+  currency_measure: [balance, cost, earnings]
   currency_quantity_verb: [bought, buy, buys, find, finds, found, get, gets, got, had, has, have, lose, loses,
       lost, own, owns, receive, received, receives, sell, sells, sold, spend, spends, spent, win, wins, won]
   current_day_marker: [today]
@@ -2696,6 +2705,7 @@ members:
   direct_quantity_goal_predicate: [need, needed, needs, require, required, requires]
   discourse_group_pronoun: [them]
   discourse_subject_group_pronoun: [they]
+  partitive_distributive_quantifier: [each]
   distributive_quantifier: [each, every]
   drop_quantity_verb: [dropped, drops]
   droppable_quantity_object: [apple, apricot, badge, bagel, ball, balloon, banana, battery, beanie, beignet,
@@ -2789,7 +2799,7 @@ members:
   mass_measure: [gram, kilogram, ounce, pound, weight]
   mass_quantity_delta: [less, more]
   mass_quantity_noun: [air, airflow, applesauce, bacon, bamboo, basil, batter, beef, beeswax, blood, bread,
-      buttercream, cardboard, charcoal, chicken, clay, cloth, coffee, custard, data, dough, electricity,
+      buttercream, cake, cardboard, charcoal, chicken, clay, cloth, coffee, custard, data, dough, electricity,
       fabric, flour, food, frosting, frozen yoghurt, frozen yogurt, fudge, fur, garbage, gas, gluten, grass,
       guacamole, gum, ice, ice cream, jam, jelly, jewelry, juice, junk, land, lassi, laundry, lemonade,
       lettuce, litter, makeup, meat, milk, money, music, oatmeal, oregano, paper, popcorn, pork, rain,
@@ -2984,7 +2994,8 @@ members:
   span_preposition: [in]
   spatial_copular_verb: [are, is, was, were]
   spatial_goal_preposition: [into, onto, to, toward, towards]
-  spatial_location_preposition: [aboard, above, alongside, amid, amidst, at, atop, behind, below, beneath,
+  carrier_location_preposition: [aboard]
+  spatial_location_preposition: [above, alongside, amid, amidst, at, atop, behind, below, beneath,
       beside, beyond, in, inside, near, next to, on, opposite, outside, over, under, underneath, upon, within]
   spatial_motion_verb: [go, goes, going, jumped, ran, travel, traveled, traveling, travels, walked, went]
   spatial_path_preposition: [across, along, around, down, over, past, through, under, via]
@@ -3081,6 +3092,7 @@ members:
   ratio_particle_verb: [threw, throws]
   content_progress_object: [text, textbook]
 attribute_compatibility:
+  carrier_location_preposition: [vehicle]
   length_unit: [rectangular_shape]
   prenominal_remnant_adj: [mass_currency_noun, quantity_dimension_noun, material_resource]
   duration_measure: [duration_measure]

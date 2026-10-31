@@ -81,7 +81,7 @@ rules:
       sentence:
         - {slot: account, cat: resource_budget_noun, referential: true}
         - {lit: of}
-        - {slot: amount, cat: currency_measure, counted: true}
+        - {slot: amount, cat: currency_unit, counted: true}
     consumes: [amount]
     emits:
       - fact: resource_allocation
@@ -101,7 +101,7 @@ rules:
       attached separately; this phrase does not imply a purchase or payment.
     match:
       sentence:
-        - {slot: amount, cat: currency_measure, counted: true}
+        - {slot: amount, cat: currency_unit, counted: true}
         - {slot: account, cat: resource_budget_noun, uncounted: true}
     consumes: [amount]
     emits:
@@ -124,7 +124,7 @@ rules:
       sentence:
         - {slot: who, type: entity, common_noun_cat: animate, referential: true}
         - {slot: verb, cat: remaining_balance_state, finite_form: true}
-        - {slot: amount, cat: currency_measure, counted: true}
+        - {slot: amount, cat: currency_unit, counted: true}
         - {lit: left}
         - {lit: from}
         - opt:

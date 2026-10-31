@@ -1300,3 +1300,14 @@ def test_measurement_content_conversion_is_scoped_to_the_substance(gsm8k):
     )
     assert got.kind == "decline"
     assert "no known 'clay' conversion" in got.reason
+
+
+def test_capacity_budget_value_requires_its_concrete_unit(curated):
+    # Ordinary capacity asks now bind the unit alongside the value. A direct
+    # caller can still omit it; this must not borrow the price denomination.
+    from rulekit.kernel.model import Price
+    store = FactStore(facts=[Price(Provenance('invented', 0), item='pen', value=2)])
+    got = call('capacity', curated,
+               {'entity': 'dena', 'item': 'pen', 'budget_value': '8'}, store=store)
+    assert got.kind == 'decline'
+    assert got.reason == 'the budget needs a concrete currency unit'

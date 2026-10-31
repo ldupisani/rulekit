@@ -13,7 +13,7 @@ rules:
         - {slot: item, cat: ownable_quantity_object, referential: true, uncounted: true}
         - {lit: that}
         - {slot: cost, cat: price_verb, finite_form: true}
-        - {slot: amount, cat: currency_measure, counted: true}
+        - {slot: amount, cat: currency_unit, counted: true}
         - {lit: '.', consume_skipped: true}
     where:
       - number_compatible: [who, aux]
@@ -37,7 +37,7 @@ rules:
         - {slot: item, cat: pairable_partitive_substance, number: plural, uncounted: true}
         - {lit: that}
         - {slot: cost, cat: price_verb, finite_form: true}
-        - {slot: amount, cat: currency_measure, counted: true}
+        - {slot: amount, cat: currency_unit, counted: true}
         - {lit: '.', consume_skipped: true}
     where:
       - number_compatible: [who, aux]
@@ -81,7 +81,7 @@ rules:
       sentence:
         - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
         - {slot: verb, cat: periodic_income_verb, finite_form: true}
-        - {slot: amount, cat: currency_measure, counted: true}
+        - {slot: amount, cat: currency_unit, counted: true}
         - {slot: source, cat: periodic_income_noun, uncounted: true}
         - {lit: a, consume_skipped: true}
         - {slot: period, cat: duration_measure, uncounted: true}
@@ -116,7 +116,7 @@ rules:
       sentence:
         - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
         - {slot: quote, cat: service_tariff_verb, finite_form: true}
-        - {slot: amount, cat: currency_measure, counted: true}
+        - {slot: amount, cat: currency_unit, counted: true}
         - {lit: to}
         - {slot: verb, cat: service_activity_verb, bare_form: true}
         - {lit: a, consume_skipped: true}
@@ -165,13 +165,13 @@ rules:
       sentence:
         - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
         - {slot: quote, cat: service_tariff_verb, finite_form: true}
-        - {slot: amount, cat: currency_measure, counted: true}
+        - {slot: amount, cat: currency_unit, counted: true}
         - {lit: to}
         - {slot: first, cat: service_activity_verb, bare_form: true}
         - {lit: a, consume_skipped: true}
         - {slot: item, cat: service_object, bare: true, number: singular, uncounted: true}
         - {lit: and}
-        - {slot: other_amount, cat: currency_measure, counted: true}
+        - {slot: other_amount, cat: currency_unit, counted: true}
         - {lit: to}
         - {slot: second, cat: service_activity_verb, bare_form: true}
         - {lit: '.', consume_skipped: true}
@@ -197,7 +197,7 @@ rules:
         - {lit: ',', consume_skipped: true}
         - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true}
         - {slot: verb, cat: remaining_balance_state, finite_form: true}
-        - {slot: amount, cat: currency_measure, counted: true}
+        - {slot: amount, cat: currency_unit, counted: true}
         - {lit: in}
         - {slot: remainder, cat: cash_remainder_noun}
         - {lit: '.', consume_skipped: true}

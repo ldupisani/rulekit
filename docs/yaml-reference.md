@@ -444,6 +444,7 @@ verbs belong in their category-owned frames.
 | `where` | Shared semantic/morphological predicates |
 | `consumes` | Slots whose numeric values this construction accounts for |
 | `satisfies` | Slot → named obligations discharged structurally |
+| `bindings` | Slot → need → actual target slot, for complete grammatical constructions |
 | `references` | Referring slot → actual target slot |
 | `emits` | Typed facts with slot templates or numeric expressions |
 | `overlapping` | Opt into adjacent overlapping match windows |
@@ -453,12 +454,20 @@ verbs belong in their category-owned frames.
 `satisfies` records structural satisfaction, not a referent. `references`
 retains a real target and checks its anaphoric compatibility. They cannot both
 claim the same slot's `refers` need. Neither permits arbitrary missing evidence
-to be ignored.
+to be ignored. `bindings: {each: {collection: holders}}` preserves the actual
+counted collection for a floating distributive. Its source need and both scalar
+slots are checked at compile time; a bound need cannot also use `satisfies`.
 
 An emitted fact is not automatically an answer. Consumers must use compatible
 evidence and guards must permit the commitment. Empty `emits` can preserve
 a complete nonnumeric frame without inventing quantities, but consuming
 values is not a general escape hatch for unsupported numeric prose.
+
+Descriptor compatibility can opt into `when_declared: true`. In that mode,
+an undeclared descriptor leaves the construction open, while a descriptor with
+a declared category boundary must license the bound noun. This allows shared
+location frames to restrict carrier objects without declaring proximity or
+surface prepositions interchangeable.
 
 ## Match tokens
 
@@ -485,7 +494,7 @@ arbitrary definite plural references. Live schemas lists all `SLOT_TYPES`.
 | `all_qualifiers` | Require every retained modifier to belong to `qualifier_cat`, including nested qualifiers |
 | `referential, bare_reference_category, determinerless_category` | Referential completeness and explicit exceptions |
 | `bare, class_only, standalone, single_word` | Additional shape restrictions |
-| `integer, value_min, value_max` | Numeric restrictions |
+| `integer, value_positive, value_min, value_max` | Numeric restrictions; `value_positive` requires a finite value strictly above zero |
 | `fraction_within_whole, word_fraction_within_whole, fraction_positive` | Part-of-whole and positivity contracts |
 | `bare_form, finite_form, present_participle, past_participle` | Verb morphology |
 | `span, span_blocks, span_blocks_counted` | Bounded span capture and barriers |

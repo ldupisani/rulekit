@@ -37,7 +37,8 @@ def cost_of_quantity(ctx: ConsumerContext):
     # facts.py's key() differs (verb/occurrence) so they never dedupe
     # at admission. Only a genuine VALUE disagreement is still the
     # increment-19 ambiguity this guard exists to catch.
-    distinct_values = {p.value for p in prices}
+    from ..monetary import price_terms
+    distinct_values = {price_terms(p, ctx.reg) for p in prices}
     if len(distinct_values) != 1:
         return Answer(
             "decline", None,
@@ -70,8 +71,12 @@ def cost_of_quantity(ctx: ConsumerContext):
             f"{entity!r} already has a quantity of {item!r} known — "
             "ambiguous against the question's own count",
         )
-    total = evaluate(f"{qty} * {price.value}", {}, ctx.log, source="cost-of-quantity")
+    from ..monetary import canonical_price
+    unit_price = canonical_price(price, ctx.reg, ctx.log)
+    if unit_price is None:
+        return Answer("decline", None, "the price needs a concrete convertible denomination")
+    total = evaluate(f"{qty} * {unit_price}", {}, ctx.log, source="cost-of-quantity")
     return Answer(
         "number", total,
-        f"{qty} * {price.value} — question qty x unit price of {item!r}",
+        f"{qty} * {unit_price} — question qty x unit price of {item!r}",
     )

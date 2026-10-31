@@ -313,6 +313,12 @@ def test_all_quantitative_pp_slots_keep_named_calendar_objects_bare(project) -> 
         for sequence in rule.match.values()
         for token in _walk_tokens(sequence)
         if token.bare_reference_category == "bare_pp_object"
+        # Strictly spatial noun domains do not admit calendar objects. The
+        # determinerless calendar contract belongs to slots that can admit one.
+        and any(
+            project.registry.word_in_category(word, token.cat or token.common_noun_cat or "noun")
+            for word in project.registry.cat_members_deep("named_calendar_period")
+        )
     ]
 
     assert pp_tokens

@@ -42,7 +42,7 @@ templates:
           - {slot: recent, cat: recent_change_adverb}
         - {slot: change, cat: base_increase_verb}
         - {lit: by}
-        - {slot: amount, cat: currency_measure, counted: true}
+        - {slot: amount, cat: currency_unit, counted: true}
         - {lit: so}
         - {lit: now}
         - {slot: cost_owner, cat: possessive_determiner}

@@ -675,6 +675,13 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
                 )
                 if anchor is not None:
                     anchor_p = anchor.payload
+                    # A dimensionless scale preserves the quote's denomination
+                    # and package basis. Additive offsets need their own unit
+                    # evidence; the legacy relation contract has none.
+                    from .monetary import canonical_currency
+                    if (anchor_p.measure and anchor_p.measure != canonical_currency(reg)
+                            and rel.offset != 0):
+                        continue
                     already_priced = any(
                         p.item == rel.subject and p.verb == rel.verb
                         for p in store.by_kind(Price)
@@ -690,6 +697,7 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
                                     source="synth/relation", sentence=rel.provenance.sentence
                                 ),
                                 item=rel.subject, value=value, verb=rel.verb,
+                                measure=anchor_p.measure, per=anchor_p.per,
                             )
                         )
             continue

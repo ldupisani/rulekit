@@ -21,7 +21,7 @@ rules:
       cat: price_verb
       finite_form: true
     - slot: amount
-      cat: currency_measure
+      cat: currency_unit
       counted: true
       bare: true
   emits:
@@ -53,7 +53,7 @@ rules:
       cat: price_verb
       finite_form: true
     - slot: amount
-      cat: currency_measure
+      cat: currency_unit
       counted: true
       bare: true
   emits:
@@ -98,7 +98,7 @@ rules:
       cat: price_verb
       finite_form: true
     - slot: amount
-      cat: currency_measure
+      cat: currency_unit
       counted: true
       bare: true
   emits:
@@ -132,7 +132,7 @@ rules:
       cat: price_verb
       finite_form: true
     - slot: amount
-      cat: currency_measure
+      cat: currency_unit
       counted: true
       bare: true
   emits:
