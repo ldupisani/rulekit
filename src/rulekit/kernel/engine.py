@@ -9,7 +9,7 @@ why-not + what IS known).
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 from ..data.registry import Registry
 from . import deixis
@@ -515,6 +515,60 @@ def _looks_like_new_clause(clause_text: str, reg: Registry) -> bool:
     return any(ch.isdigit() for ch in clause_text)
 
 
+def _complete_declared_fact_clause(text: str, reg: Registry) -> bool:
+    """A boundary needs a complete fact-emitting grammar on its stated side."""
+    from .patterns import SKIPPABLE_SENSES, run_rules
+
+    independent = tuple(rule for rule in reg.rules if rule.independent_clause)
+    if not independent:
+        return False
+    reading = analyze(text.strip().rstrip(',;:.') + '.', reg, tracing=False)
+    _probe_unresolved_references(reading)
+    content = {u.uid for u in reading.units if u.sense() not in SKIPPABLE_SENSES}
+    return bool(content) and any(
+        result.match.rule.independent_clause and result.facts and content.issubset(result.match.consumed)
+        for result in run_rules(reading, replace(reg, rules=independent), 'read')
+    )
+
+
+def _split_declared_coordinate_clauses(sentence: str, reg: Registry) -> list[str]:
+    """Split only a complete coordination of independently declared clauses.
+
+    Unlike a subject/verb heuristic, both sides must have complete read
+    grammars. Shared subjects, list objects and embedded clauses remain whole.
+    Reference probes establish surface shape only; the document still binds
+    and validates the actual antecedents after routing.
+    """
+    if not any(boundary.group('word') is None or reg.word_in_category(boundary.group('word').casefold(), 'holder_list_conjunction')
+               for boundary in _CLAUSE_BOUNDARY.finditer(sentence)):
+        return [sentence]
+    cache = {}
+
+    def split(body):
+        body = body.strip().rstrip(',;:.').strip()
+        if body in cache:
+            return cache[body]
+        if _complete_declared_fact_clause(body, reg):
+            cache[body] = [body + '.']
+            return cache[body]
+        cache[body] = None
+        for boundary in _CLAUSE_BOUNDARY.finditer(body):
+            word = boundary.group('word')
+            if word is not None and not reg.word_in_category(word.casefold(), 'holder_list_conjunction'):
+                continue
+            left = body[:boundary.start()].strip().rstrip(',;:')
+            right = body[boundary.end():].strip()
+            if not left or not right or not _complete_declared_fact_clause(left, reg):
+                continue
+            rest = split(right)
+            if rest:
+                cache[body] = [left + '.', *rest]
+                return cache[body]
+        return None
+
+    return split(sentence) or [sentence]
+
+
 def _split_conjoined_clauses(sentence: str, reg: Registry) -> list[str]:
     """'Nadia has 17 stickers, Owen has 29 stickers and Farah has 8
     stickers.' — a premise sentence coordinating multiple FULL clauses at
@@ -591,7 +645,7 @@ def _split_conjoined_clauses(sentence: str, reg: Registry) -> list[str]:
     if tail and clauses:
         clauses.append(tail)
     if len(clauses) < 2:
-        return [sentence]
+        return _split_declared_coordinate_clauses(sentence, reg)
     return [c + trailing for c in clauses]
 
 
@@ -652,9 +706,9 @@ def _split_fused_premise_question(
     # The grammar proofs below carry the semantic load.
     for boundary in list(re.finditer(r"\S+", fused))[1:]:
         token = boundary.group()
-        if not token[:1].isupper():
+        if not token[:1].isupper() and not fused[:boundary.start()].rstrip().endswith((',', ';', ':')):
             continue
-        head = fused[: boundary.start()].strip()
+        head = fused[: boundary.start()].strip().rstrip(',;:').strip()
         tail = fused[boundary.start() :].strip()
         if len(head.split()) < 3 or len(tail.split()) < 3:
             continue
@@ -662,7 +716,8 @@ def _split_fused_premise_question(
         question = analyze(tail, reg, tracing=False)
         ask = match_ask(question, reg)
         if ask is None or not meaningful_uids(question).issubset(ask[2].consumed):
-            continue
+            if not _is_complete_declared_ask(tail, reg):
+                continue
 
         premise = analyze(head, reg, tracing=False)
         content = meaningful_uids(premise)
@@ -671,7 +726,10 @@ def _split_fused_premise_question(
             for result in run_rules(premise, reg, "read")
         )
         if not exact_fact_rule:
-            continue
+            if not _complete_declared_fact_clause(head, reg):
+                clauses = _split_declared_coordinate_clauses(head, reg)
+                if len(clauses) < 2 or not all(_complete_declared_fact_clause(c, reg) for c in clauses):
+                    continue
 
         promoted = head.rstrip(",;:").rstrip().rstrip(".") + "."
         return promoted, tail

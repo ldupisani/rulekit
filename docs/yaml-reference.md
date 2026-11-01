@@ -121,7 +121,16 @@ a pronoun sense.
 form is invariant or irregular. Runtime matching and generation share this
 check alongside productive participles; no word exceptions belong in Python.
 
-`lexical_phrase: true` marks an indivisible multiword noun or adverb with
+`verb.number` overrides surface `number` for explicit verb agreement and
+generation. This permits a noun/verb homograph to keep its singular noun
+reading while declaring a plural finite verb form. Both paths use
+`LexiconEntry.number_for_sense`; an unmarked past form remains number-neutral.
+
+`verb.finite: false` declares a non-finite surface whose shape alone is
+insufficient evidence. Reading, expense learning and generation share the
+same form check; a merged perfect auxiliary keeps its own finite surface.
+
+`lexical_phrase: true` marks an indivisible multiword noun, adjective or adverb with
 exactly that one sense. It is not a general replacement for compositional
 compound parsing.
 
@@ -449,6 +458,7 @@ verbs belong in their category-owned frames.
 | `emits` | Typed facts with slot templates or numeric expressions |
 | `overlapping` | Opt into adjacent overlapping match windows |
 | `question_assumption` | Explicitly allow the supported detached conditional promotion |
+| `independent_clause` | Opt a fact-emitting sentence reader into complete-clause coordination and comma-boundary recovery; both sides still require full grammar coverage |
 | `generation, generation_context, generation_where` | Authoring controls, described below |
 
 `satisfies` records structural satisfaction, not a referent. `references`
@@ -500,6 +510,7 @@ arbitrary definite plural references. Live schemas lists all `SLOT_TYPES`.
 | `span, span_blocks, span_blocks_counted` | Bounded span capture and barriers |
 | `enumeration_cat` | Span-only: an exact singleton or conjunctive list of heads in this category |
 | `enumeration_counted` | Require one counted nominal per enumeration member; per-item emission retains its value and reference |
+| `enumeration_qualified` | Permit explicit modifiers on an uncounted, category-validated list; per-item emission retains the full reference |
 | `at_start` | Anchor the first match token |
 | `consume_skipped, blocks_skipped` | Control permitted skipped material |
 
@@ -663,6 +674,9 @@ category slots to their category's root sense. Each slot must be unique,
 category-gated, and a single analyzed unit. Selection is recorded in the
 reader trace and removes obligations belonging only to discarded senses.
 It does not select senses in unmatched prose or discharge an unrelated need.
+Read-phase sentence rules use the same field and validation contract. Statistical
+inquiries select their aggregate and frequency senses only inside a complete
+inquiry frame.
 The material-area ask uses this for the interrogative amount word, remainder
 adjective, and square-unit modifier in a complete area question.
 

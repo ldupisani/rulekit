@@ -1,0 +1,79 @@
+format: rulekit/categories@1
+categories:
+  planning_state_auxiliary:
+    parent: verb
+  purchase_plan_verb:
+    parent: verb
+  retail_organization:
+    parent: commercial_organization
+  retail_product:
+    parent: noun
+  payment_acceptance_verb:
+    parent: verb
+  settlement_payment_noun:
+    parent: noun
+  periodic_payment_noun:
+    parent: noun
+  initial_payment_noun:
+    parent: noun
+  policy_condition_link:
+    parent: conjunction
+  payment_realization_verb:
+    parent: verb
+  supplemental_payment_descriptor:
+    parent: adjective
+  balance_quantity_noun:
+    parent: currency_measure
+members:
+  planning_state_auxiliary:
+  - be
+  - is
+  - are
+  - was
+  - were
+  purchase_plan_verb:
+  - plan
+  - planned
+  - plans
+  - planning
+  - want
+  - wants
+  - wanted
+  retail_organization:
+  - shop
+  - store
+  - company
+  retail_product:
+  - computer
+  - book
+  - shoe
+  - car
+  - tool
+  payment_acceptance_verb:
+  - accept
+  - accepts
+  - accepted
+  settlement_payment_noun:
+  - payment
+  periodic_payment_noun:
+  - installment
+  - instalment
+  - payment
+  initial_payment_noun:
+  - down payment
+  - downpayment
+  - deposit
+  policy_condition_link:
+  - provided
+  payment_realization_verb:
+  - made
+  supplemental_payment_descriptor:
+  - additional
+  - extra
+  balance_quantity_noun:
+  - balance
+attribute_compatibility:
+  retail_product:
+  - retail_organization
+  supplemental_payment_descriptor:
+  - currency_unit

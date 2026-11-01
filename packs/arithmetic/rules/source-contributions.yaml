@@ -1,0 +1,512 @@
+format: rulekit/rules@1
+templates:
+  contribution-target:
+    parameters:
+      preparation: []
+      satisfaction: {need: [subject], change: [subject]}
+      consumed: []
+      constraints: []
+    rule:
+      description: A measured target for a participant, with optional preparation context; a closed-source question
+        can request its complete partition.
+      match:
+        sentence:
+        - {slot: who, type: entity, common_noun_cat: contribution_recipient, referential: true, at_start: true}
+        - {parameter: preparation}
+        - {slot: need, cat: infinitival_requirement_predicate, finite_form: true}
+        - {lit: to}
+        - {slot: change, cat: contribution_change_verb, bare_form: true}
+        - {slot: amount, cat: contribution_unit, counted: true, bare: true}
+        - {lit: ., consume_skipped: true}
+      consumes: [need, change, amount, parameter: consumed]
+      satisfies: {parameter: satisfaction}
+      where:
+      - {number_compatible: [who, need]}
+      - {verb_roles_compatible: {verb: change, roles: {actor: [who], theme: [amount]}, require_declared_frame: true,
+          allow_proper_name: [who]}}
+      - {parameter: constraints}
+      emits:
+      - {fact: batch_evidence, kind: contribution-target, entity: '{who}', measure: '{amount}', value: amount, verb: '{change}',
+        position: '{amount.span_start}'}
+  source-inventory:
+    parameters:
+      time: []
+      period: ''
+      activity_frame:
+        category: direct_source_activity
+        link: []
+    rule:
+      description: Two stated sources belong to one participant and temporal context; no numerical contribution is 
+        inferred from participation alone.
+      match:
+        sentence:
+        - {parameter: time}
+        - {slot: who, type: entity, common_noun_cat: contribution_recipient, referential: true}
+        - {slot: activity, cat: {parameter: activity_frame.category}, finite_form: true}
+        - parameter: activity_frame.link
+        - {slot: first, cat: contribution_source, uncounted: true, referential: true, bare_reference_category: 
+            mass_quantity_noun}
+        - {lit: and}
+        - {slot: second, cat: contribution_source, uncounted: true, referential: true, bare_reference_category: 
+            mass_quantity_noun}
+        - {lit: ., consume_skipped: true}
+      consumes: [activity]
+      satisfies: {activity: [subject]}
+      where:
+      - {distinct: [first, second]}
+      - {number_compatible: [who, activity]}
+      - {verb_roles_compatible: {verb: activity, roles: {actor: [who], theme: [first, second]}, 
+            require_declared_frame: true, allow_proper_name: [who]}}
+      emits:
+      - {fact: batch_evidence, kind: contribution-source, entity: '{who}', measure: '', value: 0, container: '{first}',
+        marker: {parameter: period}, position: '{first.span_start}'}
+      - {fact: batch_evidence, kind: contribution-source, entity: '{who}', measure: '', value: 0, container: '{second}',
+        marker: {parameter: period}, position: '{second.span_start}'}
+  source-fraction:
+    parameters:
+      target_reference: []
+      tail: []
+      extra: []
+      consumed: []
+      references: {}
+      satisfaction: {change: [subject]}
+      constraints: []
+    rule:
+      description: A source contributes an explicit fraction of the whole target; a coordinated amount reference 
+        retains that exact source as standard.
+      match:
+        sentence:
+        - {slot: who, type: entity, common_noun_cat: contribution_recipient, referential: true, at_start: true}
+        - {slot: change, cat: contribution_change_verb, finite_form: true}
+        - {slot: fraction, type: fraction, fraction_within_whole: true}
+        - {lit: of}
+        - {lit: the, consume_skipped: true}
+        - {slot: attribute, cat: quantity_attribute, uncounted: true, bare: true, number: singular}
+        - {parameter: target_reference}
+        - {lit: from}
+        - {slot: source, cat: contribution_source, uncounted: true, referential: true, bare_reference_category: 
+            mass_quantity_noun}
+        - opt:
+          - {slot: prep, cat: temporal_interval_preposition}
+          - {slot: period, cat: named_season}
+        - {parameter: tail}
+        - {lit: ., consume_skipped: true}
+      consumes: [change, fraction, parameter: consumed]
+      satisfies: {parameter: satisfaction}
+      references: {parameter: references}
+      where:
+      - number_compatible:
+        - who
+        - change
+      - parameter: constraints
+      emits:
+      - {fact: batch_evidence, kind: contribution-fraction, entity: '{who}', measure: '{attribute}', value: 
+          fraction, verb: '{change}', container: '{source}', attribute: '{period.optional}', position: '{fraction.span_start}'}
+      - {parameter: extra}
+      independent_clause: true
+  source-remainder-share:
+    parameters:
+      representation: [{slot: represent, cat: component_representation_verb, finite_form: true}]
+      remainder:
+      - {slot: attribute, cat: quantity_attribute, uncounted: true, number: singular, qualified: true, 
+          qualifier_cat: remaining_quantity_descriptor, all_qualifiers: true}
+      measure: '{attribute}'
+      reference:
+      - opt:
+        - {slot: who, type: entity, common_noun_cat: contribution_recipient, referential: true}
+        - opt: [lit: had]
+        - {slot: need, cat: infinitival_requirement_predicate, finite_form: true}
+        - {slot: infinitive, cat: infinitival_marker}
+        - {slot: change, cat: contribution_change_verb, bare_form: true}
+      consumed:
+      - need
+      - change
+      satisfaction: {represent: [subject], need: [subject], change: [subject], infinitive: [object]}
+      constraints:
+      - {number_compatible: [who, need]}
+    rule:
+      description: A named source accounts for a fraction of the as-yet-unassigned part of a closed contribution 
+        target.
+      match:
+        sentence:
+        - {slot: source, cat: contribution_source, uncounted: true, referential: true, bare_reference_category: 
+            mass_quantity_noun, at_start: true}
+        - {parameter: representation}
+        - {slot: fraction, type: fraction, fraction_within_whole: true}
+        - {lit: of}
+        - {lit: the, consume_skipped: true}
+        - {parameter: remainder}
+        - parameter: reference
+        - {lit: ., consume_skipped: true}
+      consumes:
+      - represent
+      - fraction
+      - parameter: consumed
+      satisfies:
+        parameter: satisfaction
+      where:
+      - {number_compatible: [source, represent]}
+      - parameter: constraints
+      emits:
+      - {fact: batch_evidence, kind: contribution-remainder-fraction, entity: '{who.optional}', measure: {parameter: 
+            measure}, value: fraction, container: '{source}', position: '{fraction.span_start}'}
+      independent_clause: true
+  contribution-question:
+    parameters:
+      source_frame: [lit: from]
+      satisfaction: {change: [subject]}
+    rule:
+      match:
+        question:
+        - {lit: how, at_start: true}
+        - {lit: many}
+        - {slot: unit, cat: contribution_unit, uncounted: true, bare: true, number: plural}
+        - {slot: aux, cat: auxiliary}
+        - {slot: who, type: entity, common_noun_cat: contribution_recipient, referential: true, bare: true}
+        - {slot: change, cat: contribution_change_verb, bare_form: true}
+        - {parameter: source_frame}
+        - {slot: source, cat: contribution_source, uncounted: true, referential: true, bare_reference_category: 
+            mass_quantity_noun}
+        - {lit: '?', consume_skipped: true}
+      satisfies: {parameter: satisfaction}
+      where: [number_compatible: [who, aux]]
+      resolves: {consumer: source-contribution-remainder, entity: '{who}', measure: '{unit}', source: '{source}', 
+          verb: '{change}'}
+rules:
+- id: arithmetic/source-relative-amount
+  description: An immediate amount reference names one source's multiple of the preceding contribution; the 
+    consumer requires a unique standard.
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: contribution_recipient, referential: true, at_start: true}
+    - {slot: change, cat: contribution_change_verb, finite_form: true}
+    - {slot: factor, type: multiplier}
+    - {lit: that}
+    - {slot: amount, cat: allocation_amount_noun, uncounted: true, bare: true}
+    - {lit: from}
+    - {slot: source, cat: contribution_source, uncounted: true, referential: true, bare_reference_category: 
+        mass_quantity_noun}
+    - {lit: ., consume_skipped: true}
+  consumes: [change, factor]
+  satisfies: {change: [subject]}
+  where: [number_compatible: [who, change]]
+  emits:
+  - {fact: batch_evidence, kind: contribution-multiple, entity: '{who}', measure: '', value: factor, verb: '{change}',
+    container: '{source}', position: '{factor.span_start}'}
+  independent_clause: true
+- id: arithmetic/source-measured-amount
+  description: A direct measured contribution belongs to its stated source, not a second target or unqualified 
+    holding.
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: contribution_recipient, referential: true, at_start: true}
+    - {slot: change, cat: contribution_change_verb, finite_form: true}
+    - {slot: amount, cat: contribution_unit, counted: true, bare: true}
+    - {lit: from}
+    - {slot: source, cat: contribution_source, uncounted: true, referential: true, bare_reference_category: 
+        mass_quantity_noun}
+    - {lit: ., consume_skipped: true}
+  consumes: [change, amount]
+  satisfies: {change: [subject]}
+  where:
+  - {number_compatible: [who, change]}
+  - {verb_roles_compatible: {verb: change, roles: {actor: [who], theme: [amount]}, require_declared_frame: true, 
+        allow_proper_name: [who]}}
+  emits:
+  - {fact: batch_evidence, kind: contribution-amount, entity: '{who}', measure: '{amount}', value: amount, verb: '{change}',
+    container: '{source}', position: '{amount.span_start}'}
+- id: arithmetic/measured-outcome-with-source-inventory
+  description: An actual measured outcome names a complete category-validated source list; source identities retain
+    their modifiers.
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: living_agent
+      referential: true
+      at_start: true
+    - slot: change
+      cat: contribution_change_verb
+      finite_form: true
+    - slot: amount
+      cat: contribution_unit
+      counted: true
+      bare: true
+    - slot: activity
+      cat: dietary_source_activity
+      present_participle: true
+    - slot: sources
+      span: true
+      enumeration_cat: dietary_source
+      enumeration_qualified: true
+      enumeration_min_members: 2
+    - lit: .
+      consume_skipped: true
+  consumes:
+  - change
+  - amount
+  - activity
+  satisfies:
+    change:
+    - subject
+    activity:
+    - subject
+  where:
+  - number_compatible:
+    - who
+    - change
+  - verb_roles_compatible:
+      verb: change
+      roles:
+        actor:
+        - who
+        theme:
+        - amount
+      require_declared_frame: true
+      allow_proper_name:
+      - who
+  emits:
+  - fact: quantity
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    verb: '{change}'
+  - fact: batch_evidence
+    each: sources
+    kind: contribution-source
+    entity: '{who}'
+    measure: ''
+    value: 0
+    container: '{item}'
+    position: '{item.span_start}'
+  independent_clause: true
+variants:
+- {id: arithmetic/measured-contribution-target, template: contribution-target}
+- id: arithmetic/preparation-with-contribution-target
+  template: contribution-target
+  arguments:
+    preparation:
+    - {slot: be, cat: copula}
+    - {slot: prepare, cat: preparation_intention_verb, present_participle: true}
+    - {lit: to}
+    - {slot: activity, type: verb, bare_form: true}
+    - {lit: for}
+    - {slot: season, cat: named_season}
+    - {lit: and}
+    consumed: [be, prepare, activity]
+    constraints: [number_compatible: [who, be]]
+    satisfaction: {be: [subject], prepare: [subject], activity: [subject], need: [subject], change: [subject]}
+- {id: arithmetic/single-source-fraction, template: source-fraction}
+- id: arithmetic/single-source-target-fraction
+  template: source-fraction
+  arguments:
+    target_reference:
+    - {slot: reference, cat: clause_subject_personal_pronoun}
+    - {slot: need, cat: direct_quantity_goal_predicate, finite_form: true}
+    consumed: [need]
+    references: {reference: who}
+    satisfaction: {change: [subject], need: [subject]}
+    constraints:
+    - number_compatible:
+      - reference
+      - need
+- id: arithmetic/coordinated-source-relative-contribution
+  template: source-fraction
+  arguments:
+    target_reference:
+    - opt:
+      - {slot: reference, cat: clause_subject_personal_pronoun}
+      - {slot: need, cat: direct_quantity_goal_predicate, finite_form: true}
+    tail:
+    - {lit: ',', consume_skipped: true}
+    - {lit: and}
+    - opt:
+      - {slot: later_prep, cat: temporal_interval_preposition}
+      - {slot: later_period, cat: named_season}
+      - {lit: ',', consume_skipped: true}
+    - {slot: other, cat: clause_subject_personal_pronoun}
+    - {slot: other_change, cat: contribution_change_verb, finite_form: true}
+    - {slot: factor, type: multiplier}
+    - {lit: that}
+    - {slot: amount, cat: allocation_amount_noun, uncounted: true, bare: true}
+    - {lit: from}
+    - {slot: other_source, cat: contribution_source, uncounted: true, referential: true, bare_reference_category: 
+        mass_quantity_noun}
+    consumed: [need, other_change, factor]
+    satisfaction: {change: [subject], need: [subject], other_change: [subject]}
+    references: {reference: who, other: who}
+    extra:
+    - {fact: batch_evidence, kind: contribution-multiple, entity: '{other}', measure: '{attribute}', value: factor, 
+        verb: '{other_change}', container: '{other_source}', acquisition: '{source}', attribute: '{later_period}', 
+        position: '{factor.span_start}'}
+    constraints:
+    - number_compatible:
+      - reference
+      - need
+    - number_compatible:
+      - other
+      - other_change
+- {id: arithmetic/attributed-remainder-contribution, template: source-remainder-share}
+- id: arithmetic/accounted-remainder-contribution
+  template: source-remainder-share
+  arguments:
+    representation: [{slot: represent, cat: component_accounting_verb, finite_form: true}, lit: for]
+- id: arithmetic/attributed-remnant-contribution
+  template: source-remainder-share
+  arguments:
+    remainder: [{slot: rest, cat: partition_remnant, uncounted: true, bare: true}]
+    measure: ''
+- {id: arithmetic/participant-source-inventory, template: source-inventory}
+- {id: arithmetic/participant-on-source-inventory, template: source-inventory, arguments: {activity_frame: {
+        category: on_source_activity, link: [{slot: source_prep, cat: on_source_preposition}]}}}
+- {id: arithmetic/participant-from-source-inventory, template: source-inventory, arguments: {activity_frame: {
+        category: financial_source_activity, link: [{slot: source_prep, cat: from_source_preposition}]}}}
+- id: arithmetic/seasonal-source-inventory
+  template: source-inventory
+  arguments:
+    time: [{slot: prep, cat: temporal_interval_preposition, at_start: true}, {slot: period, cat: named_season}, {
+          lit: ',', consume_skipped: true}]
+    period: '{period}'
+- id: arithmetic/seasonal-on-source-inventory
+  template: source-inventory
+  arguments:
+    time: [{slot: prep, cat: temporal_interval_preposition, at_start: true}, {slot: period, cat: named_season}, {
+          lit: ',', consume_skipped: true}]
+    period: '{period}'
+    activity_frame:
+      category: on_source_activity
+      link:
+      - slot: source_prep
+        cat: on_source_preposition
+- id: arithmetic/seasonal-from-source-inventory
+  template: source-inventory
+  arguments:
+    time: [{slot: prep, cat: temporal_interval_preposition, at_start: true}, {slot: period, cat: named_season}, {
+          lit: ',', consume_skipped: true}]
+    period: '{period}'
+    activity_frame:
+      category: financial_source_activity
+      link:
+      - slot: source_prep
+        cat: from_source_preposition
+- id: arithmetic/boundary-source-inventory
+  template: source-inventory
+  arguments:
+    period: '{period}'
+    time:
+    - {lit: at, at_start: true}
+    - {slot: boundary, cat: period_boundary_noun}
+    - {lit: of}
+    - {slot: period, cat: named_season}
+    - {lit: ',', consume_skipped: true}
+- id: arithmetic/boundary-on-source-inventory
+  template: source-inventory
+  arguments:
+    period: '{period}'
+    time:
+    - {lit: at, at_start: true}
+    - {slot: boundary, cat: period_boundary_noun}
+    - {lit: of}
+    - {slot: period, cat: named_season}
+    - {lit: ',', consume_skipped: true}
+    activity_frame:
+      category: on_source_activity
+      link:
+      - slot: source_prep
+        cat: on_source_preposition
+- id: arithmetic/boundary-from-source-inventory
+  template: source-inventory
+  arguments:
+    period: '{period}'
+    time:
+    - {lit: at, at_start: true}
+    - {slot: boundary, cat: period_boundary_noun}
+    - {lit: of}
+    - {slot: period, cat: named_season}
+    - {lit: ',', consume_skipped: true}
+    activity_frame:
+      category: financial_source_activity
+      link:
+      - slot: source_prep
+        cat: from_source_preposition
+- id: arithmetic/observed-remainder-contribution
+  template: source-remainder-share
+  arguments:
+    reference:
+    - slot: who
+      type: entity
+      common_noun_cat: contribution_recipient
+      referential: true
+    - slot: change
+      cat: contribution_change_verb
+      finite_form: true
+    consumed:
+    - change
+    satisfaction:
+      represent:
+      - subject
+      change:
+      - subject
+    constraints:
+    - number_compatible:
+      - who
+      - change
+- id: arithmetic/nominal-change-remainder-contribution
+  template: source-remainder-share
+  arguments:
+    remainder:
+    - slot: attribute
+      cat: quantity_change_nominal
+      uncounted: true
+      number: singular
+      qualified: true
+      qualifier_cat: remaining_quantity_descriptor
+ask_variants:
+- {id: ask/source-contribution-remainder, template: contribution-question}
+- id: ask/source-consumption-contribution-remainder
+  template: contribution-question
+  arguments:
+    source_frame: [{slot: eating, cat: dietary_source_activity, present_participle: true}]
+    satisfaction: {change: [subject], eating: [subject]}
+asks:
+- id: ask/source-attributed-quantity-change
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - slot: much
+      cat: mass_amount_interrogative
+    - slot: partitive
+      cat: partitive
+    - slot: owner
+      cat: possessive_determiner
+    - slot: attribute
+      cat: quantitative_property_noun
+      possessed: true
+      uncounted: true
+    - slot: origin
+      cat: contribution_origin_predicate
+      finite_form: true
+    - lit: from
+    - slot: source
+      cat: contribution_source
+      uncounted: true
+      referential: true
+      bare_reference_category: mass_quantity_noun
+    - lit: '?'
+      consume_skipped: true
+  disambiguates:
+  - much
+  satisfies:
+    origin:
+    - subject
+    partitive:
+    - object
+    much:
+    - collection
+  resolves:
+    consumer: source-contribution-remainder
+    entity: '{attribute.owner}'
+    source: '{source}'
+    measure: ''
+    verb: ''

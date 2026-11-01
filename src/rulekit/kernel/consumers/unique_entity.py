@@ -109,6 +109,9 @@ def unique_entity(ctx: ConsumerContext):
             f"{singular!r} has several rival group totals — "
             "an entity-less ask cannot tell which whole is meant",
         )
+    if any(q.measure == singular and q.provenance.distributive for q in ctx.store.by_kind(Quantity)):
+        return Answer('decline', None,
+                      'a per-member amount needs a compatible population total before answering a whole')
     total = _entity_total(ctx.store, ctx.reg, entities[0], singular, ctx.log)
     if total is None:
         return Answer("decline", None, f"{entities[0]!r} has no resolvable total")

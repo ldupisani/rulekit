@@ -127,6 +127,14 @@ def consumer(name: str, *, time_scoped: bool = False,
 
 
 from . import (  # noqa: E402,F401  (import registers each handler)
+    scoped_rate_total as _scoped_rate_total,
+    weighted_account as _weighted_account,
+    ratio_holder_remainder as _ratio_holder_remainder,
+    installment_balance as _installment_balance,
+    mean_required_rate as _mean_required_rate,
+    schedule_attendance as _schedule_attendance,
+    recurring_goal_shortfall as _recurring_goal_shortfall,
+    source_contribution_remainder as _source_contribution_remainder,
     uniform_partition_duration as _uniform_partition_duration,
     process_part_remainder as _process_part_remainder,
     population_rate_total as _population_rate_total,

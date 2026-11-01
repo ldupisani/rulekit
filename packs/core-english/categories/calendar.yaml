@@ -1,0 +1,7 @@
+format: rulekit/categories@1
+categories:
+  named_season: {parent: timeperiod}
+  period_boundary_noun: {parent: noun}
+members:
+  named_season: [spring, summer, autumn, fall, winter]
+  period_boundary_noun: [start, beginning, end]

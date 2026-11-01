@@ -34,6 +34,16 @@ pronouns and possessors, then rematches changed readings. Plural subject groups
 come from explicit discourse evidence; they are not assembled from every
 holder with a matching quantity unit.
 
+Opted-in impersonal resource predicates can continue an explicitly introduced
+animal, organization or device. Definite repeats preserve that actor's identity;
+competing identities and repeated indefinite introductions remain unresolved.
+A source-attribution subject does not nominate the recipient of a change.
+The same unique actor can own an explicit quantitative attribute through an
+opted-in impersonal possessive. The determiner remains visible, and the owned
+noun retains the resolved owner; competing actors remain ambiguous.
+Reference-form agreement checks the pronouns and possessors already linked to
+one actor without assigning gender from a name.
+
 Tests: [identity](../tests/test_reference_identity.py),
 [reference bindings](../tests/test_reference_bindings.py), and
 [personal coreference](../tests/test_animate_coreference.py).
@@ -92,6 +102,12 @@ in this reference mechanism.
 Implementation: [location witnesses](../src/rulekit/kernel/consumers/location_witnesses.py).
 Tests: [spatial prepositions](../tests/test_spatial_prepositions.py) and
 [temporal location witnesses](../tests/test_temporal_location_witnesses.py).
+
+An indexed progress observation can continue the immediately preceding named
+actor's initial-period average. This requires the same period unit, the next
+consecutive index, one explicit subject, and no competing names in that sentence.
+It supplies a real antecedent without introducing a general recency preference.
+Unindexed observations, gaps and competing subjects keep their ambiguity.
 
 The Designer exposes this evidence through its deictic field and semantic
 views. See [the workbench reference](authoring-workbench.md).

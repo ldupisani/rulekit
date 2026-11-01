@@ -34,7 +34,7 @@ def inquiry(activity='is calculating', frequency='daily '):
             'If she surveyed 36 workers, what is the total amount of money those 36 workers get per day?')
 
 
-@pytest.mark.parametrize('activity', ['is calculating', 'was calculating', 'calculates', 'calculated',
+@pytest.mark.parametrize('activity', ['wants to find out', 'is calculating', 'was calculating', 'calculates', 'calculated',
                                      'is determining', 'was determining', 'determines', 'determined'])
 @pytest.mark.parametrize('frequency', ['daily ', ''])
 def test_assessment_activity_is_context_not_an_extra_receipt(project, activity, frequency):

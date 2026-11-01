@@ -558,7 +558,7 @@ def test_boundary_mode_survives_retest_and_review_without_counting_coverage(
 def test_gsm8k_generation_fixtures_make_every_premise_rule_available() -> None:
     availability = list_rule_availability(load_project(Path("projects/gsm8k")))
 
-    assert len(availability) == 646
+    assert len(availability) == 722
     blocked = {
         rule.id: rule for rule in availability if not rule.supported
     }
@@ -637,6 +637,11 @@ def test_gsm8k_generation_fixtures_make_every_premise_rule_available() -> None:
         "arithmetic/account-referenced-payment",
         "arithmetic/account-relative-full-settlement",
         "arithmetic/account-anaphoric-full-settlement",
+            "arithmetic/indexed-completion-amount-label",
+            "arithmetic/named-individual-completion-deadline",
+            "arithmetic/named-shared-completion-context",
+            "arithmetic/measured-outcome-with-source-inventory",
+
         "arithmetic/two-part-personal-name",
         "arithmetic/capacity-progress-anaphoric-multiplier-safety",
         "arithmetic/dangling-comparative-safety",

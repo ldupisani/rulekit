@@ -1,0 +1,332 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/owned-performance-goal
+  description: A participant's performance target retains its recurrence; a complete named-day make-up frame can 
+    also supply the daily interpretation.
+  match:
+    sentence:
+    - {slot: goal, cat: performance_goal_noun, possessed: true, at_start: true}
+    - {slot: be, cat: copula}
+    - {slot: amount, cat: performance_unit, counted: true, bare: true}
+    - opt:
+      - {lit: [per, each, every, a], consume_skipped: true}
+      - {slot: period, cat: duration_measure, uncounted: true, bare: true}
+    - {lit: ., consume_skipped: true}
+  consumes: [be, amount]
+  satisfies: {be: [subject]}
+  where: [number_compatible: [goal, be]]
+  emits:
+  - {fact: batch_evidence, kind: recurring-minimum-goal, entity: '{goal.owner}', measure: '{amount}', value: amount,
+    marker: '{period.optional}', container: '{goal}', position: '{amount.span_start}'}
+- id: arithmetic/cumulative-performance-through-period
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      bare: true
+      at_start: true
+    - slot: perform
+      cat: past_performance_auxiliary
+    - slot: amount
+      cat: performance_unit
+      counted: true
+      bare: true
+    - lit: by
+    - slot: day
+      cat: named_weekday
+    - lit: .
+      consume_skipped: true
+  consumes:
+  - perform
+  - amount
+  where:
+  - number_compatible:
+    - who
+    - perform
+  emits:
+  - fact: batch_evidence
+    kind: performance-progress-to-date
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    marker: '{day}'
+    position: '{amount.span_start}'
+templates:
+  indexed-performance:
+    parameters:
+      before:
+      - {lit: on, at_start: true}
+      - {slot: day, cat: named_weekday}
+      - {lit: ',', consume_skipped: true}
+      after: []
+      predicate:
+      - {slot: be, cat: past_copula}
+      - opt: [{lit: only, consume_skipped: true}]
+      - {slot: able, cat: achievement_capacity_adjective}
+      - {lit: to}
+      - {slot: perform, cat: bare_performance_auxiliary}
+      tail: []
+      consumed: [be]
+      satisfaction: {be: [subject]}
+      references: {}
+      extra: []
+      constraints:
+      - number_compatible:
+        - who
+        - be
+    rule:
+      description: An achieved count belongs to one named day; a make-up intention records its deadline without 
+        inventing completed work.
+      match:
+        sentence:
+        - {parameter: before}
+        - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, bare: true}
+        - {parameter: predicate}
+        - {slot: amount, cat: performance_unit, counted: true, bare: true}
+        - {parameter: after}
+        - {parameter: tail}
+        - {lit: ., consume_skipped: true}
+      consumes: [perform, amount, parameter: consumed]
+      satisfies: {parameter: satisfaction}
+      references: {parameter: references}
+      emits:
+      - {fact: batch_evidence, kind: indexed-performance, entity: '{who}', measure: '{amount}', value: amount, 
+          marker: '{day}', position: '{amount.span_start}'}
+      - {parameter: extra}
+      where:
+        parameter: constraints
+  goal-shortfall-question:
+    parameters:
+      demand:
+      - {lit: [would, will], consume_skipped: true}
+      - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, bare: true}
+      - {slot: have, cat: plain_have_state, bare_form: true}
+      - {lit: to}
+      satisfaction:
+        have:
+        - subject
+        meet:
+        - subject
+        compensate:
+        - subject
+      carryover:
+      - {lit: and}
+      - {slot: compensate, cat: compensation_verb, bare_form: true}
+      - {lit: for}
+      - {lit: the, consume_skipped: true}
+      - {slot: ones, cat: omitted_performance_unit}
+      - {slot: subject, cat: clause_subject_personal_pronoun}
+      - {slot: past, cat: past_performance_auxiliary}
+      - {lit: not}
+      - {slot: repeated, cat: bare_performance_auxiliary}
+      timing:
+      - lit: on
+      - slot: day
+        cat: named_weekday
+      goal_reference: {slot: goal, cat: performance_goal_noun, uncounted: true, qualified: true, qualifier_cat: 
+          minimum_goal_descriptor, all_qualifiers: true}
+    rule:
+      match:
+        question:
+        - {lit: how, at_start: true}
+        - {lit: many}
+        - {slot: item, cat: performance_unit, uncounted: true, bare: true, number: plural}
+        - parameter: demand
+        - {slot: perform, cat: bare_performance_auxiliary}
+        - parameter: timing
+        - {lit: to}
+        - {slot: meet, cat: goal_attainment_verb, bare_form: true}
+        - {slot: owner, cat: possessive_determiner}
+        - parameter: goal_reference
+        - parameter: carryover
+        - {lit: '?', consume_skipped: true}
+      satisfies:
+        parameter: satisfaction
+      resolves: {consumer: recurring-goal-shortfall, entity: '{who}', measure: '{item}', day: '{day.optional}'}
+variants:
+- {id: arithmetic/fronted-limited-performance, template: indexed-performance}
+- id: arithmetic/rear-limited-performance
+  template: indexed-performance
+  arguments:
+    before:
+    - opt: [{lit: however, consume_skipped: true}, {lit: ',', consume_skipped: true}]
+    after: [lit: on, {slot: day, cat: named_weekday}]
+- id: arithmetic/fronted-performance-with-make-up-plan
+  template: indexed-performance
+  arguments:
+    tail:
+    - {lit: ',', consume_skipped: true}
+    - {lit: so}
+    - {slot: decider, cat: clause_subject_personal_pronoun}
+    - {slot: decide, cat: deliberate_intention_verb, finite_form: true}
+    - {lit: that}
+    - {slot: planner, cat: clause_subject_personal_pronoun}
+    - {lit: would, consume_skipped: true}
+    - {slot: compensate, cat: compensation_verb, bare_form: true}
+    - {lit: for}
+    - {lit: the, consume_skipped: true}
+    - {slot: rest, cat: partition_remnant, uncounted: true, bare: true}
+    - {lit: on}
+    - {slot: next_day, cat: named_weekday}
+    consumed: [be, decide, compensate]
+    satisfaction: {be: [subject], decide: [subject], compensate: [subject]}
+    references: {decider: who, planner: who}
+    extra:
+    - {fact: batch_evidence, kind: make-up-intention, entity: '{who}', measure: '{amount}', value: 0, marker: '{next_day}',
+      position: '{decide.span_start}'}
+    constraints:
+    - number_compatible:
+      - who
+      - be
+    - number_compatible:
+      - decider
+      - decide
+- id: arithmetic/fronted-completed-performance
+  template: indexed-performance
+  arguments:
+    predicate: [{slot: perform, cat: past_performance_auxiliary}]
+    consumed: []
+    satisfaction: {}
+    constraints:
+    - number_compatible:
+      - who
+      - perform
+- id: arithmetic/coordinated-indexed-performance
+  template: indexed-performance
+  arguments:
+    predicate: [{slot: perform, cat: past_performance_auxiliary}]
+    consumed:
+    - other_amount
+    satisfaction: {}
+    constraints:
+    - number_compatible:
+      - who
+      - perform
+    tail:
+    - opt:
+      - lit: ','
+        consume_skipped: true
+    - lit: and
+    - slot: other_amount
+      cat: performance_unit
+      counted: true
+      bare: true
+    - lit: on
+    - slot: other_day
+      cat: named_weekday
+    extra:
+    - fact: batch_evidence
+      kind: indexed-performance
+      entity: '{who}'
+      measure: '{other_amount}'
+      value: other_amount
+      marker: '{other_day}'
+      position: '{other_amount.span_start}'
+- id: arithmetic/rear-completed-performance
+  template: indexed-performance
+  arguments:
+    predicate:
+    - opt:
+      - lit: only
+        consume_skipped: true
+    - slot: perform
+      cat: past_performance_auxiliary
+    consumed: []
+    satisfaction: {}
+    constraints:
+    - number_compatible:
+      - who
+      - perform
+    before:
+    - opt:
+      - lit: however
+        consume_skipped: true
+      - lit: ','
+        consume_skipped: true
+    after:
+    - lit: on
+    - slot: day
+      cat: named_weekday
+ask_variants:
+- id: ask/minimum-goal-with-carried-shortfall
+  template: goal-shortfall-question
+- id: ask/minimum-goal-with-carried-shortfall-must
+  template: goal-shortfall-question
+  arguments:
+    demand:
+    - lit: must
+      consume_skipped: true
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, bare: true}
+    satisfaction:
+      meet:
+      - subject
+      compensate:
+      - subject
+- id: ask/minimum-goal-with-carried-shortfall-need
+  template: goal-shortfall-question
+  arguments:
+    demand:
+    - slot: aux
+      cat: auxiliary
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, bare: true}
+    - slot: need
+      cat: infinitival_requirement_predicate
+      bare_form: true
+    - lit: to
+    satisfaction:
+      need:
+      - subject
+      meet:
+      - subject
+      compensate:
+      - subject
+- id: ask/remaining-performance-goal-future
+  template: goal-shortfall-question
+  arguments:
+    carryover: []
+    timing:
+    - opt:
+      - lit: on
+      - slot: day
+        cat: named_weekday
+    goal_reference:
+      slot: goal
+      cat: performance_goal_noun
+      uncounted: true
+    satisfaction:
+      have:
+      - subject
+      meet:
+      - subject
+- id: ask/remaining-performance-goal-auxiliary
+  template: goal-shortfall-question
+  arguments:
+    carryover: []
+    timing:
+    - opt:
+      - lit: on
+      - slot: day
+        cat: named_weekday
+    goal_reference:
+      slot: goal
+      cat: performance_goal_noun
+      uncounted: true
+    satisfaction:
+      have:
+      - subject
+      meet:
+      - subject
+    demand:
+    - slot: aux
+      cat: auxiliary
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      bare: true
+    - slot: have
+      cat: plain_have_state
+      bare_form: true
+    - lit: to

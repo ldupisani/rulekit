@@ -370,7 +370,7 @@ def _coverage_score(reading: Reading, reg: Registry) -> tuple[int, int]:
     return (unmet, disconnected)
 
 
-def _relative_marker_licenses_finite_verb(reading: Reading, unit: Unit) -> bool:
+def _relative_marker_licenses_finite_verb(reading: Reading, unit: Unit, reg: Registry | None = None) -> bool:
     """An adjacent nominal relative antecedent supplies the finite subject.
 
     Do not prefer an inflected noun homograph in ``a coat that costs ...``.
@@ -384,7 +384,7 @@ def _relative_marker_licenses_finite_verb(reading: Reading, unit: Unit) -> bool:
     marker, antecedent = reading.units[index - 1], reading.units[index - 2]
     return (marker.sense() == "complementizer" and antecedent.sense() == "noun"
             and is_finite_verb_form(unit.features.get("fold", ""),
-                                    unit.features.get("lemma", "")))
+                                    unit.features.get("lemma", ""), reg))
 
 
 def _article_licenses_noun(reading: Reading, unit: Unit, reg: Registry | None = None) -> bool:
@@ -542,7 +542,7 @@ def _partitive_licenses_noun(reading: Reading, unit: Unit, reg: Registry) -> boo
 
 
 def _finite_verb_licenses_nonbare_noun_object(
-    reading: Reading, unit: Unit
+    reading: Reading, unit: Unit, reg: Registry | None = None
 ) -> bool:
     """Select a noun reading after a complete finite predicate.
 
@@ -568,7 +568,7 @@ def _finite_verb_licenses_nonbare_noun_object(
         return False
     previous_fold = previous.features.get("fold", "")
     previous_lemma = previous.features.get("lemma", previous_fold)
-    return is_finite_verb_form(previous_fold, previous_lemma)
+    return is_finite_verb_form(previous_fold, previous_lemma, reg)
 
 
 def _compatible_head_licenses_adjective(
@@ -897,7 +897,7 @@ def disambiguate(reading: Reading, reg: Registry) -> Reading:
         if "noun" in senses and "verb" in senses and _auxiliary_licenses_bare_verb(reading, u, reg):
             options.append(["verb"])
             continue
-        if "noun" in senses and "verb" in senses and _relative_marker_licenses_finite_verb(reading, u):
+        if "noun" in senses and "verb" in senses and _relative_marker_licenses_finite_verb(reading, u, reg):
             options.append(["verb"])
             continue
         if "noun" in senses and "verb" in senses and _priced_subject_licenses_verb(reading, u, reg):
@@ -912,7 +912,7 @@ def disambiguate(reading: Reading, reg: Registry) -> Reading:
             options.append(["verb"])
             continue
         if "noun" in senses and "verb" in senses and (
-            _finite_verb_licenses_nonbare_noun_object(reading, u)
+            _finite_verb_licenses_nonbare_noun_object(reading, u, reg)
             or _article_licenses_noun(reading, u, reg)
             or _counted_compound_licenses_noun(reading, u, reg)
         ):

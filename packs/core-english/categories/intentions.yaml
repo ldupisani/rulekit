@@ -1,0 +1,9 @@
+format: rulekit/categories@1
+categories:
+  preparation_intention_verb: {parent: verb}
+  deliberate_intention_verb: {parent: verb}
+  infinitival_requirement_predicate: {parent: direct_quantity_goal_predicate}
+members:
+  preparation_intention_verb: [prepare, prepares, prepared, preparing]
+  deliberate_intention_verb: [decide, decided, decides]
+  infinitival_requirement_predicate: [need, needed, needs]

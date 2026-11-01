@@ -209,6 +209,7 @@ def _nominal_pass(reading: Reading, reg: Registry) -> bool:
             a.sense() == "verb"
             and a.features.get("lemma") == "have"
             and b.sense() == "verb"
+            and not reg.word_in_category(b.features.get("fold", ""), "copula")
         ):
             merged = reading.new_unit(a.words + b.words, dict(b.features))
             merged.features["fold"] = f"{a.features['fold']} {b.features['fold']}"
@@ -471,6 +472,46 @@ def _nominal_pass(reading: Reading, reg: Registry) -> bool:
             )
             return True
         # noun + noun -> compound, head = the RIGHT noun ("mango trees")
+        # An income predicate can introduce a service activity rather than a
+        # noun modifier. Its declared theme frame supplies the distinction;
+        # unrelated product compounds keep their ordinary nominal reading.
+        if i > 0 and b.sense() == "noun":
+            previous = units[i - 1]
+            entry = reg.lexicon.get(a.features.get("fold", ""))
+            if (
+                previous.sense() == "verb"
+                and reg.word_in_category(
+                    previous.features.get("lemma", ""), "wage_verb"
+                )
+                and entry is not None
+                and entry.verb is not None
+                and "verb" in entry.senses
+                and a.surface.casefold().endswith("ing")
+            ):
+                lemma = entry.verb.lemma or a.features.get("lemma", "")
+                if (
+                    reg.word_in_category(lemma, "service_activity_verb")
+                    and any(
+                        frame.get("theme")
+                        and reg.word_in_category(
+                            b.features.get("lemma", ""), frame["theme"]
+                        )
+                        for _, frame in reg.selectional_frames(lemma)
+                    )
+                    and a.sense() != "verb"
+                ):
+                    reading.record(
+                        "select-service-complement",
+                        a,
+                        {
+                            "senses": ["verb"],
+                            "sense": "verb",
+                            "lemma": lemma,
+                            "ambiguous": False,
+                        },
+                        "the preceding income predicate and declared service theme license a verbal activity",
+                    )
+                    return True
         if (
             a.sense() == "noun" and b.sense() == "noun"
             and "value" not in a.features

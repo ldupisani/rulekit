@@ -1,0 +1,18 @@
+format: rulekit/categories@1
+categories:
+  activity_context: {parent: noun}
+  occupational_activity_context: {parent: activity_context}
+  planned_activity_context: {parent: activity_context}
+  operational_activity_context: {parent: activity_context}
+  activity_context_descriptor: {parent: adjective}
+  scoped_activity_participle: {parent: verb}
+  activity_context_preposition: {parent: preposition}
+members:
+  occupational_activity_context: [job, contract, shift]
+  planned_activity_context: [project, task, assignment]
+  operational_activity_context: [machine, station]
+  activity_context_descriptor: [main, primary, secondary, first, second, third, fourth]
+  scoped_activity_participle: [working, operating]
+  activity_context_preposition: [at, on, in, for, with]
+attribute_compatibility:
+  activity_context_descriptor: [activity_context]

@@ -1,0 +1,23 @@
+format: rulekit/categories@1
+categories:
+  sport:
+    parent: timed_activity_object
+  board_game:
+    parent: timed_activity_object
+  exercise_activity:
+    parent: timed_activity_object
+  exercise_repetition: {parent: performance_unit}
+members:
+  sport:
+    - softball
+    - basketball
+    - baseball
+    - soccer
+    - volleyball
+  board_game:
+    - chess
+    - tic-tac-toe
+  exercise_activity:
+    - workout
+    - yoga
+  exercise_repetition: [situp, pushup, lap]

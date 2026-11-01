@@ -351,33 +351,128 @@ def _prior_location_anaphor_candidates(
     }
 
 
+def _indexed_continuation_candidates(readings, reading, unit, reg):
+    """A consecutive indexed observation can continue one named prefix actor.
+
+    This is a bounded quantitative construction, not a recency preference:
+    the immediately preceding sentence must state one initial-period average,
+    and the current observation must be its very next period in the same unit.
+    """
+    if (
+        reg is None
+        or unit.features.get("number") != "singular"
+        or not reg.word_in_category(
+            unit.features.get("fold", ""), "clause_subject_personal_pronoun"
+        )
+        or not any(
+            v.sense() == "verb"
+            and reg.word_in_category(
+                v.features.get("lemma", ""), "indexed_progress_predicate"
+            )
+            and any(
+                ob.need == "subject" and ob.target is unit for ob in v.obligations()
+            )
+            for v in reading.units
+        )
+    ):
+        return None
+    indexed = []
+    for period in reading.units:
+        if not reg.word_in_category(
+            period.features.get("lemma", ""), "duration_measure"
+        ):
+            continue
+        label = period.features.get("label")
+        ordinal = reg.attrs.get(period.features.get("qualifier", ""), {}).get(
+            "ordinal_index"
+        )
+        if label is not None:
+            try:
+                ordinal = float(label)
+            except ValueError:
+                continue
+        if ordinal is not None:
+            indexed.append((period.features["lemma"], ordinal))
+    if len(indexed) != 1:
+        return None
+    prior = next(
+        (r for r in readings if r.sentence_index == reading.sentence_index - 1), None
+    )
+    if prior is None:
+        return {}
+    prefixes = [
+        p
+        for p in prior.units
+        if p.features.get("lemma") == indexed[0][0]
+        and p.features.get("value_kind") == "count"
+        and reg.word_in_category(
+            p.features.get("qualifier", ""), "initial_sequence_ordinal"
+        )
+    ]
+    if len(prefixes) != 1 or prefixes[0].features["value"] + 1 != indexed[0][1]:
+        return {}
+    subjects = {
+        reference_from_unit(ob.target): (prior.sentence_index, ob.target)
+        for verb in prior.units
+        if verb.sense() == "verb"
+        and verb.features.get("pattern_consumed")
+        and reg.word_in_category(verb.features.get("lemma", ""), "averaging_verb")
+        for ob in verb.obligations()
+        if ob.need == "subject"
+        and isinstance(ob.target, Unit)
+        and ob.target.sense() == "name"
+    }
+    names = {reference_from_unit(u) for u in prior.units if u.sense() == "name"}
+    return subjects if len(subjects) == 1 and names == set(subjects) else {}
+
+
 def _prior_nonpersonal_actor_candidates(readings, reading, unit, reg):
     """An opted-in impersonal subject continues one explicit resource actor.
 
-    Objects, capacities and personal names cannot nominate an actor. Multiple
-    prior subject mentions remain ambiguous rather than winning by recency.
+    Objects, source attributions and personal names cannot nominate an actor.
+    Definite repeats retain one identity; competing identities and repeated
+    indefinite introductions remain ambiguous rather than winning by recency.
     """
     if (not reg.word_in_category(unit.features.get("lemma", ""), "nonpersonal_actor_anaphor")
-            or not any(
+            or not (any(
                 predicate.sense() == "verb"
                 and any(reg.word_in_category(predicate.features.get("lemma", ""), category)
-                        for category in ("resource_usage_verb", "retention_verb", "allocation_transfer_verb"))
+                        for category in ("resource_usage_verb", "retention_verb", "allocation_transfer_verb",
+                                         "nonpersonal_actor_predicate"))
                 and any(ob.need == "subject" and ob.target is unit for ob in predicate.obligations())
-                for predicate in reading.units)):
+                for predicate in reading.units)
+                or reg.word_in_category(unit.features.get('lemma', ''), 'possessive_determiner')
+                and any(owned.features.get('owner_ref_uid') == unit.uid
+                        and reg.word_in_category(owned.features.get('lemma', ''), 'quantitative_property_noun')
+                        for owned in reading.units))):
         return None
     candidates = {}
+    seen = set()
     for prior in readings:
         if prior.sentence_index >= reading.sentence_index:
             continue
         for predicate in prior.units:
             if predicate.sense() != "verb":
                 continue
+            if reg.word_in_category(predicate.features.get('fold', ''), 'source_attribution_predicate'):
+                continue
             for obligation in predicate.obligations():
                 target = obligation.target
                 if (obligation.need == "subject" and isinstance(target, Unit)
                         and target.sense() == "noun"
                         and reg.word_in_category(target.features.get("lemma", ""), "nonpersonal_resource_actor")):
-                    candidates[(prior.sentence_index, target.uid)] = (prior.sentence_index, target)
+                    mention = (prior.sentence_index, target.uid)
+                    if mention in seen:
+                        continue
+                    seen.add(mention)
+                    identity = reference_from_unit(target)
+                    if identity in candidates:
+                        index = prior.units.index(target)
+                        definite = index > 0 and reg.word_in_category(
+                            prior.units[index - 1].features.get('lemma', ''), 'definite_article')
+                        if not definite and not target.features.get('owner_resolved'):
+                            return {}
+                    candidates[identity] = (prior.sentence_index, target)
     return candidates if len(candidates) == 1 else {}
 
 
@@ -785,8 +880,12 @@ def _bind_discourse(
                     readings, reading, unit, reg
                 )
                 actor_candidates = _prior_nonpersonal_actor_candidates(readings, reading, unit, reg)
+                continuation_candidates = _indexed_continuation_candidates(readings, reading, unit, reg)
                 dimension = deixis.PERSON
-                if actor_candidates is not None:
+                if continuation_candidates is not None:
+                    candidates = continuation_candidates
+                    dimension = deixis.DISCOURSE
+                elif actor_candidates is not None:
                     candidates = actor_candidates
                     dimension = deixis.DISCOURSE
                 elif location_candidates is not None:

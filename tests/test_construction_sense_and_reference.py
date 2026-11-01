@@ -5,7 +5,7 @@ import pytest
 from pydantic import ValidationError
 
 from rulekit.data.project import load_project
-from rulekit.data.schemas import AskRule
+from rulekit.data.schemas import AskRule, PatternRule
 from rulekit.kernel.document import _local_possessive_subject_candidates
 from rulekit.kernel.engine import solve
 from rulekit.kernel.learn import _lemma
@@ -25,10 +25,20 @@ def reg():
     ([{"slot": "x", "cat": "noun", "span": True}], ["x"]),
     ([{"slot": "x", "cat": "noun"}], ["x", "x"]),
 ])
-def test_ask_sense_selection_requires_unique_category_slots(tokens, selection):
+@pytest.mark.parametrize('model,scope,extra', [
+    (AskRule, 'question', {'resolves': {'consumer': 'invented'}}),
+    (PatternRule, 'sentence', {}),
+])
+def test_construction_sense_selection_requires_unique_category_slots(tokens, selection, model, scope, extra):
     with pytest.raises(ValidationError):
-        AskRule.model_validate({"id": "invented", "match": {"question": tokens},
-                                "disambiguates": selection, "resolves": {"consumer": "invented"}})
+        model.model_validate({"id": "invented", "match": {scope: tokens},
+                              "disambiguates": selection, **extra})
+
+
+def test_premise_sense_selection_requires_a_read_phase_sentence():
+    with pytest.raises(ValidationError, match='read-phase sentence'):
+        PatternRule.model_validate({'id': 'invented', 'phase': 'post-saturation',
+            'match': {'sentence': [{'slot': 'x', 'cat': 'noun'}]}, 'disambiguates': ['x']})
 
 
 def test_selected_complete_area_frame_commits_only_its_declared_senses(reg):

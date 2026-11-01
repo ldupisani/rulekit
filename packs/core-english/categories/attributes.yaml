@@ -1,5 +1,12 @@
 format: rulekit/categories@1
 attrs:
+  monday: {weekday_index: 0}
+  tuesday: {weekday_index: 1}
+  wednesday: {weekday_index: 2}
+  thursday: {weekday_index: 3}
+  friday: {weekday_index: 4}
+  saturday: {weekday_index: 5}
+  sunday: {weekday_index: 6}
   fifth:
     ordinal_index: 5
   final:
@@ -58,6 +65,12 @@ categories:
   capacity_noun:
     parent: noun
     notes: Container nouns that license a capacity-state predicate.
+  equal_size_descriptor:
+    parent: adjective
+  variable_size_descriptor:
+    parent: adjective
+  size_property_noun:
+    parent: noun
 members:
   preference_attribute:
   - favorite
@@ -68,11 +81,25 @@ members:
   capacity_attribute: [full]
   capacity_noun: [box]
   intrinsic_attribute: [thick, wooden]
+  equal_size_descriptor:
+  - equal sized
+  - equally sized
+  - equal-sized
+  - equally-sized
+  variable_size_descriptor:
+  - unequal
+  size_property_noun:
+  - size
 attribute_compatibility:
   preference_attribute: [purchase_collection_noun]
   quality_attribute: [quality_bearer_noun, animate]
   marital_status_attribute: [animate]
   capacity_attribute: [capacity_noun]
+  equal_size_descriptor:
+  - quantity_container
+  - physical_size_noun
+  variable_size_descriptor:
+  - size_property_noun
 part_counts:
   appendage: legs
   wheels: wheels

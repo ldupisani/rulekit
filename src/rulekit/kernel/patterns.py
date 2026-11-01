@@ -280,7 +280,7 @@ def is_bare_verb_form(fold: str, lemma: str) -> bool:
     )
 
 
-def is_finite_verb_form(fold: str, lemma: str) -> bool:
+def is_finite_verb_form(fold: str, lemma: str, reg: Registry | None = None) -> bool:
     """Whether a verb surface can head a finite matrix clause.
 
     Productive ``-ing`` forms are the structurally observable non-finite class
@@ -289,6 +289,9 @@ def is_finite_verb_form(fold: str, lemma: str) -> bool:
     without an auxiliary; the surrounding rule owns that distinction.
     """
 
+    entry = reg.lexicon.get(fold) if reg is not None else None
+    if entry is not None and entry.verb is not None and entry.verb.finite is not None:
+        return entry.verb.finite
     return not (fold.endswith("ing") and fold != lemma)
 
 
@@ -366,6 +369,7 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
     if token.finite_form and not is_finite_verb_form(
         unit.features.get("fold") or "",
         _lemma_of(unit),
+        reg,
     ):
         return False
     if token.class_only and (unit.sense() != "noun" or any(
@@ -1041,6 +1045,7 @@ def _try_match_at(
                     members = _category_enumeration(
                         captured, token.enumeration_cat, reg,
                         counted=token.enumeration_counted,
+                        qualified=token.enumeration_qualified,
                     )
                     if members is None or len(members) < token.enumeration_min_members:
                         continue
@@ -1266,13 +1271,13 @@ def _check_where(
                         number = None
                 if unit.sense() == "verb":
                     entry = reg.lexicon.get(unit.surface.casefold())
-                    if entry is not None and entry.number is None:
+                    if entry is not None:
                         # Simple-past forms do not inflect for subject number
                         # ("she sold" / "they sold").  The analyzer gives an
                         # otherwise unannotated token a singular fallback, so
                         # only an explicit lexical number feature is genuine
                         # agreement evidence for a verb.
-                        number = None
+                        number = entry.number_for_sense('verb')
                 if unit.features.get("value_kind") == "count":
                     value = unit.features.get("value")
                     if not isinstance(value, (int, float)):
@@ -1629,7 +1634,7 @@ def _check_where(
             if requirement.form == "bare":
                 if not is_bare_verb_form(fold, lemma):
                     return False
-            elif not is_finite_verb_form(fold, lemma):
+            elif not is_finite_verb_form(fold, lemma, reg):
                 return False
         if pred.owner_matches is not None:
             relation = pred.owner_matches
@@ -1946,7 +1951,7 @@ def _named_enumeration(span: tuple, reg: Registry) -> list[str] | None:
     return list(members) if members and len(members) >= 2 else None
 
 
-def _category_enumeration(span, category, reg, *, counted=False):
+def _category_enumeration(span, category, reg, *, counted=False, qualified=False):
     """An exact singleton or conjunctive list of category-compatible heads."""
     segments = _enumeration_segments(span)
     if not segments:
@@ -1960,7 +1965,7 @@ def _category_enumeration(span, category, reg, *, counted=False):
         if counted:
             if unit.sense() != "noun" or unit.features.get("value_kind") != "count":
                 return None
-        elif unit.features.get("reference_qualifiers") or "value" in unit.features:
+        elif (unit.features.get("reference_qualifiers") and not qualified) or "value" in unit.features:
             return None
         if not (unit.sense() == category or reg.word_in_category(_lemma_of(unit), category)):
             return None
@@ -2551,12 +2556,12 @@ def run_rules(
             if t.lit is not None
         ):
             continue
-        counted_enumerations = set()
+        scalar_enumerations = set()
         pending = list(seq)
         while pending:
             token = pending.pop()
-            if token.enumeration_counted:
-                counted_enumerations.add(token.slot)
+            if token.enumeration_cat:
+                scalar_enumerations.add(token.slot)
             pending.extend(token.opt or ())
         for m in match_all(reading, seq, reg, overlapping=rule.overlapping):
             m.rule = rule
@@ -2625,10 +2630,11 @@ def run_rules(
                     for seg in _enumeration_segments(span):
                         sub_slots = dict(effective_slots)
                         content = tuple(u for u in seg if u.sense() not in SKIPPABLE_SENSES)
-                        # A counted member is a scalar nominal, so ordinary
-                        # numeric expressions, qualifiers and reference
-                        # identities work just as they do for scalar slots.
-                        sub_slots["item"] = (content[0] if e.each in counted_enumerations else seg)
+                        # A category-validated member is one scalar nominal.
+                        # Keep its qualifiers and reference identity for both
+                        # measured and uncounted source enumerations. Legacy
+                        # free-form spans keep their tuple representation.
+                        sub_slots["item"] = (content[0] if e.each in scalar_enumerations else seg)
                         fact = _build_fact(
                             e.fields, e.fact, sub_slots, reg, emit_provenance,
                             log, rule.id, reading=reading,

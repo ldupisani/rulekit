@@ -46,6 +46,10 @@ categories:
   accumulation_particle: {parent: adverb}
   accumulation_period_descriptor: {parent: preposition}
   cash_remainder_noun: {parent: noun}
+  supplemental_receipt_noun:
+    parent: transaction_adjustment_noun
+  completed_receipt_transfer:
+    parent: tender_verb
 context_synonyms:
   wage_earnings:
     gate: currency
@@ -58,7 +62,9 @@ members:
   sports_activity_noun: [baseball, tennis, volleyball]
   recurring_activity_verb: [play, plays, playing, work, working]
   annual_activity_period: [season]
-  averaging_verb: [average]
+  averaging_verb:
+  - average
+  - averages
   resource_funding_verb: [afford]
   accumulation_particle: [up]
   accumulation_period_descriptor: [past]
@@ -77,10 +83,17 @@ members:
   periodic_income_verb: [earn, earned, earns, get, gets, got, receive, received, receives]
   resource_accumulation_verb: [save, saved, saves, saving]
   service_activity_verb: [mow, mowed, mowing, mows, paint, painted, paints, rake, raking, rakes, raked, shovel,
-    shoveled, shovelled, shoveling, shovelling, shovels, wash, washed, washes, washing]
+      shoveled, shovelled, shoveling, shovelling, shovels, wash, washed, washes, washing]
   service_object: [car, driveway, gate, lawn, window]
   service_tariff_verb: [charge, charged, charges]
   surface_clearing_service: [shovel, shoveled, shovelled, shovels]
   surface_coating_service: [paint, painted, paints]
   surface_washing_service: [wash, washed, washes, washing]
   washable_surface: [car, driveway, gate, window]
+  supplemental_receipt_noun:
+  - tip
+  - bonus
+  - gratuity
+  completed_receipt_transfer:
+  - gave
+  - paid

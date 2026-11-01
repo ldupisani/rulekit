@@ -1,0 +1,78 @@
+format: rulekit/categories@1
+categories:
+  contribution_recipient:
+    parent: noun
+    includes: [living_agent, organization, production_device]
+  contribution_source:
+    parent: noun
+    includes: [edible_quantity_object, material_resource, animal, funding_source]
+  funding_source: {parent: noun}
+  source_participation_verb: {parent: verb}
+  dietary_source_activity:
+    parent: source_participation_verb
+    selectional_roles: {actor: living_agent, theme: dietary_source}
+  dietary_source:
+    parent: contribution_source
+    includes: [edible_quantity_object, animal]
+  financial_source_activity:
+    parent: source_participation_verb
+    selectional_roles: {actor: intentional_agent, theme: funding_source}
+  on_source_activity: {parent: dietary_source_activity}
+  direct_source_activity: {parent: source_participation_verb}
+  contribution_source_preposition: {parent: preposition}
+  on_source_preposition: {parent: contribution_source_preposition}
+  from_source_preposition: {parent: contribution_source_preposition}
+  contribution_change_verb: {parent: verb}
+  measured_gain_verb:
+    parent: contribution_change_verb
+    selectional_roles: {actor: contribution_recipient, theme: contribution_unit}
+  quantity_attribute: {parent: noun}
+  mass_quantity_attribute: {parent: quantity_attribute}
+  volume_quantity_attribute: {parent: quantity_attribute}
+  currency_quantity_attribute: {parent: quantity_attribute}
+  remaining_quantity_descriptor: {parent: adjective}
+  source_attribution_predicate: {parent: verb}
+  component_representation_verb: {parent: source_attribution_predicate}
+  component_accounting_verb: {parent: source_attribution_predicate}
+  contribution_unit:
+    parent: noun
+    includes: [resource_measure_unit, currency_unit]
+  quantity_change_nominal:
+    parent: noun
+  contribution_origin_predicate:
+    parent: verb
+  quantitative_property_noun:
+    parent: noun
+    includes:
+    - quantity_attribute
+    - quantity_change_nominal
+members:
+  funding_source: [donation, grant, sale, fee]
+  dietary_source_activity: [feast, feasts, feasted, devour, devours, devoured, eat, eats, ate, eating]
+  on_source_activity: [feast, feasts, feasted]
+  direct_source_activity: [devour, devours, devoured, eat, eats, ate, eating, earn, earns, earned, receive,
+      receives, received]
+  on_source_preposition: [on]
+  from_source_preposition: [from]
+  financial_source_activity: [earn, earns, earned, receive, receives, received]
+  contribution_change_verb: [gain, gained, gains, earn, earned, earns, receive, received, receives]
+  measured_gain_verb: [gain, gained, gains]
+  mass_quantity_attribute: [weight, mass]
+  volume_quantity_attribute: [volume]
+  currency_quantity_attribute: [money]
+  remaining_quantity_descriptor: [remaining]
+  component_representation_verb: [make up, made up, makes up]
+  component_accounting_verb: [accounted]
+  quantity_change_nominal:
+  - gain
+  contribution_origin_predicate:
+  - come
+  - came
+  - comes
+attribute_compatibility:
+  mass_quantity_attribute: [mass_unit]
+  volume_quantity_attribute: [volume_measure]
+  currency_quantity_attribute: [currency_measure]
+  remaining_quantity_descriptor: [quantity_attribute, quantity_change_nominal]
+  quantity_attribute:
+  - quantity_change_nominal

@@ -76,6 +76,7 @@ templates:
         - {lit: [per, each, every, a, an], consume_skipped: true}
         - {slot: period, cat: duration_measure, number: singular, bare: true, uncounted: true}
       rate_period: '{period}'
+      selection: []
       tail: []
       extra_where: []
       extra_consumes: []
@@ -104,6 +105,7 @@ templates:
         - verb_roles_compatible: {verb: verb, roles: {actor: [actor], theme: [item]}, require_declared_frame: true}
         - {parameter: extra_where}
       consumes: [item, {parameter: extra_consumes}]
+      disambiguates: {parameter: selection}
       emits:
         - {fact: rate, entity: '{actor}', measure: '{item}', per: {parameter: rate_period}, value: item, verb: '{verb}', distributive: true}
         - {parameter: extra_emits}
@@ -126,8 +128,10 @@ templates:
       period: '{period}'
       span_unit: '{span}'
       span_value: '{span.value}'
+      selection: []
     rule:
       generation: {parameter: generation}
+      disambiguates: {parameter: selection}
       match:
         question:
           - {parameter: prefix}
@@ -260,12 +264,14 @@ variants:
   - id: arithmetic/per-member-daily-rates
     template: per-member-period-rates
     arguments:
+      selection: [frequency]
       timing: [{slot: frequency, cat: daily_frequency_adverb}]
       rate_period: day
 
   - id: arithmetic/two-per-member-daily-rates
     template: per-member-period-rates
     arguments:
+      selection: [frequency, frequency2]
       timing: [{slot: frequency, cat: daily_frequency_adverb}]
       rate_period: day
       tail:
@@ -286,6 +292,7 @@ variants:
   - id: arithmetic/three-per-member-daily-rates
     template: per-member-period-rates
     arguments:
+      selection: [frequency, frequency2, frequency3]
       timing: [{slot: frequency, cat: daily_frequency_adverb}]
       rate_period: day
       tail:
@@ -449,6 +456,7 @@ ask_variants:
   - id: ask/how-many-passive-daily
     template: per-member-ask
     arguments:
+      selection: [frequency]
       timing: [{slot: frequency, cat: daily_frequency_adverb}]
       period: day
   - id: ask/how-many-passive-one-period-span
@@ -482,6 +490,7 @@ ask_variants:
   - id: ask/how-many-active-daily
     template: per-member-ask
     arguments:
+      selection: [frequency]
       generation: *active_generation
       voice: *active_voice
       voice_guards: *active_guards

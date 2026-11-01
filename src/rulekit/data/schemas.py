@@ -26,6 +26,8 @@ class StrictModel(BaseModel):
 class VerbInfo(StrictModel):
     lemma: str | None = None
     past_participle: bool = False
+    number: Literal["singular", "plural"] | None = None
+    finite: bool | None = None
 
 
 class AnaphoricForm(StrictModel):
@@ -59,6 +61,12 @@ class LexiconEntry(StrictModel):
             return []
         return [self.plural] if isinstance(self.plural, str) else list(self.plural)
 
+    def number_for_sense(self, sense: str) -> str | None:
+        """A noun/verb homograph can have different agreement in each use."""
+        if sense == 'verb' and self.verb is not None and self.verb.number is not None:
+            return self.verb.number
+        return self.number
+
     @model_validator(mode="after")
     def _sense_scoped(self) -> "LexiconEntry":
         if self.verb is not None and "verb" not in self.senses:
@@ -67,8 +75,8 @@ class LexiconEntry(StrictModel):
             raise ValueError("anaphoric form on an entry without a pronoun sense")
         if self.plural is not None and "noun" not in self.senses:
             raise ValueError("plural on an entry without a noun sense")
-        if self.lexical_phrase and self.senses not in (["noun"], ["adverb"]):
-            raise ValueError("lexical phrases require one noun or adverb sense")
+        if self.lexical_phrase and self.senses not in (["noun"], ["adverb"], ["adjective"]):
+            raise ValueError("lexical phrases require one noun, adjective or adverb sense")
         return self
 
 
@@ -702,6 +710,7 @@ class MatchToken(StrictModel):
     # class/name. Per-item emission retains that nominal's scalar value and
     # reference; it does not flatten a count into a textual class key.
     enumeration_counted: bool = False
+    enumeration_qualified: bool = False
     # OPT-IN, span-only: name a CATEGORY whose members may never be swallowed
     # into the captured phrase (e.g. packs/logic's `negation`) — a polarity
     # word hidden inside a phrase key would bury the negation where no
@@ -974,6 +983,8 @@ class MatchToken(StrictModel):
             raise ValueError("enumeration_min_members requires enumeration_cat")
         if self.enumeration_counted and self.enumeration_cat is None:
             raise ValueError("enumeration_counted requires enumeration_cat")
+        if self.enumeration_qualified and self.enumeration_cat is None:
+            raise ValueError("enumeration_qualified requires enumeration_cat")
         if self.enumeration_cat is not None and not self.span:
             raise ValueError("enumeration_cat requires a span")
         if self.span_blocks is not None and not self.span:
@@ -1749,6 +1760,29 @@ class GenerationContextDef(StrictModel):
         return self
 
 
+def _declared_match_tokens(match) -> dict[str, MatchToken]:
+    declared = {}
+    pending = [token for sequence in match.values() for token in sequence]
+    while pending:
+        token = pending.pop()
+        if isinstance(token, list):
+            pending.extend(token)
+            continue
+        pending.extend(token.opt or ())
+        if token.slot is not None:
+            declared[token.slot] = token
+    return declared
+
+
+def _validate_sense_selection(selected, declared) -> None:
+    if len(selected) != len(set(selected)):
+        raise ValueError('sense selection slots must be unique')
+    for slot in selected:
+        token = declared.get(slot)
+        if token is None or not token.cat or token.span:
+            raise ValueError('sense selection requires a named, category-gated single-unit slot')
+
+
 class PatternRule(StrictModel):
     id: str
     phase: Literal["read", "post-saturation"] = "read"
@@ -1797,11 +1831,18 @@ class PatternRule(StrictModel):
     # an anaphoric identity; unlike satisfies they never use a sentinel.
     bindings: dict[str, dict[str, str]] = Field(default_factory=dict)
     references: dict[str, str] = Field(default_factory=dict)
+    disambiguates: list[str] = Field(default_factory=list)
+    independent_clause: bool = False
     emits: list[FactEmit] = Field(default_factory=list)
     overrides: dict[str, str] | None = None  # {"rule": id, "reason": ...}
 
     @model_validator(mode="after")
     def _satisfaction_contract_is_explicit(self) -> "PatternRule":
+        if self.independent_clause and (self.phase != 'read' or 'sentence' not in self.match or not self.emits):
+            raise ValueError('independent_clause requires a fact-emitting read-phase sentence rule')
+        _validate_sense_selection(self.disambiguates, _declared_match_tokens(self.match))
+        if self.disambiguates and (self.phase != 'read' or 'sentence' not in self.match):
+            raise ValueError('sense selection requires a read-phase sentence rule')
         if self.references and (self.phase != "read" or "sentence" not in self.match):
             raise ValueError("reference bindings require a read-phase sentence rule")
         for source, target in self.references.items():
@@ -1996,24 +2037,9 @@ class AskRule(StrictModel):
                 raise ValueError(
                     f"ask {self.id!r}: interpretation ids must be unique"
                 )
-        declared_slots: set[str] = set()
-        declared_tokens: dict[str, MatchToken] = {}
-
-        def collect(tokens: list[MatchToken]) -> None:
-            for token in tokens:
-                if token.slot is not None:
-                    declared_slots.add(token.slot)
-                    declared_tokens[token.slot] = token
-                if token.opt is not None:
-                    collect(token.opt)
-
-        collect(self.match["question"])
-        if len(self.disambiguates) != len(set(self.disambiguates)):
-            raise ValueError("sense selection slots must be unique")
-        for slot in self.disambiguates:
-            token = declared_tokens.get(slot)
-            if token is None or not token.cat or token.span:
-                raise ValueError("sense selection requires a named, category-gated single-unit slot")
+        declared_tokens = _declared_match_tokens(self.match)
+        declared_slots = set(declared_tokens)
+        _validate_sense_selection(self.disambiguates, declared_tokens)
         for slot, needs in self.satisfies.items():
             if slot not in declared_slots:
                 raise ValueError(

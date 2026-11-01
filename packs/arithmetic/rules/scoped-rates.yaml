@@ -1,0 +1,391 @@
+format: rulekit/rules@1
+templates:
+  scoped-activity-rate:
+    parameters:
+      quote:
+        amount:
+        - {slot: amount, type: counted, bare: true, value_min: 0}
+        - {lit: [a, an, per, each, every], consume_skipped: true}
+        - {slot: period, cat: duration_measure, uncounted: true, bare: true}
+        kind: scoped-rate
+        measure: '{amount}'
+        period: '{period}'
+        sign: '0'
+        reference: []
+        standard: ''
+        constraints:
+        - {verb_roles_compatible: {verb: verb, roles: {actor: [who], theme: [amount]}, require_declared_frame: true,
+            allow_proper_name: [who]}}
+      scope:
+      - {lit: while}
+      - {slot: working, cat: scoped_activity_participle, present_participle: true}
+      - opt: [{slot: prep, cat: activity_context_preposition}]
+      satisfaction: {verb: [subject], working: [subject]}
+    rule:
+      description: A quantitative activity quote belongs to a described context; relative quotes preserve their 
+        standard.
+      match:
+        sentence:
+        - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true, bare: true, at_start: true}
+        - {slot: verb, cat: quantity_ask_verb, finite_form: true}
+        - {parameter: quote.amount}
+        - {parameter: scope}
+        - opt: [{slot: owner, cat: possessive_determiner}]
+        - {slot: scope, cat: activity_context, uncounted: true, qualified: true, qualifier_cat: 
+            activity_context_descriptor, all_qualifiers: true, referential: true}
+        - {parameter: quote.reference}
+        - {lit: ., consume_skipped: true}
+      where:
+      - {number_compatible: [who, verb]}
+      - {parameter: quote.constraints}
+      consumes: [verb, amount]
+      satisfies: {parameter: satisfaction}
+      emits:
+      - {fact: batch_evidence, kind: {parameter: quote.kind}, entity: '{who}', container: '{scope}', measure: {
+            parameter: quote.measure}, value: amount, marker: {parameter: quote.period}, verb: '{verb}', sign: {
+            parameter: quote.sign}, acquisition: {parameter: quote.standard}, position: '{amount.span_start}'}
+  scoped-activity-extent:
+    parameters:
+      tail: []
+      extra: []
+      consumed: []
+      satisfaction: {work: [subject]}
+    rule:
+      description: A stated duration belongs to its own activity context; coordinated ratios refer to that exact 
+        duration.
+      match:
+        sentence:
+        - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true, bare: true, at_start: true}
+        - {slot: work, cat: scheduled_activity_verb, finite_form: true}
+        - {slot: amount, cat: duration_measure, counted: true, value_min: 0}
+        - opt:
+          - {lit: [per, each, every, a, an], consume_skipped: true}
+          - {slot: window, cat: duration_measure, uncounted: true, bare: true}
+        - {slot: prep, cat: activity_context_preposition}
+        - opt: [{slot: owner, cat: possessive_determiner}]
+        - {slot: scope, cat: activity_context, uncounted: true, qualified: true, qualifier_cat: 
+            activity_context_descriptor, all_qualifiers: true, referential: true}
+        - opt:
+          - lit:
+            - per
+            - each
+            - every
+            - a
+            - an
+            consume_skipped: true
+          - slot: later_window
+            cat: duration_measure
+            uncounted: true
+            bare: true
+        - {parameter: tail}
+        - {lit: ., consume_skipped: true}
+      where: [number_compatible: [who, work]]
+      consumes: [work, amount, parameter: consumed]
+      satisfies: {parameter: satisfaction}
+      emits:
+      - {fact: batch_evidence, kind: scoped-extent, entity: '{who}', container: '{scope}', measure: '{amount}', 
+          value: amount, marker: '{window.optional}', verb: '{work}', position: '{amount.span_start}', acquisition: '{window.optional}',
+        attribute: '{later_window.optional}'}
+      - {parameter: extra}
+variants:
+- {id: arithmetic/scoped-activity-rate, template: scoped-activity-rate}
+- id: arithmetic/contextual-activity-rate
+  template: scoped-activity-rate
+  arguments:
+    scope: &direct_activity_context [{slot: prep, cat: activity_context_preposition}]
+    satisfaction: {verb: [subject]}
+- id: arithmetic/scoped-relative-activity-rate
+  template: scoped-activity-rate
+  arguments:
+    quote: &relative_activity_rate
+      amount:
+      - {slot: amount, type: fraction, fraction_positive: true, word_fraction_within_whole: true}
+      - {slot: direction, cat: mass_quantity_delta}
+      kind: scoped-relative-rate
+      measure: ''
+      period: ''
+      sign: sign(direction)
+      constraints:
+      - proportional_delta_compatible:
+          fraction: amount
+          direction: direction
+          direction_cat: delta
+      standard: '{standard.optional}'
+      reference:
+      - opt:
+        - {lit: than}
+        - opt: [{slot: standard_prep, cat: activity_context_preposition}]
+        - opt: [{slot: standard_owner, cat: possessive_determiner}]
+        - {slot: standard, cat: activity_context, uncounted: true, qualified: true, qualifier_cat: 
+            activity_context_descriptor, all_qualifiers: true, referential: true}
+- id: arithmetic/contextual-relative-activity-rate
+  template: scoped-activity-rate
+  arguments:
+    quote: *relative_activity_rate
+    scope: *direct_activity_context
+    satisfaction: {verb: [subject]}
+- {id: arithmetic/scoped-activity-extent, template: scoped-activity-extent}
+- id: arithmetic/coordinated-relative-activity-extent
+  template: scoped-activity-extent
+  arguments:
+    tail:
+    - opt:
+      - lit: ','
+        consume_skipped: true
+    - {lit: and}
+    - {slot: factor, type: fraction, fraction_positive: true}
+    - lit: that
+    - slot: much
+      cat: mass_amount_quantifier
+    - {slot: other_prep, cat: activity_context_preposition}
+    - opt: [{slot: other_owner, cat: possessive_determiner}]
+    - {slot: other, cat: activity_context, uncounted: true, qualified: true, qualifier_cat: 
+        activity_context_descriptor, all_qualifiers: true, referential: true}
+    - opt:
+      - lit:
+        - per
+        - each
+        - every
+        - a
+        - an
+        consume_skipped: true
+      - slot: other_window
+        cat: duration_measure
+        uncounted: true
+        bare: true
+    consumed: [factor]
+    satisfaction: {work: [subject], much: [collection]}
+    extra:
+    - {fact: batch_evidence, kind: scoped-relative-extent, entity: '{who}', container: '{other}', measure: '{amount}',
+      value: factor, acquisition: '{scope}', marker: '{other_window.optional}', verb: '{work}', position: '{factor.span_start}',
+      attribute: '{later_window.optional}'}
+- id: arithmetic/coordinated-relative-activity-extent-as-much
+  template: scoped-activity-extent
+  arguments:
+    tail:
+    - opt:
+      - lit: ','
+        consume_skipped: true
+    - {lit: and}
+    - {slot: factor, type: fraction, fraction_positive: true}
+    - lit: as
+    - slot: much
+      cat: mass_amount_quantifier
+    - {slot: other_prep, cat: activity_context_preposition}
+    - opt: [{slot: other_owner, cat: possessive_determiner}]
+    - {slot: other, cat: activity_context, uncounted: true, qualified: true, qualifier_cat: 
+        activity_context_descriptor, all_qualifiers: true, referential: true}
+    - opt:
+      - lit:
+        - per
+        - each
+        - every
+        - a
+        - an
+        consume_skipped: true
+      - slot: other_window
+        cat: duration_measure
+        uncounted: true
+        bare: true
+    consumed: [factor]
+    satisfaction:
+      work:
+      - subject
+      much:
+      - collection
+    extra:
+    - {fact: batch_evidence, kind: scoped-relative-extent, entity: '{who}', container: '{other}', measure: '{amount}',
+      value: factor, acquisition: '{scope}', marker: '{other_window.optional}', verb: '{work}', position: '{factor.span_start}',
+      attribute: '{later_window.optional}'}
+- id: arithmetic/coordinated-relative-activity-extent-amount
+  template: scoped-activity-extent
+  arguments:
+    tail:
+    - opt:
+      - lit: ','
+        consume_skipped: true
+    - {lit: and}
+    - {slot: factor, type: fraction, fraction_positive: true}
+    - lit: that
+    - slot: reference_amount
+      cat: allocation_amount_noun
+      uncounted: true
+      bare: true
+    - {slot: other_prep, cat: activity_context_preposition}
+    - opt: [{slot: other_owner, cat: possessive_determiner}]
+    - {slot: other, cat: activity_context, uncounted: true, qualified: true, qualifier_cat: 
+        activity_context_descriptor, all_qualifiers: true, referential: true}
+    - opt:
+      - lit:
+        - per
+        - each
+        - every
+        - a
+        - an
+        consume_skipped: true
+      - slot: other_window
+        cat: duration_measure
+        uncounted: true
+        bare: true
+    consumed: [factor]
+    satisfaction:
+      work:
+      - subject
+    extra:
+    - {fact: batch_evidence, kind: scoped-relative-extent, entity: '{who}', container: '{other}', measure: '{amount}',
+      value: factor, acquisition: '{scope}', marker: '{other_window.optional}', verb: '{work}', position: '{factor.span_start}',
+      attribute: '{later_window.optional}'}
+asks:
+- id: ask/scoped-rate-total-money
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {slot: much, cat: mass_amount_interrogative}
+    - opt: [{slot: money, cat: mass_currency_noun, uncounted: true, bare: true}]
+    - {slot: aux, cat: auxiliary}
+    - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true, bare: true}
+    - {slot: verb, cat: wage_verb, bare_form: true}
+    - {lit: [per, each, every, a, an], consume_skipped: true}
+    - {slot: period, cat: duration_measure, uncounted: true, bare: true}
+    - {lit: '?', consume_skipped: true}
+  satisfies: {verb: [subject]}
+  disambiguates: [much]
+  where: [number_compatible: [who, aux]]
+  resolves: {consumer: scoped-rate-total, entity: '{who}', verb: '{verb}', measure: '', quantity: currency, period: '{period}'}
+- id: ask/scoped-rate-total-count
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: unit, type: noun, uncounted: true, bare: true, number: plural}
+    - {slot: aux, cat: auxiliary}
+    - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true, bare: true}
+    - {slot: verb, cat: quantity_ask_verb, bare_form: true}
+    - {lit: [per, each, every, a, an], consume_skipped: true}
+    - {slot: period, cat: duration_measure, uncounted: true, bare: true}
+    - {lit: '?', consume_skipped: true}
+  satisfies: {verb: [subject]}
+  where: [number_compatible: [who, aux]]
+  resolves: {consumer: scoped-rate-total, entity: '{who}', verb: '{verb}', measure: '{unit}', period: '{period}'}
+- id: ask/scoped-rate-total-span
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - slot: much
+      cat: mass_amount_interrogative
+    - slot: aux
+      cat: future_modal
+    - slot: who
+      referential: true
+      bare: true
+      type: entity
+      common_noun_cat: quantity_holder
+    - slot: verb
+      cat: wage_verb
+      bare_form: true
+    - lit: '?'
+      consume_skipped: true
+  where:
+  - number_compatible:
+    - who
+    - aux
+  disambiguates:
+  - much
+  satisfies:
+    verb:
+    - subject
+  resolves:
+    consumer: scoped-rate-total
+    entity: '{who}'
+    verb: '{verb}'
+    measure: ''
+    quantity: currency
+    period: ''
+    projection: 'true'
+- id: ask/scoped-rate-total-explicit-span
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - slot: much
+      cat: mass_amount_interrogative
+    - slot: aux
+      cat: future_modal
+    - slot: who
+      referential: true
+      bare: true
+      type: entity
+      common_noun_cat: quantity_holder
+    - slot: verb
+      cat: wage_verb
+      bare_form: true
+    - slot: span_prep
+      cat: temporal_interval_preposition
+    - slot: span
+      cat: duration_measure
+      counted: true
+      bare: true
+      value_min: 0
+    - lit: '?'
+      consume_skipped: true
+  where:
+  - number_compatible:
+    - who
+    - aux
+  disambiguates:
+  - much
+  satisfies:
+    verb:
+    - subject
+    span_prep:
+    - object
+  resolves:
+    consumer: scoped-rate-total
+    entity: '{who}'
+    verb: '{verb}'
+    measure: ''
+    quantity: currency
+    period: ''
+    projection: 'true'
+    span_unit: '{span}'
+    span_value: '{span.value}'
+rules:
+- id: arithmetic/scoped-account-projection-span
+  question_assumption: true
+  match:
+    sentence:
+    - slot: who
+      referential: true
+      bare: true
+      at_start: true
+      type: entity
+      common_noun_cat: quantity_holder
+    - slot: work
+      cat: scheduled_activity_verb
+      finite_form: true
+    - opt:
+      - lit: for
+    - slot: span
+      cat: duration_measure
+      counted: true
+      bare: true
+      value_min: 0
+    - lit: .
+      consume_skipped: true
+  consumes:
+  - work
+  - span
+  satisfies:
+    work:
+    - subject
+  where:
+  - number_compatible:
+    - who
+    - work
+  emits:
+  - fact: quantity
+    entity: '{who}'
+    measure: '{span}'
+    value: span
+    verb: '{work}'

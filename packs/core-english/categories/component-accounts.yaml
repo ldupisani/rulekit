@@ -1,0 +1,60 @@
+format: rulekit/categories@1
+categories:
+  countable_component:
+    parent: noun
+    includes:
+    - body_part
+    - mechanical_component
+    - component_quantity_measure
+  mechanical_component:
+    parent: noun
+  collection_account_verb:
+    parent: quantity_event_verb
+  component_bearing_object:
+    parent: noun
+    includes:
+    - living_agent
+    - vehicle
+    - quantity_container
+    - production_device
+    - computing_device
+  assembled_component_bearer:
+    parent: noun
+    includes:
+    - vehicle
+    - quantity_container
+    - production_device
+  component_collection_verb:
+    parent: collection_account_verb
+    selectional_roles:
+      actor: collection_agent
+      theme: component_bearing_object
+  component_assembly_verb:
+    parent: collection_account_verb
+    selectional_roles:
+      actor: collection_agent
+      theme: assembled_component_bearer
+members:
+  mechanical_component:
+  - wheel
+  - blade
+  - button
+  - door
+  - seat
+  collection_account_verb:
+  - collect
+  - collected
+  - collects
+  - gathered
+  - assemble
+  - assembled
+  - assembles
+  component_collection_verb:
+  - collect
+  - collects
+  - collected
+  - gathered
+  component_assembly_verb:
+  - assemble
+  - assembles
+  - assembled

@@ -1,0 +1,525 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/named-shared-completion-context
+  match:
+    sentence:
+    - slot: people
+      span: true
+      enumeration_cat: name
+      enumeration_min_members: 2
+      at_start: true
+    - slot: be
+      cat: plural_copula
+    - slot: compete
+      cat: competitive_activity_verb
+      present_participle: true
+    - lit: in
+    - slot: event
+      cat: competitive_event
+      uncounted: true
+      referential: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: completion-group
+    entity: ''
+    measure: ''
+    value: '0'
+    position: '{people.span_start}'
+    members: '{people.members}'
+    container: '{event}'
+    attribute: '{event.qualifier}'
+  consumes:
+  - be
+  - compete
+  satisfies:
+    be:
+    - subject
+    compete:
+    - subject
+  where: []
+- id: arithmetic/shared-completion-deadline
+  match:
+    sentence:
+    - slot: group
+      cat: discourse_subject_group_pronoun
+      at_start: true
+    - opt:
+      - slot: each
+        cat: postpositive_distributive_quantifier
+    - slot: have
+      cat: plain_have_state
+      finite_form: true
+    - slot: duration
+      cat: duration_measure
+      counted: true
+      bare: true
+      value_min: 1
+    - lit: to
+    - slot: act
+      cat: goal_quantity_activity
+      bare_form: true
+    - slot: goal
+      cat: goal_progress_measure
+      counted: true
+      bare: true
+      value_min: 0
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: completion-target
+    entity: ''
+    measure: '{goal}'
+    value: goal
+    position: '{goal.span_start}'
+    marker: '{duration}'
+    per_member: duration
+    verb: '{act}'
+    attribute: '{each.optional}'
+    container: '{group.surface}'
+  consumes:
+  - have
+  - duration
+  - goal
+  - act
+  satisfies:
+    group:
+    - refers
+    each:
+    - collection
+    have:
+    - subject
+    act:
+    - subject
+  where:
+  - verb_roles_compatible:
+      verb: act
+      roles:
+        theme:
+        - goal
+      require_declared_frame: true
+  - number_compatible:
+    - group
+    - have
+- id: arithmetic/prefix-average-counted
+  match:
+    sentence:
+    - slot: on
+      cat: progress_temporal_preposition
+      at_start: true
+    - slot: span
+      cat: duration_measure
+      counted: true
+      qualified: true
+      qualifier_cat: initial_sequence_ordinal
+      all_qualifiers: true
+      value_min: 1
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+    - slot: average
+      cat: averaging_verb
+      finite_form: true
+    - slot: value
+      cat: goal_progress_measure
+      counted: true
+      bare: true
+    - opt:
+      - lit: per
+        consume_skipped: true
+      - slot: per
+        cat: duration_measure
+        uncounted: true
+        bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: completion-rate
+    entity: '{who}'
+    measure: '{value}'
+    value: value
+    position: '{value.span_start}'
+    marker: '{span}'
+    fraction: span
+    attribute: '{per.optional}'
+  consumes:
+  - on
+  - span
+  - average
+  - value
+  satisfies:
+    average:
+    - subject
+  disambiguates:
+  - average
+  where:
+  - number_compatible:
+    - who
+    - average
+- id: arithmetic/prefix-average-fractional
+  match:
+    sentence:
+    - slot: on
+      cat: progress_temporal_preposition
+      at_start: true
+    - slot: span
+      cat: duration_measure
+      counted: true
+      qualified: true
+      qualifier_cat: initial_sequence_ordinal
+      all_qualifiers: true
+      value_min: 1
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+    - slot: average
+      cat: averaging_verb
+      finite_form: true
+    - slot: value
+      type: fraction
+    - lit: of
+    - lit: a
+      consume_skipped: true
+    - slot: unit
+      cat: goal_progress_measure
+      uncounted: true
+      bare: true
+    - opt:
+      - lit: per
+        consume_skipped: true
+      - slot: per
+        cat: duration_measure
+        uncounted: true
+        bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: completion-rate
+    entity: '{who}'
+    measure: '{unit}'
+    value: value
+    position: '{value.span_start}'
+    marker: '{span}'
+    fraction: span
+    attribute: '{per.optional}'
+  consumes:
+  - on
+  - span
+  - average
+  - value
+  satisfies:
+    average:
+    - subject
+  disambiguates:
+  - average
+  where:
+  - number_compatible:
+    - who
+    - average
+- id: arithmetic/average-over-initial-periods
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+      at_start: true
+    - slot: average
+      cat: averaging_verb
+      finite_form: true
+    - slot: value
+      cat: goal_progress_measure
+      counted: true
+      bare: true
+    - lit: a
+      consume_skipped: true
+    - slot: per
+      cat: duration_measure
+      uncounted: true
+      bare: true
+    - lit: over
+    - slot: span
+      cat: duration_measure
+      counted: true
+      qualified: true
+      qualifier_cat: initial_sequence_ordinal
+      all_qualifiers: true
+      value_min: 1
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: completion-rate
+    entity: '{who}'
+    measure: '{value}'
+    value: value
+    position: '{value.span_start}'
+    marker: '{span}'
+    fraction: span
+    attribute: '{per}'
+  consumes:
+  - average
+  - value
+  - span
+  satisfies:
+    average:
+    - subject
+  disambiguates:
+  - average
+  where:
+  - number_compatible:
+    - who
+    - average
+- id: arithmetic/indexed-completion-amount-ordinal
+  match:
+    sentence:
+    - slot: on
+      cat: progress_temporal_preposition
+      at_start: true
+    - slot: period
+      cat: duration_measure
+      uncounted: true
+      number: singular
+      qualified: true
+      qualifier_cat: holder_ordinal
+      all_qualifiers: true
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+    - slot: act
+      cat: goal_quantity_activity
+      finite_form: true
+    - slot: amount
+      cat: goal_progress_measure
+      counted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: completion-amount
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+    marker: '{period.label}'
+    attribute: '{period}'
+    verb: '{act}'
+    acquisition: '{period.qualifier}'
+  consumes:
+  - on
+  - act
+  - amount
+  - period
+  satisfies:
+    act:
+    - subject
+  generation: premise
+  overrides:
+    rule: arithmetic/indexed-completion-amount-label
+    reason: An ordinal qualifier supplies the explicit index rather than an absent numeric label.
+  where:
+  - number_compatible:
+    - who
+    - act
+  - verb_roles_compatible:
+      verb: act
+      roles:
+        actor:
+        - who
+        theme:
+        - amount
+      allow_proper_name:
+      - who
+      require_declared_frame: true
+- id: arithmetic/indexed-completion-amount-label
+  match:
+    sentence:
+    - slot: on
+      cat: progress_temporal_preposition
+      at_start: true
+    - slot: period
+      cat: duration_measure
+      uncounted: true
+      number: singular
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+    - slot: act
+      cat: goal_quantity_activity
+      finite_form: true
+    - slot: amount
+      cat: goal_progress_measure
+      counted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: completion-amount
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+    marker: '{period.label}'
+    attribute: '{period}'
+    verb: '{act}'
+    acquisition: '{period.qualifier}'
+  consumes:
+  - on
+  - act
+  - amount
+  - period
+  satisfies:
+    act:
+    - subject
+  generation: reader-only
+  where:
+  - number_compatible:
+    - who
+    - act
+  - verb_roles_compatible:
+      verb: act
+      roles:
+        actor:
+        - who
+        theme:
+        - amount
+      allow_proper_name:
+      - who
+      require_declared_frame: true
+- id: arithmetic/named-individual-completion-deadline
+  match:
+    sentence:
+    - slot: people
+      span: true
+      enumeration_cat: name
+      enumeration_min_members: 2
+      at_start: true
+    - slot: each
+      cat: postpositive_distributive_quantifier
+    - slot: have
+      cat: plain_have_state
+      finite_form: true
+    - slot: duration
+      cat: duration_measure
+      counted: true
+      bare: true
+      value_min: 1
+    - lit: to
+    - slot: act
+      cat: goal_quantity_activity
+      bare_form: true
+    - slot: goal
+      cat: goal_progress_measure
+      counted: true
+      bare: true
+      value_min: 0
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: completion-group
+    entity: ''
+    measure: ''
+    value: '0'
+    position: '{people.span_start}'
+    members: '{people.members}'
+  - fact: batch_evidence
+    kind: completion-target
+    entity: ''
+    measure: '{goal}'
+    value: goal
+    position: '{goal.span_start}'
+    members: '{people.members}'
+    marker: '{duration}'
+    per_member: duration
+    verb: '{act}'
+    attribute: '{each}'
+  consumes:
+  - have
+  - duration
+  - act
+  - goal
+  satisfies:
+    each:
+    - collection
+    have:
+    - subject
+    act:
+    - subject
+  where:
+  - verb_roles_compatible:
+      verb: act
+      roles:
+        theme:
+        - goal
+      require_declared_frame: true
+  - slot_not_category:
+      slot: have
+      cat: singular_present_possession
+asks:
+- id: ask/mean-required-completion-rate
+  match:
+    question:
+    - lit: what
+      at_start: true
+    - slot: be
+      cat: singular_copula
+    - lit: the
+      consume_skipped: true
+    - slot: mean
+      cat: mean_aggregate
+    - lit: of
+    - slot: poss
+      cat: group_possessive_determiner
+    - slot: mean2
+      cat: mean_aggregate
+    - lit: that
+    - slot: group
+      cat: discourse_subject_group_pronoun
+    - slot: have
+      cat: plain_have_state
+      finite_form: true
+    - lit: to
+    - slot: act
+      cat: goal_quantity_activity
+      bare_form: true
+    - lit: over
+    - slot: span
+      cat: duration_measure
+      counted: true
+      qualified: true
+      qualifier_cat: holder_terminal_order
+      all_qualifiers: true
+      value_min: 1
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: mean-required-rate
+    verb: '{act}'
+    period: '{span}'
+    elapsed: '{span.value}'
+  satisfies:
+    be:
+    - subject
+    poss:
+    - refers
+    group:
+    - refers
+    have:
+    - subject
+    act:
+    - subject
+  disambiguates:
+  - mean
+  - mean2
+  where: []

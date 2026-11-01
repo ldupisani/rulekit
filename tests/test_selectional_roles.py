@@ -175,7 +175,7 @@ def test_curated_conjoined_rule_reads_category_owned_frames() -> None:
         "actor": ["who", "std"],
         "theme": ["item", "item2"],
     }
-    assert registry.selectional_frames("eat")[0][1] == {
+    assert dict(registry.selectional_frames("eat"))["eating_quantity_verb"] == {
         "actor": "quantity_event_participant",
         "theme": "edible_quantity_object",
     }

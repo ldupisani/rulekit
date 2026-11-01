@@ -8,6 +8,7 @@ categories:
   area_unit_modifier: {parent: spatial_unit_modifier, attrs: {measurement_power: 2}}
   fabrication_product: {parent: ownable_quantity_object}
   mass_amount_interrogative: {parent: interrogative}
+  mass_amount_quantifier: {parent: quantifier}
   material_resource:
     parent: ownable_quantity_object
     includes:
@@ -68,6 +69,7 @@ members:
   area_unit_modifier: [square]
   fabrication_product: [curtain, panel, dress, model]
   mass_amount_interrogative: [much]
+  mass_amount_quantifier: [much]
   material_resource: [bamboo, beeswax, cable, charcoal, clay, foam, fuel, fur, glass, ice, material, metal,
       ribbon, rope, rubber, silk, string, tape, tile, wire, wood, yarn]
   production_variety_noun: [kind, type, version]

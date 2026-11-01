@@ -560,7 +560,7 @@ def _lexical_fillers(
         )
         if bare_form and not is_bare_verb_form(surface, identity):
             continue
-        if finite_form and not is_finite_verb_form(surface, identity):
+        if finite_form and not is_finite_verb_form(surface, identity, reg):
             continue
         # Mirror patterns._slot_ok's opt-in morphology exactly. These are
         # structural surface checks over pack-declared lemmas, not an English
@@ -572,7 +572,7 @@ def _lexical_fillers(
             continue
         if past_participle and not is_past_participle_form(surface, identity, reg):
             continue
-        number = entry.number
+        number = entry.number_for_sense(sense)
         if sense == "noun" and surface not in reg.plural_to_singular:
             number = number or "singular"
         out.append(
@@ -3667,7 +3667,7 @@ def _allowed_fillers(
                     candidate.surface.casefold(), candidate.identity
                 )
             return is_finite_verb_form(
-                candidate.surface.casefold(), candidate.identity
+                candidate.surface.casefold(), candidate.identity, reg
             )
 
         for bound_slot, target_slot, form in bound_form_requirements:

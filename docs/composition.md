@@ -20,6 +20,8 @@ It does not search arbitrary arithmetic expressions for a plausible number.
 A per-container content amount is not automatically a stock holding. A total
 is not automatically a new independent occurrence. Different consumers may
 use these facts, but they must preserve the distinctions in the model.
+An entity-less whole question cannot use a lone distributive content amount
+when no compatible population total has been established.
 
 Implementation: [fact model](../src/rulekit/kernel/model.py),
 [fact store](../src/rulekit/kernel/facts.py), and
@@ -491,6 +493,163 @@ and [stored resource loss](../src/rulekit/kernel/consumers/stored_resource_loss.
 Executable analogues, paraphrases, and decline boundaries for these families:
 [resource composition tests](../tests/test_resource_composition_families.py) and
 [alternate phrasings](../tests/test_resource_alternate_phrasings.py).
+
+## Scoped rate accounts
+
+Each activity context retains its complete description and owner alongside
+its rate and elapsed extent. Relative rates and extents name their standard,
+or require one immediately preceding compatible quote. Every context must
+have both operands before their products can be added. Currency questions
+require monetary outputs; counts, currencies and elapsed units remain distinct.
+Explicit reporting periods must agree. Otherwise the question supplies the
+reporting period for the stated schedule. Reference forms, additional events,
+competing standards and partial accounts are checked before commitment.
+Reporting cadence may follow the activity context or its relative extent.
+Compatible conjuncts share one stated cadence; conflicting cadences decline.
+An explicit projection span multiplies the complete reporting-period account.
+Its work duration remains an ordinary `Quantity` for existing duration queries.
+
+Implementation: [scoped rate grammar](../packs/arithmetic/rules/scoped-rates.yaml)
+and [component totals](../src/rulekit/kernel/consumers/scoped_rate_total.py).
+
+## Attendance across separate schedules
+
+A counted participant group in explicitly different activity groups supports
+an additive attendance schedule. Its distributive event count, preparation
+duration per event, and event duration remain separate operands. A matched
+plural reference is validated against that one participant group. The observer
+must match the participants' stated owner. Missing distribution, shared groups,
+conflicting event identities and additional overlap conditions decline.
+An optional calendar context uses the generic `timeperiod` category: “this
+week,” “this month,” “this year,” and “this semester” have the same role as
+“this season.” The event count is a total within that period, not a recurring
+rate to multiply by an unstated number of periods.
+Coordinated statements and comma-separated trailing questions use complete
+grammar proofs on both sides. Readers must declare `independent_clause` for
+the new coordinate routing; this cannot promote an embedded statement merely
+because it precedes a question. Total markers retain their permitted
+prepositions, including “in total.”
+
+Implementation: [event schedules](../packs/arithmetic/rules/event-schedules.yaml)
+and [attendance duration](../src/rulekit/kernel/consumers/schedule_attendance.py).
+
+## Measured residual holder shares
+
+A measured resource whole and a counted holder population can be partitioned
+by one subset with explicit per-holder contents. Asking for each remaining
+holder supplies the common residual-share reading for that remainder. It does
+not establish uniform contents across the original population. Mass-amount
+and explicit-unit questions share the calculation and conversion checks.
+Empty remainders, fractional holder counts, incompatible units, excess known
+contents and unrelated holder descriptions decline.
+An explicit average divides the residual by the remaining holder count without
+asserting equal individual contents. Equal sizes are capacity descriptions;
+unequal sizes leave individual fill unspecified when a nonzero remainder is
+present. A zero residual fixes every remaining nonnegative amount at zero.
+Material varieties and compatible mass or volume conversions stay in the account.
+
+Implementation: [measured partitions](../packs/arithmetic/rules/measured-holder-partitions.yaml)
+and [uniform distributions](../src/rulekit/kernel/consumers/uniform_content_distribution.py).
+
+## Recurring minimums and carried shortfalls
+
+Named-day observations establish a consecutive actual performance history.
+A minimum applies to each day, and uncompleted work carries forward. Excess
+performance can clear existing arrears; future daily minimums are not prepaid.
+Make-up intentions record a future day without asserting completed work.
+In a complete named-day make-up question an otherwise unqualified target is
+interpreted as daily; the answer reports this interpretation. An explicit
+unsupported recurrence, missing day, conflicting participant or output unit
+declines. The named-day goal interpretation also supports an abbreviated
+question without repeating the make-up request; its answer reports the daily
+interpretation. Weekday order comes from shared calendar attributes.
+An explicit weekly quota uses one cycle total, so completed work can meet or
+exceed that quota. Cumulative progress “by” a named day is distinct from work
+done “on” that day; overlapping cumulative and daily observations cannot be
+added. The remaining quota is capped at zero when it is already met.
+
+Implementation: [performance goals](../packs/arithmetic/rules/performance-goals.yaml)
+and [carried shortfalls](../src/rulekit/kernel/consumers/recurring_goal_shortfall.py).
+
+## Closed source contributions
+
+A listed source inventory and a question about its one missing contribution
+support a complete target partition. This reading treats the listed sources
+as accounting for the full target, and the answer reports that interpretation.
+An intended target remains goal evidence; an actual measured outcome remains
+an ordinary `Quantity`, adapted only within this closed partition. Direct measurements, whole-target fractions,
+multiples of earlier contributions and fractions of the unassigned remainder
+share the same conservation ledger. Remainders follow reporting order; seasonal
+context identifies the source roles. Incomplete inventories, repeated source
+heads, unresolved standards, excess contributions and incompatible physical
+or monetary quantities decline. Directly observed source amounts also support
+source-specific totals without a target or an exhaustive source inventory;
+compatible units are converted before adding them.
+Category-validated source lists may retain explicit modifiers and arbitrary
+list lengths. Nominal changes such as a weight gain preserve their physical
+basis. A possessive quantity question must identify the same recipient and
+dimension; malformed possessives do not supply that reference.
+
+Implementation: [source contribution grammar](../packs/arithmetic/rules/source-contributions.yaml)
+and [source conservation](../src/rulekit/kernel/consumers/source_contribution_remainder.py).
+
+Invented examples, paraphrases, generation and ambiguity boundaries for these
+families live in [scoped composition tests](../tests/test_scoped_schedule_compositions.py)
+and [alternate ledger tests](../tests/test_alternate_ledger_phrasings.py).
+
+## Weighted product accounts
+
+Explicit per-object contents and service earnings share a source-local product
+ledger. A quoted service price stays an `EarningRate`; ordinary completed work
+counts remain `Quantity` facts for existing count questions. Distributed
+supplemental receipts supply additional earned amounts. A quote for several
+service objects retains its denominator. Component groups retain separate counts
+and explicit per-object amounts, including a single exceptional object. A plural
+group without an explicit per-member statement cannot silently supply one.
+
+Implementation: [account grammar](../packs/arithmetic/rules/weighted-accounts.yaml)
+and [weighted totals](../src/rulekit/kernel/consumers/weighted_account.py).
+
+## Projected installment balances
+
+A planned purchase supplies a quoted target, not an actual payment or cash
+holding. One complete payment policy states the initial percentage and recurring
+installment. The projected balance subtracts that initial amount, any explicitly
+additional deposit, and complete payment periods. Conflicting buyers, extra
+charges, incompatible currencies or periods, and overpayment decline.
+
+Implementation: [installment grammar](../packs/arithmetic/rules/installment-accounts.yaml)
+and [projected settlement](../src/rulekit/kernel/consumers/installment_balance.py).
+
+## Named ratio shares and personal depletion
+
+An ordered `AllocationRatio` and a joint pool determine each named holder's
+share. Named joint totals remain `GroupTotal` facts for existing comparison
+equations. Fractions of what a holder has then reduce that holder's own share, in
+order. A follow-up remainder pronoun requires one immediately preceding depleted
+holder and compatible reference forms. A ratio between qualified resources does
+not license an unqualified pool. Discrete shares and balances must be whole counts.
+
+Implementation: [share grammar](../packs/arithmetic/rules/named-share-balances.yaml)
+and [personal balances](../src/rulekit/kernel/consumers/ratio_holder_remainder.py).
+
+## Required rates over a final interval
+
+Named participants can have one explicitly individual target and deadline.
+A shared competition course also licenses an individual target; this reading is
+reported with the answer. Prefix averages are per stated observation period.
+Each participant's observed intervals must be disjoint, consecutive and complete
+up to the final interval. The consumer computes each required rate before taking
+their arithmetic mean. It does not infer unobserved progress or a shared group
+target. Numeric period labels are readable; their direct generation remains
+disabled until the generator can preserve their index. Rules that capture a
+named participant enumeration also retain the generator's span-realization
+boundary.
+
+Implementation: [progress grammar](../packs/arithmetic/rules/completion-rates.yaml)
+and [required-rate mean](../src/rulekit/kernel/consumers/mean_required_rate.py).
+Paraphrases, other contexts and decline boundaries for these families live in
+[composition tests](../tests/test_payment_progress_compositions.py).
 
 ## Related composition contracts
 

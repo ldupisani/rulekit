@@ -13,8 +13,10 @@ from ..source_coverage import uncovered_document_units, uncovered_units, quantit
 
 
 @consumer("uniform-content-distribution", applicable=lambda s: any(
-    r.kind in ("uniform-stock", "allocation-recipients") for r in s.by_kind(BatchEvidence)))
+    r.kind in ("uniform-stock", "allocation-recipients", "measured-holder-total") for r in s.by_kind(BatchEvidence)))
 def consume(ctx):
+    if ctx.query.get("mode") == "remaining-holders":
+        return _remaining_holders(ctx)
     if ctx.query.get("mode") == "forward":
         return _forward_share(ctx)
     def decline(reason):
@@ -132,3 +134,60 @@ def _forward_share(ctx):
         return decline("the discrete pool does not divide into whole shares")
     ctx.log.consumed_batch_keys.update(r.key() for r in rows)
     return Answer("number", value, f"the actual allocated remainder divided equally among recipients, in {unit}")
+
+
+def _remaining_holders(ctx):
+    """A measured whole less one uniform subset, shared by the remaining holders."""
+    def decline(reason):
+        return Answer('decline', None, reason)
+    rows = list(ctx.store.by_kind(BatchEvidence))
+    kinds = ('holder-population', 'measured-holder-total', 'measured-holder-share')
+    if (len(rows) != 3 or len(ctx.store.facts) != 3 or ctx.store.collisions or ctx.store.quarantined
+            or any(sum(row.kind == kind for row in rows) != 1 for kind in kinds)):
+        return decline('one measured whole, holder population and uniform known subset are required')
+    population, total, share = (next(row for row in rows if row.kind == kind) for kind in kinds)
+    if (population.entity_ref is None or any(not ctx.reg.word_in_category(q, 'equal_size_descriptor')
+                                            for q in population.entity_ref.qualifiers)):
+        return decline('the container description has an unsupported restriction')
+    from ..reference_identity import constrains, reference_from_unit
+    if total.acquisition_ref and not constrains(reference_from_unit(ctx.match.slots['item']), total.acquisition_ref):
+        return decline('the requested material must match the measured stock, including its variety')
+    if (any(row.entity != ctx.query['holder'] for row in rows)
+            or total.measure != ctx.query['item']
+            or population.provenance.sentence != total.provenance.sentence
+            or population.provenance.sentence >= share.provenance.sentence
+            or population.provenance.assumption or total.provenance.assumption
+            or share.provenance.assumption and share.provenance.sentence != ctx.question.sentence_index - 1
+            or any(not isfinite(value) or value < 0 for value in
+                   (population.value, total.value, share.value, share.per_member))
+            or not float(population.value).is_integer() or not float(share.value).is_integer()
+            or population.value <= share.value):
+        return decline('the subset must belong to the same measured whole and leave actual remaining holders')
+    unit = ctx.query.get('unit') or total.marker
+    available = convert_units(total.value, total.marker, unit, ctx.reg, ctx.log,
+                              source='remaining-holder-total-unit')
+    each = convert_units(share.per_member, share.marker, unit, ctx.reg, ctx.log,
+                         source='remaining-holder-subset-unit')
+    if available is None or each is None:
+        return decline('the total, known contents and requested units must be compatible')
+    expected = defaultdict(Counter)
+    expected[population.provenance.sentence].update((population.value, total.value))
+    expected[share.provenance.sentence].update((share.value, share.per_member))
+    if (uncovered_document_units(ctx.premises, ctx.question, ctx.match.consumed)
+            or audit_numeric_mentions((*ctx.premises, ctx.question), expected, missing='missing', duplicate='duplicate')):
+        return decline('every amount and holder restriction must belong to this partition')
+    known = evaluate('count * each', {'count': share.value, 'each': each}, ctx.log,
+                     source='known-measured-holder-subtotal')
+    residual = resource_residual([available], [known], ctx.log, source='remaining-holder-content')
+    remaining = resource_residual([population.value], [share.value], ctx.log, source='remaining-holder-count')
+    if residual < 0:
+        return decline('known contents exceed the measured whole')
+    if population.acquisition_ref and not ctx.query.get('average') and residual > 0:
+        return decline('Unequal container sizes do not specify how the remaining material is distributed. '
+                       'State the individual contents or ask for their average; capacity alone cannot determine each amount.')
+    value = evaluate('residual / remaining', {'residual': residual, 'remaining': remaining},
+                     ctx.log, source='uniform-remaining-holder-share')
+    ctx.log.consumed_batch_keys.update(row.key() for row in rows)
+    reason = ('the average remaining contents; individual amounts need not be equal' if ctx.query.get('average')
+              else 'the requested uniform contents of each remaining holder')
+    return Answer('number', value, reason + ': residual amount divided by remaining holders')

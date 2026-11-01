@@ -1,0 +1,113 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/separate-participant-schedules
+  description: Counted participants perform a named activity in separate groups, retaining any explicit owner; 
+    their schedules remain distributive.
+  match:
+    sentence:
+    - {slot: participants, cat: living_agent, counted: true, value_min: 2, at_start: true}
+    - {slot: perform, cat: timed_activity_verb, finite_form: true}
+    - {slot: activity, cat: timed_activity_object, uncounted: true, bare: true}
+    - {slot: affiliation, cat: group_affiliation_preposition}
+    - {slot: groups, cat: scheduled_activity_group, uncounted: true, number: plural, qualified: true, qualifier_cat: 
+        schedule_separation_descriptor, all_qualifiers: true}
+    - {lit: ., consume_skipped: true}
+  where:
+  - {number_compatible: [participants, perform]}
+  consumes: [participants, perform]
+  satisfies: {perform: [subject]}
+  emits:
+  - {fact: batch_evidence, kind: scheduled-participants, entity: '{participants.owner}', container: '{participants}',
+    value: participants, measure: '{activity}', verb: '{perform}', marker: '{groups}', position: '{participants.span_start}'}
+- id: arithmetic/distributive-scheduled-event-count
+  description: An explicit each-count refers to the unique preceding participant schedule, optionally within a 
+    stated calendar period; the consumer validates its plural reference.
+  match:
+    sentence:
+    - {slot: group, cat: discourse_subject_group_pronoun, at_start: true}
+    - {slot: each, cat: postpositive_distributive_quantifier}
+    - {slot: have, cat: possession_state, finite_form: true}
+    - {slot: events, cat: scheduled_event, counted: true, bare: true}
+    - opt:
+      - {lit: this, consume_skipped: true}
+      - {slot: period, cat: timeperiod, uncounted: true, bare: true}
+    - {lit: ., consume_skipped: true}
+  consumes: [have, events]
+  satisfies: {group: [refers], each: [collection], have: [subject]}
+  disambiguates: [period]
+  where: [number_compatible: [group, have]]
+  emits:
+  - {fact: batch_evidence, kind: scheduled-event-count, entity: '', measure: '{events}', value: events, acquisition: '{group.surface}',
+    container: '{period.optional}', position: '{events.span_start}'}
+- id: arithmetic/per-event-preparation-duration
+  description: A distributive group preparation duration applies once per stated event, preserving the event's 
+    participant reference.
+  match:
+    sentence:
+    - {slot: each, cat: distributive_quantifier, at_start: true}
+    - {slot: group, cat: scheduled_activity_group, uncounted: true, number: singular, bare: true}
+    - {slot: prepare, cat: preparation_activity_verb, finite_form: true}
+    - {slot: duration, cat: duration_measure, counted: true, bare: true}
+    - {lit: for}
+    - {slot: event_frequency, cat: distributive_quantifier}
+    - {slot: event, cat: scheduled_event, uncounted: true, number: singular, bare: true}
+    - opt:
+      - {slot: participants, cat: discourse_subject_group_pronoun}
+      - {slot: perform, cat: timed_activity_verb, finite_form: true}
+    - {lit: ., consume_skipped: true}
+  where: [number_compatible: [group, prepare], number_compatible: [participants, perform]]
+  consumes: [prepare, duration]
+  satisfies: {each: [collection], event_frequency: [collection], prepare: [subject], participants: [refers], 
+      perform: [subject]}
+  emits:
+  - {fact: batch_evidence, kind: event-preparation-duration, entity: '{group}', container: '{event}', value: 
+      duration, measure: '{duration}', verb: '{prepare}', acquisition: '{participants.optional}', attribute: '{perform.optional}',
+    position: '{duration.span_start}'}
+  independent_clause: true
+- id: arithmetic/distributive-event-duration
+  question_assumption: true
+  description: Each event has a stated duration; a complete adjacent conditional supplies question-local duration 
+    evidence.
+  match:
+    sentence:
+    - {slot: each, cat: distributive_quantifier, at_start: true}
+    - {slot: event, cat: scheduled_event, uncounted: true, number: singular, bare: true}
+    - {slot: last, cat: event_duration_verb, finite_form: true}
+    - opt: [lit: for]
+    - {slot: duration, cat: duration_measure, counted: true, bare: true}
+    - {lit: ., consume_skipped: true}
+  where: [number_compatible: [event, last]]
+  consumes: [last, duration]
+  satisfies: {each: [collection], last: [subject]}
+  emits:
+  - {fact: batch_evidence, kind: scheduled-event-duration, entity: '{event}', measure: '{duration}', value: 
+      duration, position: '{duration.span_start}'}
+  independent_clause: true
+asks:
+- id: ask/combined-schedule-attendance-duration
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: unit, cat: duration_measure, uncounted: true, bare: true, number: plural}
+    - {lit: [will, does, did], consume_skipped: true}
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, bare: true}
+    - {slot: spend, cat: spend_verb, bare_form: true}
+    - opt:
+      - {lit: at}
+      - {slot: place, cat: quantity_location, uncounted: true, referential: true, bare_reference_category: 
+          bare_pp_object}
+    - {slot: watch, cat: attendance_observation_verb, present_participle: true}
+    - {slot: owner, cat: possessive_determiner}
+    - {slot: participants, cat: living_agent, uncounted: true, number: plural}
+    - {slot: perform, cat: timed_activity_verb, bare_form: true}
+    - {lit: and}
+    - {slot: prepare, cat: preparation_activity_verb, bare_form: true}
+    - opt: [opt: [{slot: total_prep, cat: group_total_preposition}], {slot: total, cat: group_total_marker}]
+    - {lit: '?', consume_skipped: true}
+  satisfies: {spend: [subject], watch: [subject], perform: [subject], prepare: [subject], total_prep: [object]}
+  disambiguates: [prepare]
+  where: [distinct: [perform, prepare], bound_requires_category: {bound: total_prep, slot: total, cat: 
+          prepositional_group_total_marker}]
+  resolves: {consumer: schedule-attendance-duration, entity: '{who}', participants: '{participants}', perform: '{perform}',
+    prepare: '{prepare}', measure: '{unit}'}

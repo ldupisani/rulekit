@@ -32,7 +32,7 @@ def learn_purchase_totals(reading, reg):
             or amount.features.get("value_kind") != "count"
             or not reg.word_in_category(_lemma(amount), "currency_measure")
             or verb.sense() != "verb" or not reg.word_in_category(_lemma(verb), "purchase")
-            or not is_finite_verb_form(verb.features.get("fold", ""), _lemma(verb))
+            or not is_finite_verb_form(verb.features.get("fold", ""), _lemma(verb), reg)
             or _bound(verb, "subject") is not subject
             or not is_bare_referent(subject) or _clause_negated(reading, verb, reg)
             or (subject.sense() == "pronoun" and _bound(subject, "refers") is None)
@@ -64,7 +64,7 @@ def _coordinated_finite_clause(reading, index, reg):
     if index < len(units) and units[index].sense() in {"name", "pronoun"}:
         index += 1
     return (index < len(units) and units[index].sense() == "verb"
-            and is_finite_verb_form(units[index].features.get("fold", ""), _lemma(units[index])))
+            and is_finite_verb_form(units[index].features.get("fold", ""), _lemma(units[index]), reg))
 
 
 def _relative_purchase_price(reading, index, reg):
@@ -77,7 +77,7 @@ def _relative_purchase_price(reading, index, reg):
         return None
     verb, factor = units[index + 1:index + 3]
     if (verb.sense() != "verb" or not reg.word_in_category(_lemma(verb), "price_verb")
-            or not is_finite_verb_form(verb.features.get("fold", ""), _lemma(verb))
+            or not is_finite_verb_form(verb.features.get("fold", ""), _lemma(verb), reg)
             or factor.features.get("value_kind") not in {"fraction", "multiplier"}
             or factor.features.get("requires_count")):
         return None

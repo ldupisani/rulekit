@@ -1562,7 +1562,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
             if following_index < len(reading.units):
                 following = reading.units[following_index]
                 if following.sense() == "verb" and not is_finite_verb_form(
-                    following.features.get("fold", ""), _lemma(following)
+                    following.features.get("fold", ""), _lemma(following), reg
                 ):
                     continue
         subject = _bound(verb, "subject")

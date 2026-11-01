@@ -117,6 +117,7 @@ templates:
           - {slot: find, cat: discovery_verb, bare_form: true}
           - opt: [{slot: particle, cat: discovery_particle}]
         consumed: [want, find]
+        selection: [want, find, particle]
         satisfaction: {want: [subject], find: [subject]}
         constraints: []
       specification:
@@ -124,6 +125,7 @@ templates:
         - opt: [{slot: frequency, cat: periodic_statistic_frequency}]
         - {slot: attribute, cat: periodic_rate_attribute, uncounted: true, bare: true}
       consumed: [average]
+      disambiguation: [average, frequency]
       frequency: '{frequency.optional}'
     rule:
       description: A stated inquiry identifies the observer, attribute and population without asserting an extra receipt.
@@ -136,6 +138,7 @@ templates:
           - {slot: population, cat: rate_population, uncounted: true, number: plural}
           - {lit: '.', consume_skipped: true}
       consumes: [{parameter: activity.consumed}, {parameter: consumed}]
+      disambiguates: [{parameter: disambiguation}, {parameter: activity.selection}]
       satisfies: {parameter: activity.satisfaction}
       where: {parameter: activity.constraints}
       emits:
@@ -194,6 +197,7 @@ variants:
       specification:
         - {slot: attribute, cat: periodic_rate_attribute, uncounted: true, qualified: true, qualifier_cat: mean_aggregate, all_qualifiers: true}
       consumed: []
+      disambiguation: []
       frequency: ''
   - id: arithmetic/population-rate-assessment-progressive
     template: population-rate-inquiry
@@ -203,6 +207,7 @@ variants:
           - {slot: cop, cat: copula, finite_form: true}
           - {slot: assess, cat: statistic_assessment_verb, present_participle: true}
         consumed: [cop, assess]
+        selection: [cop, assess]
         satisfaction: {cop: [subject], assess: [subject]}
         constraints: [{number_compatible: [who, cop]}]
   - id: arithmetic/population-rate-assessment-progressive-qualified-attribute
@@ -212,6 +217,7 @@ variants:
       specification: &population_qualified_statistic
         - {slot: attribute, cat: periodic_rate_attribute, uncounted: true, qualified: true, qualifier_cat: mean_aggregate, all_qualifiers: true}
       consumed: []
+      disambiguation: []
       frequency: ''
   - id: arithmetic/population-rate-assessment-finite
     template: population-rate-inquiry
@@ -220,6 +226,7 @@ variants:
         tokens:
           - {slot: assess, cat: statistic_assessment_verb, finite_form: true}
         consumed: [assess]
+        selection: [assess]
         satisfaction: {assess: [subject]}
         constraints: [{number_compatible: [who, assess]}]
   - id: arithmetic/population-rate-assessment-finite-qualified-attribute
@@ -228,6 +235,7 @@ variants:
       activity: *population_finite_assessment
       specification: *population_qualified_statistic
       consumed: []
+      disambiguation: []
       frequency: ''
 ask_variants:
   - id: ask/population-total-periodic-amount

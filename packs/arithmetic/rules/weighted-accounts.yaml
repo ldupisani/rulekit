@@ -1,0 +1,843 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/service-unit-price
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+      at_start: true
+    - slot: act
+      cat: habitual_service_predicate
+      finite_form: true
+    - slot: item
+      cat: service_object
+      counted: true
+      bare: true
+      value_min: 1
+    - lit: and
+    - slot: charge
+      cat: service_tariff_verb
+      finite_form: true
+    - slot: amount
+      cat: currency_unit
+      counted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: earning_rate
+    entity: '{who}'
+    measure: '{amount}'
+    per: '{item}'
+    value: amount / item
+    verb: '{act}'
+    basis: service
+    numerator: amount
+    denominator: item
+  consumes:
+  - act
+  - charge
+  - item
+  - amount
+  satisfies:
+    act:
+    - subject
+    charge:
+    - subject
+  where:
+  - number_compatible:
+    - who
+    - act
+  - number_compatible:
+    - who
+    - charge
+  - slot_not_category:
+      slot: act
+      cat: past_service_predicate
+  - verb_roles_compatible:
+      verb: act
+      roles:
+        actor:
+        - who
+        theme:
+        - item
+      allow_proper_name:
+      - who
+      frame_categories:
+      - service_activity_verb
+      require_declared_frame: true
+- id: arithmetic/bounded-completed-service
+  match:
+    sentence:
+    - slot: period
+      cat: duration_measure
+      uncounted: true
+      qualified: true
+      qualifier_cat: relative_period_attribute
+      all_qualifiers: true
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+      at_start: false
+    - slot: act
+      cat: past_service_predicate
+      finite_form: true
+    - slot: item
+      cat: service_object
+      counted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: quantity
+    entity: '{who}'
+    measure: '{item}'
+    value: item
+    verb: '{act}'
+    time: '{period.qualifier} {period}'
+  consumes:
+  - act
+  - item
+  satisfies:
+    act:
+    - subject
+  where:
+  - number_compatible:
+    - who
+    - act
+  - verb_roles_compatible:
+      verb: act
+      roles:
+        actor:
+        - who
+        theme:
+        - item
+      allow_proper_name:
+      - who
+      frame_categories:
+      - service_activity_verb
+      require_declared_frame: true
+- id: arithmetic/completed-service-with-supplement
+  match:
+    sentence:
+    - opt:
+      - slot: period
+        cat: duration_measure
+        uncounted: true
+        qualified: true
+        qualifier_cat: relative_period_attribute
+        all_qualifiers: true
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+      at_start: false
+    - slot: act
+      cat: past_service_predicate
+      finite_form: true
+    - slot: item
+      cat: service_object
+      counted: true
+      bare: true
+    - lit: and
+    - slot: givers
+      cat: intentional_agent
+      counted: true
+      bare: true
+      value_min: 1
+    - slot: each
+      cat: postpositive_distributive_quantifier
+    - slot: give
+      cat: completed_receipt_transfer
+      finite_form: true
+    - slot: recipient
+      cat: singular_animate_object_pronoun
+    - slot: amount
+      cat: currency_unit
+      counted: true
+      bare: true
+    - slot: adjustment
+      cat: supplemental_receipt_noun
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: account-work
+    entity: '{who}'
+    measure: '{item}'
+    value: item
+    position: '{item.span_start}'
+    verb: '{act}'
+    marker: '{period.optional}'
+    container: '{period.optional}'
+  - fact: batch_evidence
+    kind: account-product
+    entity: '{recipient}'
+    measure: '{amount}'
+    value: givers
+    position: '{givers.span_start}'
+    per_member: amount
+    marker: '{period.optional}'
+    verb: '{act}'
+    container: '{period.optional}'
+  consumes:
+  - act
+  - item
+  - give
+  - amount
+  - givers
+  satisfies:
+    act:
+    - subject
+    give:
+    - subject
+    each:
+    - collection
+  where:
+  - number_compatible:
+    - who
+    - act
+  - number_compatible:
+    - givers
+    - give
+  - verb_roles_compatible:
+      verb: act
+      roles:
+        actor:
+        - who
+        theme:
+        - item
+      allow_proper_name:
+      - who
+      frame_categories:
+      - service_activity_verb
+      require_declared_frame: true
+- id: arithmetic/distributed-supplemental-receipt
+  match:
+    sentence:
+    - slot: givers
+      cat: intentional_agent
+      counted: true
+      bare: true
+      at_start: true
+      value_min: 1
+    - slot: each
+      cat: postpositive_distributive_quantifier
+    - slot: give
+      cat: completed_receipt_transfer
+      finite_form: true
+    - slot: recipient
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+    - slot: amount
+      cat: currency_unit
+      counted: true
+      bare: true
+    - slot: adjustment
+      cat: supplemental_receipt_noun
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: account-product
+    entity: '{recipient}'
+    measure: '{amount}'
+    value: givers
+    position: '{givers.span_start}'
+    per_member: amount
+  consumes:
+  - givers
+  - give
+  - amount
+  satisfies:
+    give:
+    - subject
+    each:
+    - collection
+  where:
+  - number_compatible:
+    - givers
+    - give
+- id: arithmetic/collected-components-each
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+      at_start: true
+    - slot: act
+      cat: collection_account_verb
+      finite_form: true
+    - slot: host0
+      cat: component_bearing_object
+      counted: true
+      bare: true
+      value_min: 1
+    - lit: with
+    - slot: parts0
+      cat: countable_component
+      counted: true
+      bare: true
+    - slot: each0
+      cat: postpositive_distributive_quantifier
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: account-product
+    entity: '{who}'
+    measure: '{parts0}'
+    value: host0
+    position: '{host0.span_start}'
+    container: '{host0}'
+    per_member: parts0
+    verb: '{act}'
+    marker: components
+  consumes:
+  - act
+  - host0
+  - parts0
+  satisfies:
+    act:
+    - subject
+    each0:
+    - collection
+  where:
+  - number_compatible:
+    - who
+    - act
+  - verb_roles_compatible:
+      verb: act
+      roles:
+        actor:
+        - who
+        theme:
+        - host0
+      allow_proper_name:
+      - who
+      frame_categories:
+      - collection_account_verb
+      require_declared_frame: true
+- id: arithmetic/collected-components-single
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+      at_start: true
+    - slot: act
+      cat: collection_account_verb
+      finite_form: true
+    - slot: host0
+      cat: component_bearing_object
+      counted: true
+      bare: true
+      value_min: 1
+      value_max: 1
+    - lit: with
+    - slot: parts0
+      cat: countable_component
+      counted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: account-product
+    entity: '{who}'
+    measure: '{parts0}'
+    value: host0
+    position: '{host0.span_start}'
+    container: '{host0}'
+    per_member: parts0
+    verb: '{act}'
+    marker: components
+  consumes:
+  - act
+  - host0
+  - parts0
+  satisfies:
+    act:
+    - subject
+  where:
+  - number_compatible:
+    - who
+    - act
+  - verb_roles_compatible:
+      verb: act
+      roles:
+        actor:
+        - who
+        theme:
+        - host0
+      allow_proper_name:
+      - who
+      frame_categories:
+      - collection_account_verb
+      require_declared_frame: true
+- id: arithmetic/collected-components-each-single
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+      at_start: true
+    - slot: act
+      cat: collection_account_verb
+      finite_form: true
+    - slot: host0
+      cat: component_bearing_object
+      counted: true
+      bare: true
+      value_min: 1
+    - lit: with
+    - slot: parts0
+      cat: countable_component
+      counted: true
+      bare: true
+    - slot: each0
+      cat: postpositive_distributive_quantifier
+    - lit: and
+    - slot: host1
+      cat: component_bearing_object
+      counted: true
+      bare: true
+      value_min: 1
+      value_max: 1
+    - lit: with
+    - slot: parts1
+      cat: countable_component
+      counted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: account-product
+    entity: '{who}'
+    measure: '{parts0}'
+    value: host0
+    position: '{host0.span_start}'
+    container: '{host0}'
+    per_member: parts0
+    verb: '{act}'
+    marker: components
+  - fact: batch_evidence
+    kind: account-product
+    entity: '{who}'
+    measure: '{parts1}'
+    value: host1
+    position: '{host1.span_start}'
+    container: '{host1}'
+    per_member: parts1
+    verb: '{act}'
+    marker: components
+  consumes:
+  - act
+  - host0
+  - parts0
+  - host1
+  - parts1
+  satisfies:
+    act:
+    - subject
+    each0:
+    - collection
+  where:
+  - number_compatible:
+    - who
+    - act
+  - verb_roles_compatible:
+      verb: act
+      roles:
+        actor:
+        - who
+        theme:
+        - host1
+        - host0
+      allow_proper_name:
+      - who
+      frame_categories:
+      - collection_account_verb
+      require_declared_frame: true
+- id: arithmetic/collected-components-each-each
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+      at_start: true
+    - slot: act
+      cat: collection_account_verb
+      finite_form: true
+    - slot: host0
+      cat: component_bearing_object
+      counted: true
+      bare: true
+      value_min: 1
+    - lit: with
+    - slot: parts0
+      cat: countable_component
+      counted: true
+      bare: true
+    - slot: each0
+      cat: postpositive_distributive_quantifier
+    - lit: and
+    - slot: host1
+      cat: component_bearing_object
+      counted: true
+      bare: true
+      value_min: 1
+    - lit: with
+    - slot: parts1
+      cat: countable_component
+      counted: true
+      bare: true
+    - slot: each1
+      cat: postpositive_distributive_quantifier
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: account-product
+    entity: '{who}'
+    measure: '{parts0}'
+    value: host0
+    position: '{host0.span_start}'
+    container: '{host0}'
+    per_member: parts0
+    verb: '{act}'
+    marker: components
+  - fact: batch_evidence
+    kind: account-product
+    entity: '{who}'
+    measure: '{parts1}'
+    value: host1
+    position: '{host1.span_start}'
+    container: '{host1}'
+    per_member: parts1
+    verb: '{act}'
+    marker: components
+  consumes:
+  - act
+  - host0
+  - parts0
+  - host1
+  - parts1
+  satisfies:
+    act:
+    - subject
+    each0:
+    - collection
+    each1:
+    - collection
+  where:
+  - number_compatible:
+    - who
+    - act
+  - verb_roles_compatible:
+      verb: act
+      roles:
+        actor:
+        - who
+        theme:
+        - host1
+        - host0
+      allow_proper_name:
+      - who
+      frame_categories:
+      - collection_account_verb
+      require_declared_frame: true
+- id: arithmetic/collected-components-single-each
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+      at_start: true
+    - slot: act
+      cat: collection_account_verb
+      finite_form: true
+    - slot: host0
+      cat: component_bearing_object
+      counted: true
+      bare: true
+      value_min: 1
+      value_max: 1
+    - lit: with
+    - slot: parts0
+      cat: countable_component
+      counted: true
+      bare: true
+    - lit: and
+    - slot: host1
+      cat: component_bearing_object
+      counted: true
+      bare: true
+      value_min: 1
+    - lit: with
+    - slot: parts1
+      cat: countable_component
+      counted: true
+      bare: true
+    - slot: each1
+      cat: postpositive_distributive_quantifier
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: account-product
+    entity: '{who}'
+    measure: '{parts0}'
+    value: host0
+    position: '{host0.span_start}'
+    container: '{host0}'
+    per_member: parts0
+    verb: '{act}'
+    marker: components
+  - fact: batch_evidence
+    kind: account-product
+    entity: '{who}'
+    measure: '{parts1}'
+    value: host1
+    position: '{host1.span_start}'
+    container: '{host1}'
+    per_member: parts1
+    verb: '{act}'
+    marker: components
+  consumes:
+  - act
+  - host0
+  - parts0
+  - host1
+  - parts1
+  satisfies:
+    act:
+    - subject
+    each1:
+    - collection
+  where:
+  - number_compatible:
+    - who
+    - act
+  - verb_roles_compatible:
+      verb: act
+      roles:
+        actor:
+        - who
+        theme:
+        - host1
+        - host0
+      allow_proper_name:
+      - who
+      frame_categories:
+      - collection_account_verb
+      require_declared_frame: true
+- id: arithmetic/collected-components-single-single
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+      at_start: true
+    - slot: act
+      cat: collection_account_verb
+      finite_form: true
+    - slot: host0
+      cat: component_bearing_object
+      counted: true
+      bare: true
+      value_min: 1
+      value_max: 1
+    - lit: with
+    - slot: parts0
+      cat: countable_component
+      counted: true
+      bare: true
+    - lit: and
+    - slot: host1
+      cat: component_bearing_object
+      counted: true
+      bare: true
+      value_min: 1
+      value_max: 1
+    - lit: with
+    - slot: parts1
+      cat: countable_component
+      counted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: account-product
+    entity: '{who}'
+    measure: '{parts0}'
+    value: host0
+    position: '{host0.span_start}'
+    container: '{host0}'
+    per_member: parts0
+    verb: '{act}'
+    marker: components
+  - fact: batch_evidence
+    kind: account-product
+    entity: '{who}'
+    measure: '{parts1}'
+    value: host1
+    position: '{host1.span_start}'
+    container: '{host1}'
+    per_member: parts1
+    verb: '{act}'
+    marker: components
+  consumes:
+  - act
+  - host0
+  - parts0
+  - host1
+  - parts1
+  satisfies:
+    act:
+    - subject
+  where:
+  - number_compatible:
+    - who
+    - act
+  - verb_roles_compatible:
+      verb: act
+      roles:
+        actor:
+        - who
+        theme:
+        - host1
+        - host0
+      allow_proper_name:
+      - who
+      frame_categories:
+      - collection_account_verb
+      require_declared_frame: true
+asks:
+- id: ask/service-earned-total
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: many
+    - slot: unit
+      cat: currency_unit
+      uncounted: true
+      number: plural
+      bare: true
+    - slot: aux
+      cat: auxiliary
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: earn
+      cat: wage_verb
+      bare_form: true
+    - slot: act
+      cat: service_activity_verb
+      present_participle: true
+    - slot: item
+      cat: service_object
+      uncounted: true
+      number: plural
+      bare: true
+    - opt:
+      - slot: period
+        cat: duration_measure
+        uncounted: true
+        qualified: true
+        qualifier_cat: relative_period_attribute
+        all_qualifiers: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: weighted-account-total
+    mode: earnings
+    entity: '{who}'
+    measure: '{unit}'
+    verb: '{act}'
+    item: '{item}'
+    period: '{period.optional}'
+  satisfies:
+    earn:
+    - subject
+    act:
+    - subject
+  where:
+  - number_compatible:
+    - who
+    - aux
+  disambiguates:
+  - act
+- id: ask/collected-components-total
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: many
+    - slot: unit
+      cat: countable_component
+      uncounted: true
+      number: plural
+      bare: true
+    - slot: aux
+      cat: auxiliary
+    - lit: the
+      consume_skipped: true
+    - slot: hosts
+      cat: noun
+      uncounted: true
+      number: plural
+      bare: true
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: act
+      cat: collection_account_verb
+      finite_form: true
+    - slot: have
+      cat: plain_have_state
+      bare_form: true
+    - opt:
+      - slot: total_prep
+        cat: group_total_preposition
+      - slot: total
+        cat: group_total_marker
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: weighted-account-total
+    mode: components
+    entity: '{who}'
+    measure: '{unit}'
+    host: '{hosts}'
+    verb: '{act}'
+  satisfies:
+    act:
+    - subject
+    have:
+    - subject
+    total_prep:
+    - object
+  where:
+  - number_compatible:
+    - hosts
+    - aux

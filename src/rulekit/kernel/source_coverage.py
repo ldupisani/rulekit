@@ -23,6 +23,25 @@ def uncovered_document_units(premises, question, question_covered=()):
                      reading, question_covered if reading is question else ()))
 
 
+def covered_temporal_annotation(fact, premises, entity, periods):
+    """A read predicate's temporal projection is metadata for its declared period.
+
+    This never excuses an additional event: the predicate itself must already
+    be consumed by a complete rule, and its period must be preserved by that
+    rule's evidence. Callers still audit every numeric operand separately.
+    """
+    from .model import VerbalRelation
+
+    if (not isinstance(fact, VerbalRelation) or not fact.polarity
+            or fact.role not in {'temporal-point', 'temporal-duration'}
+            or fact.entity != entity or (fact.provenance.sentence, fact.obj) not in periods):
+        return False
+    reading = next((reading for reading in premises if reading.sentence_index == fact.provenance.sentence), None)
+    return reading is not None and any(
+        fact.event == f's{reading.sentence_index}:u{unit.uid}'
+        and unit.features.get('pattern_consumed') for unit in reading.units)
+
+
 def membership_source_units(reading, fact, reg):
     """Exact footprint of a bare positive copular membership already folded.
 

@@ -1094,6 +1094,7 @@ categories:
     includes: [intentional_agent]
   earnable_quantity_object:
     parent: noun
+    includes: [currency, currency_unit]
   production_quantity_verb:
     parent: quantity_ask_verb
     selectional_roles:
@@ -2667,7 +2668,7 @@ members:
   container_capacity_intransitive_placement_verb: [fit, fits, fitting, go, goes, going, gone, went]
   container_capacity_noun: [capacity]
   container_capacity_transitive_placement_verb: [fit, fits, fitting]
-  container_content_state_verb: [contain, contained, containing, contains, had, has, have]
+  container_content_state_verb: [contain, contained, containing, contains, had, has, have, held, hold, holding, holds]
   container_contents_noun: [content]
   container_fill_participle: [fill, filled, filling, fills]
   container_totality_transfer_verb: [put, puts, putting]
@@ -2727,7 +2728,7 @@ members:
   earnable_quantity_object: [dollar, money, point]
   earning_quantity_verb: [earn, earned, earns, score, scored, scores]
   eating_quantity_verb: [ate, eat, eats]
-  edible_quantity_object: [apple, apricot, avocado, bagel, banana, bean, beetle, beignet, berry, bird,
+  edible_quantity_object: [acorn, apple, apricot, avocado, bagel, banana, bean, beetle, beignet, berry, bird,
       blackberry, blueberry, bread, burger, cake, candy, carrot, charcuterie, cheddar cheese, cheese, coffee,
       cold cut, conch, cookie, corn, crab, cream cheese, crepe, cucumber, cupcake, dessert, donut, egg, entree,
     fish, food, fries, frozen yoghurt, frozen yogurt, grape, gumball, hamburger, ice cream, jellybean, lemon,
@@ -2798,13 +2799,14 @@ members:
   mass_dimension_noun: [weight]
   mass_measure: [gram, kilogram, ounce, pound, weight]
   mass_quantity_delta: [less, more]
-  mass_quantity_noun: [air, airflow, applesauce, bacon, bamboo, basil, batter, beef, beeswax, blood, bread,
-      buttercream, cake, cardboard, charcoal, chicken, clay, cloth, coffee, custard, data, dough, electricity,
-      fabric, flour, food, frosting, frozen yoghurt, frozen yogurt, fudge, fur, garbage, gas, gluten, grass,
-      guacamole, gum, ice, ice cream, jam, jelly, jewelry, juice, junk, land, lassi, laundry, lemonade,
-      lettuce, litter, makeup, meat, milk, money, music, oatmeal, oregano, paper, popcorn, pork, rain,
-      rainfall, rest, rice, sand, sauce, silk, snow, soup, storage, string, sugar, talent, tape, traffic,
-      trash, tuition, vanilla, vinegar, water, wheat, windfall, winnings, wool, yarn, yield, yoghurt, yogurt]
+  mass_quantity_noun: [air, airflow, applesauce, bacon, bamboo, basil, batter, beef, beeswax, blood,
+      bread, buttercream, cake, cardboard, charcoal, chicken, clay, cloth, coffee, custard, data,
+      dough, electricity, fabric, flour, foam, food, frosting, frozen yoghurt, frozen yogurt, fudge,
+      fur, garbage, gas, glass, gluten, grass, guacamole, gum, ice, ice cream, jam, jelly, jewelry,
+      juice, junk, land, lassi, laundry, lemonade, lettuce, litter, makeup, meat, milk, money,
+      music, oatmeal, oil, oregano, paper, popcorn, pork, rain, rainfall, rest, rice, salmon, sand, sauce,
+      silk, snow, soup, storage, string, sugar, talent, tape, traffic, trash, tuition, vanilla,
+      vinegar, water, wheat, windfall, winnings, wire, wool, yarn, yield, yoghurt, yogurt, corn]
   mass_unit: [gram, kilogram, ounce, pound]
   material_addition_quantity_verb: [add, added, adding, adds]
   means_compatible_verb: [jumped, ran, travel, traveled, travels, walked]
@@ -2813,7 +2815,7 @@ members:
       smaller, taller, wider, younger]
   measured_comparative_offset_measure: [day, gram, hour, kilogram, minute, month, pound, week, year]
   measured_content_adjustment_verb: [add, added, adding, adds]
-  measured_content_substance: [applesauce, bacon, basil, batter, beef, beeswax, bread, brownie, buttercream,
+  measured_content_substance: [applesauce, bacon, basil, batter, beef, beeswax, bread, brownie, buttercream, corn,
       charcoal, clay, custard, dough, flour, frosting, fudge, gas, gluten, guacamole, gum, gummy worm, ice,
       jam, jelly, jelly bean, juice, lassi, lemonade, lettuce, makeup, meat, milk, oatmeal, oregano, popcorn,
       pork, rain, rainfall, rice, salad, sand, sauce, silk, snow, soup, sugar, vanilla, vinegar, water, wheat]
@@ -2930,7 +2932,7 @@ members:
   quantified_group_total_marker: [together]
   quantity_anaphor: [amount, distance, number]
   quantity_ask_verb: [enroll, enrolled, enrolling, enrolls, had, has, have, own, owns, take, takes, took]
-  quantity_container: [aquarium, backpack, binder, box, bunch, cabinet, cage, canteen, case, chest, cooler,
+  quantity_container: [aquarium, backpack, binder, box, bunch, cabinet, cage, can, canteen, case, chest, cooler,
       drawer, folder, house, locker, matchbox, mug, packet, pail, piñata, pot, scoop, shelf, shoebox, thermos,
       tray, vase]
   quantity_delta: [fewer, less, more]

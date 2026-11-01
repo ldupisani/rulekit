@@ -1,0 +1,203 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/measured-holder-whole
+  description: A measured resource total and its explicitly counted containers remain separate operands.
+  match:
+    sentence:
+    - {lit: there, at_start: true}
+    - {slot: be, cat: copula}
+    - {slot: amount, cat: resource_measure_unit, counted: true, bare: true}
+    - {lit: of}
+    - {slot: item, cat: material_resource, uncounted: true}
+    - {lit: in}
+    - {slot: population, cat: quantity_container, counted: true}
+    - opt:
+      - lit: of
+      - slot: property
+        cat: size_property_noun
+        uncounted: true
+        qualified: true
+        qualifier_cat: variable_size_descriptor
+        all_qualifiers: true
+    - {lit: ., consume_skipped: true}
+  consumes: [be, amount, population]
+  satisfies: {be: [subject]}
+  where: [number_compatible: [amount, be]]
+  emits:
+  - {fact: batch_evidence, kind: holder-population, entity: '{population}', measure: '{population}', value: 
+      population, position: '{population.span_start}', acquisition: '{property.optional}'}
+  - {fact: batch_evidence, kind: measured-holder-total, entity: '{population}', measure: '{item}', value: amount, 
+      marker: '{amount}', position: '{amount.span_start}', acquisition: '{item}'}
+templates:
+  measured-holder-subset:
+    parameters:
+      subject:
+      - {slot: count, type: number, standalone: true, integer: true, value_min: 1, at_start: true}
+      - {lit: of}
+      - {lit: the, consume_skipped: true}
+      - {slot: holders, cat: quantity_container, uncounted: true, number: plural, bare: true}
+      predicate:
+      - {slot: be, cat: copula}
+      - {slot: hold, cat: container_content_state_verb, present_participle: true}
+      agreement: [number_compatible: [count, be]]
+      satisfaction: {be: [subject], hold: [subject], count: [quantifies]}
+    rule:
+      question_assumption: true
+      description: A counted subset has an explicit measured amount per holder; the complete clause can be a local 
+        question assumption.
+      match:
+        sentence:
+        - {parameter: subject}
+        - {parameter: predicate}
+        - {slot: amount, cat: resource_measure_unit, counted: true, bare: true}
+        - {slot: each, cat: postpositive_distributive_quantifier}
+        - {lit: ., consume_skipped: true}
+      consumes: [count, hold, amount]
+      satisfies: {parameter: satisfaction}
+      bindings: {each: {collection: holders}}
+      where: {parameter: agreement}
+      emits:
+      - {fact: batch_evidence, kind: measured-holder-share, entity: '{holders}', measure: '', value: count, 
+          per_member: amount, marker: '{amount}', position: '{count.span_start}'}
+  remaining-holder-question:
+    parameters:
+      head:
+      - {lit: how, at_start: true}
+      - {slot: much, cat: mass_amount_interrogative}
+      - {slot: item, cat: material_resource, uncounted: true}
+      subject:
+      - {slot: be, cat: singular_copula}
+      - {slot: each, cat: partitive_distributive_quantifier}
+      - {lit: of}
+      - {lit: the, consume_skipped: true}
+      - {slot: holders, cat: quantity_container, uncounted: true, number: plural, qualified: true, qualifier_cat: 
+          resource_remnant_attribute, all_qualifiers: true}
+      - {slot: hold, cat: container_content_state_verb, present_participle: true}
+      unit: ''
+      satisfaction:
+        be:
+        - subject
+        hold:
+        - subject
+        each:
+        - collection
+        mean_prep:
+        - object
+      disambiguation:
+      - much
+      constraints:
+      - bound_requires_category:
+          bound: item
+          slot: item
+          cat: mass_quantity_noun
+    rule:
+      match:
+        question:
+        - parameter: head
+        - parameter: subject
+        - opt:
+          - slot: mean_prep
+            cat: mean_report_preposition
+          - slot: mean
+            cat: mean_aggregate
+        - {lit: '?', consume_skipped: true}
+      disambiguates:
+        parameter: disambiguation
+      satisfies:
+        parameter: satisfaction
+      resolves: {consumer: uniform-content-distribution, mode: remaining-holders, item: '{item}', holder: '{holders}',
+        unit: {parameter: unit}, average: '{mean.optional}'}
+      where:
+        parameter: constraints
+variants:
+- {id: arithmetic/measured-holder-subset-progressive, template: measured-holder-subset}
+- id: arithmetic/measured-holder-subset-finite
+  template: measured-holder-subset
+  arguments:
+    predicate: [{slot: hold, cat: container_content_state_verb, finite_form: true}]
+    agreement: [number_compatible: [count, hold]]
+    satisfaction: {hold: [subject], count: [quantifies]}
+ask_variants:
+- id: ask/remaining-holder-measured-share
+  template: remaining-holder-question
+- id: ask/remaining-holder-measured-share-direct
+  template: remaining-holder-question
+  arguments:
+    subject:
+    - slot: aux
+      cat: singular_auxiliary
+    - slot: each
+      cat: distributive_quantifier
+    - slot: holders
+      cat: quantity_container
+      uncounted: true
+      number: singular
+      qualified: true
+      qualifier_cat: resource_remnant_attribute
+      all_qualifiers: true
+    - slot: hold
+      cat: container_content_state_verb
+      bare_form: true
+    satisfaction:
+      hold:
+      - subject
+      each:
+      - collection
+      mean_prep:
+      - object
+- id: ask/remaining-holder-measured-share-units
+  template: remaining-holder-question
+  arguments:
+    head:
+    - lit: how
+      at_start: true
+    - lit: many
+    - slot: unit
+      cat: resource_measure_unit
+      uncounted: true
+      bare: true
+      number: plural
+    - lit: of
+    - {slot: item, cat: material_resource, uncounted: true}
+    unit: '{unit}'
+    disambiguation: []
+    constraints: []
+- id: ask/remaining-holder-measured-share-units-direct
+  template: remaining-holder-question
+  arguments:
+    head:
+    - lit: how
+      at_start: true
+    - lit: many
+    - slot: unit
+      cat: resource_measure_unit
+      uncounted: true
+      bare: true
+      number: plural
+    - lit: of
+    - {slot: item, cat: material_resource, uncounted: true}
+    unit: '{unit}'
+    disambiguation: []
+    subject:
+    - slot: aux
+      cat: singular_auxiliary
+    - slot: each
+      cat: distributive_quantifier
+    - slot: holders
+      cat: quantity_container
+      uncounted: true
+      number: singular
+      qualified: true
+      qualifier_cat: resource_remnant_attribute
+      all_qualifiers: true
+    - slot: hold
+      cat: container_content_state_verb
+      bare_form: true
+    satisfaction:
+      hold:
+      - subject
+      each:
+      - collection
+      mean_prep:
+      - object
+    constraints: []

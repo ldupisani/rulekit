@@ -20,6 +20,14 @@ def anaphoric_forms_agree(surfaces: list[str], number: str | None, reg: Registry
     ) and len({form.paradigm for form in forms if form is not None}) == 1
 
 
+def referenced_forms_agree(readings, identity, reg: Registry, number: str = 'singular') -> bool:
+    """Check the explicit forms already linked to one identity, without guessing a name's gender."""
+    forms = [unit.surface for reading in readings for unit in reading.units
+             if unit.sense() == 'pronoun' and reference_from_unit(unit) == identity
+             and getattr(reg.lexicon.get(unit.surface.casefold()), 'anaphoric_form', None)]
+    return not forms or anaphoric_forms_agree(forms, number, reg)
+
+
 def _referent_number(unit: Unit) -> str | None:
     seen = set()
     while unit.sense() == "pronoun":

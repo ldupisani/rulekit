@@ -50,9 +50,21 @@ entries:
   academic:
     senses:
     - adjective
+  accept:
+    senses:
+    - verb
+    number: plural
+  accepted:
+    senses:
+    - verb
+    verb:
+      lemma: accept
   accepts:
     senses:
     - verb
+    number: singular
+    verb:
+      lemma: accept
   accessory:
     senses:
     - noun
@@ -69,6 +81,8 @@ entries:
     - noun
   according to: {senses: [preposition]}
   account: {senses: [noun], plural: accounts}
+  accounted: {senses: [verb], verb: {lemma: account}}
+  acorn: {senses: [noun], plural: acorns}
   across: {senses: [preposition]}
   action: {senses: [noun], plural: actions}
   activity:
@@ -352,6 +366,21 @@ entries:
   asleep:
     senses:
     - adjective
+  assemble:
+    senses:
+    - verb
+    number: plural
+  assembled:
+    senses:
+    - verb
+    verb:
+      lemma: assemble
+  assembles:
+    senses:
+    - verb
+    number: singular
+    verb:
+      lemma: assemble
   assign:
     senses:
     - verb
@@ -415,17 +444,21 @@ entries:
     senses:
     - noun
     plural: aunts
+  autumn: {senses: [noun]}
   avenue:
     senses:
     - noun
     plural: avenues
-  average: {senses: [aggregate, verb], verb: {lemma: average}}
+  average: {senses: [aggregate, verb], verb: {lemma: average, number: plural}}
   averaged:
     senses:
     - verb
   averages:
     senses:
     - verb
+    verb:
+      lemma: average
+      number: singular
   avocado:
     senses:
     - noun
@@ -581,7 +614,7 @@ entries:
   battle:
     senses:
     - noun
-  be: {senses: [verb]}
+  be: {senses: [verb], verb: {finite: false}}
   beach:
     senses:
     - noun
@@ -634,7 +667,7 @@ entries:
   beef:
     senses:
     - noun
-  been: {senses: [verb], verb: {lemma: be}}
+  been: {senses: [verb], verb: {lemma: be, finite: false}}
   beeswax:
     senses:
     - noun
@@ -731,6 +764,10 @@ entries:
   blackjack:
     senses:
     - noun
+  blade:
+    senses:
+    - noun
+    plural: blades
   blanket:
     senses:
     - noun
@@ -1235,6 +1272,10 @@ entries:
     senses:
     - noun
     plural: chalkboards
+  challenge:
+    senses:
+    - noun
+    plural: challenges
   change: {senses: [noun, verb]}
   changed:
     senses:
@@ -1254,9 +1295,9 @@ entries:
     senses:
     - noun
   charcuterie: {senses: [noun]}
-  charge: {senses: [verb]}
+  charge: {senses: [verb], verb: {number: plural}}
   charged: {senses: [verb], verb: {lemma: charge}}
-  charges: {senses: [verb], number: singular, verb: {lemma: charge}}
+  charges: {senses: [verb], number: singular, verb: {lemma: charge, number: singular}}
   charging: {senses: [verb], verb: {lemma: charge}}
   charm:
     senses:
@@ -1544,9 +1585,22 @@ entries:
   compete:
     senses:
     - verb
+  competed:
+    senses:
+    - verb
+    verb:
+      lemma: compete
+  competes:
+    senses:
+    - verb
+    number: singular
+    verb:
+      lemma: compete
   competing:
     senses:
     - verb
+    verb:
+      lemma: compete
   competition:
     senses:
     - noun
@@ -1937,7 +1991,7 @@ entries:
     - noun
     plural: dads
   daffodil: {senses: [noun], plural: daffodils}
-  daily: {senses: [adverb]}
+  daily: {senses: [adverb, adjective]}
   dairy:
     senses:
     - adjective
@@ -2061,6 +2115,8 @@ entries:
   deposit:
     senses:
     - verb
+    - noun
+    plural: deposits
   descending:
     senses:
     - verb
@@ -2102,6 +2158,9 @@ entries:
   detour:
     senses:
     - noun
+  devour: {senses: [verb], number: plural}
+  devoured: {senses: [verb], verb: {lemma: devour}}
+  devours: {senses: [verb], number: singular, verb: {lemma: devour}}
   diagonal: {senses: [noun], plural: diagonals}
   diary:
     senses:
@@ -2264,6 +2323,10 @@ entries:
     senses:
     - noun
     plural: donuts
+  door:
+    senses:
+    - noun
+    plural: doors
   door-to-door:
     senses:
     - adjective
@@ -2288,6 +2351,11 @@ entries:
     - noun
     plural: doughs
   down: {senses: [adverb, preposition]}
+  down payment:
+    senses:
+    - noun
+    plural: down payments
+    lexical_phrase: true
   downhill:
     senses:
     - adverb
@@ -2584,7 +2652,18 @@ entries:
     - noun
     plural: episodes
   equal: {senses: [adjective]}
+  equal sized:
+    senses:
+    - adjective
+    lexical_phrase: true
+  equal-sized:
+    senses:
+    - adjective
   equally: {"senses": ["adverb"]}
+  equally sized:
+    senses:
+    - adjective
+    lexical_phrase: true
   equally-sized:
     senses:
     - adjective
@@ -2758,6 +2837,7 @@ entries:
   fall:
     senses:
     - verb
+    - noun
   falling:
     senses:
     - verb
@@ -2795,7 +2875,7 @@ entries:
     - noun
   favorite: {senses: [adjective]}
   favourite: {senses: [adjective]}
-  feast: {senses: [verb]}
+  feast: {senses: [verb], number: plural}
   feasted: {senses: [verb], verb: {lemma: feast}}
   feasts: {senses: [verb], number: singular, verb: {lemma: feast}}
   february: {senses: [noun]}
@@ -3109,6 +3189,10 @@ entries:
   gain:
     senses:
     - noun
+    - verb
+    verb: {lemma: gain, number: plural}
+  gained: {senses: [verb], verb: {lemma: gain}}
+  gains: {senses: [verb], number: singular, verb: {lemma: gain}}
   gallery:
     senses:
     - noun
@@ -3191,13 +3275,13 @@ entries:
     - adjective
   giraffe: {senses: [noun], plural: giraffes}
   girl: {senses: [noun], plural: girls}
-  give: {senses: [verb], number: plural, verb: {lemma: give}}
+  give: {senses: [verb], number: plural, verb: {lemma: give, number: plural}}
   given:
     senses:
     - verb
     verb:
       lemma: give
-  gives: {senses: [verb], number: singular, verb: {lemma: give}}
+  gives: {senses: [verb], number: singular, verb: {lemma: give, number: singular}}
   giving:
     senses:
     - verb
@@ -3287,6 +3371,7 @@ entries:
     - noun
     plural: grandpas
   grandparent: {senses: [noun], plural: grandparents}
+  grant: {senses: [noun], plural: grants}
   grape: {senses: [noun], plural: grapes}
   grapes:
     senses:
@@ -3295,6 +3380,10 @@ entries:
     senses:
     - noun
   grasshopper: {senses: [noun], plural: grasshoppers}
+  gratuity:
+    senses:
+    - noun
+    plural: gratuities
   gray:
     senses:
     - adjective
@@ -3499,6 +3588,7 @@ entries:
     - noun
     - name
   herself: {senses: [pronoun], anaphoric_form: *feminine}
+  hibernate: {senses: [verb]}
   hides:
     senses:
     - verb
@@ -3769,9 +3859,17 @@ entries:
   installing:
     senses:
     - verb
+  installment:
+    senses:
+    - noun
+    plural: installments
   installs:
     senses:
     - verb
+  instalment:
+    senses:
+    - noun
+    plural: instalments
   instead:
     senses:
     - adverb
@@ -4088,7 +4186,7 @@ entries:
   lassi:
     senses:
     - noun
-  last: {senses: [adjective, verb]}
+  last: {senses: [adjective, verb], verb: {lemma: last, number: plural}}
   last name: {senses: [noun], plural: last names, lexical_phrase: true}
   lasted:
     senses:
@@ -4103,6 +4201,7 @@ entries:
   lasts:
     senses:
     - verb
+    number: singular
     verb:
       lemma: last
   late: {senses: [adjective]}
@@ -4391,7 +4490,8 @@ entries:
   madam:
     senses:
     - title
-  made: {senses: [verb], verb: {lemma: make}}
+  made: {senses: [verb], verb: {lemma: make, past_participle: true}}
+  made up: {senses: [verb], verb: {lemma: make up}}
   magazine:
     senses:
     - noun
@@ -4404,7 +4504,9 @@ entries:
     senses:
     - adjective
   make: {senses: [verb], number: plural, verb: {lemma: make}}
+  make up: {senses: [verb], number: plural, verb: {lemma: make up}}
   makes: {senses: [verb], number: singular, verb: {lemma: make}}
+  makes up: {senses: [verb], number: singular, verb: {lemma: make up}}
   makeup:
     senses:
     - noun
@@ -4752,14 +4854,14 @@ entries:
     - noun
     plural: mice
   movie: {senses: [noun], plural: movies}
-  mow: {senses: [verb]}
+  mow: {senses: [verb], verb: {number: plural}}
   mowed: {senses: [verb], verb: {lemma: mow}}
   mower:
     senses:
     - noun
     plural: mowers
   mowing: {senses: [verb], verb: {lemma: mow}}
-  mows: {senses: [verb], number: singular, verb: {lemma: mow}}
+  mows: {senses: [verb], number: singular, verb: {lemma: mow, number: singular}}
   mpg:
     senses:
     - noun
@@ -5097,9 +5199,13 @@ entries:
   operate:
     senses:
     - verb
+    number: plural
   operates:
     senses:
     - verb
+    number: singular
+    verb: {lemma: operate}
+  operating: {senses: [verb], verb: {lemma: operate}}
   opposite: {senses: [preposition]}
   optical:
     senses:
@@ -5213,7 +5319,7 @@ entries:
     senses:
     - noun
     plural: pails
-  paint: {senses: [verb]}
+  paint: {senses: [verb], verb: {number: plural}}
   paintball:
     senses:
     - noun
@@ -5234,8 +5340,11 @@ entries:
   painting:
     senses:
     - noun
+    - verb
     plural: paintings
-  paints: {senses: [verb], number: singular, verb: {lemma: paint}}
+    verb:
+      lemma: paint
+  paints: {senses: [verb], number: singular, verb: {lemma: paint, number: singular}}
   pair:
     senses:
     - noun
@@ -5330,6 +5439,8 @@ entries:
     senses:
     - verb
     - noun
+    verb:
+      number: plural
   payday:
     senses:
     - noun
@@ -5347,6 +5458,7 @@ entries:
     - verb
     verb:
       lemma: pay
+      number: singular
   peach: {senses: [noun], plural: peaches}
   peanut:
     senses:
@@ -5539,7 +5651,7 @@ entries:
   placed: {senses: [verb], verb: {lemma: place}}
   places: {senses: [verb], number: singular, verb: {lemma: place}}
   placing: {senses: [verb], verb: {lemma: place}}
-  plan: {senses: [noun], plural: plans}
+  plan: {senses: [noun, verb], plural: plans, verb: {lemma: plan, number: plural}}
   plane:
     senses:
     - noun
@@ -5550,6 +5662,19 @@ entries:
   planned:
     senses:
     - verb
+  planning:
+    senses:
+    - verb
+    verb:
+      lemma: plan
+  plans:
+    senses:
+    - noun
+    - verb
+    number: plural
+    verb:
+      lemma: plan
+      number: singular
   plant: {senses: [noun, verb], plural: plants}
   plantation:
     senses:
@@ -5564,7 +5689,7 @@ entries:
     lexical_phrase: true
   plate: {"senses": ["noun"], "plural": "plates"}
   platter: {"senses": ["noun"], "plural": "platters"}
-  play: {senses: [verb]}
+  play: {senses: [verb], number: plural}
   played: {senses: [verb], verb: {lemma: play}}
   player:
     senses:
@@ -5578,7 +5703,7 @@ entries:
     senses:
     - noun
     plural: playlists
-  plays: {senses: [verb], verb: {lemma: play}}
+  plays: {senses: [verb], number: singular, verb: {lemma: play}}
   plot:
     senses:
     - noun
@@ -5668,7 +5793,7 @@ entries:
   poured: {senses: [verb], verb: {lemma: pour}}
   pouring: {senses: [verb], verb: {lemma: pour}}
   pours: {senses: [verb], number: singular, verb: {lemma: pour}}
-  practice: {senses: [noun, verb], plural: practices}
+  practice: {senses: [noun, verb], plural: practices, verb: {lemma: practice, number: plural}}
   practices: {senses: [noun, verb], number: singular, verb: {lemma: practice}}
   practicing: {senses: [verb], verb: {lemma: practice}}
   pray:
@@ -5703,12 +5828,15 @@ entries:
   prepare:
     senses:
     - verb
+    number: plural
   prepared:
     senses:
     - verb
+  prepares: {senses: [verb], number: singular, verb: {lemma: prepare}}
   preparing:
     senses:
     - verb
+    verb: {lemma: prepare}
   prescription: {senses: [noun], plural: prescriptions}
   present:
     senses:
@@ -5797,6 +5925,12 @@ entries:
   protesting:
     senses:
     - verb
+  provided:
+    senses:
+    - conjunction
+    - verb
+    verb:
+      lemma: provide
   provides:
     senses:
     - verb
@@ -5853,6 +5987,7 @@ entries:
   purple: {senses: [adjective]}
   purpose: {senses: [noun], plural: purposes}
   purse: {senses: [noun], plural: purses}
+  pushup: {senses: [noun], plural: pushups}
   pushups:
     senses:
     - noun
@@ -5944,9 +6079,9 @@ entries:
     - noun
     plural: raisins
   raising: {senses: [verb], verb: {lemma: raise}}
-  rake: {"senses": ["verb"], "number": "plural"}
+  rake: {senses: [verb], number: plural, verb: {number: plural}}
   raked: {"senses": ["verb"], "verb": {"lemma": "rake"}}
-  rakes: {"senses": ["verb"], "number": "singular", "verb": {"lemma": "rake"}}
+  rakes: {senses: [verb], number: singular, verb: {lemma: rake, number: singular}}
   raking: {"senses": ["verb"], "verb": {"lemma": "rake"}}
   ran: {senses: [verb], verb: {lemma: run}}
   ranch:
@@ -6590,6 +6725,11 @@ entries:
     - noun
     plural: scrapbooks
   sea: {senses: [noun], plural: seas}
+  sea star:
+    senses:
+    - noun
+    plural: sea stars
+    lexical_phrase: true
   seagull:
     senses:
     - noun
@@ -6606,6 +6746,10 @@ entries:
     senses:
     - noun
     plural: seasons
+  seastar:
+    senses:
+    - noun
+    plural: seastars
   seat:
     senses:
     - noun
@@ -6618,6 +6762,7 @@ entries:
     senses:
     - adjective
     - noun
+  secondary: {senses: [adjective]}
   seconds: {senses: [noun], number: plural}
   section:
     senses:
@@ -6791,12 +6936,12 @@ entries:
   shorter: {senses: [comparative]}
   shorts: {senses: [noun], number: plural}
   should: {senses: [modal]}
-  shovel: {senses: [verb]}
+  shovel: {senses: [verb], verb: {number: plural}}
   shoveled: {senses: [verb], verb: {lemma: shovel}}
   shoveling: {"senses": ["verb"], "verb": {"lemma": "shovel"}}
   shovelled: {senses: [verb], verb: {lemma: shovel}}
   shovelling: {"senses": ["verb"], "verb": {"lemma": "shovel"}}
-  shovels: {senses: [verb], number: singular, verb: {lemma: shovel}}
+  shovels: {senses: [verb], number: singular, verb: {lemma: shovel, number: singular}}
   show:
     senses:
     - noun
@@ -6893,9 +7038,7 @@ entries:
   situp:
     senses:
     - noun
-  situps:
-    senses:
-    - noun
+    plural: situps
   six:
     senses:
     - value
@@ -7140,6 +7283,7 @@ entries:
   spring:
     senses:
     - adjective
+    - noun
   square: {"senses": ["adjective", "noun"], "plural": "squares"}
   stable:
     senses:
@@ -7179,6 +7323,10 @@ entries:
     - noun
     - name
     plural: stars
+  starfish:
+    senses:
+    - noun
+    plural: starfish
   start: {senses: [noun, verb], number: plural}
   started: {senses: [verb], verb: {lemma: start}}
   starting: {senses: [verb], verb: {lemma: start}}
@@ -7739,6 +7887,10 @@ entries:
     senses:
     - adverb
   took: {senses: [verb], verb: {lemma: take}}
+  tool:
+    senses:
+    - noun
+    plural: tools
   tooth:
     senses:
     - noun
@@ -8037,6 +8189,9 @@ entries:
   uneaten:
     senses:
     - adjective
+  unequal:
+    senses:
+    - adjective
   unhelpful:
     senses:
     - adjective
@@ -8081,7 +8236,7 @@ entries:
     senses:
     - noun
     - adverb
-  use: {senses: [verb], number: plural}
+  use: {senses: [verb], number: plural, verb: {number: plural}}
   used: {senses: [verb], verb: {lemma: use}}
   useful:
     senses:
@@ -8089,7 +8244,7 @@ entries:
   useless:
     senses:
     - adjective
-  uses: {senses: [verb], number: singular, verb: {lemma: use}}
+  uses: {senses: [verb], number: singular, verb: {lemma: use, number: singular}}
   using: {senses: [verb], verb: {lemma: use}}
   utilities:
     senses:
@@ -8254,10 +8409,10 @@ entries:
     - noun
     plural: walls
   wallet: {senses: [noun], plural: wallets}
-  want: {senses: [verb], number: plural}
+  want: {senses: [verb], number: plural, verb: {number: plural}}
   wanted: {senses: [verb], verb: {lemma: want}}
   wanting: {senses: [verb], verb: {lemma: want}}
-  wants: {senses: [verb], verb: {lemma: want}}
+  wants: {senses: [verb], verb: {lemma: want, number: singular}}
   wardrobe:
     senses:
     - noun
@@ -8267,9 +8422,9 @@ entries:
     - noun
     plural: warehouses
   was: {senses: [verb], number: singular, verb: {lemma: be}}
-  wash: {senses: [verb]}
+  wash: {senses: [verb], verb: {number: plural}}
   washed: {senses: [verb], verb: {lemma: wash}}
-  washes: {senses: [verb], number: singular, verb: {lemma: wash}}
+  washes: {senses: [verb], number: singular, verb: {lemma: wash, number: singular}}
   washing: {"senses": ["verb"], "verb": {"lemma": "wash"}}
   watch:
     senses:
@@ -8410,6 +8565,10 @@ entries:
     verb:
       lemma: wind
   window: {senses: [noun], plural: windows}
+  wing:
+    senses:
+    - noun
+    plural: wings
   winner:
     senses:
     - noun
@@ -8425,6 +8584,7 @@ entries:
     - noun
     number: plural
   wins: {senses: [verb], number: singular, verb: {lemma: win}}
+  winter: {senses: [noun]}
   wire:
     senses:
     - noun
@@ -8479,6 +8639,7 @@ entries:
   wooden:
     senses:
     - adjective
+  woodland: {senses: [adjective]}
   wool: {senses: [noun]}
   word: {senses: [noun], plural: words}
   wore: {senses: [verb], verb: {lemma: wear}}
@@ -8487,6 +8648,7 @@ entries:
   worked: {senses: [verb], verb: {lemma: work}}
   worker: {senses: [noun], plural: workers}
   working: {senses: [verb], verb: {lemma: work}}
+  workout: {senses: [noun], plural: workouts}
   workplace:
     senses:
     - noun

@@ -37,6 +37,7 @@ categories:
     - organization
     - production_device
     - computing_device
+    - animal
   nonpersonal_actor_anaphor:
     parent: pronoun
   opening_state_adverb:
@@ -44,6 +45,12 @@ categories:
   material_allocation_verb:
     parent: allocation_transfer_verb
   allocation_receipt_preposition:
+    parent: preposition
+  remainder_state_verb:
+    parent: verb
+  residual_complement_link:
+    parent: preposition
+  mean_report_preposition:
     parent: preposition
 members:
   uniform_quantity_attribute: [same, equal]
@@ -101,6 +108,7 @@ members:
   - goes
   nonpersonal_actor_anaphor:
   - it
+  - its
   opening_state_adverb:
   - originally
   material_allocation_verb:
@@ -112,5 +120,13 @@ members:
   - to
   - in
   - into
+  remainder_state_verb:
+  - remain
+  - remains
+  - remained
+  residual_complement_link:
+  - with
+  mean_report_preposition:
+  - on
 attribute_compatibility:
   uniform_quantity_attribute: [count_aggregate_noun]

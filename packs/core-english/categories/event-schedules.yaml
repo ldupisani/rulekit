@@ -1,0 +1,21 @@
+format: rulekit/categories@1
+categories:
+  scheduled_activity_group:
+    parent: noun
+    includes: [social_group]
+  schedule_separation_descriptor: {parent: adjective}
+  scheduled_event: {parent: noun}
+  preparation_activity_verb: {parent: timed_activity_verb}
+  event_duration_verb: {parent: verb}
+  attendance_observation_verb: {parent: verb}
+  group_affiliation_preposition: {parent: preposition}
+members:
+  scheduled_activity_group: [class, club, band]
+  schedule_separation_descriptor: [different, separate]
+  scheduled_event: [game, match, lesson, session, meeting, show]
+  preparation_activity_verb: [practice, practices, practicing]
+  event_duration_verb: [last, lasted, lasts]
+  attendance_observation_verb: [watch, watched, watches, watching]
+  group_affiliation_preposition: [on, in, for]
+attribute_compatibility:
+  schedule_separation_descriptor: [scheduled_activity_group]

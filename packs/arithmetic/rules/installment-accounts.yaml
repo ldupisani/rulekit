@@ -1,0 +1,462 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/planned-priced-purchase
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: plan
+      cat: purchase_plan_verb
+      finite_form: true
+    - lit: to
+    - slot: buy
+      cat: purchase
+      bare_form: true
+    - slot: item
+      cat: ownable_quantity_object
+      uncounted: true
+      referential: true
+    - lit:
+      - which
+      - that
+    - slot: cost
+      cat: price_verb
+      finite_form: true
+    - slot: amount
+      cat: currency_unit
+      counted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: purchase_endpoint
+    entity: '{who}'
+    item: '{item}'
+    stage: quoted
+    measure: '{amount}'
+    value: amount
+    qualifier: '{item.qualifier}'
+  consumes:
+  - plan
+  - buy
+  - amount
+  satisfies:
+    plan:
+    - subject
+    buy:
+    - subject
+    cost:
+    - subject
+  where:
+  - number_compatible:
+    - item
+    - cost
+  - number_compatible:
+    - who
+    - plan
+- id: arithmetic/planned-priced-purchase-progressive
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: aux
+      cat: planning_state_auxiliary
+      finite_form: true
+    - slot: plan
+      cat: purchase_plan_verb
+      present_participle: true
+    - lit: to
+    - slot: buy
+      cat: purchase
+      bare_form: true
+    - slot: item
+      cat: ownable_quantity_object
+      uncounted: true
+      referential: true
+    - lit:
+      - which
+      - that
+    - slot: cost
+      cat: price_verb
+      finite_form: true
+    - slot: amount
+      cat: currency_unit
+      counted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: purchase_endpoint
+    entity: '{who}'
+    item: '{item}'
+    stage: quoted
+    measure: '{amount}'
+    value: amount
+    qualifier: '{item.qualifier}'
+  consumes:
+  - plan
+  - buy
+  - amount
+  satisfies:
+    aux:
+    - subject
+    plan:
+    - subject
+    buy:
+    - subject
+    cost:
+    - subject
+  where:
+  - number_compatible:
+    - item
+    - cost
+  - number_compatible:
+    - who
+    - plan
+  - number_compatible:
+    - who
+    - aux
+- id: arithmetic/installment-payment-policy
+  match:
+    sentence:
+    - opt:
+      - slot: trade
+        cat: retail_product
+        uncounted: true
+        bare: true
+    - slot: provider
+      cat: retail_organization
+      uncounted: true
+      referential: true
+    - slot: accept
+      cat: payment_acceptance_verb
+      finite_form: true
+    - slot: payment
+      cat: settlement_payment_noun
+      uncounted: true
+      bare: true
+    - lit: in
+    - slot: installment
+      cat: periodic_payment_noun
+      uncounted: true
+      number: plural
+      bare: true
+    - lit: of
+    - slot: amount
+      cat: currency_unit
+      counted: true
+      bare: true
+    - lit: per
+      consume_skipped: true
+    - slot: period
+      cat: duration_measure
+      uncounted: true
+      bare: true
+    - slot: provided
+      cat: policy_condition_link
+    - lit: that
+    - slot: fraction
+      type: fraction
+      fraction_within_whole: true
+    - slot: deposit
+      cat: initial_payment_noun
+      uncounted: true
+      bare: true
+    - slot: be
+      cat: copula
+    - slot: made
+      cat: payment_realization_verb
+      past_participle: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: installment-rate
+    entity: ''
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+    marker: '{period}'
+    container: '{provider}'
+  - fact: batch_evidence
+    kind: initial-payment-share
+    entity: ''
+    measure: ''
+    value: fraction
+    position: '{fraction.span_start}'
+    container: '{provider}'
+  consumes:
+  - accept
+  - amount
+  - fraction
+  - made
+  satisfies:
+    accept:
+    - subject
+    be:
+    - subject
+    made:
+    - subject
+  disambiguates:
+  - provider
+  - provided
+  - deposit
+  where:
+  - number_compatible:
+    - provider
+    - accept
+  - number_compatible:
+    - deposit
+    - be
+- id: arithmetic/additional-initial-payment-plan
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: want
+      cat: purchase_plan_verb
+      finite_form: true
+    - lit: to
+    - slot: pay
+      cat: payment_verb
+      bare_form: true
+    - slot: amount
+      cat: currency_unit
+      counted: true
+      qualified: true
+      qualifier_cat: supplemental_payment_descriptor
+      all_qualifiers: true
+    - slot: purpose
+      cat: spend_target_prep
+    - lit: the
+      consume_skipped: true
+    - slot: deposit
+      cat: initial_payment_noun
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: initial-payment-supplement
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+  consumes:
+  - want
+  - pay
+  - amount
+  satisfies:
+    want:
+    - subject
+    pay:
+    - subject
+  question_assumption: true
+  disambiguates:
+  - pay
+  - deposit
+  bindings:
+    purpose:
+      object: deposit
+  where:
+  - number_compatible:
+    - who
+    - want
+- id: arithmetic/planned-priced-purchase-for-price
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: plan
+      cat: purchase_plan_verb
+      finite_form: true
+    - lit: to
+    - slot: buy
+      cat: purchase
+      bare_form: true
+    - slot: item
+      cat: ownable_quantity_object
+      uncounted: true
+      referential: true
+    - lit: for
+    - slot: amount
+      cat: currency_unit
+      counted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: purchase_endpoint
+    entity: '{who}'
+    item: '{item}'
+    stage: quoted
+    measure: '{amount}'
+    value: amount
+    qualifier: '{item.qualifier}'
+  consumes:
+  - plan
+  - buy
+  - amount
+  satisfies:
+    plan:
+    - subject
+    buy:
+    - subject
+  where:
+  - number_compatible:
+    - item
+    - cost
+  - number_compatible:
+    - who
+    - plan
+- id: arithmetic/planned-priced-purchase-progressive-for-price
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: aux
+      cat: planning_state_auxiliary
+      finite_form: true
+    - slot: plan
+      cat: purchase_plan_verb
+      present_participle: true
+    - lit: to
+    - slot: buy
+      cat: purchase
+      bare_form: true
+    - slot: item
+      cat: ownable_quantity_object
+      uncounted: true
+      referential: true
+    - lit: for
+    - slot: amount
+      cat: currency_unit
+      counted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: purchase_endpoint
+    entity: '{who}'
+    item: '{item}'
+    stage: quoted
+    measure: '{amount}'
+    value: amount
+    qualifier: '{item.qualifier}'
+  consumes:
+  - plan
+  - buy
+  - amount
+  satisfies:
+    aux:
+    - subject
+    plan:
+    - subject
+    buy:
+    - subject
+  where:
+  - number_compatible:
+    - item
+    - cost
+  - number_compatible:
+    - who
+    - plan
+  - number_compatible:
+    - who
+    - aux
+asks:
+- id: ask/projected-installment-balance
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: much
+    - slot: will
+      cat: future_modal
+    - slot: owner
+      cat: possessive_determiner
+    - slot: balance
+      cat: balance_quantity_noun
+      uncounted: true
+    - slot: be
+      cat: planning_state_auxiliary
+      bare_form: true
+    - lit: after
+    - slot: pay
+      cat: payment_verb
+      present_participle: true
+    - opt:
+      - lit: for
+    - slot: elapsed
+      cat: duration_measure
+      counted: true
+      bare: true
+      value_min: 0
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: installment-balance
+    entity: '{balance.owner}'
+    elapsed: '{elapsed.value}'
+    period: '{elapsed}'
+  satisfies:
+    be:
+    - subject
+    pay:
+    - subject
+  where: []
+- id: ask/projected-installment-balance-what
+  match:
+    question:
+    - lit: what
+      at_start: true
+    - slot: will
+      cat: future_modal
+    - slot: owner
+      cat: possessive_determiner
+    - slot: balance
+      cat: balance_quantity_noun
+      uncounted: true
+    - slot: be
+      cat: planning_state_auxiliary
+      bare_form: true
+    - lit: after
+    - slot: pay
+      cat: payment_verb
+      present_participle: true
+    - opt:
+      - lit: for
+    - slot: elapsed
+      cat: duration_measure
+      counted: true
+      bare: true
+      value_min: 0
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: installment-balance
+    entity: '{balance.owner}'
+    elapsed: '{elapsed.value}'
+    period: '{elapsed}'
+  satisfies:
+    be:
+    - subject
+    pay:
+    - subject
+  where: []

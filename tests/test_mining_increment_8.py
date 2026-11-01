@@ -73,12 +73,19 @@ def test_population_across_multiple_holders_sums(full_registry):
 
 
 def test_entity_slot_still_requires_name_or_noun(full_registry):
-    # a pronoun that never resolves still cannot stand in for "who"
+    # Competing nonpersonal actors leave the pronoun unresolved.
     r = solve(
-        "A bird eats 7 berries a day. How many berries does it eat in 4 days?",
+        "A bird eats 7 berries a day. A fox eats 3 berries a day. "
+        "How many berries does it eat in 4 days?",
         full_registry,
     )
     assert r.answer.kind == "decline"
+
+
+def test_a_unique_nonpersonal_actor_can_supply_the_entity_reference(full_registry):
+    r = solve("A bird eats 7 berries a day. How many berries does it eat in 4 days?", full_registry)
+    assert r.answer.value == 28
+    assert not r.deficiencies()
 
 
 def test_rate_without_span_declines(full_registry):

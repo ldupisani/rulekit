@@ -1,0 +1,48 @@
+format: rulekit/categories@1
+categories:
+  competitive_activity_verb:
+    parent: verb
+  competitive_event:
+    parent: noun
+  goal_quantity_activity:
+    parent: indexed_progress_predicate
+  goal_progress_measure:
+    parent: noun
+    includes:
+    - length_measure
+    - performance_unit
+  duration_extent_descriptor:
+    parent: adjective
+  progress_temporal_preposition:
+    parent: preposition
+  indexed_progress_predicate:
+    parent: quantity_event_verb
+members:
+  competitive_activity_verb:
+  - compete
+  - competes
+  - competing
+  - competed
+  competitive_event:
+  - race
+  - contest
+  - competition
+  - challenge
+  goal_quantity_activity:
+  - run
+  - runs
+  - ran
+  - read
+  - reads
+  - write
+  - writes
+  - wrote
+  - produce
+  - produces
+  - produced
+  duration_extent_descriptor:
+  - long
+  progress_temporal_preposition:
+  - on
+  - during
+  - in

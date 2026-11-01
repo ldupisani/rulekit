@@ -22,6 +22,10 @@ categories:
     parent: adjective
   allocation_amount_noun:
     parent: noun
+  personal_ratio_preposition:
+    parent: preposition
+  personal_holding_depletion:
+    parent: verb
 members:
   allocatable_resource: [money, prize, profit]
   allocation_distribution_preposition: [among, between, amongst]
@@ -36,6 +40,15 @@ members:
   - certain
   allocation_amount_noun:
   - amount
+  personal_ratio_preposition:
+  - to
+  personal_holding_depletion:
+  - spend
+  - spent
+  - spends
+  - use
+  - used
+  - uses
 attribute_compatibility:
   commercial_context_descriptor: [allocation_participant, allocation_source]
   unspecified_amount_descriptor:

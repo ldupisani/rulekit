@@ -64,10 +64,18 @@ def test_sequence_adverb_positions_preserve_adjective_uses(project, prefix):
     assert any(u.features.get("qualifier") == "next" for u in reading.units)
 
 
-@pytest.mark.parametrize("senses", [["verb"], ["noun", "verb"], ["adjective"]])
+@pytest.mark.parametrize("senses", [["verb"], ["noun", "verb"], ["adjective", "adverb"]])
 def test_atomic_phrase_schema_rejects_unsupported_senses(senses):
-    with pytest.raises(ValidationError, match="one noun or adverb sense"):
+    with pytest.raises(ValidationError, match="one noun, adjective or adverb sense"):
         LexiconEntry(senses=senses, lexical_phrase=True)
+
+
+def test_atomic_size_adjectives_retain_their_category_and_host(project):
+    reading = analyze('6 equally sized baskets', project.registry)
+    assert len(reading.units) == 1
+    assert reading.units[0].features['value'] == 6
+    assert reading.units[0].features['qualifier'] == 'equally sized'
+    assert reading.units[0].features['lemma'] == 'basket'
 
 
 @pytest.mark.parametrize("key", ["atomic", "two  words"])
