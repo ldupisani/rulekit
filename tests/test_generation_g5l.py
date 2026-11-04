@@ -29,6 +29,7 @@ EXPECTED_PATHS = {
     "arithmetic/anchored-relation": {
         (9, 1): ("standard_tail_item",),
         (10,): ("conjunction_seen",),
+        (11,): ("scoped_period_seen",),
     },
     "arithmetic/anchored-relation-fully-elided": {
         (4,): ("item_seen",),
@@ -38,9 +39,11 @@ EXPECTED_PATHS = {
     },
     "arithmetic/anaphoric-multiplier-standard-many": {
         (5,): ("direct_std_seen",),
+        (6,): ("scoped_period_seen",),
     },
     "arithmetic/anaphoric-multiplier-standard-much": {
         (5,): ("direct_std_seen",),
+        (6,): ("scoped_period_seen",),
     },
     "arithmetic/anaphoric-multiplier-standard-as-many": {
         (5,): ("direct_std_seen",),
@@ -182,6 +185,7 @@ def test_g5l_profiles_the_complete_unbound_branch_class() -> None:
         "standard_seen": 2,
         "std_seen": 8,
         "tail_prep_seen": 1,
+        "scoped_period_seen": 3,
     }
     assert {
         rule_id: _unbound_optional_paths(
@@ -197,9 +201,9 @@ def test_g5l_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 729
-    assert sum(item.supported for item in availability.values()) == 644
-    assert sum(not item.supported for item in availability.values()) == 85
+    assert len(availability) == 830
+    assert sum(item.supported for item in availability.values()) == 733
+    assert sum(not item.supported for item in availability.values()) == 97
     assert all(
         availability[rule_id].supported for rule_id in EXPECTED_PATHS
     )
@@ -208,7 +212,7 @@ def test_g5l_unlocks_exactly_the_preregistered_frontier() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 2575
+    assert len(exploration_status(project)["fillers"]) == 2601
 
 
 @pytest.mark.parametrize("rule_id", sorted(EXPECTED_PATHS))

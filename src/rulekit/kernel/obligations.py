@@ -382,7 +382,9 @@ def _relative_marker_licenses_finite_verb(reading: Reading, unit: Unit, reg: Reg
     if index < 2:
         return False
     marker, antecedent = reading.units[index - 1], reading.units[index - 2]
-    return (marker.sense() == "complementizer" and antecedent.sense() == "noun"
+    return (marker.sense() == "complementizer"
+            and (antecedent.sense() == "noun" or reg is not None
+                 and _nominal_position_licenses_noun(reading, antecedent, reg))
             and is_finite_verb_form(unit.features.get("fold", ""),
                                     unit.features.get("lemma", ""), reg))
 
@@ -459,6 +461,116 @@ def _counted_compound_licenses_noun(reading: Reading, unit: Unit, reg: Registry)
             and reading.units[index - 2].sense() == "value")
 
 
+def _compatible_modifier_licenses_noun(reading: Reading, unit: Unit, reg: Registry) -> bool:
+    """An adjacent, declared adjective selects its compatible nominal head.
+
+    A declared modifier/head pair must license the adjective sense. This
+    is the inverse of adjective/head compatibility below, including cases
+    where both the modifier and its head have independent other senses.
+    """
+    index = reading.units.index(unit)
+    if index == 0:
+        return False
+    modifier = reading.units[index - 1]
+    nominal = reg.plural_to_singular.get(
+        unit.features.get("fold", ""), unit.features.get("fold", "")
+    )
+    return ("adjective" in modifier.senses()
+            and _compatible_head_licenses_adjective(reading, modifier, reg)) and reg.attribute_applies_to(
+        modifier.features.get("lemma", modifier.features.get("fold", "")), nominal
+    )
+
+
+def _quantity_licenses_noun(reading: Reading, unit: Unit, reg: Registry) -> bool:
+    """An explicit cardinal or adnominal quantity word introduces a noun.
+
+    An optional comparative delta stays inside the cardinal noun phrase.
+    Ordinary interrogative subjects and verbal adverbs supply no license.
+    """
+    index = reading.units.index(unit)
+    if index == 0:
+        return False
+    previous = reading.units[index - 1]
+    if reg.word_in_category(previous.features.get("fold", ""), "adnominal_quantity_word"):
+        return True
+    fold = unit.features.get("fold", "")
+    if (reg.word_in_category(previous.features.get("fold", ""), "group_total_quantifier")
+            and reg.plural_to_singular.get(fold, fold) != fold):
+        return True
+    if reg.word_in_category(previous.features.get("fold", ""), "quantity_delta"):
+        if index < 2:
+            return False
+        previous = reading.units[index - 2]
+    return previous.sense() == "value" and previous.features.get("value_kind") == "count"
+
+
+def _measured_modifier_licenses_noun(reading: Reading, unit: Unit, reg: Registry) -> bool:
+    """An explicit compatible measure modifies its nominal holder.
+
+    Keep a quantified measure and its holder distinct: the measure's number
+    describes an attribute, rather than counting holders or introducing a
+    second finite predicate.
+    """
+    index = reading.units.index(unit)
+    if index < 2:
+        return False
+    amount, measure = reading.units[index - 2:index]
+    nominal = reg.plural_to_singular.get(
+        unit.features.get("fold", ""), unit.features.get("fold", "")
+    )
+    return (
+        amount.sense() == "value" and amount.features.get("value_kind") == "count"
+        and "noun" in measure.senses() and measure.features.get("number") != "plural"
+        and reg.measure_applies_to_holder(measure.features.get("lemma", ""), nominal)
+    )
+
+
+def _possessive_licenses_noun(reading: Reading, unit: Unit, reg: Registry) -> bool:
+    """A possessive selects a distinct noun inflection, preserving clitic ambiguity."""
+    from .patterns import is_bare_verb_form, is_finite_verb_form, is_past_participle_form
+
+    index = reading.units.index(unit)
+    fold = unit.features.get("fold", "")
+    lemma = reg.verb_lemmas.get(fold, fold)
+    return (
+        index > 0 and reading.units[index - 1].sense() == "possessive"
+        and "adjective" not in unit.senses()
+        and is_finite_verb_form(fold, lemma, reg)
+        and not is_bare_verb_form(fold, lemma)
+        and not is_past_participle_form(fold, lemma, reg)
+    )
+
+
+def _nominal_position_licenses_noun(reading: Reading, unit: Unit, reg: Registry) -> bool:
+    """One shared license for a nominal head and predicates depending on it."""
+    return "noun" in unit.senses() and (
+        _finite_verb_licenses_nonbare_noun_object(reading, unit, reg)
+        or _article_licenses_noun(reading, unit, reg)
+        or _counted_compound_licenses_noun(reading, unit, reg)
+        or _compatible_modifier_licenses_noun(reading, unit, reg)
+        or _quantity_licenses_noun(reading, unit, reg)
+        or _measured_modifier_licenses_noun(reading, unit, reg)
+        or _possessive_licenses_noun(reading, unit, reg)
+        or _adposition_licenses_noun(reading, unit, reg)
+    )
+
+
+def _terminal_aggregate_licenses_aggregate(reading: Reading, unit: Unit, reg: Registry) -> bool:
+    """A terminal aggregate follows the inverted quantity predicate.
+
+    A predicate preceded by its own subject, and passive copular complexes,
+    retain their verbal reading. Only an existing aggregate sense qualifies.
+    """
+    index = reading.units.index(unit)
+    return (
+        index > 0 and reading.units[0].sense() == "interrogative"
+        and reg.word_in_category(unit.features.get("fold", ""), "group_total_marker")
+        and reading.units[index - 1].sense() == "verb"
+        and not reg.word_in_category(reading.units[index - 1].features.get("fold", ""), "copula")
+        and all(u.sense() == "punct" for u in reading.units[index + 1:])
+    )
+
+
 def _nominal_role_licenses_noun(reading: Reading, unit: Unit, reg: Registry) -> bool:
     """A nominal object frame or a motion endpoint selects an existing noun.
 
@@ -468,7 +580,8 @@ def _nominal_role_licenses_noun(reading: Reading, unit: Unit, reg: Registry) -> 
     motion/vehicle predicate before the goal preposition.
     """
     i = reading.units.index(unit)
-    word = unit.features.get("lemma", unit.features.get("fold", ""))
+    fold = unit.features.get("fold", "")
+    word = reg.plural_to_singular.get(fold, fold)
     previous = reading.units[:i]
     if not previous:
         return False
@@ -515,8 +628,8 @@ def _nominal_role_licenses_noun(reading: Reading, unit: Unit, reg: Registry) -> 
     return False
 
 
-def _partitive_licenses_noun(reading: Reading, unit: Unit, reg: Registry) -> bool:
-    """A noun governed by the pack's partitive preposition is nominal.
+def _adposition_licenses_noun(reading: Reading, unit: Unit, reg: Registry) -> bool:
+    """A governed noun is nominal; infinitives and verbal gerunds stay distinct.
 
     In "joules of work", a noun/verb trial otherwise ties: the verb trial can
     spuriously borrow the measured quantity as its subject and a later duration
@@ -525,18 +638,43 @@ def _partitive_licenses_noun(reading: Reading, unit: Unit, reg: Registry) -> boo
     Articles/adjectives and one possessive determiner may intervene inside
     the governed noun phrase; a finite predicate cannot follow that partitive.
     """
+    from .patterns import is_finite_verb_form
+
     idx = reading.units.index(unit)
     crossed_possessive = False
     for prev in reversed(reading.units[:idx]):
         sense = prev.sense()
         if sense in ("article", "adjective"):
             continue
+        if sense == "noun" and reg.attribute_applies_to(
+            prev.features.get("lemma", prev.features.get("fold", "")),
+            reg.plural_to_singular.get(unit.features.get("fold", ""), unit.features.get("fold", "")),
+        ):
+            # A declared nominal modifier remains inside the governed noun
+            # phrase. Do not cross an arbitrary noun or a possible subject.
+            continue
+        if sense == "quantifier":
+            # A quantifier can itself finish the governed phrase. Cross it
+            # only when the head's bare plural verb cannot agree with an
+            # omitted singular distributive subject; otherwise keep both
+            # grammatical possibilities available to the full construction.
+            entry = reg.lexicon.get(unit.features.get("fold", ""))
+            if (entry is not None and entry.number_for_sense("verb") == "plural"
+                    and reg.word_in_category(prev.features.get("fold", ""), "distributive_quantifier")):
+                continue
+            return False
         if (not crossed_possessive and reg.word_in_category(
                 prev.features.get("fold", ""), "possessive_determiner")):
             crossed_possessive = True
             continue
-        return sense == "preposition" and reg.word_in_category(
-            prev.features.get("fold", ""), "partitive"
+        word = prev.features.get("fold", "")
+        return sense in {"preposition", "rate"} and (
+            reg.word_in_category(word, "partitive")
+            or set(unit.senses()) == {"noun", "verb"}
+            and not reg.word_in_category(word, "infinitival_marker")
+            and is_finite_verb_form(
+                unit.features.get("fold", ""), unit.features.get("lemma", ""), reg
+            )
         )
     return False
 
@@ -823,6 +961,9 @@ def disambiguate(reading: Reading, reg: Registry) -> Reading:
     for u in ambiguous:
         senses = u.senses()
         index = reading.units.index(u)
+        if "aggregate" in senses and _terminal_aggregate_licenses_aggregate(reading, u, reg):
+            options.append(["aggregate"])
+            continue
         if ("adjective" in senses
                 and reg.attrs.get(u.features.get("fold", ""), {}).get("ordinal_index") is not None
                 and index + 1 < len(reading.units)
@@ -911,11 +1052,7 @@ def disambiguate(reading: Reading, reg: Registry) -> Reading:
         ):
             options.append(["verb"])
             continue
-        if "noun" in senses and "verb" in senses and (
-            _finite_verb_licenses_nonbare_noun_object(reading, u, reg)
-            or _article_licenses_noun(reading, u, reg)
-            or _counted_compound_licenses_noun(reading, u, reg)
-        ):
+        if "noun" in senses and "verb" in senses and _nominal_position_licenses_noun(reading, u, reg):
             options.append(["noun"])
             continue
         if "modal" in senses and _nominal_subject_licenses_modal(reading, u):
@@ -934,7 +1071,7 @@ def disambiguate(reading: Reading, reg: Registry) -> Reading:
         ):
             options.append(["adjective"])
             continue
-        if "noun" in senses and (_partitive_licenses_noun(reading, u, reg)
+        if "noun" in senses and (_adposition_licenses_noun(reading, u, reg)
                                  or _nominal_role_licenses_noun(reading, u, reg)):
             # A partitive complement is a nominal position. Restrict an
             # EXISTING noun candidate; never invent one for a verb-only word.
@@ -966,7 +1103,10 @@ def disambiguate(reading: Reading, reg: Registry) -> Reading:
             features["lemma"] = reg.verb_lemmas.get(fold, fold)
             if fold in reg.plural_to_singular:
                 entry = reg.lexicon.get(fold)
-                features["number"] = entry.number if entry and entry.number else "singular"
+                features["number"] = (
+                    entry.verb.number if entry and entry.verb and entry.verb.number
+                    else entry.number if entry and entry.number else "singular"
+                )
         return features
 
     unresolved = sum(len(choices) > 1 for choices in options)

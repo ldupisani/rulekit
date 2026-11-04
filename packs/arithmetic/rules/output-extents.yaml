@@ -1,0 +1,275 @@
+format: rulekit/rules@1
+rules: []
+asks:
+- id: ask/composite-output-duration
+  match:
+    question:
+    - lit: how
+      consume_skipped: true
+    - slot: long
+      cat: elapsed_extent_adjective
+    - slot: modal
+      type: modal
+    - lit: it
+      consume_skipped: true
+    - slot: take
+      cat: elapsed_duration_verb
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - lit: to
+      consume_skipped: true
+    - slot: act
+      cat: output_production_verb
+      bare_form: true
+    - slot: products
+      cat: output_quantity_product
+      counted: true
+      bare: true
+    - lit: that
+      consume_skipped: true
+    - slot: be
+      cat: copula
+    - slot: extent
+      cat: output_quantity_measure
+      counted: true
+      bare: true
+    - slot: each
+      cat: postpositive_distributive_quantifier
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: composite-output-duration
+    entity: '{who}'
+    verb: '{act}'
+    item: '{products}'
+    count: '{products.value}'
+    measure: '{extent}'
+    extent: '{extent.value}'
+  satisfies:
+    take:
+    - subject
+    act:
+    - subject
+    be:
+    - subject
+    each:
+    - collection
+  disambiguates:
+  - long
+  - take
+  - act
+  - products
+  - be
+  - extent
+  - each
+  where:
+  - measure_holder_compatible:
+      measure: extent
+      holders:
+      - products
+- id: ask/composite-output-duration-with-extent
+  match:
+    question:
+    - lit: how
+      consume_skipped: true
+    - slot: long
+      cat: elapsed_extent_adjective
+    - slot: modal
+      type: modal
+    - lit: it
+      consume_skipped: true
+    - slot: take
+      cat: elapsed_duration_verb
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - lit: to
+      consume_skipped: true
+    - slot: act
+      cat: output_production_verb
+      bare_form: true
+    - slot: products
+      cat: output_quantity_product
+      counted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: extent
+      cat: output_quantity_measure
+      counted: true
+      bare: true
+    - slot: each
+      cat: postpositive_distributive_quantifier
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: composite-output-duration
+    entity: '{who}'
+    verb: '{act}'
+    item: '{products}'
+    count: '{products.value}'
+    measure: '{extent}'
+    extent: '{extent.value}'
+  satisfies:
+    take:
+    - subject
+    act:
+    - subject
+    each:
+    - collection
+  disambiguates:
+  - long
+  - take
+  - act
+  - products
+  - extent
+  - each
+  where:
+  - measure_holder_compatible:
+      measure: extent
+      holders:
+      - products
+- id: ask/composite-output-counted-duration
+  match:
+    question:
+    - lit: how
+      consume_skipped: true
+    - lit: many
+      consume_skipped: true
+    - slot: unit
+      cat: duration_measure
+      uncounted: true
+      bare: true
+    - slot: modal
+      type: modal
+    - lit: it
+      consume_skipped: true
+    - slot: take
+      cat: elapsed_duration_verb
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - lit: to
+      consume_skipped: true
+    - slot: act
+      cat: output_production_verb
+      bare_form: true
+    - slot: products
+      cat: output_quantity_product
+      counted: true
+      bare: true
+    - lit: that
+      consume_skipped: true
+    - slot: be
+      cat: copula
+    - slot: extent
+      cat: output_quantity_measure
+      counted: true
+      bare: true
+    - slot: each
+      cat: postpositive_distributive_quantifier
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: composite-output-duration
+    entity: '{who}'
+    verb: '{act}'
+    item: '{products}'
+    count: '{products.value}'
+    measure: '{extent}'
+    extent: '{extent.value}'
+    unit: '{unit}'
+  satisfies:
+    take:
+    - subject
+    act:
+    - subject
+    be:
+    - subject
+    each:
+    - collection
+  disambiguates:
+  - take
+  - act
+  - products
+  - be
+  - extent
+  - each
+  - unit
+  where:
+  - measure_holder_compatible:
+      measure: extent
+      holders:
+      - products
+- id: ask/composite-output-counted-duration-with-extent
+  match:
+    question:
+    - lit: how
+      consume_skipped: true
+    - lit: many
+      consume_skipped: true
+    - slot: unit
+      cat: duration_measure
+      uncounted: true
+      bare: true
+    - slot: modal
+      type: modal
+    - lit: it
+      consume_skipped: true
+    - slot: take
+      cat: elapsed_duration_verb
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - lit: to
+      consume_skipped: true
+    - slot: act
+      cat: output_production_verb
+      bare_form: true
+    - slot: products
+      cat: output_quantity_product
+      counted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: extent
+      cat: output_quantity_measure
+      counted: true
+      bare: true
+    - slot: each
+      cat: postpositive_distributive_quantifier
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: composite-output-duration
+    entity: '{who}'
+    verb: '{act}'
+    item: '{products}'
+    count: '{products.value}'
+    measure: '{extent}'
+    extent: '{extent.value}'
+    unit: '{unit}'
+  satisfies:
+    take:
+    - subject
+    act:
+    - subject
+    each:
+    - collection
+  disambiguates:
+  - take
+  - act
+  - products
+  - extent
+  - each
+  - unit
+  where:
+  - measure_holder_compatible:
+      measure: extent
+      holders:
+      - products

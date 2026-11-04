@@ -8,7 +8,7 @@ templates:
         - {lit: times}
     rule:
       phase: read
-      description: A component count is an explicit multiple of another component count, preserving unit 
+      description: A component count is an explicit multiple of another component count, preserving unit
         labels.
       match:
         sentence:
@@ -19,7 +19,7 @@ templates:
           - opt:
             - {lit: together}
             - {lit: with}
-            - {slot: other, cat: purchase_collection_noun, qualified: true, qualifier_cat: 
+            - {slot: other, cat: purchase_collection_noun, qualified: true, qualifier_cat:
                 component_miscellaneous_descriptor, uncounted: true}
         - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, bare: true}
         - {slot: need, cat: component_requirement_verb}
@@ -61,7 +61,7 @@ templates:
         - {lit: times}
     rule:
       phase: read
-      description: A component count is an explicit multiple of another component count, preserving unit 
+      description: A component count is an explicit multiple of another component count, preserving unit
         labels.
       match:
         sentence:
@@ -72,7 +72,7 @@ templates:
           - opt:
             - {lit: together}
             - {lit: with}
-            - {slot: other, cat: purchase_collection_noun, qualified: true, qualifier_cat: 
+            - {slot: other, cat: purchase_collection_noun, qualified: true, qualifier_cat:
                 component_miscellaneous_descriptor, uncounted: true}
         - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, bare: true}
         - {slot: need, cat: component_requirement_verb}
@@ -125,7 +125,7 @@ templates:
         - {lit: times}
     rule:
       phase: read
-      description: A component count is an explicit multiple of another component count, preserving unit 
+      description: A component count is an explicit multiple of another component count, preserving unit
         labels.
       match:
         sentence:
@@ -136,7 +136,7 @@ templates:
           - opt:
             - {lit: together}
             - {lit: with}
-            - {slot: other, cat: purchase_collection_noun, qualified: true, qualifier_cat: 
+            - {slot: other, cat: purchase_collection_noun, qualified: true, qualifier_cat:
                 component_miscellaneous_descriptor, uncounted: true}
         - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, bare: true}
         - {slot: need, cat: component_requirement_verb}
@@ -243,7 +243,7 @@ rules:
       - opt:
         - {lit: together}
         - {lit: with}
-        - {slot: other, cat: purchase_collection_noun, qualified: true, qualifier_cat: 
+        - {slot: other, cat: purchase_collection_noun, qualified: true, qualifier_cat:
             component_miscellaneous_descriptor, uncounted: true}
     - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, bare: true}
     - {slot: need, cat: component_requirement_verb}
@@ -277,7 +277,7 @@ rules:
       - opt:
         - {lit: together}
         - {lit: with}
-        - {slot: other, cat: purchase_collection_noun, qualified: true, qualifier_cat: 
+        - {slot: other, cat: purchase_collection_noun, qualified: true, qualifier_cat:
             component_miscellaneous_descriptor, uncounted: true}
     - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, bare: true}
     - {slot: need, cat: component_requirement_verb}
@@ -322,7 +322,7 @@ rules:
       - opt:
         - {lit: together}
         - {lit: with}
-        - {slot: other, cat: purchase_collection_noun, qualified: true, qualifier_cat: 
+        - {slot: other, cat: purchase_collection_noun, qualified: true, qualifier_cat:
             component_miscellaneous_descriptor, uncounted: true}
     - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, bare: true}
     - {slot: need, cat: component_requirement_verb}

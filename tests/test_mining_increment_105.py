@@ -78,12 +78,25 @@ def test_periodic_rate_premise_subsumes_junk_quantity(full_registry):
     assert rates[0].per == "minute"
 
 
-def test_periodic_rate_premise_bare_span_does_not_overfire(full_registry):
-    # decline-safety: "every day" (no numeral) is not a `type: counted`
-    # span — the new rule must not fire, and no other machinery should
-    # invent a Rate from thin air either
+def test_periodic_rate_premise_bare_span_means_one_unit(full_registry):
+    # An uncounted singular frequency now uses the ordinary Rate model with
+    # an implicit denominator of one, rather than fabricating a stated count.
     r = solve(
         "A machine makes 12 pages every day. "
+        "How many pages does the machine make in 20 days?",
+        full_registry,
+    )
+    assert r.answer.value == 240
+    rates = [f for f in r.facts() if isinstance(f, Rate)]
+    assert len(rates) == 1
+    assert rates[0].value == 12
+    assert rates[0].per == "day"
+    assert rates[0].denominator is None
+
+
+def test_indeterminate_periodic_frequency_still_declines(full_registry):
+    r = solve(
+        "A machine makes 12 pages every few days. "
         "How many pages does the machine make in 20 days?",
         full_registry,
     )

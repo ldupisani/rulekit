@@ -21,6 +21,7 @@ categories:
     parent: adverb
   knowledge_verb:
     parent: verb
+  past_factual_auxiliary: {parent: auxiliary}
 members:
   do_support_auxiliary:
   - did
@@ -43,3 +44,4 @@ members:
   knowledge_verb:
   - know
   - knows
+  past_factual_auxiliary: [did]

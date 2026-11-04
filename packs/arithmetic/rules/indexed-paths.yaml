@@ -93,7 +93,7 @@ templates:
         - opt:
           - {lit: total}
           - {lit: of}
-        - {slot: points, cat: path_checkpoint, counted: true, qualified: true, qualifier_cat: 
+        - {slot: points, cat: path_checkpoint, counted: true, qualified: true, qualifier_cat:
             path_turn_descriptor}
         - {lit: ., consume_skipped: true}
       consumes:
@@ -292,7 +292,7 @@ templates:
         - {slot: further, cat: path_further_adverb}
         - {lit: and}
         - {lit: at}
-        - {slot: terminal, cat: path_checkpoint, qualified: true, qualifier_cat: holder_ordinal, uncounted: 
+        - {slot: terminal, cat: path_checkpoint, qualified: true, qualifier_cat: holder_ordinal, uncounted:
             true, referential: true, number: singular}
         - {parameter: last_who}
         - {slot: immediate, cat: path_immediate_adverb}
@@ -327,7 +327,7 @@ templates:
       match:
         sentence:
         - {lit: after, at_start: true}
-        - {slot: point, cat: path_checkpoint, qualified: true, qualifier_cat: holder_ordinal, uncounted: true, 
+        - {slot: point, cat: path_checkpoint, qualified: true, qualifier_cat: holder_ordinal, uncounted: true,
             referential: true, number: singular}
         - {parameter: who}
         - {slot: travel, cat: path_travel_verb}
@@ -356,7 +356,7 @@ templates:
       match:
         sentence:
         - {lit: after, at_start: true}
-        - {slot: point, cat: path_checkpoint, qualified: true, qualifier_cat: holder_ordinal, uncounted: true, 
+        - {slot: point, cat: path_checkpoint, qualified: true, qualifier_cat: holder_ordinal, uncounted: true,
             referential: true, number: singular}
         - {parameter: who}
         - {slot: travel, cat: path_travel_verb}
@@ -384,7 +384,7 @@ templates:
       match:
         sentence:
         - {lit: at, at_start: true}
-        - {slot: point, cat: path_checkpoint, qualified: true, qualifier_cat: holder_ordinal, uncounted: true, 
+        - {slot: point, cat: path_checkpoint, qualified: true, qualifier_cat: holder_ordinal, uncounted: true,
             referential: true, number: singular}
         - {parameter: who}
         - {slot: immediate, cat: path_immediate_adverb}
@@ -414,7 +414,7 @@ templates:
       match:
         sentence:
         - {lit: after, at_start: true}
-        - {slot: point, cat: path_checkpoint, qualified: true, qualifier_cat: holder_ordinal, uncounted: true, 
+        - {slot: point, cat: path_checkpoint, qualified: true, qualifier_cat: holder_ordinal, uncounted: true,
             referential: true, number: singular}
         - {parameter: who}
         - {slot: travel, cat: path_travel_verb}
@@ -460,7 +460,7 @@ templates:
       match:
         sentence:
         - {lit: after, at_start: true}
-        - {slot: point, cat: path_checkpoint, qualified: true, qualifier_cat: holder_ordinal, uncounted: true, 
+        - {slot: point, cat: path_checkpoint, qualified: true, qualifier_cat: holder_ordinal, uncounted: true,
             referential: true, number: singular}
         - {parameter: who}
         - {slot: travel, cat: path_travel_verb}
@@ -469,7 +469,7 @@ templates:
         - {slot: further, cat: path_further_adverb}
         - {lit: and}
         - {lit: at}
-        - {slot: terminal, cat: path_checkpoint, qualified: true, qualifier_cat: holder_ordinal, uncounted: 
+        - {slot: terminal, cat: path_checkpoint, qualified: true, qualifier_cat: holder_ordinal, uncounted:
             true, referential: true, number: singular}
         - {parameter: last_who}
         - {slot: immediate, cat: path_immediate_adverb}
@@ -752,7 +752,7 @@ asks:
       - {lit: to}
     - {slot: travel, cat: path_travel_verb}
     - {lit: after}
-    - {slot: point, cat: path_checkpoint, qualified: true, qualifier_cat: holder_ordinal, uncounted: true, 
+    - {slot: point, cat: path_checkpoint, qualified: true, qualifier_cat: holder_ordinal, uncounted: true,
         referential: true, number: singular}
     - {lit: '?', consume_skipped: true}
   satisfies:
@@ -775,7 +775,7 @@ asks:
       - {lit: to}
     - {slot: travel, cat: path_travel_verb}
     - {lit: after}
-    - {slot: point, cat: path_checkpoint, qualified: true, qualifier_cat: holder_ordinal, uncounted: true, 
+    - {slot: point, cat: path_checkpoint, qualified: true, qualifier_cat: holder_ordinal, uncounted: true,
         referential: true, number: singular}
     - {lit: '?', consume_skipped: true}
   satisfies:
@@ -849,7 +849,7 @@ asks:
       - {lit: to}
     - {slot: travel, cat: path_travel_verb}
     - {lit: after}
-    - {slot: point, cat: path_checkpoint, qualified: true, qualifier_cat: holder_ordinal, uncounted: true, 
+    - {slot: point, cat: path_checkpoint, qualified: true, qualifier_cat: holder_ordinal, uncounted: true,
         referential: true, number: singular}
     - {lit: '?', consume_skipped: true}
   satisfies:
@@ -874,7 +874,7 @@ asks:
       - {lit: to}
     - {slot: travel, cat: path_travel_verb}
     - {lit: after}
-    - {slot: point, cat: path_checkpoint, qualified: true, qualifier_cat: holder_ordinal, uncounted: true, 
+    - {slot: point, cat: path_checkpoint, qualified: true, qualifier_cat: holder_ordinal, uncounted: true,
         referential: true, number: singular}
     - {lit: '?', consume_skipped: true}
   satisfies:

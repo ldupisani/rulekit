@@ -81,6 +81,7 @@ def analyze(
         tracing=tracing,
         assumption=assumption,
         contractions=reg.contractions,
+        currency_symbols=tuple(reg.currencies),
     )
     annotate_numbers(reading, reg)
     annotate_senses(reading, reg)

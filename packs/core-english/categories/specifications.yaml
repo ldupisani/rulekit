@@ -47,6 +47,10 @@ categories:
     parent: adjective
   proportional_relation_noun:
     parent: noun
+  forecast_permission_verb:
+    parent: verb
+  specification_adoption_preposition:
+    parent: preposition
 members:
   specification_noun:
   - blueprint
@@ -56,6 +60,7 @@ members:
   - prescription
   - procedure
   - recipe
+  - diet
   specification_requirement_verb:
   - require
   - requires
@@ -93,6 +98,13 @@ members:
   - same
   proportional_relation_noun:
   - ratio
+  forecast_permission_verb:
+  - allow
+  - allows
+  - allowed
+  specification_adoption_preposition:
+  - on
+  - under
 attribute_compatibility:
   specification_unit:
   - measured_output_container

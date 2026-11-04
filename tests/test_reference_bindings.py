@@ -121,3 +121,47 @@ def test_invalid_reference_slots_fail_compilation(source, target):
     pack = LoadedPack("test", Path("."), PackDoc(format="rulekit/pack@1", name="test"), rules=[rules])
     with pytest.raises(CompileError, match="reference"):
         compile_registry([pack])
+
+
+@pytest.mark.parametrize("referential", [False, True])
+def test_pronoun_reference_target_requires_explicit_antecedent_contract(referential, tmp_path):
+    rules = RulesDoc.model_validate(
+        {
+            "format": "rulekit/rules@1",
+            "rules": [
+                {
+                    "id": "test/pronoun-target",
+                    "match": {
+                        "sentence": [
+                            {"slot": "source", "type": "pronoun"},
+                            {
+                                "slot": "target",
+                                "type": "pronoun",
+                                "referential": referential,
+                            },
+                        ]
+                    },
+                    "references": {"source": "target"},
+                }
+            ],
+        }
+    )
+    pack = LoadedPack(
+        "test", tmp_path, PackDoc(format="rulekit/pack@1", name="test"), rules=[rules]
+    )
+    if referential:
+        compile_registry([pack])
+    else:
+        with pytest.raises(CompileError, match="not nominal"):
+            compile_registry([pack])
+
+
+def test_unresolved_pronoun_target_cannot_license_a_reference(reg):
+    target = unit(0, "her", "pronoun", obligations=[Obligation("pronoun", "refers")])
+    source = unit(1, "she", "pronoun", obligations=[Obligation("pronoun", "refers")])
+    assert (
+        project_references(
+            {"source": "target"}, {"source": source, "target": target}, reg
+        )
+        is None
+    )

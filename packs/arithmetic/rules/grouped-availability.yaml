@@ -1,0 +1,313 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/reservation-capacity-context
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: book
+      cat: reservation_verb
+      finite_form: true
+    - slot: unit
+      cat: reservable_capacity_unit
+      uncounted: true
+      bare: true
+    - lit: in
+      consume_skipped: true
+    - slot: site
+      cat: capacity_site
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: available-capacity-context
+    entity: '{who}'
+    measure: '{unit}'
+    value: 0
+    position: '{who.span_start}'
+    container: '{site}'
+  consumes:
+  - book
+  satisfies:
+    book:
+    - subject
+  disambiguates:
+  - book
+  - unit
+  - site
+- id: arithmetic/uniform-grouped-capacity
+  phase: read
+  match:
+    sentence:
+    - slot: site
+      cat: capacity_site
+      uncounted: true
+      bare: true
+      at_start: true
+    - slot: have
+      cat: possession_state
+      finite_form: true
+    - slot: groups
+      cat: capacity_partition_group
+      counted: true
+      bare: true
+    - lit: with
+      consume_skipped: true
+    - slot: units
+      cat: reservable_capacity_unit
+      counted: true
+    - lit: on
+      consume_skipped: true
+    - slot: each
+      cat: partitive_distributive_quantifier
+    - slot: group
+      cat: capacity_partition_group
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: available-capacity-structure
+    entity: '{site}'
+    measure: '{units}'
+    value: groups
+    position: '{groups.span_start}'
+    per_member: units
+    container: '{groups}'
+  consumes:
+  - have
+  - groups
+  - units
+  satisfies:
+    have:
+    - subject
+    each:
+    - collection
+  where:
+  - same_lemma:
+    - groups
+    - group
+  disambiguates:
+  - site
+  - have
+  - groups
+  - units
+  - group
+- id: arithmetic/unavailable-capacity-groups-ordinal
+  phase: read
+  match:
+    sentence:
+    - opt:
+      - lit: because of
+        consume_skipped: true
+      - slot: cause
+        type: noun
+        uncounted: true
+      - lit: ','
+        consume_skipped: true
+    - slot: group
+      cat: capacity_partition_group
+      uncounted: true
+      qualified: true
+      number: singular
+    - slot: be
+      cat: copula
+    - slot: unavailable
+      cat: unavailability_descriptor
+    - opt:
+      - lit: for
+        consume_skipped: true
+      - slot: people
+        cat: occupancy_participant
+        uncounted: true
+        bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: available-capacity-exclusion
+    entity: ''
+    measure: '{group}'
+    value: 1
+    position: '{group.span_start}'
+    attribute: '{group.qualifier}'
+  consumes:
+  - be
+  - group
+  satisfies:
+    be:
+    - subject
+  disambiguates:
+  - group
+  - be
+  - people
+- id: arithmetic/unavailable-capacity-groups-counted
+  phase: read
+  match:
+    sentence:
+    - opt:
+      - lit: because of
+        consume_skipped: true
+      - slot: cause
+        type: noun
+        uncounted: true
+      - lit: ','
+        consume_skipped: true
+    - slot: group
+      cat: capacity_partition_group
+      counted: true
+      bare: true
+    - slot: be
+      cat: copula
+    - slot: unavailable
+      cat: unavailability_descriptor
+    - opt:
+      - lit: for
+        consume_skipped: true
+      - slot: people
+        cat: occupancy_participant
+        uncounted: true
+        bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: available-capacity-exclusion
+    entity: ''
+    measure: '{group}'
+    value: group
+    position: '{group.span_start}'
+  consumes:
+  - be
+  - group
+  satisfies:
+    be:
+    - subject
+  disambiguates:
+  - group
+  - be
+  - people
+- id: arithmetic/absence-of-other-occupants
+  phase: read
+  match:
+    sentence:
+    - slot: there
+      cat: existential
+      at_start: true
+    - slot: be
+      cat: copula
+    - lit: no
+      consume_skipped: true
+    - slot: others
+      cat: occupancy_participant
+      uncounted: true
+      qualified: true
+      qualifier_cat: component_miscellaneous_descriptor
+      all_qualifiers: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: available-capacity-vacancy
+    entity: ''
+    measure: ''
+    value: 0
+    position: '{others.span_start}'
+  consumes:
+  - be
+  satisfies:
+    be:
+    - subject
+  disambiguates:
+  - be
+  - others
+asks:
+- id: ask/available-unit-assignments-with-vacancy
+  match:
+    question:
+    - lit: considering
+      consume_skipped: true
+    - slot: there
+      cat: existential
+    - slot: be1
+      cat: copula
+    - lit: no
+      consume_skipped: true
+    - slot: others
+      cat: occupancy_participant
+      uncounted: true
+      qualified: true
+      qualifier_cat: component_miscellaneous_descriptor
+      all_qualifiers: true
+    - lit: ','
+      consume_skipped: true
+    - lit: in
+      consume_skipped: true
+    - lit: how
+      consume_skipped: true
+    - lit: many
+      consume_skipped: true
+    - slot: unit
+      cat: reservable_capacity_unit
+      uncounted: true
+    - slot: modal
+      type: modal
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: be2
+      cat: location_state_verb
+      bare_form: true
+    - slot: check
+      cat: check_in_verb
+      past_participle: true
+    - slot: entry
+      cat: check_in_particle
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: grouped-availability
+    entity: '{who}'
+    measure: '{unit}'
+    vacant: 'true'
+  satisfies:
+    be1:
+    - subject
+    be2:
+    - subject
+    check:
+    - subject
+    entry:
+    - object
+- id: ask/available-grouped-units
+  match:
+    question:
+    - lit: how
+      consume_skipped: true
+    - lit: many
+      consume_skipped: true
+    - slot: unit
+      cat: reservable_capacity_unit
+      uncounted: true
+      bare: true
+    - slot: be
+      cat: copula
+    - slot: available
+      cat: availability_descriptor
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: grouped-availability
+    measure: '{unit}'
+    vacant: 'false'
+  satisfies:
+    be:
+    - subject

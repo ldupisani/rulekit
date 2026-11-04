@@ -1,7 +1,7 @@
 format: rulekit/rules@1
 rules:
 - id: arithmetic/owned-performance-goal
-  description: A participant's performance target retains its recurrence; a complete named-day make-up frame can 
+  description: A participant's performance target retains its recurrence; a complete named-day make-up frame can
     also supply the daily interpretation.
   match:
     sentence:
@@ -28,7 +28,7 @@ rules:
       bare: true
       at_start: true
     - slot: perform
-      cat: past_performance_auxiliary
+      cat: past_factual_auxiliary
     - slot: amount
       cat: performance_unit
       counted: true
@@ -77,7 +77,7 @@ templates:
         - who
         - be
     rule:
-      description: An achieved count belongs to one named day; a make-up intention records its deadline without 
+      description: An achieved count belongs to one named day; a make-up intention records its deadline without
         inventing completed work.
       match:
         sentence:
@@ -92,7 +92,7 @@ templates:
       satisfies: {parameter: satisfaction}
       references: {parameter: references}
       emits:
-      - {fact: batch_evidence, kind: indexed-performance, entity: '{who}', measure: '{amount}', value: amount, 
+      - {fact: batch_evidence, kind: indexed-performance, entity: '{who}', measure: '{amount}', value: amount,
           marker: '{day}', position: '{amount.span_start}'}
       - {parameter: extra}
       where:
@@ -118,14 +118,14 @@ templates:
       - {lit: the, consume_skipped: true}
       - {slot: ones, cat: omitted_performance_unit}
       - {slot: subject, cat: clause_subject_personal_pronoun}
-      - {slot: past, cat: past_performance_auxiliary}
+      - {slot: past, cat: past_factual_auxiliary}
       - {lit: not}
       - {slot: repeated, cat: bare_performance_auxiliary}
       timing:
       - lit: on
       - slot: day
         cat: named_weekday
-      goal_reference: {slot: goal, cat: performance_goal_noun, uncounted: true, qualified: true, qualifier_cat: 
+      goal_reference: {slot: goal, cat: performance_goal_noun, uncounted: true, qualified: true, qualifier_cat:
           minimum_goal_descriptor, all_qualifiers: true}
     rule:
       match:
@@ -186,7 +186,7 @@ variants:
 - id: arithmetic/fronted-completed-performance
   template: indexed-performance
   arguments:
-    predicate: [{slot: perform, cat: past_performance_auxiliary}]
+    predicate: [{slot: perform, cat: past_factual_auxiliary}]
     consumed: []
     satisfaction: {}
     constraints:
@@ -196,7 +196,7 @@ variants:
 - id: arithmetic/coordinated-indexed-performance
   template: indexed-performance
   arguments:
-    predicate: [{slot: perform, cat: past_performance_auxiliary}]
+    predicate: [{slot: perform, cat: past_factual_auxiliary}]
     consumed:
     - other_amount
     satisfaction: {}
@@ -232,7 +232,7 @@ variants:
       - lit: only
         consume_skipped: true
     - slot: perform
-      cat: past_performance_auxiliary
+      cat: past_factual_auxiliary
     consumed: []
     satisfaction: {}
     constraints:

@@ -2255,7 +2255,9 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                     )
             if _slot_root(slots[source]) not in {"pronoun", "name", "proper_name", "entity"}:
                 raise CompileError(f"rule {rule.id!r} reference source {source!r} is not referential")
-            if _slot_root(slots[target]) not in {"noun", "name", "proper_name", "entity"}:
+            target_root = _slot_root(slots[target])
+            resolved_pronoun = target_root == "pronoun" and slots[target].referential
+            if target_root not in {"noun", "name", "proper_name", "entity"} and not resolved_pronoun:
                 raise CompileError(f"rule {rule.id!r} reference target {target!r} is not nominal")
         for slot_name in rule.satisfies:
             token = slots.get(slot_name)

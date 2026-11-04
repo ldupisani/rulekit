@@ -1,0 +1,214 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/relative-item-difference
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      cat: quantity_source
+      uncounted: true
+      bare: true
+      at_start: true
+    - slot: act
+      cat: inventory_account_verb
+      finite_form: true
+    - slot: first
+      cat: inventory_item
+      counted: true
+      bare: true
+    - lit:
+      - ','
+      - and
+      consume_skipped: true
+    - slot: delta
+      type: number
+      value_min: 0
+    - slot: direction
+      cat: count_quantity_delta
+    - slot: second
+      cat: inventory_item
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: item-amount
+    entity: '{who}'
+    measure: '{first}'
+    value: first
+    position: '{first.span_start}'
+    verb: '{act}'
+  - fact: batch_evidence
+    kind: item-relation
+    entity: '{who}'
+    measure: '{second}'
+    value: delta
+    position: '{delta.span_start}'
+    container: '{first}'
+    sign: sign(direction)
+    fraction: 1
+    verb: '{act}'
+  consumes:
+  - act
+  - first
+  - delta
+  satisfies:
+    act:
+    - subject
+    delta:
+    - quantifies
+  description: A complete source clause preserves absolute and cross-item relative counts; no detached comparison
+    edge changes another comparison family.
+- id: arithmetic/relative-item-difference-and-multiple
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      cat: quantity_source
+      uncounted: true
+      bare: true
+      at_start: true
+    - slot: act
+      cat: inventory_account_verb
+      finite_form: true
+    - slot: first
+      cat: inventory_item
+      counted: true
+      bare: true
+    - lit:
+      - ','
+      - and
+      consume_skipped: true
+    - slot: delta
+      type: number
+      value_min: 0
+    - slot: direction
+      cat: count_quantity_delta
+    - slot: second
+      cat: inventory_item
+      uncounted: true
+      bare: true
+    - lit:
+      - ','
+      - and
+      consume_skipped: true
+    - slot: factor
+      type: multiplier
+    - lit: as
+    - lit: many
+    - slot: third
+      cat: inventory_item
+      uncounted: true
+      bare: true
+    - lit:
+      - as
+      - than
+    - slot: standard
+      cat: inventory_item
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: item-amount
+    entity: '{who}'
+    measure: '{first}'
+    value: first
+    position: '{first.span_start}'
+    verb: '{act}'
+  - fact: batch_evidence
+    kind: item-relation
+    entity: '{who}'
+    measure: '{second}'
+    value: delta
+    position: '{delta.span_start}'
+    container: '{first}'
+    sign: sign(direction)
+    fraction: 1
+    verb: '{act}'
+  - fact: batch_evidence
+    kind: item-relation
+    entity: '{who}'
+    measure: '{third}'
+    value: 0
+    position: '{factor.span_start}'
+    container: '{standard}'
+    fraction: factor
+    verb: '{act}'
+  consumes:
+  - act
+  - first
+  - delta
+  - factor
+  satisfies:
+    act:
+    - subject
+    delta:
+    - quantifies
+  description: A complete source clause preserves absolute and cross-item relative counts; no detached comparison
+    edge changes another comparison family.
+- id: arithmetic/relative-item-multiple
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      cat: quantity_source
+      uncounted: true
+      bare: true
+      at_start: true
+    - slot: act
+      cat: inventory_account_verb
+      finite_form: true
+    - slot: first
+      cat: inventory_item
+      counted: true
+      bare: true
+    - lit:
+      - ','
+      - and
+      consume_skipped: true
+    - slot: factor
+      type: multiplier
+    - lit: as
+    - lit: many
+    - slot: second
+      cat: inventory_item
+      uncounted: true
+      bare: true
+    - lit:
+      - as
+      - than
+    - slot: standard
+      cat: inventory_item
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: item-amount
+    entity: '{who}'
+    measure: '{first}'
+    value: first
+    position: '{first.span_start}'
+    verb: '{act}'
+  - fact: batch_evidence
+    kind: item-relation
+    entity: '{who}'
+    measure: '{second}'
+    value: 0
+    position: '{factor.span_start}'
+    container: '{standard}'
+    fraction: factor
+    verb: '{act}'
+  consumes:
+  - act
+  - first
+  - factor
+  satisfies:
+    act:
+    - subject
+  description: A complete source clause preserves absolute and cross-item relative counts; no detached comparison
+    edge changes another comparison family.

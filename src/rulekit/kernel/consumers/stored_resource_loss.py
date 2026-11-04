@@ -8,7 +8,7 @@ from ..evaluate import evaluate
 from ..model import BatchEvidence, Quantity
 from ..numeric_evidence import audit_numeric_mentions
 from ..rate_calculation import convert_units
-from ..resource_equations import resource_residual
+from ..resource_equations import FractionBasis, FractionalAllocation, resource_residual
 from ..source_coverage import uncovered_document_units
 from ..reference_identity import constrains
 from ..predicate_compatibility import predicates_compatible
@@ -30,7 +30,7 @@ def consume(ctx):
                          receipts[0].measure_qualifier, receipts[0].time, receipts[0].label))):
         receipt = receipts[0]
         opening = BatchEvidence(receipt.provenance, "resource-receipt", receipt.entity,
-                                receipt.measure, receipt.value, 0)
+                                receipt.measure, receipt.value, 0, entity_ref=receipt.entity_ref)
         openings = [opening]
         rows.insert(0, opening)
     locations = [r for r in rows if r.kind == "resource-remainder-store"]
@@ -44,6 +44,9 @@ def consume(ctx):
     opening, location, loss = openings[0], locations[0], losses[0]
     access = accesses[0] if accesses else None
     actor = ctx.query["entity"]
+    asked = ctx.query_reference()
+    if asked is None or opening.entity_ref is None or not constrains(asked, opening.entity_ref):
+        return decline("the stored pool must match the requested participant identity")
     # A definite, unowned store can refer to the sole already located pool.
     # Its full reference must constrain that store; a new indefinite store or
     # a contradictory owner is not an antecedent.
@@ -66,7 +69,7 @@ def consume(ctx):
     expected = defaultdict(Counter)
     expected[opening.provenance.sentence][opening.value] += 1
     expected[loss.provenance.sentence][loss.value] += 1
-    balance = opening.value
+    allocation = FractionalAllocation(opening.value, ctx.log)
     for index, step in enumerate(fractions):
         anchors = [r for r in fractions if r.entity and r.provenance.sentence == step.provenance.sentence]
         owner = step.entity or (anchors[0].entity if len(anchors) == 1 else "")
@@ -83,8 +86,12 @@ def consume(ctx):
                 or step.marker == "opening" and index != 0):
             return decline("each fraction must name the same pool or its current remainder")
         expected[step.provenance.sentence][step.value] += 1
-        allocated = evaluate("base * fraction", {"base": balance, "fraction": step.value}, ctx.log, source="resource-allocation-fraction")
-        balance = resource_residual([balance], [allocated], ctx.log, source="unallocated-resource-remainder")
+        try:
+            allocation.allocate(step.value, FractionBasis(step.marker),
+                                source="resource-allocation-fraction")
+        except ValueError as error:
+            return decline(str(error))
+    balance = allocation.balance
     if (uncovered_document_units(ctx.premises, ctx.question, ctx.match.consumed)
             or audit_numeric_mentions((*ctx.premises, ctx.question), expected, missing="missing", duplicate="duplicate")):
         return decline("every receipt, allocation, storage and loss condition must be read")

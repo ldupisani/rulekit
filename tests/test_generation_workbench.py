@@ -558,11 +558,23 @@ def test_boundary_mode_survives_retest_and_review_without_counting_coverage(
 def test_gsm8k_generation_fixtures_make_every_premise_rule_available() -> None:
     availability = list_rule_availability(load_project(Path("projects/gsm8k")))
 
-    assert len(availability) == 722
+    assert len(availability) == 823
     blocked = {
         rule.id: rule for rule in availability if not rule.supported
     }
     assert set(blocked) == {
+        "arithmetic/affine-recipient-transfer",
+        "arithmetic/employment-bonus-context",
+        "arithmetic/exhaustive-section-remaining-list",
+        "arithmetic/named-month-activity-schedule",
+        "arithmetic/relative-recipient-transfer",
+        "arithmetic/stock-section-counted-list",
+        "arithmetic/year-qualified-month-schedule",
+        "arithmetic/absence-of-other-occupants",
+        "arithmetic/coordinated-qualified-relative-stock-associated-fraction",
+        "arithmetic/coordinated-qualified-relative-stock-associated-multiplier",
+        "arithmetic/affiliated-recipient-groups",
+        "arithmetic/named-activity-account",
         "arithmetic/collected-qualified-nested-population",
             'arithmetic/cut-measured-region-continuation',
             'arithmetic/measured-resource-removal-length-continuation',

@@ -177,3 +177,82 @@ def partitive_quantity_source_units(reading, fact, reg):
         return ()
     return tuple(u.uid for u in (bound(verb, "subject"), verb, anchor, prep, content, link)
                  if u is not None)
+
+
+def quantity_ledger_source_units(reading, facts, reg):
+    """Exact ordinary SVO count list, including coordinated partitive objects.
+
+    Consumers retain the folded Quantity roles. This adapter validates the
+    whole list rather than treating an arbitrary co-occurring number as use.
+    """
+    from .reference_identity import ReferenceIdentity, reference_from_unit
+    units = list(uncovered_units(reading))
+    if not units:
+        return ()
+    if len(units) < 3 or not facts:
+        return ()
+    subject, verb, *objects = units
+    actor = reference_from_unit(subject)
+    if (not actor.resolved or verb.sense() != 'verb'
+            or any(f.provenance.source != 'fold' or f.entity_ref != actor
+                   or f.verb != verb.features.get('lemma')
+                   or f.provenance.sentence != reading.sentence_index for f in facts)):
+        return ()
+    pending = list(facts)
+    times = {f.time for f in facts}
+    if times != {None}:
+        if (len(times) != 1 or not objects
+                or objects[-1].surface.casefold() != next(iter(times)).casefold()):
+            return ()
+        objects = objects[:-1]
+    index = 0
+    while index < len(objects):
+        amount = objects[index]
+        index += 1
+        if amount.features.get('value_kind') != 'count':
+            return ()
+        content = None
+        if index < len(objects) and reg.word_in_category(
+                objects[index].features.get('lemma', ''), 'partitive'):
+            index += 1
+            if index == len(objects):
+                return ()
+            content = reference_from_unit(objects[index])
+            index += 1
+        matches = [f for f in pending if f.value == amount.features.get('value')
+                   and (f.measure_ref or ReferenceIdentity(
+                       f.measure.split('[', 1)[0],
+                       qualifiers=(f.measure_qualifier,) if f.measure_qualifier else ()))
+                       == reference_from_unit(amount)
+                   and f.content_ref == content]
+        if len(matches) != 1:
+            return ()
+        pending.remove(matches[0])
+        if index < len(objects):
+            if not reg.word_in_category(objects[index].features.get('lemma', ''),
+                                        'holder_list_conjunction'):
+                return ()
+            index += 1
+            if index == len(objects):
+                return ()
+    return tuple(u.uid for u in units) if not pending else ()
+
+
+def purchase_purpose_roles(reading, reg):
+    """A fully read controlled infinitive supplies intent, not a purchase event."""
+    from .learn import _bound
+    from .reference_identity import reference_from_unit
+    verbs = [u for u in reading.units if u.sense() == 'verb']
+    movement = [u for u in verbs if reg.word_in_category(u.features.get('lemma', ''), 'outing_motion_verb')]
+    purchases = [u for u in verbs if reg.word_in_category(u.features.get('lemma', ''), 'purchase')]
+    if len(verbs) != 2 or len(movement) != 1 or len(purchases) != 1 or uncovered_units(reading):
+        return None
+    actor = _bound(movement[0], 'subject')
+    buyer = _bound(purchases[0], 'subject')
+    item = _bound(purchases[0], 'dobj')
+    if actor is None or buyer is None or item is None:
+        return None
+    actor_ref, buyer_ref, item_ref = map(reference_from_unit, (actor, buyer, item))
+    if not actor_ref.resolved or actor_ref != buyer_ref or not item_ref.resolved:
+        return None
+    return actor_ref, item_ref

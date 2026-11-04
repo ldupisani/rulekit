@@ -49,7 +49,7 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
     assert any("antecedent discourse group" in blocker for blocker in contextual.blockers)
     # The reusable physics pack adds the independently generatable
     # ask/physics-quantity surface to curated.
-    assert sum(item.supported for item in availability.values()) == 398
+    assert sum(item.supported for item in availability.values()) == 436
     assert availability["ask/how-many-of-collection-are-label"].supported
     assert availability["ask/how-many-of-collection-are-label"].supported_modes == (
         "ask_only",
@@ -73,10 +73,12 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
     assert availability["ask/measured-content-in-container-unit"].blockers == (
         "ask requires generated premise evidence; standalone realization is disabled",
     )
-    assert len(availability) == 441
+    assert len(availability) == 481
     assert {
         item.id for item in availability.values() if not item.supported
-    } == {'ask/chem-cost-of-moles',
+    } == {'ask/available-unit-assignments-with-vacancy',
+          'ask/container-content-cubic-amount',
+          'ask/chem-cost-of-moles',
           'ask/measured-remainder-after-production-varieties',
           'ask/process-part-remainder-numeric-index',
           'ask/process-part-remainder-in-duration-numeric-index',
@@ -145,6 +147,7 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
                    "no project-backed ask filler exists for collection",
                ) for ask_id in unfilled_collections)
     unfilled_powered_units = {
+        'ask/container-content-cubic-amount',
         'ask/measured-remainder-area-how-much-active-qualified-unit',
         'ask/measured-remainder-area-length_unit-how-many-units-elided-qualified-unit',
         'ask/measured-remainder-area-length_unit-how-many-units-left-qualified-unit',
@@ -170,11 +173,14 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
         "no project-backed ask filler exists for make",)
     assert all(availability[ask_id].blockers == (
         "no project-backed ask filler exists for part_index",) for ask_id in unfilled_process_indices)
+    unfilled_capacity_participants = {"ask/available-unit-assignments-with-vacancy"}
+    assert availability[next(iter(unfilled_capacity_participants))].blockers == (
+        "no project-backed ask filler exists for others",)
     assert all(
         "answerable" in item.supported_modes
         for item in availability.values()
         if not item.supported and not item.id.startswith("ask/chem-")
-        and item.id not in unfilled_ordinals | unfilled_scale_labels | unfilled_collections | unfilled_powered_units | unfilled_production | unfilled_process_indices
+        and item.id not in unfilled_ordinals | unfilled_scale_labels | unfilled_collections | unfilled_powered_units | unfilled_production | unfilled_process_indices | unfilled_capacity_participants
     )
     for ask_id in deadline_asks:
         assert availability[ask_id].supported

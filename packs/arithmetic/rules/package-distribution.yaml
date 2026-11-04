@@ -1,0 +1,448 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/owned-provision-responsibility
+  phase: read
+  match:
+    sentence:
+    - slot: dummy
+      cat: impersonal_subject_pronoun
+      at_start: true
+    - slot: be
+      cat: copula
+    - slot: principal
+      type: name
+    - slot: poss
+      cat: contracted_copula_clitic
+    - slot: turn
+      cat: responsibility_role
+      uncounted: true
+    - lit: to
+    - slot: provide
+      cat: provision_verb
+      bare_form: true
+    - slot: resource
+      cat: purchase_item
+      uncounted: true
+    - lit: for
+    - slot: team
+      cat: social_group
+      uncounted: true
+    - lit: after
+    - slot: event
+      cat: scheduled_event
+      uncounted: true
+    - lit: and
+    - slot: who
+      cat: anaphoric_person_subject
+    - slot: decide
+      cat: supply_decision_verb
+      finite_form: true
+    - lit: to
+    - slot: bring
+      cat: supply_transport_verb
+      bare_form: true
+    - slot: item
+      cat: purchase_item
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: distribution-context
+    entity: '{principal}'
+    measure: '{item}'
+    value: 0
+    position: '{item.span_start}'
+    container: '{team}'
+  consumes:
+  - be
+  - provide
+  - decide
+  - bring
+  satisfies:
+    dummy:
+    - refers
+    be:
+    - subject
+    provide:
+    - subject
+    decide:
+    - subject
+    bring:
+    - subject
+  disambiguates:
+  - turn
+  bindings:
+    poss:
+      owner: principal
+      owned: turn
+  references:
+    who: principal
+  description: Preserve stocks, units per package or whole, counted recipient groups and explicit serving participants.
+- id: arithmetic/packaged-unit-capacity
+  phase: read
+  match:
+    sentence:
+    - slot: item
+      cat: purchase_item
+      uncounted: true
+      bare: true
+      at_start: true
+    - slot: come
+      cat: packaging_availability_verb
+      finite_form: true
+    - lit: in
+    - slot: package
+      cat: quantity_container
+      uncounted: true
+      number: plural
+      bare: true
+    - lit: of
+    - slot: units
+      cat: quantity_container
+      counted: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: distribution-capacity
+    entity: ''
+    measure: '{units}'
+    value: units
+    position: '{units.span_start}'
+    container: '{package}'
+    acquisition: '{item}'
+    attribute: '{units.qualifier}'
+  consumes:
+  - come
+  - units
+  satisfies:
+    come:
+    - subject
+  description: Preserve stocks, units per package or whole, counted recipient groups and explicit serving participants.
+- id: arithmetic/affiliated-recipient-groups
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: allocation_recipient
+      referential: true
+      bare: true
+    - slot: have
+      cat: possession_state
+      finite_form: true
+    - slot: first
+      cat: person
+      counted: true
+      bare: true
+    - lit: on
+    - slot: owner
+      cat: possessive_determiner
+    - slot: team
+      cat: social_group
+      uncounted: true
+    - lit: ','
+      consume_skipped: true
+    - lit: plus
+    - slot: others
+      span: true
+      enumeration_cat: person
+      enumeration_counted: true
+      enumeration_min_members: 1
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: distribution-population
+    entity: '{who}'
+    measure: '{first}'
+    value: first
+    position: '{first.span_start}'
+    container: '{team}'
+  - fact: batch_evidence
+    kind: distribution-population
+    entity: '{who}'
+    measure: '{item}'
+    value: item
+    position: '{item.span_start}'
+    container: '{team}'
+    each: others
+  consumes:
+  - have
+  - first
+  - others
+  satisfies:
+    have:
+    - subject
+  references:
+    owner: who
+  description: Preserve stocks, units per package or whole, counted recipient groups and explicit serving participants.
+- id: arithmetic/stock-for-counted-and-named-recipients
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: allocation_recipient
+      referential: true
+      bare: true
+    - slot: have
+      cat: possession_state
+      finite_form: true
+    - slot: stock
+      cat: decomposable_quantity_whole
+      counted: true
+    - lit: to
+    - slot: share
+      cat: allocation_verb
+      bare_form: true
+    - lit: with
+    - slot: owner
+      cat: possessive_determiner
+    - slot: peers
+      cat: person
+      counted: true
+    - lit: and
+    - slot: other_owner
+      cat: possessive_determiner
+    - slot: role
+      cat: person
+      uncounted: true
+      number: singular
+    - lit: ','
+      consume_skipped: true
+    - slot: named
+      type: name
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: distribution-stock
+    entity: '{who}'
+    measure: '{stock}'
+    container: '{stock}'
+    value: stock
+    position: '{stock.span_start}'
+  - fact: batch_evidence
+    kind: distribution-population
+    entity: '{who}'
+    measure: '{peers}'
+    value: peers
+    position: '{peers.span_start}'
+  - fact: batch_evidence
+    kind: distribution-population
+    entity: '{who}'
+    measure: '{role}'
+    value: 1
+    position: '{role.span_start}'
+    container: '{named}'
+  consumes:
+  - have
+  - stock
+  - share
+  - peers
+  satisfies:
+    have:
+    - subject
+    share:
+    - subject
+  description: Preserve stocks, units per package or whole, counted recipient groups and explicit serving participants.
+  references:
+    owner: who
+    other_owner: who
+- id: arithmetic/partitioned-stock-served-to-mixed-roster
+  phase: read
+  match:
+    sentence:
+    - slot: each
+      cat: partitive_distributive_quantifier
+      at_start: true
+    - lit: of
+    - slot: whole
+      cat: decomposable_quantity_whole
+      uncounted: true
+      number: plural
+    - slot: be
+      cat: copula
+    - slot: cut
+      cat: portion_division_verb
+      past_participle: true
+    - lit: into
+    - slot: pieces
+      cat: component_quantity_measure
+      counted: true
+      bare: true
+    - lit: and
+    - slot: who
+      type: entity
+      common_noun_cat: allocation_recipient
+      referential: true
+      bare: true
+    - lit: ','
+      consume_skipped: true
+    - slot: owner
+      cat: possessive_determiner
+    - slot: peers
+      cat: person
+      uncounted: true
+      number: plural
+    - lit: ','
+      consume_skipped: true
+    - lit: and
+    - slot: named
+      type: name
+    - slot: all
+      cat: group_total_quantifier
+    - slot: have
+      cat: possession_state
+      finite_form: true
+    - slot: serving
+      cat: component_quantity_measure
+      counted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: distribution-partition
+    entity: '{who}'
+    measure: '{pieces}'
+    value: pieces
+    position: '{pieces.span_start}'
+    container: '{whole}'
+  - fact: batch_evidence
+    kind: distribution-serving
+    entity: '{who}'
+    measure: '{serving}'
+    value: serving
+    position: '{serving.span_start}'
+    container: '{named}'
+    acquisition: '{peers}'
+    marker: include-owner
+  question_assumption: true
+  consumes:
+  - be
+  - cut
+  - pieces
+  - have
+  - serving
+  satisfies:
+    be:
+    - subject
+    cut:
+    - subject
+    have:
+    - subject
+    each:
+    - collection
+  description: Preserve stocks, units per package or whole, counted recipient groups and explicit serving participants.
+  references:
+    owner: who
+- id: arithmetic/explicit-per-recipient-unit-count
+  phase: read
+  match:
+    sentence:
+    - slot: each
+      cat: partitive_distributive_quantifier
+      at_start: true
+    - slot: person
+      cat: allocation_recipient
+      uncounted: true
+      bare: true
+    - slot: need
+      cat: goal_predicate
+      finite_form: true
+    - slot: units
+      cat: quantity_container
+      counted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: distribution-per-recipient
+    entity: ''
+    measure: '{units}'
+    value: units
+    position: '{units.span_start}'
+    container: '{person}'
+  consumes:
+  - need
+  - units
+  satisfies:
+    each:
+    - collection
+    need:
+    - subject
+  description: Preserve stocks, units per package or whole, counted recipient groups and explicit serving participants.
+asks:
+- id: ask/required-whole-packages
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: many
+    - slot: package
+      cat: quantity_container
+      uncounted: true
+      bare: true
+    - lit: of
+    - slot: item
+      cat: purchase_item
+      uncounted: true
+      bare: true
+    - slot: aux
+      type: auxiliary
+    - slot: who
+      type: entity
+      common_noun_cat: allocation_recipient
+      referential: true
+      bare: true
+    - slot: need
+      cat: goal_predicate
+      bare_form: true
+    - slot: infinitive
+      cat: infinitival_marker
+    - slot: buy
+      cat: purchase
+      bare_form: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: unit-distribution
+    mode: packages
+    entity: '{who}'
+    package: '{package}'
+    item: '{item}'
+  satisfies:
+    need:
+    - subject
+    buy:
+    - subject
+    infinitive:
+    - object
+- id: ask/distributed-pieces-left
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: many
+    - slot: piece
+      cat: component_quantity_measure
+      uncounted: true
+      bare: true
+    - slot: be
+      cat: copula
+    - slot: left
+      cat: batch_left_verb
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: unit-distribution
+    mode: remainder
+    measure: '{piece}'
+  satisfies:
+    be:
+    - subject

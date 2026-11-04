@@ -1141,6 +1141,9 @@ categories:
     parent: noun
   output_quantity_product:
     parent: producible_quantity_object
+    includes:
+    - book
+    - publication_product
   unit_recipient_output_verb:
     parent: quantity_ask_verb
     selectional_roles:
@@ -2609,7 +2612,12 @@ members:
     started, starts, win, wins, won]
   activity_duration_verb: [did]
   age_comparative: [older, younger]
-  age_measure: [year]
+  age_measure:
+  - year
+  - month
+  - week
+  - day
+  - hour
   age_noun: [age]
   age_projection_preposition: [after, in]
   aggregate_contents_label: [content, goodie]
@@ -2683,7 +2691,10 @@ members:
   count_quantity_delta: [fewer, more]
   cultivation_quantity_verb: [plant, planted, planting, plants]
   currency: [dollar, money, pound]
-  currency_unit: [cent, dollar]
+  currency_unit:
+  - cent
+  - dollar
+  - pound sterling
   canonical_currency_unit: [dollar]
   currency_measure: [balance, cost, earnings]
   currency_quantity_verb: [bought, buy, buys, find, finds, found, get, gets, got, had, has, have, lose, loses,
@@ -2691,9 +2702,6 @@ members:
   current_day_marker: [today]
   current_holding_anchor_adverb: [currently]
   day_deictic_marker: [today, tomorrow, yesterday]
-  decomposable_quantity_whole:
-  - cake
-  - pizza
   definite_article: [the]
   deictic_temporal_marker: [now, today, tomorrow, yesterday]
   destination_preposition: [to]
@@ -2728,15 +2736,110 @@ members:
   earnable_quantity_object: [dollar, money, point]
   earning_quantity_verb: [earn, earned, earns, score, scored, scores]
   eating_quantity_verb: [ate, eat, eats]
-  edible_quantity_object: [acorn, apple, apricot, avocado, bagel, banana, bean, beetle, beignet, berry, bird,
-      blackberry, blueberry, bread, burger, cake, candy, carrot, charcuterie, cheddar cheese, cheese, coffee,
-      cold cut, conch, cookie, corn, crab, cream cheese, crepe, cucumber, cupcake, dessert, donut, egg, entree,
-    fish, food, fries, frozen yoghurt, frozen yogurt, grape, gumball, hamburger, ice cream, jellybean, lemon,
-      loaf, lollipop, macaron, macaroon, macaroons, meal, meatball, milkshake, muffin, nachos, nut, olive,
-      orange, oyster, pakora, pancake, pancakes, pastry, pear, pepper, pickle, pie, piece, pineapple,
-      pistachio, pizza, plum, potato, pretzel, provisions, rabbit, raspberry, salad, salmon, samosa, sandwich,
-      slice, snack, snake, soda, spaghetti, steak, strawberry, sugar, sweets, tea, toast, tomato, tortilla,
-      treat, vanilla, vegetable, watermelon, wheat, yoghurt, yogurt]
+  edible_quantity_object:
+  - acorn
+  - apple
+  - apricot
+  - avocado
+  - bagel
+  - banana
+  - bean
+  - beetle
+  - beignet
+  - berry
+  - bird
+  - blackberry
+  - blueberry
+  - bread
+  - burger
+  - cake
+  - candy
+  - carrot
+  - charcuterie
+  - cheddar cheese
+  - cheese
+  - coffee
+  - cold cut
+  - conch
+  - cookie
+  - corn
+  - crab
+  - cream cheese
+  - crepe
+  - cucumber
+  - cupcake
+  - dessert
+  - donut
+  - egg
+  - entree
+  - fish
+  - food
+  - fries
+  - frozen yoghurt
+  - frozen yogurt
+  - grape
+  - gumball
+  - hamburger
+  - ice cream
+  - jellybean
+  - lemon
+  - loaf
+  - lollipop
+  - macaron
+  - macaroon
+  - macaroons
+  - meal
+  - meatball
+  - milkshake
+  - muffin
+  - nachos
+  - nut
+  - olive
+  - orange
+  - oyster
+  - pakora
+  - pancake
+  - pancakes
+  - pastry
+  - pear
+  - pepper
+  - pickle
+  - pie
+  - piece
+  - pineapple
+  - pistachio
+  - pizza
+  - plum
+  - potato
+  - pretzel
+  - provisions
+  - rabbit
+  - raspberry
+  - salad
+  - salmon
+  - samosa
+  - sandwich
+  - slice
+  - snack
+  - snake
+  - soda
+  - spaghetti
+  - steak
+  - strawberry
+  - sugar
+  - sweets
+  - tea
+  - toast
+  - tomato
+  - tortilla
+  - treat
+  - vanilla
+  - vegetable
+  - watermelon
+  - wheat
+  - yoghurt
+  - yogurt
+  - trail mix
   enrollment_quantity_object: [course, student]
   enrollment_quantity_verb: [enroll, enrolled, enrolling, enrolls]
   epistemic_report_verb: [said, say, saying, says]
@@ -2815,10 +2918,59 @@ members:
       smaller, taller, wider, younger]
   measured_comparative_offset_measure: [day, gram, hour, kilogram, minute, month, pound, week, year]
   measured_content_adjustment_verb: [add, added, adding, adds]
-  measured_content_substance: [applesauce, bacon, basil, batter, beef, beeswax, bread, brownie, buttercream, corn,
-      charcoal, clay, custard, dough, flour, frosting, fudge, gas, gluten, guacamole, gum, gummy worm, ice,
-      jam, jelly, jelly bean, juice, lassi, lemonade, lettuce, makeup, meat, milk, oatmeal, oregano, popcorn,
-      pork, rain, rainfall, rice, salad, sand, sauce, silk, snow, soup, sugar, vanilla, vinegar, water, wheat]
+  measured_content_substance:
+  - applesauce
+  - bacon
+  - basil
+  - batter
+  - beef
+  - beeswax
+  - bread
+  - brownie
+  - buttercream
+  - corn
+  - charcoal
+  - clay
+  - custard
+  - dough
+  - flour
+  - frosting
+  - fudge
+  - gas
+  - gluten
+  - guacamole
+  - gum
+  - gummy worm
+  - ice
+  - jam
+  - jelly
+  - jelly bean
+  - juice
+  - lassi
+  - lemonade
+  - lettuce
+  - makeup
+  - meat
+  - milk
+  - oatmeal
+  - oregano
+  - popcorn
+  - pork
+  - rain
+  - rainfall
+  - rice
+  - salad
+  - sand
+  - sauce
+  - silk
+  - snow
+  - soup
+  - sugar
+  - vanilla
+  - vinegar
+  - water
+  - wheat
+  - chicken
   measured_content_transfer_verb: [pour, poured, pouring, pours, put, puts, putting]
   measurement_container: [barrel, beaker, bottle, bowl, box, bucket, canister, container, drum, flask, jar,
       jug, tank, thermos, tray, vase, vessel, vial]
@@ -2854,23 +3006,206 @@ members:
   output_quantity_measure: [page]
   output_quantity_product: [book]
   output_quantity_verb: [write, writes, wrote]
-  ownable_quantity_object: [accessory, advertisement, airplane, application, backpack, badge, bagel, balloon,
-      basketball, battery, beanie, bed, beignet, bicycle, binder, blanket, boat, boot, bouquet, bracelet,
-      brochure, brush, bunch, burger, bus, business, cabinet, cable, caboose, cage, candle, canteen, cap,
-      cartridge, case, cellphone, chair, chalkboard, charm, chest, clamp, console, copy, costume, couch,
-      counter, crayon, credit card, crepe, crown, cupcake, cutlery, cuttlebone, deck, desk, desktop, diary,
-      dice, dodgeball, doll, donut, drawer, drawing, dress, earring, elevator, engine, eraser, exhibit,
-      face-mask, fan, fertilizer, folder, football, fork, frame, frisbee, gem, gemstone, gift, gumball,
-      handlebar, hard hat, heater, helicopter, highlighter, hoop, hose, ipod, jacket, jeans, jellybean, jet,
-      jewelry, kite, knife, laptop, laser, lawnmower, lego, lens, locker, lollipop, magazine, makeup, marker,
-      match, matchbox, minibus, mitten, mixtape, money, monitor, mower, mug, nail, necklace, netbook,
-      newspaper, notebook, notepad, novel, outfit, packet, pad, pail, paintball, paintbrush, pastry, pebble,
-      pen, phone, pill, pillowcase, pin, pipe, plug, pocket, pot, present, pretzel, printer, pufferfish,
-      pyramid, quilt, record, ribbon, rock, rocket, rope, scanner, scarf, scoop, scrapbook, seat, seed,
-      sharpener, shelf, shoe, shoebox, skateboard, skirt, smartphone, snowball, sofa, softball, spoon, statue,
-      stick, stone, string, strip, sweater, sword, table, tape, target, television, thermos, tile, tire, token,
-    toothpick, towel, trackball, tray, treadmill, umbrella, vacuum, vase, volleyball, wallet, wheel,
-      wheelchair, whiteboard, wick, woodblock]
+  ownable_quantity_object:
+  - accessory
+  - advertisement
+  - airplane
+  - application
+  - backpack
+  - badge
+  - bagel
+  - balloon
+  - basketball
+  - battery
+  - beanie
+  - bed
+  - beignet
+  - bicycle
+  - binder
+  - blanket
+  - boat
+  - boot
+  - bouquet
+  - bracelet
+  - brochure
+  - brush
+  - bunch
+  - burger
+  - bus
+  - business
+  - cabinet
+  - cable
+  - caboose
+  - cage
+  - candle
+  - canteen
+  - cap
+  - cartridge
+  - case
+  - cellphone
+  - chair
+  - chalkboard
+  - charm
+  - chest
+  - clamp
+  - console
+  - copy
+  - costume
+  - couch
+  - counter
+  - crayon
+  - credit card
+  - crepe
+  - crown
+  - cupcake
+  - cutlery
+  - cuttlebone
+  - deck
+  - desk
+  - desktop
+  - diary
+  - dice
+  - dodgeball
+  - doll
+  - donut
+  - drawer
+  - drawing
+  - dress
+  - earring
+  - elevator
+  - engine
+  - eraser
+  - exhibit
+  - face-mask
+  - fan
+  - fertilizer
+  - folder
+  - football
+  - fork
+  - frame
+  - frisbee
+  - gem
+  - gemstone
+  - gift
+  - gumball
+  - handlebar
+  - hard hat
+  - heater
+  - helicopter
+  - highlighter
+  - hoop
+  - hose
+  - ipod
+  - jacket
+  - jeans
+  - jellybean
+  - jet
+  - jewelry
+  - kite
+  - knife
+  - laptop
+  - laser
+  - lawnmower
+  - lego
+  - lens
+  - locker
+  - lollipop
+  - magazine
+  - makeup
+  - marker
+  - match
+  - matchbox
+  - minibus
+  - mitten
+  - mixtape
+  - money
+  - monitor
+  - mower
+  - mug
+  - nail
+  - necklace
+  - netbook
+  - newspaper
+  - notebook
+  - notepad
+  - novel
+  - outfit
+  - packet
+  - pad
+  - pail
+  - paintball
+  - paintbrush
+  - pastry
+  - pebble
+  - pen
+  - phone
+  - pill
+  - pillowcase
+  - pin
+  - pipe
+  - plug
+  - pocket
+  - pot
+  - present
+  - pretzel
+  - printer
+  - pufferfish
+  - pyramid
+  - quilt
+  - record
+  - ribbon
+  - rock
+  - rocket
+  - rope
+  - scanner
+  - scarf
+  - scoop
+  - scrapbook
+  - seat
+  - seed
+  - sharpener
+  - shelf
+  - shoe
+  - shoebox
+  - skateboard
+  - skirt
+  - smartphone
+  - snowball
+  - sofa
+  - softball
+  - spoon
+  - statue
+  - stick
+  - stone
+  - string
+  - strip
+  - sweater
+  - sword
+  - table
+  - tape
+  - target
+  - television
+  - thermos
+  - tile
+  - tire
+  - token
+  - toothpick
+  - towel
+  - trackball
+  - tray
+  - treadmill
+  - umbrella
+  - vacuum
+  - vase
+  - volleyball
+  - wallet
+  - wheel
+  - wheelchair
+  - whiteboard
+  - wick
+  - woodblock
+  - craft
+  - pouch
   owned_collection_location: [cupboard, garden, pantry, storeroom]
   ownership_state: [own, owned, owns]
   package_content_preposition: [of, with]
@@ -2932,9 +3267,37 @@ members:
   quantified_group_total_marker: [together]
   quantity_anaphor: [amount, distance, number]
   quantity_ask_verb: [enroll, enrolled, enrolling, enrolls, had, has, have, own, owns, take, takes, took]
-  quantity_container: [aquarium, backpack, binder, box, bunch, cabinet, cage, can, canteen, case, chest, cooler,
-      drawer, folder, house, locker, matchbox, mug, packet, pail, piñata, pot, scoop, shelf, shoebox, thermos,
-      tray, vase]
+  quantity_container:
+  - aquarium
+  - backpack
+  - binder
+  - box
+  - bunch
+  - cabinet
+  - cage
+  - can
+  - canteen
+  - case
+  - chest
+  - cooler
+  - drawer
+  - folder
+  - house
+  - locker
+  - matchbox
+  - mug
+  - packet
+  - pail
+  - piñata
+  - pot
+  - scoop
+  - shelf
+  - shoebox
+  - thermos
+  - tray
+  - vase
+  - pouch
+  - pack
   quantity_delta: [fewer, less, more]
   quantity_event_participant: [animal, dragon, monster, vampire]
   quantity_event_verb: [leave, leaves, leaving, meet, meets, met, repaint, repainted, repainting, repaints,

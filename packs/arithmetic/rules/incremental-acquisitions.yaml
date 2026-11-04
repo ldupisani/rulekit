@@ -1,0 +1,223 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/purchase-before-associated-encounter
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: buy
+      cat: purchase
+      finite_form: true
+    - slot: stock
+      cat: quantity_container
+      counted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: item
+      cat: purchase_item
+      uncounted: true
+      bare: true
+    - lit: at
+      consume_skipped: true
+    - slot: site
+      cat: purchase_context_site
+      uncounted: true
+      bare: true
+    - lit: before
+      consume_skipped: true
+    - slot: meet
+      cat: purchase_encounter_verb
+      present_participle: true
+    - slot: owner
+      cat: possessive_determiner
+    - slot: role
+      cat: person
+      uncounted: true
+    - slot: other
+      type: name
+    - lit: ','
+      consume_skipped: true
+    - lit: who
+      consume_skipped: true
+    - slot: be
+      cat: copula
+    - lit: also
+      consume_skipped: true
+    - slot: buying
+      cat: purchase
+      present_participle: true
+    - slot: again
+      cat: purchase_item
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: incremental-opening
+    entity: '{who}'
+    measure: '{stock}'
+    value: stock
+    position: '{who.span_start}'
+    container: '{item}'
+    acquisition: '{other}'
+    marker: '{site}'
+    verb: '{buy}'
+  consumes:
+  - buy
+  - stock
+  - meet
+  - be
+  - buying
+  satisfies: {}
+  references:
+    owner: who
+  bindings:
+    buy:
+      subject: who
+    meet:
+      subject: who
+      dobj: other
+    be:
+      subject: other
+    buying:
+      subject: other
+  where:
+  - same_lemma:
+    - item
+    - again
+  - number_compatible:
+    - who
+    - buy
+  disambiguates:
+  - buy
+  - stock
+  - item
+  - site
+  - meet
+  - role
+  - be
+  - buying
+  - again
+- id: arithmetic/additional-ratio-acquisition
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: buy
+      cat: purchase
+      finite_form: true
+    - slot: extra
+      cat: quantity_container
+      counted: true
+      qualified: true
+      qualifier_cat: supplemental_amount_attribute
+      all_qualifiers: true
+    - lit: for
+      consume_skipped: true
+    - slot: every
+      cat: distributive_quantifier
+    - slot: base
+      cat: quantity_container
+      counted: true
+      bare: true
+    - slot: standard
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: buy2
+      cat: purchase
+      finite_form: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: incremental-ratio
+    entity: '{who}'
+    measure: '{extra}'
+    value: extra
+    position: '{who.span_start}'
+    container: '{standard}'
+    per_member: base
+    verb: '{buy}'
+  consumes:
+  - buy
+  - extra
+  - base
+  - buy2
+  satisfies:
+    every:
+    - collection
+  bindings:
+    buy:
+      subject: who
+    buy2:
+      subject: standard
+  where:
+  - same_lemma:
+    - extra
+    - base
+  disambiguates:
+  - buy
+  - extra
+  - base
+  - buy2
+asks:
+- id: ask/incremental-purchase-taken-home
+  match:
+    question:
+    - lit: how
+      consume_skipped: true
+    - lit: many
+      consume_skipped: true
+    - slot: unit
+      cat: quantity_container
+      uncounted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: item
+      cat: purchase_item
+      uncounted: true
+      bare: true
+    - slot: aux
+      type: auxiliary
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: bring
+      cat: residential_return_verb
+      bare_form: true
+    - slot: home
+      cat: residential_destination
+      uncounted: true
+      bare: true
+    - opt:
+      - lit: from
+        consume_skipped: true
+      - slot: site
+        cat: purchase_context_site
+        uncounted: true
+        bare: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: dependent-quantity-total
+    operation: incremental
+    entity: '{who}'
+    measure: '{unit}'
+    content: '{item}'
+    site: '{site}'
+  satisfies:
+    bring:
+    - subject

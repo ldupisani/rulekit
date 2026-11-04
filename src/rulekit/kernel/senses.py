@@ -60,16 +60,16 @@ def annotate_senses(reading: Reading, reg: Registry) -> Reading:
         if "value" in unit.features or unit.features.get("value_kind") in ("tuple", "date", "formula"):
             # a currency amount IS a counted noun ("$5" ≡ "5 dollars"); its
             # measure word comes from the currencies map (data, not code)
-            if unit.features.get("currency") and "$" in reg.currencies:
+            if unit.features.get("currency") and unit.features.get('currency_unit'):
                 reading.record(
                     "annotate-sense", unit,
                     {
                         "senses": ["noun"],
-                        "lemma": reg.currencies["$"],
+                        "lemma": unit.features['currency_unit'],
                         "number": "plural",
                     },
                     f"currency amount {unit.surface!r} reads as a counted "
-                    f"{reg.currencies['$']!r} noun",
+                    f"{unit.features['currency_unit']!r} noun",
                 )
                 continue
             kind = unit.features["value_kind"]

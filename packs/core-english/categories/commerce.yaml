@@ -56,6 +56,46 @@ categories:
       without picking up 'ate'/'sold'/'spent'/etc, which also live under
       'lose'. Gated additionally on the fact's measure resolving to
       `currency` — an ordinary "gives 3 apples" never qualifies.
+  account_product_attribute:
+    parent: adjective
+  sale_context_location:
+    parent: noun
+    includes:
+    - purchase_context_site
+  measured_order_verb:
+    parent: verb
+  exchange_verb:
+    parent: verb
+  currency_material_attribute:
+    parent: adjective
+  bonus_noun:
+    parent: income_resource_noun
+  income_action:
+    parent: verb
+  work_intensity_attribute:
+    parent: adjective
+  effort_noun:
+    parent: noun
+  consequence_verb:
+    parent: verb
+  employment_noun:
+    parent: noun
+  offer_action:
+    parent: verb
+  option_noun:
+    parent: noun
+  discovery_action:
+    parent: verb
+  return_action:
+    parent: verb
+  bank_site:
+    parent: noun
+  value_noun:
+    parent: noun
+  coin_face_value_unit:
+    parent: currency_unit
+  sale_activity_verb:
+    parent: verb
 members:
   audio_product: [album, cd]
   audiovisual_product: [dvd, film, movie, video]
@@ -82,6 +122,7 @@ members:
   visual_product:
   - painting
   - picture
+  - print
   sale_revenue_noun: [sale]
   commercial_quote_verb:
   - charge
@@ -95,5 +136,82 @@ members:
   cashtoken: [bill, coin]
   charge: [bill, cost, expense, fee, price]
   tender_verb: [gave, give, gives, paid, pay, pays]
+  account_product_attribute:
+  - handmade
+  sale_context_location:
+  - market
+  - shop
+  - store
+  measured_order_verb:
+  - order
+  - orders
+  - ordered
+  - buy
+  - buys
+  - bought
+  - purchase
+  - purchases
+  - purchased
+  exchange_verb:
+  - exchange
+  - exchanges
+  - exchanged
+  - swap
+  - swaps
+  - swapped
+  currency_material_attribute:
+  - iron
+  - silver
+  - gold
+  bonus_noun:
+  - bonus
+  income_action:
+  - earn
+  - earns
+  - earned
+  - make
+  - makes
+  - made
+  work_intensity_attribute:
+  - hard
+  effort_noun:
+  - effort
+  - work
+  consequence_verb:
+  - result
+  - results
+  - resulted
+  employment_noun:
+  - job
+  offer_action:
+  - offer
+  - offers
+  - offered
+  option_noun:
+  - option
+  discovery_action:
+  - discover
+  - discovers
+  - discovered
+  - find
+  - finds
+  - found
+  return_action:
+  - get
+  - gets
+  - got
+  - getting
+  bank_site:
+  - bank
+  value_noun:
+  - value
+  coin_face_value_unit:
+  - cent
+  sale_activity_verb:
+  - selling
 attribute_compatibility:
   income_modifier: [income_resource_noun]
+  account_product_attribute:
+  - purchase_item
+  currency_material_attribute:
+  - coin

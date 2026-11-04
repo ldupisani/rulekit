@@ -7,7 +7,7 @@ from ..dimensions import conversion_factor
 from ..evaluate import evaluate
 from ..model import BatchEvidence, RegionEvidence
 from ..numeric_evidence import audit_numeric_mentions
-from ..resource_equations import resource_residual
+from ..resource_equations import FractionBasis, FractionalAllocation
 from ..source_coverage import uncovered_document_units
 
 
@@ -34,7 +34,8 @@ def consume(ctx):
         return decline('the question must identify the same measured resource stock')
     expected = defaultdict(Counter)
     expected[opening.provenance.sentence][opening.value] += 1
-    balance = opening.value
+    allocation = FractionalAllocation(opening.value, ctx.log)
+    balance = allocation.balance
     purposes = set()
     remainder_seen = False
     for step in steps:
@@ -56,13 +57,13 @@ def consume(ctx):
                 and balance != opening.value):
             return decline('a later fraction must distinguish the original stock from its current remainder')
         expected[step.provenance.sentence][step.value] += 1
-        base = opening.value if step.marker == 'opening' else balance
-        allocated = evaluate('base * fraction', {'base': base, 'fraction': step.value},
-                             ctx.log, source='fractional-resource-allocation')
-        balance = resource_residual([balance], [allocated], ctx.log, source='fractional-resource-balance')
+        try:
+            allocation.allocate(step.value, FractionBasis(step.marker),
+                                source='fractional-resource-allocation')
+        except ValueError as error:
+            return decline(str(error))
+        balance = allocation.balance
         remainder_seen |= step.marker == 'remainder'
-        if balance < -1e-9:
-            return decline('the stated allocations exceed the resource stock')
         purposes.add(step.container_ref)
     if 'purpose_count' in ctx.query:
         count = float(ctx.query['purpose_count'])

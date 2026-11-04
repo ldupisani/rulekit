@@ -8,7 +8,7 @@ templates:
       description: An exhaustive counted group of named recipients of one shared resource.
       match:
         sentence:
-        - {slot: source, type: entity, common_noun_cat: allocation_participant, referential: true, bare: true, 
+        - {slot: source, type: entity, common_noun_cat: allocation_initiator, referential: true, bare: true,
             at_start: true}
         - {slot: sharing, cat: allocation_verb}
         - {parameter: amount}
@@ -23,7 +23,7 @@ templates:
       satisfies:
         owner: [refers]
       emits:
-      - {fact: allocation_group, source: '{source}', resource: '{resource}', members: '{recipients.members}', 
+      - {fact: allocation_group, source: '{source}', resource: '{resource}', members: '{recipients.members}',
           value: group}
 variants:
 - id: arithmetic/named-allocation-group
@@ -32,7 +32,7 @@ variants:
   template: named-allocation-group
   arguments:
     amount:
-    - {slot: amount, cat: allocation_amount_noun, qualified: true, qualifier_cat: 
+    - {slot: amount, cat: allocation_amount_noun, qualified: true, qualifier_cat:
         unspecified_amount_descriptor, uncounted: true}
     - {lit: of}
 rules:
@@ -40,7 +40,7 @@ rules:
   description: An exhaustive counted group of named recipients of one shared resource.
   match:
     sentence:
-    - {slot: source, type: entity, common_noun_cat: allocation_participant, referential: true, bare: true, 
+    - {slot: source, type: entity, common_noun_cat: allocation_initiator, referential: true, bare: true,
         at_start: true}
     - {slot: sharing, cat: allocation_verb}
     - {slot: resource, cat: allocatable_resource, uncounted: true, bare: true}
@@ -72,7 +72,7 @@ asks:
     - {lit: much}
     - {slot: resource, cat: allocatable_resource, uncounted: true, bare: true}
     - {slot: aux, cat: auxiliary}
-    - {slot: source, type: entity, common_noun_cat: allocation_participant, referential: true, bare: true}
+    - {slot: source, type: entity, common_noun_cat: allocation_initiator, referential: true, bare: true}
     - {slot: sharing, cat: allocation_verb}
     - {lit: '?', consume_skipped: true}
   satisfies:

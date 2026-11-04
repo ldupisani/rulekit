@@ -34,6 +34,8 @@ FUTURE_RULES = {
     "arithmetic/temporal-offset-times-as-old-as-future",
 }
 EXPECTED_OCCURRENCES = {
+    'arithmetic/calibrated-output-sale-quote': ((1,), 'modal', ()),
+    'arithmetic/periodic-rate-every-unit': ((1, 0), 'modal', ((1,),)),
     "arithmetic/event-multiplier-step-participle": ((4, 0), "future_modal", ((4,),)),
     "arithmetic/event-multiplier-step-motive-participle": ((19,), "future_modal", ()),
     "arithmetic/event-relative-increase-step": ((4, 0), "future_modal", ((4,),)),
@@ -120,6 +122,7 @@ def test_modal_occurrence_and_core_ownership_maps_are_complete() -> None:
     assert project.registry.word_categories["could"] == ("ability_modal", "capacity_modal")
     assert project.registry.word_categories["must"] == ("capacity_modal", "settlement_modal")
     assert project.registry.word_categories["may"] == (
+        "activity_setting",
         "capacity_modal",
         "named_calendar_period",
         "named_month",
@@ -133,12 +136,15 @@ def test_modal_occurrence_and_core_ownership_maps_are_complete() -> None:
     )
     assert project.registry.word_categories["can"] == (
         "ability_modal",
+        "allocation_participant",
         "allocation_recipient",
         "allocation_storage",
         "assembled_component_bearer",
         "capacity_modal",
         "collection_source",
         "component_bearing_object",
+        "countable_event_object",
+        "inventory_item",
         "litter",
         "location_impossibility_modal",
         "measured_output_container",
@@ -147,6 +153,7 @@ def test_modal_occurrence_and_core_ownership_maps_are_complete() -> None:
         "population_member",
         "purchase_item",
         "quantity_container",
+        "quantity_source",
         "rate_population",
         "specification_resource",
         "transferable_quantity_object",
@@ -228,9 +235,9 @@ def test_g5s_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 729
-    assert sum(item.supported for item in availability.values()) == 644
-    assert sum(not item.supported for item in availability.values()) == 85
+    assert len(availability) == 830
+    assert sum(item.supported for item in availability.values()) == 733
+    assert sum(not item.supported for item in availability.values()) == 97
     assert availability["arithmetic/periodic-rate-every-span"].supported
     assert all(availability[rule_id].supported for rule_id in FUTURE_RULES)
     # G5t subsequently supplied the temporal-marker domain for the fourth
@@ -241,7 +248,7 @@ def test_g5s_unlocks_exactly_the_preregistered_frontier() -> None:
     assert availability[
         "arithmetic/anchored-relation-conjoined-anchor"
     ].supported
-    assert len(exploration_status(project)["fillers"]) == 2575
+    assert len(exploration_status(project)["fillers"]) == 2601
 
 
 @pytest.mark.parametrize("modal", sorted(MOVED_WORDS))

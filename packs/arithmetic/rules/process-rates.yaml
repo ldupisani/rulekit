@@ -2,7 +2,7 @@ format: rulekit/rules@1
 rules:
 - id: arithmetic/bounded-process-rates
   phase: read
-  description: An extent, a rate for its initial segment, and a rate for the 
+  description: An extent, a rate for its initial segment, and a rate for the
     exhaustive remainder. Preserve all source operands.
   match:
     sentence:
@@ -98,7 +98,7 @@ rules:
     verb: '{verb}'
 - id: arithmetic/bounded-process-rates-compact
   phase: read
-  description: An extent, a rate for its initial segment, and a rate for the 
+  description: An extent, a rate for its initial segment, and a rate for the
     exhaustive remainder. Preserve all source operands.
   match:
     sentence:

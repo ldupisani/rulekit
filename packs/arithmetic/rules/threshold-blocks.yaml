@@ -1,0 +1,188 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/fixed-block-with-excess-rate
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: earn
+      cat: threshold_tariff_verb
+      finite_form: true
+    - slot: base
+      cat: currency_unit
+      counted: true
+      bare: true
+    - lit: if
+      consume_skipped: true
+    - slot: subject
+      cat: anaphoric_person_subject
+    - slot: work
+      cat: scheduled_activity_verb
+      finite_form: true
+    - lit: for
+      consume_skipped: true
+    - slot: threshold
+      cat: duration_measure
+      counted: true
+      bare: true
+    - lit: a
+      consume_skipped: true
+    - slot: period
+      cat: duration_measure
+      uncounted: true
+      bare: true
+    - lit: and
+      consume_skipped: true
+    - slot: get
+      cat: acquire
+      finite_form: true
+    - lit: an
+      consume_skipped: true
+    - slot: rate
+      cat: currency_unit
+      counted: true
+      qualified: true
+      qualifier_cat: supplemental_amount_attribute
+      all_qualifiers: true
+    - lit: for
+      consume_skipped: true
+    - slot: every
+      cat: distributive_quantifier
+    - slot: unit
+      cat: duration_measure
+      uncounted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: tier
+      cat: rate_tier_noun
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: tariff-base
+    entity: '{who}'
+    measure: '{base}'
+    value: base
+    position: '{who.span_start}'
+    marker: '{period}'
+    container: '{work}'
+    verb: '{earn}'
+  - fact: rate_threshold
+    entity: '{who}'
+    activity: '{work}'
+    unit: '{threshold}'
+    value: threshold
+    period: '{period}'
+    tier: '{tier}'
+  - fact: rate
+    entity: '{who}'
+    measure: '{rate}'
+    per: '{unit}'
+    value: rate
+    verb: '{earn}'
+  consumes:
+  - earn
+  - base
+  - work
+  - threshold
+  - get
+  - rate
+  satisfies:
+    earn:
+    - subject
+    work:
+    - subject
+    get:
+    - subject
+    every:
+    - collection
+  references:
+    subject: who
+  where:
+  - same_lemma:
+    - threshold
+    - unit
+  disambiguates:
+  - earn
+  - base
+  - work
+  - threshold
+  - period
+  - get
+  - rate
+  - unit
+  - tier
+- id: arithmetic/completed-threshold-usage
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: work
+      cat: scheduled_activity_verb
+      finite_form: true
+    - slot: amount
+      cat: duration_measure
+      counted: true
+      bare: true
+    - slot: period
+      cat: duration_measure
+      uncounted: true
+      qualified: true
+      qualifier_cat: relative_period_attribute
+      all_qualifiers: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: tariff-usage
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    position: '{who.span_start}'
+    marker: '{period}'
+    attribute: '{period.qualifier}'
+    container: '{work}'
+  consumes:
+  - work
+  - amount
+  satisfies:
+    work:
+    - subject
+  question_assumption: true
+  disambiguates:
+  - work
+  - amount
+  - period
+asks:
+- id: ask/computed-total-compensation
+  match:
+    question:
+    - slot: compute
+      cat: compute_verb
+    - slot: owner
+      cat: possessive_determiner
+    - lit: total
+      consume_skipped: true
+    - slot: income
+      cat: income_resource_noun
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  resolves:
+    consumer: threshold-block-total
+    entity: '{owner}'
+  satisfies:
+    owner:
+    - refers

@@ -27,5 +27,7 @@ members:
   indefinite_subset_quantifier: [some]
   nominal_attribute_noun: [design, pattern]
   nominal_attribute_preposition: [with]
+  conventionally_capitalized_modifier:
+  - western
 attribute_compatibility:
   depictable_noun: [depiction_bearing_noun]

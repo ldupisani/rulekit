@@ -82,6 +82,7 @@ asks:
           verb: verb
           roles: {actor: [who], theme: [item]}
           allow_proper_name: [who]
+    satisfies: {be: [subject]}
     resolves:
       consumer: single-entity
       entity: '{who}'

@@ -1,0 +1,302 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/unknown-purchased-contents
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: buy
+      cat: purchase
+    - slot: holder
+      cat: quantity_container
+      uncounted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: item
+      cat: inventory_item
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: transfer-opening
+    entity: '{who}'
+    measure: '{item}'
+    value: 0
+    position: '{who.span_start}'
+    container: '{holder}'
+    verb: '{buy}'
+  consumes:
+  - buy
+  satisfies:
+    buy:
+    - subject
+  disambiguates:
+  - buy
+  - holder
+  - item
+- id: arithmetic/stated-recipient-transfer
+  phase: read
+  match:
+    sentence:
+    - opt:
+      - lit: ','
+        consume_skipped: true
+    - opt:
+      - lit: and
+        consume_skipped: true
+    - opt:
+      - slot: then
+        cat: transaction_sequence_adverb
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: give
+      cat: contribution_transfer_verb
+    - slot: amount
+      type: number
+      value_min: 0
+      standalone: true
+    - opt:
+      - slot: item
+        cat: inventory_item
+        uncounted: true
+        bare: true
+    - lit: to
+      consume_skipped: true
+    - slot: recipient
+      type: entity
+      common_noun_cat: allocation_recipient
+      referential: true
+  emits:
+  - fact: batch_evidence
+    kind: recipient-amount
+    entity: '{who}'
+    measure: '{item.optional}'
+    value: amount
+    position: '{amount.span_start}'
+    container: '{recipient}'
+    verb: '{give}'
+  consumes:
+  - give
+  - amount
+  satisfies:
+    give:
+    - subject
+    amount:
+    - quantifies
+  disambiguates:
+  - then
+  - give
+  - item
+- id: arithmetic/relative-recipient-transfer
+  phase: read
+  match:
+    sentence:
+    - opt:
+      - lit: ','
+        consume_skipped: true
+    - opt:
+      - lit: and
+        consume_skipped: true
+    - opt:
+      - slot: then
+        cat: transaction_sequence_adverb
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: give
+      cat: contribution_transfer_verb
+    - slot: factor
+      type: multiplier
+    - lit: as
+      consume_skipped: true
+    - lit: many
+      consume_skipped: true
+    - lit: as
+      consume_skipped: true
+    - slot: standard_actor
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: given
+      cat: contribution_transfer_verb
+      past_participle: true
+    - opt:
+      - lit: to
+        consume_skipped: true
+    - slot: standard
+      type: entity
+      common_noun_cat: allocation_recipient
+      referential: true
+    - lit: to
+      consume_skipped: true
+    - slot: recipient
+      type: entity
+      common_noun_cat: allocation_recipient
+      referential: true
+  emits:
+  - fact: batch_evidence
+    kind: recipient-relation
+    entity: '{who}'
+    measure: ''
+    value: 0
+    position: '{factor.span_start}'
+    container: '{recipient}'
+    acquisition: '{standard}'
+    fraction: factor
+    verb: '{give}'
+  consumes:
+  - give
+  - given
+  - factor
+  satisfies:
+    give:
+    - subject
+    given:
+    - subject
+  where:
+  - same_lemma:
+    - who
+    - standard_actor
+  disambiguates:
+  - then
+  - give
+  - given
+- id: arithmetic/affine-recipient-transfer
+  phase: read
+  match:
+    sentence:
+    - opt:
+      - lit: ','
+        consume_skipped: true
+    - opt:
+      - lit: and
+        consume_skipped: true
+    - opt:
+      - slot: then
+        cat: transaction_sequence_adverb
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: give
+      cat: contribution_transfer_verb
+    - slot: delta
+      type: number
+      value_min: 0
+      standalone: true
+    - slot: direction
+      cat: mass_quantity_delta
+    - lit: than
+      consume_skipped: true
+    - slot: factor
+      type: multiplier
+    - lit: as
+      consume_skipped: true
+    - lit: many
+      consume_skipped: true
+    - lit: to
+      consume_skipped: true
+    - slot: recipient
+      type: entity
+      common_noun_cat: allocation_recipient
+      referential: true
+    - lit: as
+      consume_skipped: true
+    - slot: standard_actor
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: given
+      cat: contribution_transfer_verb
+      past_participle: true
+    - opt:
+      - lit: to
+        consume_skipped: true
+    - slot: standard
+      type: entity
+      common_noun_cat: allocation_recipient
+      referential: true
+  emits:
+  - fact: batch_evidence
+    kind: recipient-relation
+    entity: '{who}'
+    measure: ''
+    value: delta
+    position: '{delta.span_start}'
+    container: '{recipient}'
+    acquisition: '{standard}'
+    fraction: factor
+    sign: sign(direction)
+    verb: '{give}'
+  consumes:
+  - give
+  - given
+  - delta
+  - direction
+  - factor
+  satisfies:
+    give:
+    - subject
+    given:
+    - subject
+    delta:
+    - quantifies
+    direction:
+    - standard
+  where:
+  - same_lemma:
+    - who
+    - standard_actor
+  disambiguates:
+  - then
+  - give
+  - direction
+  - given
+- id: arithmetic/remaining-transfer-stock
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: have
+      cat: possession_state
+    - slot: item
+      cat: inventory_item
+      counted: true
+      bare: true
+    - slot: rest
+      cat: remaining_quantity_descriptor
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: transfer-closing
+    entity: '{who}'
+    measure: '{item}'
+    value: item
+    position: '{who.span_start}'
+  consumes:
+  - have
+  - item
+  - rest
+  satisfies:
+    have:
+    - subject
+  disambiguates:
+  - have
+  - item
+  - rest
+asks: []

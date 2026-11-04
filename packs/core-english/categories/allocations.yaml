@@ -2,10 +2,14 @@ format: rulekit/categories@1
 categories:
   allocatable_resource: {parent: noun}
   allocation_source: {parent: noun}
-  allocation_participant:
+  allocation_initiator:
     parent: noun
     includes: [intentional_agent]
-    notes: People or organizations explicitly receiving a share, not an inferred allocation.
+    notes: An actor explicitly initiating an allocation; recipients need not be intentional agents.
+  allocation_participant:
+    parent: noun
+    includes: [allocation_recipient]
+    notes: Explicit recipients of a share; this role implies neither agency nor personal reference eligibility.
   allocation_verb: {parent: verb}
   allocation_distribution_preposition: {parent: preposition}
   allocation_ratio_noun: {parent: noun}
@@ -35,7 +39,11 @@ members:
   allocation_source: [business, transaction]
   allocation_verb: [share, shared]
   commercial_context_descriptor: [business]
-  determiner_required_noun: [load, practice, share]
+  determiner_required_noun:
+  - load
+  - practice
+  - share
+  - print
   unspecified_amount_descriptor:
   - certain
   allocation_amount_noun:

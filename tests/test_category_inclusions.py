@@ -93,8 +93,10 @@ def test_person_membership_reaches_each_role_without_copied_word_lists(project, 
     assert registry.category_includes[role]
     for word in ("parent", "grandparent", "brother", "gardener", "person", "teacher"):
         assert registry.word_in_category(word, role), (word, role)
-    for word in ("book", "apple", "dog"):
+    for word in ("book", "apple"):
         assert not registry.word_in_category(word, role), (word, role)
+    # Recipient roles include living agents without granting intentional agency.
+    assert registry.word_in_category("dog", role) == (role == "allocation_participant")
     for loaded in project.packs:
         for document in loaded.categories:
             assert role not in document.members

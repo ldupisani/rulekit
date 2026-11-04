@@ -75,6 +75,18 @@ categories:
   clothing:
     parent: clothes
     notes: Wearable garments, separate from any particular purchase or owner.
+  purchase_encounter_verb:
+    parent: verb
+  residential_return_verb:
+    parent: verb
+  residential_destination:
+    parent: noun
+  cash_carriage_verb:
+    parent: verb
+  cash_departure_verb:
+    parent: verb
+  quantity_combination_verb:
+    parent: verb
 members:
   new_purchase_condition: [new]
   price_at_marker: [at]
@@ -128,6 +140,28 @@ members:
   - works
   clothing: [beanie, boot, cap, clothes, coat, costume, dress, jacket, jeans, leggings, mitten, outfit, pants,
       scarf, shirt, shorts, skirt, sunglass, sweater, t-shirt, tie]
+  purchase_encounter_verb:
+  - meet
+  - meeting
+  - met
+  residential_return_verb:
+  - bring
+  - brought
+  residential_destination:
+  - home
+  cash_carriage_verb:
+  - bring
+  - brought
+  - have
+  - had
+  cash_departure_verb:
+  - leave
+  - leaves
+  - left
+  quantity_combination_verb:
+  - combine
+  - combines
+  - combined
 adverb_verb_compatibility:
   equal_division_adverb:
   - equal_division_verb

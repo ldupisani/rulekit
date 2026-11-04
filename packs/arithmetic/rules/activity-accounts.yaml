@@ -1,0 +1,115 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/named-activity-account
+  disambiguates: [activity]
+  phase: read
+  match:
+    sentence:
+    - slot: people
+      span: true
+      enumeration_cat: name
+      enumeration_min_members: 2
+      at_start: true
+    - slot: act
+      cat: possession_state
+      finite_form: true
+    - slot: activity
+      cat: account_activity
+      uncounted: true
+      bare: true
+    - opt:
+      - lit: at
+      - slot: site
+        cat: purchase_context_site
+        uncounted: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: named-cost-account
+    entity: ''
+    measure: '{activity}'
+    value: 0
+    position: '{activity.span_start}'
+    members: '{people.members}'
+  satisfies:
+    act:
+    - subject
+  consumes:
+  - act
+  description: Preserve a named activity scope and explicit unit quotes; counts and prices do not assert payment.
+- id: arithmetic/declared-package-unit-quote
+  phase: read
+  match:
+    sentence:
+    - lit:
+      - a
+      - an
+      at_start: true
+      consume_skipped: true
+    - slot: package
+      cat: purchase_count_measure
+      uncounted: true
+      bare: true
+      number: singular
+    - lit: of
+    - slot: item
+      cat: purchase_item
+      uncounted: true
+      bare: true
+    - slot: cost
+      cat: price_verb
+      finite_form: true
+    - slot: amount
+      cat: currency_unit
+      counted: true
+      bare: true
+    - opt:
+      - slot: each
+        cat: postpositive_distributive_quantifier
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: price
+    item: '{item}'
+    value: amount
+    measure: '{amount}'
+    per: '{package}'
+    verb: buy
+  independent_clause: true
+  consumes:
+  - cost
+  - amount
+  satisfies:
+    cost:
+    - subject
+    each:
+    - collection
+  description: Preserve a named activity scope and explicit unit quotes; counts and prices do not assert payment.
+asks:
+- id: ask/named-activity-cost
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: much
+    - slot: aux
+      type: auxiliary
+    - slot: owner
+      cat: group_possessive_determiner
+    - slot: activity
+      cat: account_activity
+      uncounted: true
+    - slot: cost
+      cat: price_verb
+      bare_form: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: named-activity-cost
+    activity: '{activity}'
+  satisfies:
+    owner:
+    - refers
+    cost:
+    - subject

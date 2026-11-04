@@ -11,7 +11,6 @@ categories:
   daily_recurrence_unit: {parent: duration_measure}
   minimum_goal_descriptor: {parent: adjective}
   bare_performance_auxiliary: {parent: auxiliary}
-  past_performance_auxiliary: {parent: auxiliary}
   achievement_capacity_adjective: {parent: adjective}
   compensation_verb: {parent: verb}
   goal_attainment_verb: {parent: verb}
@@ -29,7 +28,6 @@ members:
   daily_recurrence_unit: [day]
   minimum_goal_descriptor: [minimum]
   bare_performance_auxiliary: [do]
-  past_performance_auxiliary: [did]
   achievement_capacity_adjective: [able]
   compensation_verb: [make up]
   goal_attainment_verb: [meet, reach]

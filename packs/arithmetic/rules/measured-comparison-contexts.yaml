@@ -1,0 +1,248 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/population-comparison-context
+  phase: read
+  match:
+    sentence:
+    - slot: group
+      cat: person
+      counted: true
+      bare: true
+      at_start: true
+    - slot: be
+      cat: copula
+    - slot: act
+      cat: comparison_activity_verb
+      present_participle: true
+    - slot: owner
+      cat: possessive_determiner
+    - slot: property
+      cat: comparison_property_noun
+      uncounted: true
+    - lit: based
+      consume_skipped: true
+    - lit: on
+      consume_skipped: true
+    - slot: owner2
+      cat: possessive_determiner
+    - slot: basis
+      type: noun
+      uncounted: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: comparison-population
+    entity: '{group}'
+    measure: '{property}'
+    value: group
+    position: '{group.span_start}'
+    container: '{basis}'
+  consumes:
+  - group
+  - be
+  - act
+  satisfies:
+    be:
+    - subject
+    act:
+    - subject
+    owner:
+    - refers
+    owner2:
+    - refers
+  disambiguates:
+  - group
+  - be
+  - act
+  - property
+- id: arithmetic/reported-age-comparison-chain
+  phase: read
+  match:
+    sentence:
+    - slot: group
+      cat: discourse_subject_group_pronoun
+      at_start: true
+    - slot: report
+      cat: comparison_report_verb
+      finite_form: true
+    - lit: that
+      consume_skipped: true
+    - slot: a
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: be1
+      cat: copula
+    - slot: n1
+      cat: age_measure
+      counted: true
+      bare: true
+    - slot: dir1
+      cat: age_comparative
+    - lit: than
+      consume_skipped: true
+    - slot: b
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - lit: while
+      consume_skipped: true
+    - slot: b2
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: be2
+      cat: copula
+    - slot: n2
+      cat: age_measure
+      counted: true
+      bare: true
+    - slot: dir2
+      cat: age_comparative
+    - lit: than
+      consume_skipped: true
+    - slot: c
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: relation
+    subject: '{a}'
+    standard: '{b}'
+    measure: '{n1}'
+    factor: 1.0
+    offset: n1 * sign(dir1)
+    verb: '{be1}'
+  - fact: relation
+    subject: '{b2}'
+    standard: '{c}'
+    measure: '{n2}'
+    factor: 1.0
+    offset: n2 * sign(dir2)
+    verb: '{be2}'
+  - fact: batch_evidence
+    kind: comparison-report
+    entity: ''
+    measure: ''
+    value: 0
+    position: '{group.span_start}'
+  consumes:
+  - report
+  - be1
+  - be2
+  - n1
+  - n2
+  - dir1
+  - dir2
+  satisfies:
+    group:
+    - refers
+    report:
+    - subject
+  bindings:
+    be1:
+      subject: a
+    be2:
+      subject: b2
+  where:
+  - same_lemma:
+    - b
+    - b2
+  disambiguates:
+  - report
+  - be1
+  - n1
+  - be2
+  - n2
+- id: arithmetic/sequenced-measured-age-comparison
+  phase: read
+  match:
+    sentence:
+    - slot: sequence
+      cat: narration_sequence_adverb
+      at_start: true
+    - lit: ','
+      consume_skipped: true
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: be
+      cat: copula
+    - slot: amount
+      cat: age_measure
+      counted: true
+      bare: true
+    - slot: direction
+      cat: age_comparative
+    - lit: than
+      consume_skipped: true
+    - slot: standard
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: relation
+    subject: '{who}'
+    standard: '{standard}'
+    measure: '{amount}'
+    factor: 1.0
+    offset: amount * sign(direction)
+    verb: '{be}'
+  consumes:
+  - sequence
+  - be
+  - amount
+  - direction
+  satisfies: {}
+  bindings:
+    be:
+      subject: who
+  disambiguates:
+  - be
+  - amount
+asks:
+- id: ask/directed-age-difference-in-unit
+  match:
+    question:
+    - lit: how
+      consume_skipped: true
+    - slot: much
+      cat: mass_amount_quantifier
+    - slot: direction
+      cat: age_comparative
+    - lit: in
+      consume_skipped: true
+    - slot: unit
+      cat: age_measure
+      uncounted: true
+      bare: true
+    - slot: be
+      cat: copula
+    - slot: a
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - lit: than
+      consume_skipped: true
+    - slot: b
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: scoped-comparison
+    operation: age-difference
+    a: '{a}'
+    b: '{b}'
+    measure: '{unit}'
+    direction: '{direction}'
+  satisfies:
+    be:
+    - subject

@@ -35,7 +35,6 @@ entries:
   stammered: {senses: [verb], verb: {lemma: stammer}}
   yawned: {senses: [verb], verb: {lemma: yawn}}
   yelled: {senses: [verb], verb: {lemma: yell}}
-  booked: {senses: [verb], verb: {lemma: book}}
   cracked: {senses: [verb], verb: {lemma: crack}}
   installed: {senses: [verb], verb: {lemma: instal}}
   launched: {senses: [verb], verb: {lemma: launch}}

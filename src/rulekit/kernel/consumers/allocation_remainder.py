@@ -3,7 +3,7 @@
 from collections import Counter
 from math import isfinite
 
-from ..source_coverage import uncovered_units
+from ..source_coverage import uncovered_units, quantity_source_units
 
 from . import consumer
 from ..model import AllocationRatio, Quantity
@@ -25,6 +25,9 @@ def consume(ctx):
         return decline("the allocation needs one ratio and one participant's received share")
     ratio, anchor = ratios[0], amounts[0]
     entity = ctx.query["entity"]
+    asked = ctx.query_reference()
+    if asked is None or not asked.resolved or asked.described:
+        return decline("the allocated share needs a fully represented participant identity")
     if (ratio.first == ratio.second or entity not in (ratio.first, ratio.second)
             or anchor.entity not in (ratio.first, ratio.second) or anchor.entity == entity
             or not ctx.reg.word_in_category(anchor.verb, "acquire")
@@ -42,10 +45,8 @@ def consume(ctx):
         if reading.sentence_index == anchor.provenance.sentence:
             # The ordinary receipt fold is reusable evidence, but only a
             # complete simple subject-verb-amount statement can anchor it.
-            units = [u for u in reading.units if u.sense() not in {"article", "punct"}]
-            if (len(units) != 3 or units[0].features.get("lemma") != anchor.entity
-                    or units[1].features.get("lemma") != anchor.verb
-                    or units[2].features.get("value") != anchor.value):
+            footprint = quantity_source_units(reading, anchor, ctx.reg)
+            if uncovered_units(reading, footprint):
                 return decline("the share receipt has an unread condition or competing scope")
             continue
         covered = ctx.match.consumed if reading is ctx.question else frozenset()

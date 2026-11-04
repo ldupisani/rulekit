@@ -58,6 +58,33 @@ def registries():
 
 # (registry, question, expected consumer, kind, value, reason prefix)
 GOLDEN = [
+    ('curated', 'How much to fence a 2 by 3 meter yard at $4 per meter tomorrow?',
+     'measure-cost', 'decline', None, 'the costing question has an unread condition'),
+    ('curated', 'How long will it take Tova to print 2 books of 24 pages each?',
+     'composite-output-duration', 'decline', None,
+     'one unambiguous output rate is required'),
+    ('curated', 'Nora prints 12 pages per hour. How long will it take Tova to print 2 books of 24 pages each?',
+     'composite-output-duration', 'decline', None,
+     'the explicit product extent must match this actor’s '),
+    ('curated', 'Tova quickly prints 12 pages per hour. How long will it take Tova to print 2 books of 24 pages each?',
+     'composite-output-duration', 'decline', None,
+     'every rate, product and condition must be read'),
+    ('curated', 'Tova prints 12 pages per hour. How many months will it take Tova to print 2 books of 24 pages each?',
+     'composite-output-duration', 'decline', None,
+     'the requested duration unit is incompatible'),
+    ('curated', 'Aiva is filling a box. She fills it halfway. '
+     'She spills half the oil in the box. Aiva triples the amount of oil in the box. '
+     'The box is 3 meters long, 4 meters wide, and 5 meters high. '
+     'How many cubic meters of oil are in the box?',
+     'container-content-state', 'number', 45,
+     'calculate the stated shape’s capacity, fill the stat'),
+    ('curated', 'Aiva is filling a box. She fills it halfway. '
+     'She spills half the oil in the box. Aiva triples the amount of oil in the box. '
+     'The round box is 3 meters long, 4 meters wide, and 5 meters high. '
+     'How many cubic meters of oil are in the box?',
+     'container-content-state', 'decline', None,
+     'the container shape is needed to calculate capacity'),
+
     ('curated', 'A pen costs 0 dollars. How many pens can Dena buy with 3 dollars?',
      'capacity', 'decline', None, 'capacity needs a positive price in a declared curren'),
     ('curated', 'A pen costs 2 dollars. How many pens can Dena buy with -3 dollars?',
@@ -532,6 +559,21 @@ _GAP_CEILING = 0    # guards WITHOUT one: lower as probes are added, never raise
 # coverage figure honest in both directions: they are not gaps, and they are
 # not silently absent either.
 _COVERED_BY_UNIT_TEST = {
+    # Direct scope and dimension probes in test_generalised_compositions.
+    ('capacity', 'a scoped account requires one explicit u'),
+    ('measure-cost', 'costing needs a declared shape property'),
+    ('measure-cost', 'the dimensions do not identify the price'),
+    ('measure-cost', 'each geometry parameter must be stated o'),
+    ('measure-cost', 'shape dimensions need compatible length '),
+    ('measure-cost', 'the measured site needs an explicit cost'),
+    ('measure-cost', 'the geometric dimension has an unread re'),
+    ('measure-cost', 'the priced property needs compatible dim'),
+    ('measure-cost', 'all dimensions need a stated unit basis'),
+    ('measure-cost', 'a cost quote needs a concrete monetary d'),
+    # The common finalizer is probed directly in test_generalised_compositions.
+    ("composition-evidence", "the calculated result must be finite"),
+    # test_calendar_rate_needs_source_evidence rejects an orphaned Rate.
+    ("calendar-resource-total", "each ordinary rate must have a complete,"),
     # Public asks bind a concrete budget unit; a direct caller can omit it.
     ("capacity", "the budget needs a concrete currency uni"),
     ("single-entity", "a qualified subset needs item-level evid"),
@@ -739,6 +781,17 @@ def _declared_guards() -> dict[str, set[str]]:
 
     text = (ROOT / "src" / "rulekit" / "kernel" / "answer.py").read_text()
     extracted = {}
+    # Shared checks remain in the denominator after leaving a consumer module.
+    import ast
+    shared = ast.parse((ROOT / "src/rulekit/kernel/composition_evidence.py").read_text())
+    extracted["composition-evidence"] = {
+        node.args[2].value[:40]
+        for node in ast.walk(shared)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+        and node.func.id == "Answer" and len(node.args) >= 3
+        and isinstance(node.args[0], ast.Constant) and node.args[0].value == "decline"
+        and isinstance(node.args[2], ast.Constant) and isinstance(node.args[2].value, str)
+    }
     consumers_dir = ROOT / "src" / "rulekit" / "kernel" / "consumers"
     if consumers_dir.is_dir():
         for mod in sorted(consumers_dir.glob("*.py")):

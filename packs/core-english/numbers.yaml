@@ -95,6 +95,7 @@ operators:
 
 currencies:
   $: dollar
+  £: pound sterling
 
 percents:
   percent: 0.01

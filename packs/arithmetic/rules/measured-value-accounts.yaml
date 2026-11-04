@@ -1,0 +1,232 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/single-product-shopping-purpose
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: go
+      cat: outing_motion_verb
+      finite_form: true
+    - lit: to
+      consume_skipped: true
+    - slot: site
+      cat: purchase_context_site
+      uncounted: true
+      bare: true
+    - lit: to
+      consume_skipped: true
+    - slot: buy
+      cat: purchase
+      bare_form: true
+    - slot: item
+      cat: purchase_item
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits: []
+  consumes:
+  - go
+  - buy
+  satisfies: {}
+  bindings:
+    go:
+      subject: who
+    buy:
+      subject: who
+      dobj: item
+  disambiguates:
+  - go
+  - site
+  - buy
+  - item
+- id: arithmetic/currency-per-measured-unit-quote
+  phase: read
+  match:
+    sentence:
+    - slot: item
+      cat: purchase_item
+      uncounted: true
+      bare: true
+      at_start: true
+    - slot: cost
+      cat: price_verb
+      finite_form: true
+    - slot: amount
+      cat: currency_unit
+      counted: true
+      bare: true
+    - lit:
+      - a
+      - an
+      - per
+      consume_skipped: true
+    - slot: unit
+      cat: resource_measure_unit
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: price
+    item: '{item}'
+    value: amount
+    measure: '{amount}'
+    per: '{unit}'
+    verb: '{cost}'
+  consumes:
+  - cost
+  - amount
+  satisfies:
+    cost:
+    - subject
+  disambiguates:
+  - item
+  - cost
+  - amount
+  - unit
+- id: arithmetic/cash-carried-and-returned
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: bring
+      cat: cash_carriage_verb
+      finite_form: true
+    - slot: start
+      cat: currency_unit
+      counted: true
+      bare: true
+    - opt:
+      - lit: with
+        consume_skipped: true
+      - slot: self
+        cat: singular_animate_object_pronoun
+    - lit: and
+      consume_skipped: true
+    - slot: leave
+      cat: cash_departure_verb
+      finite_form: true
+    - lit: with
+      consume_skipped: true
+    - slot: end
+      cat: currency_unit
+      counted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: purchase-cash-opening
+    entity: '{who}'
+    measure: '{start}'
+    value: start
+    position: '{who.span_start}'
+  - fact: batch_evidence
+    kind: purchase-cash-closing
+    entity: '{who}'
+    measure: '{end}'
+    value: end
+    position: '{end.span_start}'
+  consumes:
+  - bring
+  - start
+  - leave
+  - end
+  satisfies:
+    bring:
+    - subject
+    leave:
+    - subject
+  references:
+    self: who
+  disambiguates:
+  - bring
+  - start
+  - leave
+  - end
+- id: arithmetic/distributive-object-unit-price
+  phase: read
+  match:
+    sentence:
+    - slot: each
+      cat: distributive_quantifier
+    - slot: item
+      cat: purchase_item
+      uncounted: true
+      bare: true
+      number: singular
+    - slot: cost
+      cat: price_verb
+      finite_form: true
+    - slot: amount
+      cat: currency_unit
+      counted: true
+      bare: true
+      value_min: 0
+  emits:
+  - fact: price
+    item: '{item}'
+    value: amount
+    measure: '{amount}'
+    verb: '{cost}'
+  consumes:
+  - cost
+  - amount
+  satisfies: {}
+  bindings:
+    each:
+      collection: item
+    cost:
+      subject: item
+  disambiguates:
+  - item
+  - cost
+  - amount
+asks:
+- id: ask/measured-purchase-from-cash-change
+  match:
+    question:
+    - lit: how
+      consume_skipped: true
+    - lit: many
+      consume_skipped: true
+    - slot: unit
+      cat: resource_measure_unit
+      uncounted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: item
+      cat: purchase_item
+      uncounted: true
+      bare: true
+    - slot: aux
+      type: auxiliary
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: buy
+      cat: purchase
+      bare_form: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: measured-value-account
+    operation: inverse-purchase
+    entity: '{who}'
+    item: '{item}'
+    unit: '{unit}'
+  satisfies:
+    buy:
+    - subject

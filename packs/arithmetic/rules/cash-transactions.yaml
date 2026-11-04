@@ -1,0 +1,237 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/quoted-sale-price
+  phase: read
+  match:
+    sentence:
+    - opt:
+      - lit: at
+        at_start: true
+      - slot: site
+        cat: sale_context_location
+        uncounted: true
+      - lit: ','
+        consume_skipped: true
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      bare: true
+    - slot: sell
+      cat: sell
+      finite_form: true
+    - slot: item
+      cat: purchase_item
+      uncounted: true
+    - lit: for
+    - slot: price
+      cat: currency_unit
+      counted: true
+      bare: true
+    - lit: per
+    - slot: per
+      cat: purchase_item
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: cash-sale-quote
+    entity: '{who}'
+    measure: '{price}'
+    value: price
+    position: '{price.span_start}'
+    container: '{item}'
+    acquisition: '{per}'
+    verb: '{sell}'
+  consumes:
+  - sell
+  - price
+  satisfies:
+    sell:
+    - subject
+  where:
+  - same_lemma:
+    - item
+    - per
+  description: Keep quoted sale prices, actual proceeds, supplemental receipts and owned-account deposits
+    distinct.
+- id: arithmetic/sale-with-supplemental-receipt
+  phase: read
+  match:
+    sentence:
+    - opt:
+      - slot: today
+        cat: same_day_transaction_marker
+        at_start: true
+      - lit: ','
+        consume_skipped: true
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      bare: true
+    - slot: sell
+      cat: sell
+      finite_form: true
+    - slot: item
+      cat: purchase_item
+      counted: true
+      bare: true
+    - lit: and
+    - slot: be
+      cat: copula
+    - slot: give
+      cat: passive_cash_receipt_verb
+      past_participle: true
+    - slot: amount
+      cat: currency_unit
+      counted: true
+      qualified: true
+      qualifier_cat: supplemental_amount_attribute
+      all_qualifiers: true
+    - lit: from
+    - slot: giver
+      cat: person
+      uncounted: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: cash-sale
+    entity: '{who}'
+    measure: '{item}'
+    value: item
+    position: '{item.span_start}'
+    verb: '{sell}'
+    marker: '{today.optional}'
+  - fact: batch_evidence
+    kind: cash-receipt
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+    container: '{giver}'
+    marker: '{today.optional}'
+  consumes:
+  - sell
+  - item
+  - be
+  - give
+  - amount
+  satisfies:
+    sell:
+    - subject
+    be:
+    - subject
+    give:
+    - subject
+  description: Keep quoted sale prices, actual proceeds, supplemental receipts and owned-account deposits
+    distinct.
+- id: arithmetic/deposit-sale-proceeds
+  phase: read
+  match:
+    sentence:
+    - opt:
+      - slot: sequence
+        cat: transaction_sequence_adverb
+        at_start: true
+      - opt:
+        - lit: on
+      - lit: ','
+        consume_skipped: true
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      bare: true
+    - slot: deposit
+      cat: cash_deposit_verb
+      finite_form: true
+    - slot: amount
+      cat: currency_unit
+      counted: true
+      bare: true
+    - lit: from
+    - slot: today
+      cat: same_day_transaction_marker
+    - slot: poss
+      cat: contracted_copula_clitic
+    - slot: proceeds
+      cat: cash_proceeds_noun
+      uncounted: true
+      bare: true
+    - lit: into
+    - slot: owner
+      cat: possessive_determiner
+    - slot: account
+      cat: cash_deposit_account
+      uncounted: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: cash-deposit
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+    container: '{account}'
+    acquisition: '{owner}'
+    marker: '{today}'
+  consumes:
+  - deposit
+  - amount
+  satisfies:
+    deposit:
+    - subject
+    poss:
+    - owner
+    - owned
+  references:
+    owner: who
+  description: Keep quoted sale prices, actual proceeds, supplemental receipts and owned-account deposits
+    distinct.
+asks:
+- id: ask/cash-after-deposit
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: many
+    - slot: unit
+      cat: currency_unit
+      uncounted: true
+      bare: true
+    - slot: be
+      cat: copula
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      bare: true
+    - slot: left
+      cat: batch_left_verb
+    - lit: with
+    - lit: after
+    - slot: make
+      cat: transaction_performance_verb
+      present_participle: true
+    - slot: deposit
+      cat: cash_deposit_noun
+      uncounted: true
+      bare: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: cash-transaction-balance
+    measure: '{unit}'
+    entity: '{who}'
+  satisfies:
+    be:
+    - subject
+    left:
+    - subject
+    make:
+    - subject

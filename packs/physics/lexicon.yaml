@@ -7,7 +7,6 @@ entries:
   earth: {senses: [noun]}
   energy: {senses: [noun]}
   gravitational: {senses: [adjective]}
-  height: {senses: [noun], plural: heights}
   joule: {senses: [noun], plural: joules}
   meter_per_second: {senses: [noun], plural: [m/s]}
   momentum: {senses: [noun]}

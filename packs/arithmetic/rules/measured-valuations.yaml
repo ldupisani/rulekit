@@ -1,0 +1,163 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/scaled-from-starting-measurement
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: measured_object_reference_target
+      referential: true
+      at_start: true
+    - slot: change
+      cat: measurement_change_verb
+      finite_form: true
+    - slot: owner
+      cat: measured_object_reference_form
+    - slot: property
+      cat: mass_dimension_noun
+      uncounted: true
+    - lit: to
+      consume_skipped: true
+    - slot: factor
+      type: multiplier
+    - slot: owner2
+      cat: measured_object_reference_form
+    - slot: starting
+      cat: measurement_origin_participle
+    - slot: property2
+      cat: mass_dimension_noun
+      uncounted: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: valuation-scale
+    entity: '{who}'
+    measure: '{property}'
+    value: 0
+    position: '{who.span_start}'
+    fraction: factor
+  consumes:
+  - change
+  - factor
+  - starting
+  satisfies:
+    change:
+    - subject
+  references:
+    owner: who
+    owner2: who
+  where:
+  - same_lemma:
+    - property
+    - property2
+  disambiguates:
+  - change
+  - property
+  - starting
+  - property2
+- id: arithmetic/ability-based-measured-sale-quote
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: be
+      cat: copula
+    - slot: able
+      cat: completion_ability_descriptor
+    - lit: to
+      consume_skipped: true
+    - slot: sell
+      cat: sell
+      bare_form: true
+    - slot: item
+      cat: component_bearing_object
+      uncounted: true
+    - lit: for
+      consume_skipped: true
+    - slot: amount
+      cat: currency_unit
+      counted: true
+      bare: true
+    - lit: per
+      consume_skipped: true
+    - slot: unit
+      cat: resource_measure_unit
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: price
+    item: '{item}'
+    value: amount
+    measure: '{amount}'
+    per: '{unit}'
+    verb: '{sell}'
+  - fact: batch_evidence
+    kind: valuation-seller
+    entity: '{who}'
+    measure: ''
+    value: 0
+    position: '{who.span_start}'
+    container: '{item}'
+  consumes:
+  - be
+  - sell
+  - amount
+  satisfies:
+    be:
+    - subject
+    sell:
+    - subject
+  disambiguates:
+  - be
+  - sell
+  - item
+  - amount
+  - unit
+asks:
+- id: ask/scaled-measurement-value-increase
+  match:
+    question:
+    - lit: how
+      consume_skipped: true
+    - slot: much
+      cat: mass_amount_quantifier
+    - slot: more
+      cat: more_dir
+    - slot: be
+      cat: copula
+    - slot: who
+      cat: measured_object_reference_form
+    - slot: worth
+      cat: valuation_descriptor
+    - opt:
+      - lit: after
+        consume_skipped: true
+      - slot: gain
+        cat: measured_increase_verb
+        present_participle: true
+      - slot: property
+        cat: mass_dimension_noun
+        uncounted: true
+        bare: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: measured-value-account
+    operation: valuation-change
+    entity: '{who}'
+    property: '{property}'
+  satisfies:
+    be:
+    - subject
+    gain:
+    - subject
+    more:
+    - standard

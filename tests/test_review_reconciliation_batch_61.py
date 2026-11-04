@@ -130,11 +130,9 @@ def test_sequential_percentage_ask_names_a_qualified_plural_destination(
     )
 
     assert candidate.answer["committed"] is True
-    assert candidate.query["attribute"] in {
-        "business course",
-        "humanities course",
-        "science course",
-    }
+    modifier, head = candidate.query["attribute"].rsplit(" ", 1)
+    assert head == "course"
+    assert project.registry.attribute_applies_to(modifier, head)
     assert candidate.question.endswith("courses?")
     # Vocabulary growth can change the seeded search's first viable scaffold.
     # Complete, partial-share and contextual completion scaffolds can all answer

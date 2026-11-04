@@ -3,40 +3,15 @@
 Both calculations audit source operands and complete language coverage before
 using the shared arithmetic and unit-conversion machinery.
 """
-from collections import Counter, defaultdict
 from math import isfinite
 
 from . import consumer
+from ..composition_evidence import closed_evidence, finish_batch_answer
 from ..answer import Answer
 from ..evaluate import evaluate
 from ..model import BatchEvidence, Rate
-from ..numeric_evidence import audit_numeric_mentions
 from ..predicate_compatibility import predicates_compatible
 from ..rate_calculation import apply_rate, convert_duration, rate_operands
-from ..source_coverage import uncovered_document_units
-
-
-def _closed(ctx, rows, operands, *, additional_kinds=()):
-    if ctx.store.collisions or ctx.store.quarantined or len(rows) != len(ctx.store.facts):
-        return False
-    expected = defaultdict(Counter)
-    for row, values in operands:
-        if any(not isfinite(v) or v < 0 for v in values):
-            return False
-        expected[row.provenance.sentence].update(values)
-    if 'span_value' in ctx.query:
-        expected[ctx.question.sentence_index].update([float(ctx.query['span_value'])])
-    return not (audit_numeric_mentions((*ctx.premises, ctx.question), expected,
-                                      missing='missing', duplicate='duplicate',
-                                      additional_kinds=additional_kinds)
-                or uncovered_document_units(ctx.premises, ctx.question, ctx.match.consumed))
-
-
-def _finish(ctx, rows, value, reason):
-    if value is None or not isfinite(value):
-        return Answer('decline', None, 'the duration units cannot be converted')
-    ctx.log.consumed_batch_keys.update(r.key() for r in rows if isinstance(r, BatchEvidence))
-    return Answer('number', value, reason)
 
 
 @consumer('scheduled-activity-duration')
@@ -48,7 +23,7 @@ def scheduled(ctx):
         return Answer('decline', None, 'one explicit activity schedule is required')
     operands = [(r, rate_operands(r)) for r in rates]
     operands += [(r, [r.value, r.fraction]) for r in durations]
-    if (not rows or not _closed(ctx, rows, operands, additional_kinds=('attributive_count',))
+    if (not rows or not closed_evidence(ctx, rows, operands, additional_kinds=('attributive_count',))
             or any(r.entity != ctx.query['entity'] or not predicates_compatible(
                 r.verb, ctx.query['verb'], r.measure, ctx.reg) for r in rows)):
         return Answer('decline', None, 'all stated rates must belong to the requested activity and participant')
@@ -84,7 +59,7 @@ def scheduled(ctx):
                      ctx.log, source='scheduled-duration-horizon')
     value = convert_duration(value, unit, ctx.query['measure'], ctx.reg, ctx.log,
                              source='scheduled-duration-units')
-    return _finish(ctx, rows, value, 'compose the explicit duration rates and requested horizon')
+    return finish_batch_answer(ctx, rows, value, 'compose the explicit duration rates and requested horizon')
 
 
 @consumer('bounded-process-duration')
@@ -95,7 +70,7 @@ def bounded(ctx):
     row = rows[0]
     if (row.verb != ctx.query['verb'] or row.per_member <= 0 or row.content_count <= 0
             or row.subtotal > row.value
-            or not _closed(ctx, rows, [(row, [row.value, row.per_member, row.subtotal, row.content_count])])):
+            or not closed_evidence(ctx, rows, [(row, [row.value, row.per_member, row.subtotal, row.content_count])])):
         return Answer('decline', None, 'positive rates must cover the stated extent without gaps or overlaps')
     value = evaluate('first / rate1 + (total - first) / rate2',
                      dict(first=row.subtotal, rate1=row.per_member,
@@ -103,4 +78,4 @@ def bounded(ctx):
                      ctx.log, source='successive-process-duration')
     value = convert_duration(value, row.container, ctx.query['measure'], ctx.reg, ctx.log,
                              source='process-duration-units')
-    return _finish(ctx, rows, value, 'add the elapsed times of the initial segment and exhaustive remainder')
+    return finish_batch_answer(ctx, rows, value, 'add the elapsed times of the initial segment and exhaustive remainder')

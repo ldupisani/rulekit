@@ -44,9 +44,44 @@ categories:
     notes: A remaining quantity reference, without licensing a collective plural subject.
   singular_present_possession:
     parent: verb
+  measured_object_reference_form:
+    parent: pronoun
+  plural_reflexive_reference:
+    parent: pronoun
+  measured_object_reference_target:
+    parent: noun
+    includes:
+    - animal
+    - mass_dimension_holder
 members:
-  nonpersonal_actor_predicate: [gain, gained, gains, devour, devours, devoured, feast, feasts, feasted, eat, eats,
-      ate, need, needed, needs, earn, earned, earns, make, made, makes, work, worked, works]
+  nonpersonal_actor_predicate:
+  - gain
+  - gained
+  - gains
+  - devour
+  - devours
+  - devoured
+  - feast
+  - feasts
+  - feasted
+  - eat
+  - eats
+  - ate
+  - need
+  - needed
+  - needs
+  - earn
+  - earned
+  - earns
+  - make
+  - made
+  - makes
+  - work
+  - worked
+  - works
+  - weigh
+  - weighs
+  - weighed
   quantity_remnant_noun: [remainder]
   singular_animate_object_pronoun: [her, him]
   precardinal_attribute: [next]
@@ -70,6 +105,11 @@ members:
   - ms
   singular_present_possession:
   - has
+  measured_object_reference_form:
+  - it
+  - its
+  plural_reflexive_reference:
+  - themselves
 attribute_compatibility:
   initial_sequence_ordinal: [progress_measure]
   holder_ordinal: [ordinal_quantity_holder, path_checkpoint, local_yield_site, process_part,

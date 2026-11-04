@@ -1,28 +1,8 @@
-"""'plants' is a plural NOUN as well as a verb — a difg-mined sense gap.
+"""Plural noun morphology and construction-based noun/verb sense selection.
 
-difg's miner gave `plants` the sense list [verb] ALONE, while `plant` already
-declares `plural: plants`. So the plural map resolved plants -> plant correctly
-and a REDUNDANT SECOND IDENTITY shadowed it — the exact failure the HANDOFF
-records for 'average' ("a redundant second identity is the bug"), and the reason
-to check `plural_to_singular` before trusting a mined plural.
-
-The cascade it caused: "Maggie bought 9 books ABOUT PLANTS and 1 book about
-fish" read 'plants' as a verb, so the preposition 'about' could not bind it as
-its object and reached past it to '1 book' instead; 'plants' then took '1 book'
-as its own dobj. The fish book landed under verb='plants', the purchase-total
-consumer sums only purchases, and the item committed 155 (9x15 + 10x2) against a
-gold of 170.
-
-It now DECLINES on ambiguity rather than committing 155 — arbitration cannot
-choose between the two readings, and refusing is the honest outcome. Solving it
-would need arbitration to prefer the noun after a preposition: core sense
-machinery under every corpus, deliberately not attempted here.
-
-TEST LOOK SPENT and HELD at 12/1 = 92.3% (15 GSM8K TEST items contain 'plants',
-so this could not be proven byte-neutral the way the session's other precision
-fixes were — it had to be measured).
-
-Synthetic only — invented fixtures.
+An explicit adposition licenses a nominal object without erasing the same
+surface's independent finite verb reading. Purchase totals retain every
+coordinated item after that selection.
 """
 
 from pathlib import Path
@@ -68,14 +48,15 @@ def test_the_verb_form_lemmatizes(full_registry):
 def test_a_priced_noun_reading_no_longer_commits_a_partial_total(full_registry):
     """The regression, synthetic: a prepositional 'about NOUN' after a counted
     purchase must not let the second conjunct fall under a verb reading and be
-    dropped from the total. It declines (ambiguity) rather than committing the
-    partial sum."""
+    dropped from the total. Both complete counts contribute at the unit quote."""
     r = solve(
         "Dara bought 9 books about plants and 1 book about fish. "
         "Each book cost $15. How much did Dara spend in all?",
         full_registry,
     )
-    assert not r.answer.committed, r.answer.value
+    assert r.answer.committed, r.answer.reason
+    assert r.value == 150
+    assert next(u for u in r.premises[0].units if u.surface == "plants").sense() == "noun"
 
 
 def test_nonbare_homograph_after_finite_verb_is_an_object_noun(full_registry):

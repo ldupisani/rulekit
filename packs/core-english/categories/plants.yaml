@@ -8,7 +8,17 @@ categories:
     parent: noun
     disjoint_with: [building, clothes, living_agent, vehicle]
     notes: Botanical classification, independent of edibility and exhaustive inventory coverage.
+  vegetable:
+    parent: edible_quantity_object
+    notes: Culinary vegetables; a counted category distinct from flowers and fruit.
 members:
   flower: [daffodil, daisy, lilac, lily, rose, sunflower, tulip]
   fruit: [apple, apricot, avocado, banana, berry, blackberry, blueberry, grape, lemon, mango, olive, orange,
       peach, pear, pineapple, plum, raspberry, strawberry, watermelon]
+  vegetable:
+  - carrot
+  - corn
+  - cucumber
+  - onion
+  - pepper
+  - potato

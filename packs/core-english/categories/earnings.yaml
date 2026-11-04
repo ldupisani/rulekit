@@ -97,3 +97,6 @@ members:
   completed_receipt_transfer:
   - gave
   - paid
+attribute_compatibility:
+  sports_activity_noun:
+  - recurring_expense_target

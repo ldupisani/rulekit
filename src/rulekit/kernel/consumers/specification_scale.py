@@ -7,7 +7,7 @@ from ..answer import Answer
 from ..evaluate import evaluate
 from ..model import Rate, SpecificationEvidence
 from ..numeric_evidence import audit_numeric_mentions
-from ..rate_calculation import apply_rate, convert_units
+from ..rate_calculation import apply_ratio, convert_units
 from ..source_coverage import uncovered_document_units
 
 
@@ -75,11 +75,8 @@ def consume(ctx):
         return decline('output quantities must use compatible units')
     demand = evaluate('population * size', {'population': population, 'size': size},
                       ctx.log, source='specification-output-demand')
-    rate = Rate(entity=entity, measure=reference.measure, per=reference.output_measure,
-                value=reference.value / reference.output_value,
-                numerator=reference.value, denominator=reference.output_value,
-                provenance=reference.provenance)
-    amount = apply_rate(rate, demand, ctx.log, source='specification-input-required')
+    amount = apply_ratio(reference.value, reference.output_value, demand, ctx.log,
+                         source='specification-input-required')
     value = convert_units(amount, reference.measure, ctx.query['measure'],
                           ctx.reg, ctx.log, source='specification-input-unit')
     if value is None:

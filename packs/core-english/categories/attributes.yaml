@@ -39,6 +39,60 @@ attrs:
     cents: 1
   quarter:
     cents: 25
+  january:
+    month_index: 1
+    common_year_days: 31
+    leap_year_days: 31
+  february:
+    month_index: 2
+    common_year_days: 28
+    leap_year_days: 29
+  march:
+    month_index: 3
+    common_year_days: 31
+    leap_year_days: 31
+  april:
+    month_index: 4
+    common_year_days: 30
+    leap_year_days: 30
+  may:
+    month_index: 5
+    common_year_days: 31
+    leap_year_days: 31
+  june:
+    month_index: 6
+    common_year_days: 30
+    leap_year_days: 30
+  july:
+    month_index: 7
+    common_year_days: 31
+    leap_year_days: 31
+  august:
+    month_index: 8
+    common_year_days: 31
+    leap_year_days: 31
+  september:
+    month_index: 9
+    common_year_days: 30
+    leap_year_days: 30
+  october:
+    month_index: 10
+    common_year_days: 31
+    leap_year_days: 31
+  november:
+    month_index: 11
+    common_year_days: 30
+    leap_year_days: 30
+  december:
+    month_index: 12
+    common_year_days: 31
+    leap_year_days: 31
+  year:
+    common_year_days: 365
+  day:
+    calendar_day_unit: 1
+  week:
+    calendar_week_unit: 1
 categories:
   preference_attribute:
     parent: adjective
@@ -71,6 +125,10 @@ categories:
     parent: adjective
   size_property_noun:
     parent: noun
+  customer_attitude_attribute:
+    parent: adjective
+  individual_unit_attribute:
+    parent: adjective
 members:
   preference_attribute:
   - favorite
@@ -90,6 +148,10 @@ members:
   - unequal
   size_property_noun:
   - size
+  customer_attitude_attribute:
+  - appreciative
+  individual_unit_attribute:
+  - individual
 attribute_compatibility:
   preference_attribute: [purchase_collection_noun]
   quality_attribute: [quality_bearer_noun, animate]
@@ -100,6 +162,10 @@ attribute_compatibility:
   - physical_size_noun
   variable_size_descriptor:
   - size_property_noun
+  customer_attitude_attribute:
+  - person
+  individual_unit_attribute:
+  - quantity_container
 part_counts:
   appendage: legs
   wheels: wheels

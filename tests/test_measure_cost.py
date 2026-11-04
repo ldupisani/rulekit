@@ -35,20 +35,7 @@ def test_perimeter_costing_with_tax(reg):
     ).answer.value == pytest.approx(198.0)
 
 
-# --- KNOWN BLOCKER, pinned so it stays visible ----------------------------
-# Area-rate asks still have an unrelated kernel ambiguity blocker.
-# `obligations.disambiguate` commits only a UNIQUE winner, so a SECOND
-# ambiguous unit anywhere in the sentence can tie the arbitration, mark every
-# ambiguous unit unresolved, and let the `ambiguity` guard veto before any ask
-# is tried. "How much ..." always contributes one ('much': interrogative /
-# quantifier); the long frame adds 'cost' (noun / verb) and an area rate adds
-# 'square' (adjective / noun).
-#
-# Auxiliary-led verb disambiguation now resolves the long frame's predicate.
-# The remaining area-rate test pins the unresolved adjective/noun tie.
-# (A structural `interrogative`-after-`interrogative` pre-filter was tried and
-# does NOT fix it: reducing 'much' to one option still leaves 'cost'/'square'
-# tying two ways on their own. Measured, zero buyers, reverted.)
+# Ask-local category selections now resolve the old amount/unit ambiguity.
 
 
 def test_the_long_frame_uses_its_auxiliary_to_select_the_cost_predicate(reg):
@@ -58,10 +45,10 @@ def test_the_long_frame_uses_its_auxiliary_to_select_the_cost_predicate(reg):
     assert got.veto is None
 
 
-def test_an_area_rate_is_blocked_by_the_same_tie(reg):
+def test_area_quote_uses_its_declared_measure_and_formula(reg):
     got = solve("How much to tile a 10 by 20 meter floor at $8 per square meter?", reg)
-    assert got.answer.kind == "decline"          # want: 1600.0
-    assert got.veto is not None and got.veto.guard == "ambiguity"
+    assert got.answer.value == pytest.approx(1600)
+    assert got.veto is None
 
 
 def test_the_first_measure_may_carry_its_own_unit(reg):

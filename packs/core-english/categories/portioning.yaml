@@ -1,11 +1,16 @@
 format: rulekit/categories@1
 categories:
+  component_depletion_verb:
+    parent: verb
+    notes: Explicit fractional use of a declared divisible whole; no global loss polarity is implied.
+  component_residual_attribute:
+    parent: adjective
   portion_acquisition_verb:
     parent: verb
   portion_division_verb:
     parent: whole_partition_verb
   portion_unconsumed_attribute:
-    parent: adjective
+    parent: component_residual_attribute
   portion_size_descriptor:
     parent: adjective
     notes: A serving-size description of a divisible food whole.
@@ -17,7 +22,11 @@ categories:
     includes:
     - ingredient
     notes: A food input used as a nominal modifier of a prepared whole.
+  occasion_product_modifier:
+    parent: noun
 members:
+  component_depletion_verb: [eat, eats, ate, consume, consumes, consumed, use, uses, used]
+  component_residual_attribute: [remaining]
   portion_acquisition_verb:
   - bought
   - buy
@@ -36,11 +45,17 @@ members:
   - personal
   food_preparation_vessel:
   - pan
+  occasion_product_modifier:
+  - birthday
+  food_ingredient_modifier:
+  - cookie
 attribute_compatibility:
   portion_size_descriptor:
-  - decomposable_quantity_whole
+  - divisible_food_whole
   food_preparation_vessel:
-  - decomposable_quantity_whole
+  - divisible_food_whole
   food_ingredient_modifier:
-  - decomposable_quantity_whole
+  - divisible_food_whole
   - edible_quantity_object
+  occasion_product_modifier:
+  - decomposable_quantity_whole

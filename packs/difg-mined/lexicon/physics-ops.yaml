@@ -30,9 +30,5 @@ entries:
   reversibly: {senses: [adverb]}
   isothermally: {senses: [adverb]}
   heat: {senses: [noun]}
-  iron: {senses: [noun]}
-  # Wien buyer: declarative vocabulary only. `blackbody` modifies the emitted
-  # radiation; Earth is noun-sensed so the ordinary possessive compound reader
-  # can resolve "Earth's ..." without a word-specific kernel branch.
   blackbody: {senses: [adjective]}
   radiation: {senses: [noun]}

@@ -28,6 +28,25 @@ categories:
     parent: adjective
   causation_verb:
     parent: verb
+  repetition_performance_verb:
+    parent: verb
+  repetition_count_unit:
+    parent: noun
+  indexed_activity_context:
+    parent: noun
+  indexed_activity_modifier:
+    parent: noun
+  performance_condition_attribute:
+    parent: adjective
+  repetition_alias_unit:
+    parent: repetition_count_unit
+  self_named_count_action:
+    parent: repetition_performance_verb
+  countable_event_object:
+    parent: noun
+    includes:
+    - inventory_item
+    - living_agent
 members:
   event_result_participle: [collapsed, destroyed]
   event_effect_noun: [collapse, destruction]
@@ -37,6 +56,7 @@ members:
   - tornado
   - storm
   - round
+  - session
   event_result_object:
   - building
   - house
@@ -58,10 +78,49 @@ members:
   - cause
   - caused
   - causes
+  repetition_performance_verb:
+  - skip
+  - skips
+  - skipped
+  - skipping
+  - jump
+  - jumps
+  - jumped
+  - complete
+  - completes
+  - completed
+  repetition_count_unit:
+  - skip
+  - jump
+  - time
+  - lap
+  - pushup
+  - situp
+  indexed_activity_context:
+  - competition
+  - contest
+  - test
+  - session
+  indexed_activity_modifier:
+  - skipping
+  - running
+  - swimming
+  performance_condition_attribute:
+  - tired
+  - sick
+  repetition_alias_unit:
+  - time
+  self_named_count_action:
+  - skip
+  - jump
 attribute_compatibility:
   event_effect_descriptor:
   - event_result_object
 
+  indexed_activity_modifier:
+  - indexed_activity_context
+  performance_condition_attribute:
+  - living_agent
 context_synonyms:
   structural_event_loss:
     gate: event_result_object

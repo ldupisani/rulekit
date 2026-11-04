@@ -301,10 +301,108 @@ def _animate_candidates(
     return out
 
 
+def _measured_object_candidates(readings, reading, reg, pronoun):
+    """Continue one explicitly measured object in a measurement or valuation frame.
+
+    Named owners are not substituted for their assets. Competing physical
+    referents and repeated indefinite introductions keep the reference unresolved.
+    """
+    if not reg.word_in_category(pronoun.features.get('lemma', ''), 'measured_object_reference_form'):
+        return None
+    valuation = any(reg.word_in_category(u.features.get('lemma', ''), 'valuation_descriptor')
+                    for u in reading.units)
+    if not (valuation or any(reg.word_in_category(u.features.get('lemma', ''), 'mass_dimension_noun')
+                for u in reading.units)
+            and any(reg.word_in_category(u.features.get('lemma', ''), cat)
+                    for u in reading.units
+                    for cat in ('measurement_change_verb', 'measurement_mass_verb', 'valuation_descriptor'))):
+        return None
+    from .reference_identity import constrains
+    prior = [r for r in readings if r.sentence_index < reading.sentence_index]
+    measured = {}
+    mentions = []
+    for source in prior:
+        for index, unit in enumerate(source.units):
+            if unit.sense() != 'noun' or not reg.word_in_category(
+                    unit.features.get('lemma', ''), 'measured_object_reference_target'):
+                continue
+            ref = reference_from_unit(unit)
+            if not ref.resolved:
+                return {}
+            indefinite = index > 0 and reg.word_in_category(
+                source.units[index - 1].features.get('lemma', ''), 'indefinite_article')
+            mentions.append((ref, indefinite))
+            if any(predicate.sense() == 'verb'
+                   and reg.word_in_category(predicate.features.get('lemma', ''), 'measurement_mass_verb')
+                   and any(ob.need == 'subject' and ob.target is unit for ob in predicate.obligations())
+                   and any(amount.features.get('value_kind') == 'count'
+                           and reg.word_in_category(amount.features.get('lemma', ''), 'mass_unit')
+                           for amount in source.units)
+                   for predicate in source.units):
+                measured[ref] = (source.sentence_index, unit)
+    if not measured:
+        return None
+    if len(measured) != 1:
+        return {}
+    ref = next(iter(measured))
+    seen = False
+    for mention, indefinite in mentions:
+        if not constrains(mention, ref) or seen and indefinite:
+            return {}
+        seen = True
+    return measured
+
+
+def _measured_actor_candidates(readings, reading, reg, pronoun):
+    """Continue one explicit measurement subject with a possible living role without assigning a
+    globally personal sense to an ambiguous noun or an animal.
+
+    This fallback requires a measurement predicate in the continuation and
+    one prior measured subject. Any competing possible living mention or repeated
+    indefinite introduction keeps the reference unresolved.
+    """
+    predicates = [u for u in reading.units if "verb" in u.senses()]
+    state = any(reg.word_in_category(u.features.get("lemma", ""), "measurement_mass_verb")
+                and any(ob.need == "subject" and ob.target is pronoun for ob in u.obligations())
+                for u in predicates)
+    change = (any(reg.word_in_category(u.features.get("lemma", ""), "measurement_change_verb")
+                  for u in predicates)
+              and any(u.features.get("value_kind") == "count"
+                      and reg.word_in_category(u.features.get("lemma", ""), "mass_unit")
+                      for u in reading.units))
+    if not (state or change):
+        return {}
+    mentions, measured = {}, set()
+    for prior in readings:
+        if prior.sentence_index >= reading.sentence_index:
+            continue
+        for index, unit in enumerate(prior.units):
+            if unit.sense() != "noun" or not any(reg.word_in_category(
+                    unit.features.get("lemma", ""), category)
+                    for category in ("living_agent", "potential_person_role")):
+                continue
+            identity = reference_from_unit(unit)
+            if not identity.resolved:
+                return {}
+            if identity in mentions and not (index > 0 and reg.word_in_category(
+                    prior.units[index - 1].features.get("lemma", ""), "definite_article")):
+                return {}
+            mentions[identity] = (prior.sentence_index, unit)
+            if any(verb.sense() == "verb"
+                   and reg.word_in_category(verb.features.get("lemma", ""), "measurement_mass_verb")
+                   and any(ob.need == "subject" and ob.target is unit for ob in verb.obligations())
+                   and any(amount.features.get("value_kind") == "count"
+                           and reg.word_in_category(amount.features.get("lemma", ""), "mass_unit")
+                           for amount in prior.units)
+                   for verb in prior.units):
+                measured.add(identity)
+    return mentions if len(mentions) == 1 and set(mentions) == measured else {}
+
+
 def _prior_location_anaphor_candidates(
     readings: list[Reading], reading: Reading, unit: Unit, reg: Registry
 ) -> dict[tuple[int, int], tuple[int, Unit]] | None:
-    """Prior locations for a pronoun governed by a location preposition.
+    """Prior locations for a locative pronoun or a selected container object.
 
     ``None`` means the pronoun is not in this grammatical position; an empty
     dictionary means that it is, but no compatible antecedent exists. Keeping
@@ -331,8 +429,15 @@ def _prior_location_anaphor_candidates(
         )
         for predicate in reading.units
     )
-    if not governed:
+    container_object = any(
+        predicate.sense() == "verb"
+        and reg.word_in_category(predicate.features.get("lemma", ""), "container_filling_verb")
+        and any(ob.need == "dobj" and ob.target is unit for ob in predicate.obligations())
+        for predicate in reading.units
+    )
+    if not (governed or container_object):
         return None
+    target_category = "volumetric_container" if container_object else "quantity_location"
     return {
         (candidate_reading.sentence_index, candidate.uid): (
             candidate_reading.sentence_index,
@@ -346,7 +451,7 @@ def _prior_location_anaphor_candidates(
             candidate.features.get(
                 "lemma", candidate.features.get("fold", "")
             ),
-            "quantity_location",
+            target_category,
         )
     }
 
@@ -881,8 +986,12 @@ def _bind_discourse(
                 )
                 actor_candidates = _prior_nonpersonal_actor_candidates(readings, reading, unit, reg)
                 continuation_candidates = _indexed_continuation_candidates(readings, reading, unit, reg)
+                measured_object_candidates = _measured_object_candidates(readings, reading, reg, unit)
                 dimension = deixis.PERSON
-                if continuation_candidates is not None:
+                if measured_object_candidates is not None:
+                    candidates = measured_object_candidates
+                    dimension = deixis.DISCOURSE
+                elif continuation_candidates is not None:
                     candidates = continuation_candidates
                     dimension = deixis.DISCOURSE
                 elif actor_candidates is not None:
@@ -921,6 +1030,8 @@ def _bind_discourse(
                     candidates = _animate_candidates(
                         readings, reading.sentence_index, reg, unit
                     )
+                    if not candidates and not reg.word_in_category(lemma, "possessive_determiner"):
+                        candidates = _measured_actor_candidates(readings, reading, reg, unit)
                     # Do not preempt a construction-local link or choose
                     # among current participants. Possessive determiners
                     # retain their established explicit-owner path.

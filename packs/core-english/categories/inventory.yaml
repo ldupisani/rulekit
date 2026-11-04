@@ -4,8 +4,75 @@ categories:
   inventory_remainder_verb: {parent: verb}
   inventory_withdrawal_particle_head: {parent: verb}
   inventory_withdrawal_particle: {parent: adverb}
+  quantity_source:
+    parent: noun
+    includes:
+    - quantity_holder
+    - quantity_site_location
+    - transaction_supplier
+  inventory_item:
+    parent: noun
+    includes:
+    - ownable_quantity_object
+    - edible_quantity_object
+    - plantable_quantity_object
+  packaging_availability_verb:
+    parent: verb
+  inventory_account_verb:
+    parent: verb
+  stock_section:
+    parent: noun
+  stock_section_attribute:
+    parent: adjective
+  stock_source_container:
+    parent: quantity_container
+  inventory_return_verb:
+    parent: verb
+  inventory_place_noun:
+    parent: noun
+  occupation_label:
+    parent: person
 members:
   inventory_remainder_verb: [remain, remained, remains]
   inventory_withdrawal_particle: [away]
   inventory_withdrawal_particle_head: [take, takes, took]
   inventory_withdrawal_verb: [remove, removed, removes]
+  packaging_availability_verb:
+  - come
+  - comes
+  inventory_account_verb:
+  - have
+  - has
+  - had
+  - make
+  - makes
+  - made
+  - produce
+  - produces
+  - produced
+  - sell
+  - sells
+  - sold
+  stock_section:
+  - section
+  - part
+  stock_section_attribute:
+  - top
+  - bottom
+  - upper
+  - lower
+  stock_source_container:
+  - cart
+  - box
+  - container
+  inventory_return_verb:
+  - put
+  - place
+  - placed
+  inventory_place_noun:
+  - place
+  occupation_label:
+  - librarian
+attribute_compatibility:
+  stock_section_attribute:
+  - stock_section

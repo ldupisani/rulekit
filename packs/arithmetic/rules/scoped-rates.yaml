@@ -22,7 +22,7 @@ templates:
       - opt: [{slot: prep, cat: activity_context_preposition}]
       satisfaction: {verb: [subject], working: [subject]}
     rule:
-      description: A quantitative activity quote belongs to a described context; relative quotes preserve their 
+      description: A quantitative activity quote belongs to a described context; relative quotes preserve their
         standard.
       match:
         sentence:
@@ -31,7 +31,7 @@ templates:
         - {parameter: quote.amount}
         - {parameter: scope}
         - opt: [{slot: owner, cat: possessive_determiner}]
-        - {slot: scope, cat: activity_context, uncounted: true, qualified: true, qualifier_cat: 
+        - {slot: scope, cat: activity_context, uncounted: true, qualified: true, qualifier_cat:
             activity_context_descriptor, all_qualifiers: true, referential: true}
         - {parameter: quote.reference}
         - {lit: ., consume_skipped: true}
@@ -51,7 +51,7 @@ templates:
       consumed: []
       satisfaction: {work: [subject]}
     rule:
-      description: A stated duration belongs to its own activity context; coordinated ratios refer to that exact 
+      description: A stated duration belongs to its own activity context; coordinated ratios refer to that exact
         duration.
       match:
         sentence:
@@ -63,7 +63,7 @@ templates:
           - {slot: window, cat: duration_measure, uncounted: true, bare: true}
         - {slot: prep, cat: activity_context_preposition}
         - opt: [{slot: owner, cat: possessive_determiner}]
-        - {slot: scope, cat: activity_context, uncounted: true, qualified: true, qualifier_cat: 
+        - {slot: scope, cat: activity_context, uncounted: true, qualified: true, qualifier_cat:
             activity_context_descriptor, all_qualifiers: true, referential: true}
         - opt:
           - lit:
@@ -83,7 +83,7 @@ templates:
       consumes: [work, amount, parameter: consumed]
       satisfies: {parameter: satisfaction}
       emits:
-      - {fact: batch_evidence, kind: scoped-extent, entity: '{who}', container: '{scope}', measure: '{amount}', 
+      - {fact: batch_evidence, kind: scoped-extent, entity: '{who}', container: '{scope}', measure: '{amount}',
           value: amount, marker: '{window.optional}', verb: '{work}', position: '{amount.span_start}', acquisition: '{window.optional}',
         attribute: '{later_window.optional}'}
       - {parameter: extra}
@@ -116,7 +116,7 @@ variants:
         - {lit: than}
         - opt: [{slot: standard_prep, cat: activity_context_preposition}]
         - opt: [{slot: standard_owner, cat: possessive_determiner}]
-        - {slot: standard, cat: activity_context, uncounted: true, qualified: true, qualifier_cat: 
+        - {slot: standard, cat: activity_context, uncounted: true, qualified: true, qualifier_cat:
             activity_context_descriptor, all_qualifiers: true, referential: true}
 - id: arithmetic/contextual-relative-activity-rate
   template: scoped-activity-rate
@@ -139,7 +139,7 @@ variants:
       cat: mass_amount_quantifier
     - {slot: other_prep, cat: activity_context_preposition}
     - opt: [{slot: other_owner, cat: possessive_determiner}]
-    - {slot: other, cat: activity_context, uncounted: true, qualified: true, qualifier_cat: 
+    - {slot: other, cat: activity_context, uncounted: true, qualified: true, qualifier_cat:
         activity_context_descriptor, all_qualifiers: true, referential: true}
     - opt:
       - lit:
@@ -173,7 +173,7 @@ variants:
       cat: mass_amount_quantifier
     - {slot: other_prep, cat: activity_context_preposition}
     - opt: [{slot: other_owner, cat: possessive_determiner}]
-    - {slot: other, cat: activity_context, uncounted: true, qualified: true, qualifier_cat: 
+    - {slot: other, cat: activity_context, uncounted: true, qualified: true, qualifier_cat:
         activity_context_descriptor, all_qualifiers: true, referential: true}
     - opt:
       - lit:
@@ -213,7 +213,7 @@ variants:
       bare: true
     - {slot: other_prep, cat: activity_context_preposition}
     - opt: [{slot: other_owner, cat: possessive_determiner}]
-    - {slot: other, cat: activity_context, uncounted: true, qualified: true, qualifier_cat: 
+    - {slot: other, cat: activity_context, uncounted: true, qualified: true, qualifier_cat:
         activity_context_descriptor, all_qualifiers: true, referential: true}
     - opt:
       - lit:

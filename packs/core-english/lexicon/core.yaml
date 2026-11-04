@@ -286,6 +286,12 @@ entries:
   answered:
     senses:
     - verb
+  answers:
+    senses:
+    - verb
+    verb:
+      lemma: answer
+    number: singular
   ant: {senses: [noun], plural: ants}
   anthill:
     senses:
@@ -313,6 +319,9 @@ entries:
   applies: {senses: [verb], verb: {lemma: apply}}
   apply: {senses: [verb]}
   applying: {senses: [verb], verb: {lemma: apply}}
+  appreciative:
+    senses:
+    - adjective
   apricot: {senses: [noun], plural: apricots}
   april: {senses: [noun]}
   aquarium:
@@ -445,6 +454,9 @@ entries:
     - noun
     plural: aunts
   autumn: {senses: [noun]}
+  available:
+    senses:
+    - adjective
   avenue:
     senses:
     - noun
@@ -563,6 +575,11 @@ entries:
     senses:
     - noun
     plural: banks
+  bank account:
+    senses:
+    - noun
+    plural: bank accounts
+    lexical_phrase: true
   bar:
     senses:
     - noun
@@ -739,6 +756,10 @@ entries:
   bingo:
     senses:
     - noun
+  biography:
+    senses:
+    - noun
+    plural: biographies
   bird: {senses: [noun], plural: birds}
   birth:
     senses:
@@ -817,7 +838,29 @@ entries:
     - noun
     plural: bonsais
   bonus: {senses: [noun], plural: bonuses}
-  book: {senses: [noun], plural: books}
+  book:
+    senses:
+    - noun
+    - verb
+    plural: books
+    verb:
+      lemma: book
+      number: plural
+    number: singular
+  booked:
+    senses:
+    - verb
+    verb:
+      lemma: book
+      past_participle: true
+  books:
+    senses:
+    - noun
+    - verb
+    number: plural
+    verb:
+      lemma: book
+      number: singular
   bookstore:
     senses:
     - noun
@@ -861,6 +904,7 @@ entries:
   bottom:
     senses:
     - noun
+    - adjective
   bought: {senses: [verb], verb: {lemma: buy}}
   boulevard:
     senses:
@@ -879,6 +923,7 @@ entries:
   boxer:
     senses:
     - noun
+    plural: boxers
   boy: {senses: [noun], plural: boys}
   boyfriend:
     senses:
@@ -1176,6 +1221,10 @@ entries:
     senses:
     - noun
     plural: carrots
+  cart:
+    senses:
+    - noun
+    plural: carts
   carton: {"senses": ["noun"], "plural": "cartons"}
   cartoon:
     senses:
@@ -1457,6 +1506,10 @@ entries:
     senses:
     - noun
     plural: clubs
+  coach:
+    senses:
+    - noun
+    plural: coaches
   coat:
     senses:
     - noun
@@ -1518,7 +1571,13 @@ entries:
   combine:
     senses:
     - verb
-  combined: {senses: [aggregate]}
+  combined:
+    senses:
+    - aggregate
+    - verb
+    verb:
+      lemma: combine
+      past_participle: true
   combines:
     senses:
     - verb
@@ -1607,7 +1666,25 @@ entries:
   competitions:
     senses:
     - noun
+  complete:
+    senses:
+    - verb
+    verb:
+      lemma: complete
+      number: plural
+  completed:
+    senses:
+    - verb
+    verb:
+      lemma: complete
+      past_participle: true
   completely: {senses: [adverb]}
+  completes:
+    senses:
+    - verb
+    verb:
+      lemma: complete
+      number: singular
   completing:
     senses:
     - verb
@@ -1643,6 +1720,9 @@ entries:
   connects:
     senses:
     - verb
+  considering:
+    senses:
+    - conjunction
   considers:
     senses:
     - verb
@@ -1885,9 +1965,7 @@ entries:
   craft:
     senses:
     - noun
-  crafts:
-    senses:
-    - noun
+    plural: crafts
   crayon:
     senses:
     - noun
@@ -2117,6 +2195,17 @@ entries:
     - verb
     - noun
     plural: deposits
+  deposited:
+    senses:
+    - verb
+    verb:
+      lemma: deposit
+  deposits:
+    senses:
+    - verb
+    verb:
+      lemma: deposit
+    number: singular
   descending:
     senses:
     - verb
@@ -2218,6 +2307,11 @@ entries:
     verb:
       lemma: discard
   discount: {senses: [noun], plural: discounts}
+  discover:
+    senses:
+    - verb
+    verb:
+      lemma: discover
   discovered:
     senses:
     - verb
@@ -2333,7 +2427,12 @@ entries:
   dots:
     senses:
     - noun
-  double: {senses: [quantifier]}
+  double:
+    senses:
+    - quantifier
+    - verb
+    verb:
+      lemma: double
   double-flip:
     senses:
     - noun
@@ -2343,9 +2442,14 @@ entries:
   doubled:
     senses:
     - verb
+    verb:
+      lemma: double
   doubles:
     senses:
     - verb
+    verb:
+      lemma: double
+      number: singular
   dough:
     senses:
     - noun
@@ -2523,6 +2627,10 @@ entries:
     senses:
     - adjective
   effective: {senses: [preposition]}
+  effort:
+    senses:
+    - noun
+    plural: efforts
   egg: {senses: [noun], plural: eggs}
   eight:
     senses:
@@ -2744,6 +2852,18 @@ entries:
   exchange:
     senses:
     - verb
+  exchanged:
+    senses:
+    - verb
+    verb:
+      lemma: exchange
+      past_participle: true
+  exchanges:
+    senses:
+    - verb
+    verb:
+      lemma: exchange
+      number: singular
   excluding:
     senses:
     - verb
@@ -2939,7 +3059,12 @@ entries:
     - value
   fight:
     senses:
+    - noun
     - verb
+    plural: fights
+    number: singular
+    verb:
+      number: plural
   figure:
     senses:
     - verb
@@ -2988,6 +3113,10 @@ entries:
     senses:
     - adjective
   flask: {senses: [noun], plural: flasks}
+  flea:
+    senses:
+    - noun
+    plural: fleas
   flew:
     senses:
     - verb
@@ -3192,6 +3321,11 @@ entries:
     - verb
     verb: {lemma: gain, number: plural}
   gained: {senses: [verb], verb: {lemma: gain}}
+  gaining:
+    senses:
+    - verb
+    verb:
+      lemma: gain
   gains: {senses: [verb], number: singular, verb: {lemma: gain}}
   gallery:
     senses:
@@ -3281,6 +3415,7 @@ entries:
     - verb
     verb:
       lemma: give
+      past_participle: true
   gives: {senses: [verb], number: singular, verb: {lemma: give, number: singular}}
   giving:
     senses:
@@ -3474,6 +3609,9 @@ entries:
   half-hour:
     senses:
     - noun
+  halfway:
+    senses:
+    - adverb
   hall:
     senses:
     - noun
@@ -3549,6 +3687,7 @@ entries:
   heavy:
     senses:
     - adjective
+  height: {senses: [noun], plural: heights}
   held:
     senses:
     - verb
@@ -3569,6 +3708,10 @@ entries:
     - verb
     verb:
       lemma: help
+  helper:
+    senses:
+    - noun
+    plural: helpers
   helpful:
     senses:
     - adjective
@@ -3628,6 +3771,7 @@ entries:
   history:
     senses:
     - noun
+    - adjective
   hit: {senses: [verb]}
   hits: {senses: [verb], verb: {lemma: hit}}
   hitting: {senses: [verb], verb: {lemma: hit}}
@@ -3919,6 +4063,10 @@ entries:
     senses:
     - noun
     number: plural
+  iron:
+    senses:
+    - noun
+    - adjective
   irrelevant:
     senses:
     - adjective
@@ -4021,6 +4169,8 @@ entries:
   jump:
     senses:
     - verb
+    - noun
+    plural: jumps
   jumped: {senses: [verb], verb: {lemma: jump}}
   jumping:
     senses:
@@ -4132,6 +4282,17 @@ entries:
   knocked:
     senses:
     - verb
+  knocking:
+    senses:
+    - verb
+    verb:
+      lemma: knock
+  knocks:
+    senses:
+    - verb
+    verb:
+      lemma: knock
+    number: singular
   know: {senses: [verb], number: plural}
   knowing: {senses: [verb], verb: {lemma: know}}
   knows: {senses: [verb], number: singular, verb: {lemma: know}}
@@ -4337,7 +4498,12 @@ entries:
     - noun
     plural: lights
   lighter: {senses: [comparative]}
-  like: {senses: [preposition]}
+  like:
+    senses:
+    - preposition
+    - verb
+    verb:
+      lemma: like
   liked:
     senses:
     - verb
@@ -4461,6 +4627,7 @@ entries:
   lower:
     senses:
     - comparative
+    - adjective
   lunch:
     senses:
     - noun
@@ -4634,7 +4801,12 @@ entries:
   meeting:
     senses:
     - noun
+    - verb
     plural: meetings
+    verb:
+      lemma: meet
+      finite: false
+    number: singular
   meets:
     senses:
     - verb
@@ -4919,6 +5091,10 @@ entries:
     senses:
     - noun
     - name
+  mystery:
+    senses:
+    - noun
+    - adjective
   nachos:
     senses:
     - noun
@@ -5177,6 +5353,10 @@ entries:
     senses:
     - adjective
   ones: {senses: [pronoun]}
+  onion:
+    senses:
+    - noun
+    plural: onions
   online: {senses: [adverb, adjective]}
   only: {senses: [adverb]}
   onto: {senses: [preposition]}
@@ -5647,7 +5827,11 @@ entries:
     - noun
   pizza: {senses: [noun], plural: pizzas}
   piñata: {senses: [noun], plural: piñatas}
-  place: {senses: [verb], number: plural}
+  place:
+    senses:
+    - verb
+    - noun
+    number: plural
   placed: {senses: [verb], verb: {lemma: place}}
   places: {senses: [verb], number: singular, verb: {lemma: place}}
   placing: {senses: [verb], verb: {lemma: place}}
@@ -5723,6 +5907,10 @@ entries:
     - noun
     plural: pockets
   poem: {senses: [noun], plural: poems}
+  poetry:
+    senses:
+    - noun
+    - adjective
   pogo:
     senses:
     - noun
@@ -5788,7 +5976,16 @@ entries:
     senses:
     - noun
     plural: potatoes
+  pouch:
+    senses:
+    - noun
+    plural: pouches
   pound: {senses: [noun], plural: pounds}
+  pound sterling:
+    senses:
+    - noun
+    plural: pounds sterling
+    lexical_phrase: true
   pour: {senses: [verb], number: plural}
   poured: {senses: [verb], verb: {lemma: pour}}
   pouring: {senses: [verb], verb: {lemma: pour}}
@@ -5856,10 +6053,30 @@ entries:
   print:
     senses:
     - noun
+    - verb
+    verb:
+      lemma: print
+      number: plural
+    plural: prints
+    number: singular
+  printed:
+    senses:
+    - verb
+    verb:
+      lemma: print
+      past_participle: true
   printer:
     senses:
     - noun
     plural: printers
+  prints:
+    senses:
+    - noun
+    - verb
+    number: plural
+    verb:
+      lemma: print
+      number: singular
   private:
     senses:
     - adjective
@@ -5925,18 +6142,29 @@ entries:
   protesting:
     senses:
     - verb
+  provide:
+    senses:
+    - verb
+    number: plural
+    verb:
+      lemma: provide
   provided:
     senses:
-    - conjunction
     - verb
+    - conjunction
     verb:
       lemma: provide
   provides:
     senses:
     - verb
+    verb:
+      lemma: provide
+    number: singular
   providing:
     senses:
     - verb
+    verb:
+      lemma: provide
   provisions:
     senses:
     - noun
@@ -6062,6 +6290,9 @@ entries:
   rain:
     senses:
     - noun
+    - verb
+    verb:
+      lemma: rain
   rainbow:
     senses:
     - noun
@@ -6069,6 +6300,15 @@ entries:
     senses:
     - verb
   rainfall:
+    senses:
+    - noun
+  rains:
+    senses:
+    - verb
+    verb:
+      lemma: rain
+      number: singular
+  rainwater:
     senses:
     - noun
   raise: {senses: [verb], number: plural}
@@ -6152,6 +6392,10 @@ entries:
   recently:
     senses:
     - adverb
+  recess:
+    senses:
+    - noun
+    plural: recesses
   recharges:
     senses:
     - verb
@@ -6400,6 +6644,24 @@ entries:
   rests:
     senses:
     - verb
+  result:
+    senses:
+    - verb
+    verb:
+      lemma: result
+      number: plural
+  resulted:
+    senses:
+    - verb
+    verb:
+      lemma: result
+      past_participle: true
+  results:
+    senses:
+    - verb
+    verb:
+      lemma: result
+      number: singular
   retailer: {senses: [noun], plural: retailers}
   retain:
     senses:
@@ -6495,6 +6757,10 @@ entries:
     verb:
       lemma: ride
   roll: {"senses": ["noun", "verb"], "plural": "rolls"}
+  romance:
+    senses:
+    - noun
+    - adjective
   roof:
     senses:
     - noun
@@ -6568,6 +6834,7 @@ entries:
   running:
     senses:
     - verb
+    - noun
     verb:
       lemma: run
   runs:
@@ -6904,6 +7171,29 @@ entries:
   shelter:
     senses:
     - noun
+  shelve:
+    senses:
+    - verb
+    verb:
+      lemma: shelve
+      number: plural
+  shelved:
+    senses:
+    - verb
+    verb:
+      lemma: shelve
+      past_participle: true
+  shelves:
+    senses:
+    - verb
+    verb:
+      lemma: shelve
+      number: singular
+  shelving:
+    senses:
+    - verb
+    verb:
+      lemma: shelve
   shepherd:
     senses:
     - noun
@@ -7074,12 +7364,28 @@ entries:
   skip:
     senses:
     - noun
+    - verb
     plural: skips
+    verb:
+      lemma: skip
+      number: plural
   skipped:
     senses:
     - verb
     verb:
       lemma: skip
+  skipping:
+    senses:
+    - verb
+    - noun
+    verb:
+      lemma: skip
+  skips:
+    senses:
+    - verb
+    verb:
+      lemma: skip
+      number: singular
   skirt:
     senses:
     - noun
@@ -7157,7 +7463,12 @@ entries:
     senses:
     - noun
     plural: softballs
-  sold: {senses: [verb], verb: {lemma: sell}}
+  sold:
+    senses:
+    - verb
+    verb:
+      lemma: sell
+      past_participle: true
   soldier:
     senses:
     - noun
@@ -7179,6 +7490,23 @@ entries:
     senses:
     - noun
     plural: songs
+  sort:
+    senses:
+    - verb
+    verb:
+      lemma: sort
+      number: plural
+  sorted:
+    senses:
+    - verb
+    verb:
+      lemma: sort
+      past_participle: true
+  sorting:
+    senses:
+    - verb
+    verb:
+      lemma: sort
   sorts:
     senses:
     - verb
@@ -7226,13 +7554,40 @@ entries:
   spends: {senses: [verb], number: singular, verb: {lemma: spend}}
   spent: {senses: [verb], verb: {lemma: spend}}
   sphere: {senses: [noun], plural: spheres}
+  spill:
+    senses:
+    - verb
+    number: plural
+    verb:
+      lemma: spill
+  spilled:
+    senses:
+    - verb
+    verb:
+      lemma: spill
+  spilling:
+    senses:
+    - verb
+    verb:
+      lemma: spill
+  spills:
+    senses:
+    - verb
+    verb:
+      lemma: spill
+    number: singular
   spinning:
     senses:
     - noun
   spit:
     senses:
     - verb
-  split: {"senses": ["verb"], "verb": {"lemma": "split"}}
+  split:
+    senses:
+    - verb
+    verb:
+      lemma: split
+      past_participle: true
   splits:
     senses:
     - verb
@@ -7499,10 +7854,31 @@ entries:
   supermarket:
     senses:
     - noun
+  supplied:
+    senses:
+    - verb
+    verb:
+      lemma: supply
+      past_participle: true
   supplier:
     senses:
     - noun
-  supply: {"senses": ["noun"], "plural": "supplies"}
+  supplies:
+    senses:
+    - noun
+    - verb
+    number: plural
+    verb:
+      lemma: supply
+      number: singular
+  supply:
+    senses:
+    - noun
+    - verb
+    plural: supplies
+    verb:
+      lemma: supply
+      number: plural
   support:
     senses:
     - verb
@@ -7548,6 +7924,24 @@ entries:
     - verb
     verb:
       lemma: swim
+  swap:
+    senses:
+    - verb
+    verb:
+      lemma: swap
+      number: plural
+  swapped:
+    senses:
+    - verb
+    verb:
+      lemma: swap
+      past_participle: true
+  swaps:
+    senses:
+    - verb
+    verb:
+      lemma: swap
+      number: singular
   sweater:
     senses:
     - noun
@@ -7561,6 +7955,7 @@ entries:
   swimming:
     senses:
     - adjective
+    - noun
   swims:
     senses:
     - verb
@@ -7899,7 +8294,11 @@ entries:
     senses:
     - noun
     plural: toothpicks
-  top: {senses: [noun], plural: tops}
+  top:
+    senses:
+    - noun
+    - adjective
+    plural: tops
   topic: {senses: [noun], plural: topics}
   tornado: {senses: [noun], plural: [tornadoes, tornados]}
   tortilla:
@@ -7983,6 +8382,10 @@ entries:
     senses:
     - noun
     plural: trails
+  trail mix:
+    senses:
+    - noun
+    lexical_phrase: true
   trailer:
     senses:
     - noun
@@ -8168,6 +8571,9 @@ entries:
     senses:
     - noun
     plural: umbrellas
+  unavailable:
+    senses:
+    - adjective
   uncle:
     senses:
     - noun
@@ -8232,6 +8638,9 @@ entries:
     senses:
     - adjective
   upon: {senses: [preposition]}
+  upper:
+    senses:
+    - adjective
   upstairs:
     senses:
     - noun
@@ -8501,6 +8910,9 @@ entries:
   west:
     senses:
     - noun
+  western:
+    senses:
+    - adjective
   what: {senses: [interrogative]}
   whatever:
     senses:
@@ -8687,6 +9099,12 @@ entries:
     plural: writers
   writes: {senses: [verb], number: singular, verb: {lemma: write}}
   writing: {senses: [noun]}
+  written:
+    senses:
+    - verb
+    verb:
+      lemma: write
+      past_participle: true
   wrote: {senses: [verb], verb: {lemma: write}}
   yard:
     senses:

@@ -1,5 +1,9 @@
 format: rulekit/categories@1
 categories:
+  rectangular_costing_shape: {parent: rectangle_geometry}
+  priced_geometry_quantity: {parent: geometry_quantity}
+  costing_surface_site: {parent: noun}
+  costing_dimension_preposition: {parent: preposition}
   geometry_dimension: {parent: noun}
   angle_degrees: {parent: noun}
   area_measure: {parent: noun, notes: A resource whose explicitly priced use can depend on area.}
@@ -106,7 +110,17 @@ categories:
         result_dimension: {length: 2}
   quantity_extent_modifier: {parent: noun}
   quantity_extent_adjective: {parent: adjective}
+  length_dimension_adjective:
+    parent: adjective
+  width_dimension_adjective:
+    parent: adjective
+  height_dimension_adjective:
+    parent: adjective
 members:
+  rectangular_costing_shape: [rectangle]
+  priced_geometry_quantity: [area, perimeter]
+  costing_surface_site: [yard, floor, garden, room]
+  costing_dimension_preposition: [of, with]
   geometry_dimension: [base, length, side, radius, width]
   angle_degrees: [degree]
   area_measure: [carpet, tile]
@@ -122,6 +136,13 @@ members:
   sphere_geometry: [sphere]
   quantity_extent_modifier: [surface, base]
   quantity_extent_adjective: [cross-sectional]
+  length_dimension_adjective:
+  - long
+  width_dimension_adjective:
+  - wide
+  height_dimension_adjective:
+  - high
+  - tall
 formula_units:
   length: {unit: meter, category: length_unit}
 property_aliases:

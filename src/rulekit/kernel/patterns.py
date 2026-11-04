@@ -1072,9 +1072,13 @@ def _try_match_at(
                 # through; the fold is the folded SURFACE and survives
                 # resolution. (Every negation-block user has fold == lemma,
                 # so this widening changes nothing for them.)
+                # A root verb refusal follows the selected part of speech.
+                # A declared verbal homograph must not ban its noun reading;
+                # an unresolved unit with a verb candidate still fails closed.
                 if blocked_cats and any(
-                    reg.word_in_category(_lemma_of(u), c)
-                    or reg.word_in_category(u.features.get("fold", ""), c)
+                    ("verb" in u.senses() if c == "verb" else
+                     reg.word_in_category(_lemma_of(u), c)
+                     or reg.word_in_category(u.features.get("fold", ""), c))
                     for u in captured for c in blocked_cats
                 ):
                     # a blocked word (e.g. a negation) may NEVER be swallowed

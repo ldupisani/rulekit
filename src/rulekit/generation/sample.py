@@ -4425,7 +4425,20 @@ def _binding_key(surface: str, reg: Registry, sense: str | None = None) -> tuple
         # content sense rather than dropping a correctly bound pronoun.
         return bool(sense and sense not in SKIPPABLE_SENSES and entry
                     and sense in entry.senses)
-    return tuple(_unit_lemma(unit, reg).casefold() for unit in reading.units if content(unit))
+    def lemma(unit):
+        # A complete source construction supplies a selected sense that an
+        # isolated homograph cannot establish. Preserve that declared lexical
+        # reading rather than comparing a noun's head with a verb's inflection.
+        fold = unit.features.get("fold", "")
+        entry = reg.lexicon.get(fold)
+        if entry is not None and sense in entry.senses and unit.sense() != sense:
+            if sense == "verb":
+                return reg.verb_lemmas.get(fold, fold)
+            if sense == "noun":
+                return reg.plural_to_singular.get(fold, fold)
+        return _unit_lemma(unit, reg)
+
+    return tuple(lemma(unit).casefold() for unit in reading.units if content(unit))
 
 
 def _strict_round_trip_result(

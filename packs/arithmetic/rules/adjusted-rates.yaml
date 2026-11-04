@@ -1,0 +1,397 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/employment-bonus-context
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: work
+      cat: scheduled_activity_verb
+    - slot: job
+      cat: employment_noun
+      uncounted: true
+      bare: true
+    - lit: that
+      consume_skipped: true
+    - slot: offer
+      cat: offer_action
+    - slot: bonus
+      cat: bonus_noun
+      uncounted: true
+      qualified: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: adjusted-rate-context
+    entity: '{who}'
+    measure: ''
+    value: 0
+    position: '{who.span_start}'
+    container: '{bonus}'
+  consumes:
+  - work
+  - offer
+  satisfies:
+    work:
+    - subject
+    offer:
+    - subject
+  disambiguates:
+  - work
+  - job
+  - offer
+  - bonus
+- id: arithmetic/daily-output-work-duration
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: earn
+      cat: income_action
+    - slot: pay
+      cat: currency_unit
+      counted: true
+      bare: true
+    - lit:
+      - a
+      - per
+      - every
+      consume_skipped: true
+    - slot: period
+      cat: duration_measure
+      uncounted: true
+      bare: true
+    - lit: and
+      consume_skipped: true
+    - slot: work
+      cat: scheduled_activity_verb
+    - opt:
+      - lit: for
+        consume_skipped: true
+    - slot: hours
+      cat: duration_measure
+      counted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: adjusted-rate-base
+    entity: '{who}'
+    measure: '{pay}'
+    value: pay
+    position: '{who.span_start}'
+    marker: '{period}'
+    container: '{hours}'
+    per_member: hours
+    verb: '{earn}'
+  consumes:
+  - earn
+  - pay
+  - work
+  - hours
+  satisfies:
+    earn:
+    - subject
+    work:
+    - subject
+  disambiguates:
+  - earn
+  - pay
+  - period
+  - work
+  - hours
+- id: arithmetic/optional-extra-pay-and-work
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: have
+      cat: possession_state
+    - slot: option
+      cat: option_noun
+      uncounted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: work
+      cat: scheduled_activity_verb
+      present_participle: true
+    - slot: hard
+      cat: work_intensity_attribute
+    - lit: to
+      consume_skipped: true
+    - slot: earn
+      cat: income_action
+    - slot: bonus
+      cat: bonus_noun
+      uncounted: true
+    - lit: of
+      consume_skipped: true
+    - slot: extra
+      cat: currency_unit
+      counted: true
+      qualified: true
+      qualifier_cat: supplemental_amount_attribute
+    - lit:
+      - a
+      - per
+      consume_skipped: true
+    - slot: period
+      cat: duration_measure
+      uncounted: true
+      bare: true
+    - lit: ','
+      consume_skipped: true
+    - lit: but
+      consume_skipped: true
+    - slot: effort
+      cat: effort_noun
+      uncounted: true
+    - slot: result
+      cat: consequence_verb
+    - lit: in
+      consume_skipped: true
+    - slot: hours
+      cat: duration_measure
+      counted: true
+      bare: true
+    - slot: longer
+      cat: higher
+    - slot: workday
+      cat: working_day_unit
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: adjusted-rate-increment
+    entity: '{who}'
+    measure: '{extra}'
+    value: extra
+    position: '{who.span_start}'
+    marker: '{period}'
+    container: '{hours}'
+    per_member: hours
+    verb: '{earn}'
+  consumes:
+  - have
+  - work
+  - earn
+  - extra
+  - result
+  - hours
+  - longer
+  satisfies:
+    have:
+    - subject
+    work:
+    - subject
+    earn:
+    - subject
+    result:
+    - subject
+    longer:
+    - standard
+  disambiguates:
+  - have
+  - option
+  - work
+  - hard
+  - earn
+  - bonus
+  - extra
+  - period
+  - effort
+  - result
+  - hours
+  - longer
+  - workday
+- id: arithmetic/extra-daily-pay-and-duration
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: earn
+      cat: income_action
+    - slot: extra
+      cat: currency_unit
+      counted: true
+      qualified: true
+      qualifier_cat: supplemental_amount_attribute
+    - lit:
+      - a
+      - per
+      consume_skipped: true
+    - slot: period
+      cat: duration_measure
+      uncounted: true
+      bare: true
+    - lit: and
+      consume_skipped: true
+    - slot: work
+      cat: scheduled_activity_verb
+    - slot: hours
+      cat: duration_measure
+      counted: true
+      bare: true
+    - slot: longer
+      cat: higher
+    - lit: for
+      consume_skipped: true
+    - slot: bonus
+      cat: bonus_noun
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: adjusted-rate-increment
+    entity: '{who}'
+    measure: '{extra}'
+    value: extra
+    position: '{who.span_start}'
+    marker: '{period}'
+    container: '{hours}'
+    per_member: hours
+    verb: '{earn}'
+  consumes:
+  - earn
+  - extra
+  - work
+  - hours
+  - longer
+  satisfies:
+    earn:
+    - subject
+    work:
+    - subject
+    longer:
+    - standard
+  disambiguates:
+  - earn
+  - extra
+  - period
+  - work
+  - hours
+  - longer
+  - bonus
+asks:
+- id: ask/elected-adjusted-hourly-rate
+  match:
+    question:
+    - lit: how
+      consume_skipped: true
+    - slot: much
+      cat: mass_amount_quantifier
+    - slot: aux
+      type: auxiliary
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: earn
+      cat: income_action
+    - lit: per
+      consume_skipped: true
+    - slot: unit
+      cat: duration_measure
+      uncounted: true
+      bare: true
+    - lit: if
+      consume_skipped: true
+    - slot: same
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: decide
+      cat: decision_action
+    - lit: to
+      consume_skipped: true
+    - slot: earn2
+      cat: income_action
+    - slot: bonus
+      cat: bonus_noun
+      uncounted: true
+      bare: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: adjusted-unit-rate
+    entity: '{who}'
+    other: '{same}'
+    unit: '{unit}'
+  satisfies:
+    earn:
+    - subject
+    decide:
+    - subject
+    earn2:
+    - subject
+  disambiguates:
+  - much
+  - earn
+  - unit
+  - decide
+  - earn2
+  - bonus
+- id: ask/adjusted-hourly-rate
+  match:
+    question:
+    - lit: how
+      consume_skipped: true
+    - slot: much
+      cat: mass_amount_quantifier
+    - slot: aux
+      type: auxiliary
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: earn
+      cat: income_action
+    - lit: per
+      consume_skipped: true
+    - slot: unit
+      cat: duration_measure
+      uncounted: true
+      bare: true
+    - lit: with
+      consume_skipped: true
+    - slot: bonus
+      cat: bonus_noun
+      uncounted: true
+      bare: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: adjusted-unit-rate
+    entity: '{who}'
+    unit: '{unit}'
+  satisfies:
+    earn:
+    - subject
+  disambiguates:
+  - much
+  - earn
+  - unit
+  - bonus

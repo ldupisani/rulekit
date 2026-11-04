@@ -87,6 +87,9 @@ rules:
                 - {slot: conjunction_adv, cat: holding_anchor_adverb}
             - {slot: conjunction_verb, cat: state}
             - {slot: conjunction_seen, type: counted}
+        - opt:
+            - {lit: [in, during]}
+            - {slot: scoped_period_seen, cat: repeating_event, uncounted: true, qualified: true}
     where:
       - slot_not_category: {slot: standard_tail_verb, cat: intransitive_process_verb}
       - slot_not_category: {slot: verb, cat: intransitive_process_verb}
@@ -127,7 +130,7 @@ rules:
       - distinct_measure: [item, std]
       # a TIME PERIOD is not a holder — see slot_not_category in schemas.py
       - slot_not_category: {slot: std, cat: timeperiod}
-      - unbound: [conjunction_seen, standard_tail_item]
+      - unbound: [conjunction_seen, standard_tail_item, scoped_period_seen]
     generation_where:
       - same_lemma: [verb, standard_tail_verb]
     satisfies:
@@ -2813,6 +2816,10 @@ rules:
         - opt:
             - {lit: as}
             - {slot: direct_std_seen, type: entity}
+        - opt:
+            - {lit: the, consume_skipped: true}
+            - {slot: scoped_period_seen, cat: duration_measure, uncounted: true}
+            - {slot: period_marker_seen, cat: retrospective_period_marker}
     where:
       - slot_not_category: {slot: verb, cat: intransitive_process_verb}
       - number_compatible: [who, verb]
@@ -2822,7 +2829,7 @@ rules:
       - slot_not_category: {slot: verb, cat: copula}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - absent: {cat: partitive}
-      - unbound: [direct_std_seen]
+      - unbound: [direct_std_seen, scoped_period_seen]
     emits:
       - fact: relation
         subject: "{who}"
@@ -2895,6 +2902,10 @@ rules:
         - opt:
             - {lit: as}
             - {slot: direct_std_seen, type: entity}
+        - opt:
+            - {lit: the, consume_skipped: true}
+            - {slot: scoped_period_seen, cat: duration_measure, uncounted: true}
+            - {slot: period_marker_seen, cat: retrospective_period_marker}
     where:
       - slot_not_category: {slot: verb, cat: intransitive_process_verb}
       - number_compatible: [who, verb]
@@ -2905,7 +2916,7 @@ rules:
       - slot_not_category: {slot: verb, cat: price_relation_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - absent: {cat: partitive}
-      - unbound: [direct_std_seen]
+      - unbound: [direct_std_seen, scoped_period_seen]
     emits:
       - fact: relation
         subject: "{who}"
@@ -6000,6 +6011,66 @@ rules:
         verb: "{verb}"
         numerator: "{item.value}"
         denominator: "{span.value}"
+
+  - id: arithmetic/periodic-rate-every-unit
+    phase: read
+    description: An explicit frequency over one uncounted time unit emits the same ordinary Rate as its
+      counted-span counterpart.
+    match:
+      sentence:
+      - slot: who
+        type: entity
+        common_noun_cat: quantity_holder
+        referential: true
+        bare_reference_category: bare_entity_reference
+      - opt:
+        - slot: aux
+          type: modal
+      - slot: verb
+        type: verb
+        finite_form: true
+      - slot: item
+        type: counted
+      - slot: freq
+        cat: frequency_quantifier
+      - slot: span
+        cat: duration_measure
+        uncounted: true
+        number: singular
+        bare: true
+    where:
+    - bound_requires_form:
+        bound: aux
+        slot: verb
+        form: bare
+    - verb_role_compatible:
+        verb: verb
+        roles:
+        - who
+        verb_cat: quantity_event_verb
+        role_cat: quantity_event_participant
+    - verb_roles_compatible:
+        verb: verb
+        roles:
+          actor:
+          - who
+          theme:
+          - item
+        allow_proper_name:
+        - who
+    - slot_not_category:
+        slot: who
+        cat: non_quantity_holder
+    consumes:
+    - item
+    - span
+    emits:
+    - fact: rate
+      entity: '{who}'
+      measure: '{item}'
+      per: '{span}'
+      value: item
+      verb: '{verb}'
 
   - id: arithmetic/periodic-output-per-unit
     phase: read

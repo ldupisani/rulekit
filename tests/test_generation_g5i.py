@@ -92,7 +92,7 @@ def test_g5i_profiles_the_complete_recursive_optional_class() -> None:
     # Fractional sources add definite articles and optional residual-stock names.
     # Assessment frames and counted partitives reuse flat frequency/attribute options.
     # Scoped schedules, source partitions and daily goals add bounded optional frames.
-    assert _optional_profile(project) == (364, 609, 65, 3)
+    assert _optional_profile(project) == (401, 666, 66, 3)
 
 
 def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
@@ -101,9 +101,9 @@ def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
         for item in list_rule_availability(load_project(CURATED))
     }
 
-    assert len(availability) == 729
-    assert sum(item.supported for item in availability.values()) == 644
-    assert sum(not item.supported for item in availability.values()) == 85
+    assert len(availability) == 830
+    assert sum(item.supported for item in availability.values()) == 733
+    assert sum(not item.supported for item in availability.values()) == 97
     assert all(availability[rule_id].supported for rule_id in NEWLY_SUPPORTED)
     assert all(
         "optional groups have no current realizer" not in item.blockers

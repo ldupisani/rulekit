@@ -211,6 +211,24 @@ def _nominal_pass(reading: Reading, reg: Registry) -> bool:
             and b.sense() == "verb"
             and not reg.word_in_category(b.features.get("fold", ""), "copula")
         ):
+            # A present participle needs the progressive auxiliary as well;
+            # possession followed by a gerund noun is not a perfect tense.
+            fold, lemma = b.features.get("fold", ""), b.features.get("lemma", "")
+            if fold.endswith("ing") and fold != lemma:
+                continue
+            # A bare verb governed directly by a factual auxiliary is the
+            # lexical predicate. A following aggregate must remain available
+            # to its noun/quantity frame rather than replacing that predicate.
+            supported = False
+            if a.features.get("fold") == a.features.get("lemma"):
+                for prior in reversed(units[:i]):
+                    if prior.sense() in {"verb", "punct", "conjunction"}:
+                        break
+                    if prior.sense() == "auxiliary":
+                        supported = True
+                        break
+            if supported:
+                continue
             merged = reading.new_unit(a.words + b.words, dict(b.features))
             merged.features["fold"] = f"{a.features['fold']} {b.features['fold']}"
             units[i : i + 2] = [merged]
@@ -383,7 +401,9 @@ def _nominal_pass(reading: Reading, reg: Registry) -> bool:
     for i in range(len(units) - 1):
         a, b = units[i], units[i + 1]
         # adjective + noun -> restricted noun ("red apple")
-        if a.sense() == "adjective" and b.sense() == "noun":
+        if (a.sense() == "adjective" and b.sense() == "noun"
+                and not (reg.word_in_category(a.features.get("lemma", ""), "valuation_descriptor")
+                         and b.features.get("currency_unit"))):
             attrs = list(b.features.get("attributes", []))
             attrs.append(a.features.get("lemma", a.features["fold"]))
             # `qualifier` is the ENTITY-IDENTITY qualifier, mirroring

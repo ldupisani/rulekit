@@ -19,6 +19,9 @@ def consume(ctx):
     if len(groups) != 1 or ctx.store.collisions or ctx.store.quarantined:
         return decline("one unambiguous recipient group is required")
     group = groups[0]
+    source = ctx.query_reference("source")
+    if source is not None and (not source.resolved or source.described):
+        return decline("the allocation source needs a fully represented identity")
     members = group.members
     if (len(members) < 2 or len(set(members)) != len(members)
             or group.value is not None and group.value != len(members) or group.source in members

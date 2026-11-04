@@ -1,0 +1,462 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/coordinated-qualified-relative-stock-associated-fraction
+  phase: read
+  match:
+    sentence:
+    - slot: owner
+      cat: possessive_determiner
+      referential: true
+    - slot: role
+      cat: person
+      uncounted: true
+    - slot: who
+      type: name
+    - slot: have
+      cat: possession_state
+      finite_form: true
+    - slot: factor
+      type: fraction
+    - opt:
+      - lit: times
+        consume_skipped: true
+    - lit: as
+      consume_skipped: true
+    - lit: many
+      consume_skipped: true
+    - slot: first
+      cat: inventory_item
+      uncounted: true
+      qualified: true
+    - lit: as
+      consume_skipped: true
+    - slot: standard
+      cat: anaphoric_person_subject
+    - opt:
+      - slot: have2
+        cat: possession_state
+        finite_form: true
+    - lit: and
+      consume_skipped: true
+    - slot: factor2
+      type: multiplier
+    - lit: the
+      consume_skipped: true
+    - slot: number
+      cat: count_aggregate_noun
+      uncounted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: second
+      cat: inventory_item
+      uncounted: true
+      qualified: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: qualified-relative
+    entity: '{who}'
+    measure: '{first}'
+    value: 0
+    position: '{who.span_start}'
+    container: '{standard}'
+    fraction: factor
+    attribute: '{first.qualifier}'
+  - fact: batch_evidence
+    kind: qualified-relative
+    entity: '{who}'
+    measure: '{second}'
+    value: 0
+    position: '{second.span_start}'
+    container: '{standard}'
+    fraction: factor2
+    attribute: '{second.qualifier}'
+  consumes:
+  - have
+  - have2
+  - factor
+  - factor2
+  satisfies: {}
+  bindings:
+    have:
+      subject: who
+    have2:
+      subject: standard
+  references:
+    standard: owner
+  disambiguates:
+  - role
+  - have
+  - first
+  - have2
+  - number
+  - second
+  generation: reader-only
+  description: Requires an already resolved possessor; standalone generation cannot yet construct this
+    antecedent context.
+- id: arithmetic/coordinated-qualified-relative-stock-named-fraction
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: have
+      cat: possession_state
+      finite_form: true
+    - slot: factor
+      type: fraction
+    - opt:
+      - lit: times
+        consume_skipped: true
+    - lit: as
+      consume_skipped: true
+    - lit: many
+      consume_skipped: true
+    - slot: first
+      cat: inventory_item
+      uncounted: true
+      qualified: true
+    - lit: as
+      consume_skipped: true
+    - slot: standard
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - opt:
+      - slot: have2
+        cat: possession_state
+        finite_form: true
+    - lit: and
+      consume_skipped: true
+    - slot: factor2
+      type: multiplier
+    - lit: the
+      consume_skipped: true
+    - slot: number
+      cat: count_aggregate_noun
+      uncounted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: second
+      cat: inventory_item
+      uncounted: true
+      qualified: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: qualified-relative
+    entity: '{who}'
+    measure: '{first}'
+    value: 0
+    position: '{who.span_start}'
+    container: '{standard}'
+    fraction: factor
+    attribute: '{first.qualifier}'
+  - fact: batch_evidence
+    kind: qualified-relative
+    entity: '{who}'
+    measure: '{second}'
+    value: 0
+    position: '{second.span_start}'
+    container: '{standard}'
+    fraction: factor2
+    attribute: '{second.qualifier}'
+  consumes:
+  - have
+  - have2
+  - factor
+  - factor2
+  satisfies: {}
+  bindings:
+    have:
+      subject: who
+    have2:
+      subject: standard
+  disambiguates:
+  - have
+  - first
+  - have2
+  - number
+  - second
+- id: arithmetic/coordinated-qualified-relative-stock-associated-multiplier
+  phase: read
+  match:
+    sentence:
+    - slot: owner
+      cat: possessive_determiner
+      referential: true
+    - slot: role
+      cat: person
+      uncounted: true
+    - slot: who
+      type: name
+    - slot: have
+      cat: possession_state
+      finite_form: true
+    - slot: factor
+      type: multiplier
+    - lit: as
+      consume_skipped: true
+    - lit: many
+      consume_skipped: true
+    - slot: first
+      cat: inventory_item
+      uncounted: true
+      qualified: true
+    - lit: as
+      consume_skipped: true
+    - slot: standard
+      cat: anaphoric_person_subject
+    - opt:
+      - slot: have2
+        cat: possession_state
+        finite_form: true
+    - lit: and
+      consume_skipped: true
+    - slot: factor2
+      type: multiplier
+    - lit: the
+      consume_skipped: true
+    - slot: number
+      cat: count_aggregate_noun
+      uncounted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: second
+      cat: inventory_item
+      uncounted: true
+      qualified: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: qualified-relative
+    entity: '{who}'
+    measure: '{first}'
+    value: 0
+    position: '{who.span_start}'
+    container: '{standard}'
+    fraction: factor
+    attribute: '{first.qualifier}'
+  - fact: batch_evidence
+    kind: qualified-relative
+    entity: '{who}'
+    measure: '{second}'
+    value: 0
+    position: '{second.span_start}'
+    container: '{standard}'
+    fraction: factor2
+    attribute: '{second.qualifier}'
+  consumes:
+  - have
+  - have2
+  - factor
+  - factor2
+  satisfies: {}
+  bindings:
+    have:
+      subject: who
+    have2:
+      subject: standard
+  references:
+    standard: owner
+  disambiguates:
+  - role
+  - have
+  - first
+  - have2
+  - number
+  - second
+  generation: reader-only
+  description: Requires an already resolved possessor; standalone generation cannot yet construct this
+    antecedent context.
+- id: arithmetic/coordinated-qualified-relative-stock-named-multiplier
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: have
+      cat: possession_state
+      finite_form: true
+    - slot: factor
+      type: multiplier
+    - lit: as
+      consume_skipped: true
+    - lit: many
+      consume_skipped: true
+    - slot: first
+      cat: inventory_item
+      uncounted: true
+      qualified: true
+    - lit: as
+      consume_skipped: true
+    - slot: standard
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - opt:
+      - slot: have2
+        cat: possession_state
+        finite_form: true
+    - lit: and
+      consume_skipped: true
+    - slot: factor2
+      type: multiplier
+    - lit: the
+      consume_skipped: true
+    - slot: number
+      cat: count_aggregate_noun
+      uncounted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: second
+      cat: inventory_item
+      uncounted: true
+      qualified: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: qualified-relative
+    entity: '{who}'
+    measure: '{first}'
+    value: 0
+    position: '{who.span_start}'
+    container: '{standard}'
+    fraction: factor
+    attribute: '{first.qualifier}'
+  - fact: batch_evidence
+    kind: qualified-relative
+    entity: '{who}'
+    measure: '{second}'
+    value: 0
+    position: '{second.span_start}'
+    container: '{standard}'
+    fraction: factor2
+    attribute: '{second.qualifier}'
+  consumes:
+  - have
+  - have2
+  - factor
+  - factor2
+  satisfies: {}
+  bindings:
+    have:
+      subject: who
+    have2:
+      subject: standard
+  disambiguates:
+  - have
+  - first
+  - have2
+  - number
+  - second
+- id: arithmetic/pooled-stock-shared-within-group
+  phase: read
+  match:
+    sentence:
+    - slot: group
+      cat: discourse_subject_group_pronoun
+      at_start: true
+    - slot: combine
+      cat: quantity_combination_verb
+      finite_form: true
+    - slot: all
+      cat: group_total_quantifier
+    - slot: item
+      cat: inventory_item
+      uncounted: true
+      bare: true
+    - opt:
+      - lit: together
+        consume_skipped: true
+    - lit: and
+      consume_skipped: true
+    - slot: share
+      cat: allocation_verb
+      finite_form: true
+    - slot: object
+      cat: plural_object_pronoun
+    - slot: equally
+      cat: equal_division_adverb
+    - lit: between
+      consume_skipped: true
+    - slot: self
+      cat: plural_reflexive_reference
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: qualified-pool
+    entity: ''
+    measure: '{item}'
+    value: 0
+    position: '{item.span_start}'
+  consumes:
+  - combine
+  - share
+  satisfies:
+    group:
+    - refers
+    combine:
+    - subject
+    share:
+    - subject
+    object:
+    - refers
+    self:
+    - refers
+    all:
+    - collection
+  question_assumption: true
+  disambiguates:
+  - combine
+  - item
+  - share
+asks:
+- id: ask/equal-pooled-stock-imperative
+  match:
+    question:
+    - slot: compute
+      cat: compute_verb
+    - lit: the
+      consume_skipped: true
+    - slot: number
+      cat: count_aggregate_noun
+      uncounted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: item
+      cat: inventory_item
+      uncounted: true
+      bare: true
+    - slot: each
+      cat: postpositive_distributive_quantifier
+    - slot: get
+      cat: acquire
+      finite_form: true
+    - lit: .
+      consume_skipped: true
+  resolves:
+    consumer: dependent-quantity-total
+    operation: pool
+    measure: '{item}'
+  satisfies:
+    each:
+    - collection
+    get:
+    - subject

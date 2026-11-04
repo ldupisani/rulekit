@@ -392,6 +392,7 @@ def _validated_premise_project(curated, tmp_path: Path, *, defects=None):
         curated,
         rule_id="arithmetic/stated-age",
         seed=123,
+        locked_bindings={"n": "2 years"},
     ).to_json()
     evidence = PremiseReviewEvidence(
         target_status=candidate["target_status"],

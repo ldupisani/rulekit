@@ -1,0 +1,168 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/measured-state-before-event
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: measurement_subject
+      referential: true
+      bare: true
+      at_start: true
+    - slot: state
+      cat: measurement_mass_verb
+      finite_form: true
+    - slot: amount
+      cat: mass_unit
+      counted: true
+      bare: true
+    - lit: at
+    - slot: span
+      cat: duration_measure
+      counted: true
+      bare: true
+    - lit: from
+    - slot: event
+      cat: scheduled_event
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: forecast-opening
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+    per_member: span
+    container: '{event}'
+    acquisition: '{span}'
+  consumes:
+  - state
+  - amount
+  - span
+  bindings:
+    state:
+      subject: who
+  description: Keep an observed measurement, explicit time to an event and a planned change rate as separate
+    operands.
+- id: arithmetic/planned-measured-rate-until-event
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: measurement_subject
+      referential: true
+      bare: true
+      at_start: true
+    - slot: be
+      cat: copula
+    - slot: plan_link
+      cat: specification_adoption_preposition
+    - slot: plan
+      cat: specification_noun
+      uncounted: true
+      bare: true
+    - lit: that
+    - slot: allow
+      cat: forecast_permission_verb
+      finite_form: true
+    - slot: recipient
+      cat: singular_animate_object_pronoun
+    - lit: to
+    - slot: change
+      cat: measurement_change_verb
+      bare_form: true
+    - slot: amount
+      cat: mass_unit
+      counted: true
+      bare: true
+    - lit: per
+    - slot: period
+      cat: duration_measure
+      uncounted: true
+      bare: true
+    - lit: until
+    - slot: day
+      cat: duration_measure
+      uncounted: true
+      bare: true
+    - lit: of
+    - slot: event
+      cat: scheduled_event
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: forecast-rate
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+    container: '{event}'
+    acquisition: '{period}'
+    verb: '{change}'
+    sign: sign(change)
+  consumes:
+  - be
+  - allow
+  - change
+  - amount
+  satisfies:
+    be:
+    - subject
+    allow:
+    - subject
+    change:
+    - subject
+    recipient:
+    - refers
+  disambiguates:
+  - change
+  - plan
+  bindings:
+    plan_link:
+      object: plan
+  description: Keep an observed measurement, explicit time to an event and a planned change rate as separate
+    operands.
+asks:
+- id: ask/projected-measurement-at-event
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: much
+    - slot: modal
+      type: future_modal
+    - slot: who
+      type: entity
+      common_noun_cat: measurement_subject
+      referential: true
+      bare: true
+    - slot: state
+      cat: measurement_mass_verb
+      bare_form: true
+    - lit: on
+    - slot: day
+      cat: duration_measure
+      uncounted: true
+      bare: true
+    - lit: of
+    - slot: event
+      cat: scheduled_event
+      uncounted: true
+      bare: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: projected-measured-state
+    entity: '{who}'
+    event: '{event}'
+  satisfies:
+    state:
+    - subject

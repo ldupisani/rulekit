@@ -6,7 +6,7 @@ from . import consumer
 from ..answer import Answer, AnswerProof, ProofStep, SemanticNode
 from ..model import MeasuredComponent
 from ..evaluate import evaluate
-from ..rate_calculation import apply_rate
+from ..affine_graph import dependency_graph, AffineError
 from ..numeric_evidence import audit_numeric_mentions
 from ..source_coverage import uncovered_document_units
 
@@ -33,22 +33,16 @@ def consume(ctx):
     if (uncovered_document_units(ctx.premises, ctx.question, ctx.match.consumed)
             or audit_numeric_mentions((*ctx.premises, ctx.question), expected, missing="missing", duplicate="duplicate")):
         return decline("the component tally has unread conditions or unaccounted amounts")
-    resolved = {}
-    pending = dict(keyed)
-    while pending:
-        progressed = False
-        for key, row in list(pending.items()):
-            if not row.reference:
-                value = row.value
-            elif (row.reference, row.reference_measure) in resolved:
-                value = apply_rate(row, resolved[row.reference, row.reference_measure], ctx.log, source="relative-component-count")
-            else:
-                continue
-            resolved[key] = value
-            del pending[key]
-            progressed = True
-        if not progressed:
-            return decline("component dependencies must be anchored and acyclic with matching unit labels")
+    scope = (next(iter(entities)), next(iter(products), ""))
+    node = lambda key: (scope, *key)
+    anchors = [(node(key), row.value) for key, row in keyed.items() if not row.reference]
+    links = [(node(key), node((row.reference, row.reference_measure)), row.value, 0)
+             for key, row in keyed.items() if row.reference]
+    try:
+        graph = dependency_graph(anchors, links, ctx.log)
+        resolved = {key: graph.value(node(key)) for key in keyed}
+    except AffineError:
+        return decline("component dependencies must be anchored and acyclic with matching unit labels")
     value = evaluate(" + ".join(str(resolved[key]) for key in requested), {}, ctx.log, source="explicit-component-count-tally")
     ctx.log.consumed_component_keys.update(r.key() for r in rows)
     node = SemanticNode("component-count-tally", (("entity", next(iter(entities))),))

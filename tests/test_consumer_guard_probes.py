@@ -43,6 +43,7 @@ from rulekit.kernel.model import (
     Predication,
     Provenance,
     Quantity,
+    Rate,
     SpatialPlacement,
 )
 from rulekit.kernel.patterns import SKIPPABLE_SENSES, match_ask
@@ -89,6 +90,20 @@ def call(
 
 def _capacity_store(*facts):
     return FactStore(facts=list(facts))
+
+
+def test_calendar_rate_needs_source_evidence(curated):
+    # A direct caller can provide a Rate without its source reading. Calendar
+    # composition must not invent a complete source clause for that fact.
+    rate = Rate(Provenance(source="synthetic", sentence=0), "nora", "book", "day", 10)
+    got = call(
+        "calendar-resource-total",
+        curated,
+        {"operation": "week"},
+        store=FactStore(facts=[rate]),
+    )
+    assert got.kind == "decline"
+    assert got.reason == "each ordinary rate must have a complete, unqualified source clause"
 
 
 def _capacity_context(reg, *facts, allow_confirmed_fit=False):

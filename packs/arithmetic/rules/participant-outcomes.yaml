@@ -1,0 +1,205 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/measured-participant-total
+  phase: read
+  match:
+    sentence:
+    - slot: group
+      cat: person
+      counted: true
+      bare: true
+      at_start: true
+    - slot: act
+      cat: measured_outcome_predicate
+      finite_form: true
+    - lit: a
+      consume_skipped: true
+    - lit: total
+    - lit: of
+    - slot: amount
+      cat: resource_measure_unit
+      counted: true
+      bare: true
+    - opt:
+      - lit: of
+      - slot: property
+        cat: mass_measure
+        uncounted: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: participant-total
+    entity: '{group}'
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+    per_member: group
+    verb: '{act}'
+  consumes:
+  - group
+  - amount
+  - act
+  satisfies:
+    act:
+    - subject
+  description: Close a measured participant partition using ordinal member identities and an explicitly equal remainder.
+- id: arithmetic/measured-ordinal-participant
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      cat: person
+      uncounted: true
+      qualified: true
+      qualifier_cat: holder_ordinal
+      all_qualifiers: true
+      at_start: true
+    - slot: act
+      cat: measured_outcome_predicate
+      finite_form: true
+    - slot: amount
+      cat: resource_measure_unit
+      counted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: participant-amount
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+    verb: '{act}'
+  consumes:
+  - act
+  - amount
+  bindings:
+    act:
+      subject: who
+  description: Close a measured participant partition using ordinal member identities and an explicitly equal remainder.
+- id: arithmetic/measured-participant-comparison
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      cat: person
+      uncounted: true
+      qualified: true
+      qualifier_cat: holder_ordinal
+      all_qualifiers: true
+      at_start: true
+    - slot: act
+      cat: measured_outcome_predicate
+      finite_form: true
+    - slot: amount
+      cat: resource_measure_unit
+      counted: true
+      bare: true
+    - slot: direction
+      cat: mass_quantity_delta
+    - lit: than
+    - slot: other
+      cat: person
+      uncounted: true
+      qualified: true
+      qualifier_cat: holder_ordinal
+      all_qualifiers: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: participant-relation
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+    verb: '{act}'
+    container: '{other}'
+    sign: sign(direction)
+  consumes:
+  - act
+  - amount
+  bindings:
+    act:
+      subject: who
+  description: Close a measured participant partition using ordinal member identities and an explicitly equal remainder.
+- id: arithmetic/equal-remaining-participant-outcomes
+  phase: read
+  match:
+    sentence:
+    - slot: group
+      cat: person
+      counted: true
+      qualified: true
+      qualifier_cat: holder_terminal_order
+      all_qualifiers: true
+      at_start: true
+    - slot: act
+      cat: measured_outcome_predicate
+      finite_form: true
+    - lit: the
+      consume_skipped: true
+    - slot: amount
+      cat: allocation_amount_noun
+      uncounted: true
+      qualified: true
+      qualifier_cat: equal_amount_attribute
+      all_qualifiers: true
+      number: singular
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: participant-equal
+    entity: '{group}'
+    measure: ''
+    value: group
+    position: '{group.span_start}'
+    verb: '{act}'
+  consumes:
+  - group
+  - act
+  bindings:
+    act:
+      subject: group
+  description: Close a measured participant partition using ordinal member identities and an explicitly equal remainder.
+asks:
+- id: ask/equal-remaining-measured-outcome
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: many
+    - slot: unit
+      cat: resource_measure_unit
+      uncounted: true
+      bare: true
+    - slot: aux
+      type: auxiliary
+    - slot: each
+      cat: partitive_distributive_quantifier
+    - lit: of
+    - slot: group
+      cat: person
+      counted: true
+      qualified: true
+      qualifier_cat: holder_terminal_order
+      all_qualifiers: true
+    - slot: act
+      cat: measured_outcome_predicate
+      bare_form: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: participant-outcome-remainder
+    measure: '{unit}'
+    group: '{group}'
+    count: '{group.value}'
+    verb: '{act}'
+  satisfies:
+    act:
+    - subject
+    each:
+    - collection

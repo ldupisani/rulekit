@@ -10,10 +10,17 @@ categories:
     parent: measured_output_container
   dining_activity:
     parent: purchase_context_activity
+  dining_account_activity:
+    parent: account_activity
+  food:
+    parent: material_resource
+    includes:
+    - edible_quantity_object
 members:
   dining_venue:
   - chain
   - restaurant
+  - cafe
   dining_venue_descriptor:
   - fast-food
   food_origin_descriptor:
@@ -27,9 +34,22 @@ members:
   - platter
   - plate
   - bowl
+  - slice
   dining_activity:
   - eat
   - eats
+  dining_account_activity:
+  - breakfast
+  - lunch
+  - dinner
+  food:
+  - bacon
+  - beef
+  - butter
+  - chicken
+  - flour
+  - milk
+  - pork
 attribute_compatibility:
   dining_venue_descriptor:
   - dining_venue

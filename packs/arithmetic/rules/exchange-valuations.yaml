@@ -1,0 +1,331 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/planned-coin-exchange
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: want
+      cat: finite_infinitival_goal_predicate
+    - lit: to
+      consume_skipped: true
+    - slot: exchange
+      cat: exchange_verb
+    - slot: them
+      cat: discourse_referential_group_pronoun
+    - lit: for
+      consume_skipped: true
+    - slot: coin
+      cat: coin
+      uncounted: true
+      bare: true
+    - lit: and
+      consume_skipped: true
+    - lit: so
+      consume_skipped: true
+    - slot: who2
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: go
+      cat: spatial_motion_verb
+    - lit: to
+      consume_skipped: true
+    - slot: bank
+      cat: bank_site
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: coin-exchange-plan
+    entity: '{who}'
+    measure: '{coin}'
+    value: 0
+    position: '{who.span_start}'
+  consumes:
+  - want
+  - exchange
+  - go
+  satisfies:
+    want:
+    - subject
+    exchange:
+    - subject
+    go:
+    - subject
+    them:
+    - refers
+  where:
+  - same_lemma:
+    - who
+    - who2
+  disambiguates:
+  - want
+  - exchange
+  - them
+  - coin
+  - go
+  - bank
+- id: arithmetic/completed-equal-value-coin-exchange
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: exchange
+      cat: exchange_verb
+    - slot: old
+      cat: coin
+      counted: true
+      bare: true
+    - lit: for
+      consume_skipped: true
+    - slot: new
+      cat: coin
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: coin-exchange-completed
+    entity: '{who}'
+    measure: '{new}'
+    value: old
+    position: '{who.span_start}'
+    container: '{old}'
+  consumes:
+  - exchange
+  - old
+  satisfies:
+    exchange:
+    - subject
+  disambiguates:
+  - exchange
+  - old
+  - new
+- id: arithmetic/returned-exchange-subset-valuation
+  phase: read
+  match:
+    sentence:
+    - lit: after
+      consume_skipped: true
+    - slot: get
+      cat: return_action
+      present_participle: true
+    - lit: back
+      consume_skipped: true
+    - lit: from
+      consume_skipped: true
+    - slot: bank
+      cat: bank_site
+      uncounted: true
+      bare: true
+    - lit: ','
+      consume_skipped: true
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: discover
+      cat: discovery_action
+    - lit: that
+      consume_skipped: true
+    - slot: fraction
+      type: fraction
+    - lit: of
+      consume_skipped: true
+    - slot: coin
+      cat: coin
+      uncounted: true
+      bare: true
+    - slot: be
+      cat: copula
+    - slot: special
+      cat: coin
+      uncounted: true
+      qualified: true
+      qualifier_cat: currency_material_attribute
+    - slot: worth
+      cat: valuation_descriptor
+    - slot: price
+      cat: currency_unit
+      counted: true
+      bare: true
+    - slot: each
+      cat: postpositive_distributive_quantifier
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: coin-subset-value
+    entity: '{who}'
+    measure: '{coin}'
+    value: fraction
+    position: '{who.span_start}'
+    per_member: price
+    attribute: '{price}'
+    container: '{special}'
+  consumes:
+  - get
+  - discover
+  - fraction
+  - be
+  - price
+  - worth
+  satisfies:
+    get:
+    - subject
+    discover:
+    - subject
+    be:
+    - subject
+    each:
+    - collection
+  disambiguates:
+  - get
+  - bank
+  - discover
+  - coin
+  - be
+  - special
+  - price
+  - each
+  - worth
+- id: arithmetic/coin-subset-valuation
+  phase: read
+  match:
+    sentence:
+    - slot: fraction
+      type: fraction
+      at_start: true
+    - lit: of
+      consume_skipped: true
+    - slot: coin
+      cat: coin
+      uncounted: true
+      bare: true
+    - slot: be
+      cat: copula
+    - slot: special
+      cat: coin
+      uncounted: true
+      qualified: true
+      qualifier_cat: currency_material_attribute
+    - slot: worth
+      cat: valuation_descriptor
+    - slot: price
+      cat: currency_unit
+      counted: true
+      bare: true
+    - slot: each
+      cat: postpositive_distributive_quantifier
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: coin-subset-value
+    entity: ''
+    measure: '{coin}'
+    value: fraction
+    position: '{fraction.span_start}'
+    per_member: price
+    attribute: '{price}'
+    container: '{special}'
+  consumes:
+  - fraction
+  - be
+  - price
+  - worth
+  satisfies:
+    be:
+    - subject
+    each:
+    - collection
+  disambiguates:
+  - coin
+  - be
+  - special
+  - price
+  - each
+  - worth
+asks:
+- id: ask/exchanged-money-value
+  match:
+    question:
+    - lit: what
+      consume_skipped: true
+    - slot: be
+      cat: copula
+    - lit: the
+      consume_skipped: true
+    - lit: total
+      consume_skipped: true
+    - slot: value
+      cat: value_noun
+      uncounted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: owner
+      cat: possessive_determiner
+    - slot: money
+      cat: mass_currency_noun
+      uncounted: true
+    - opt:
+      - lit: now
+        consume_skipped: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: exchange-valuation
+    entity: '{owner}'
+  satisfies:
+    be:
+    - subject
+    owner:
+    - refers
+  disambiguates:
+  - be
+  - value
+  - owner
+  - money
+- id: ask/owned-exchanged-money-value
+  match:
+    question:
+    - lit: what
+      consume_skipped: true
+    - slot: be
+      cat: copula
+    - lit: the
+      consume_skipped: true
+    - opt:
+      - lit: total
+        consume_skipped: true
+    - slot: value
+      cat: value_noun
+      uncounted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: money
+      cat: mass_currency_noun
+      uncounted: true
+      possessed: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: exchange-valuation
+    entity: '{money.owner}'
+  satisfies:
+    be:
+    - subject

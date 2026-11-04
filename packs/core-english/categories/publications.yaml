@@ -1,0 +1,20 @@
+format: rulekit/categories@1
+categories:
+  book:
+    parent: inventory_item
+  book_topic:
+    parent: intrinsic_attribute
+members:
+  book:
+  - biography
+  - book
+  - novel
+  book_topic:
+  - history
+  - romance
+  - poetry
+  - mystery
+  - western
+attribute_compatibility:
+  book_topic:
+  - book

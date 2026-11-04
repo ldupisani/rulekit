@@ -37,6 +37,26 @@ categories:
   uniform_price_attribute:
     parent: adjective
     notes: Explicit equality of the individual prices in one purchased lot.
+  account_activity:
+    parent: noun
+    notes: A shared activity with explicitly quoted item costs; no payment is inferred.
+  cash_deposit_verb:
+    parent: verb
+  cash_deposit_account:
+    parent: noun
+  cash_proceeds_noun:
+    parent: noun
+  cash_deposit_noun:
+    parent: noun
+  passive_cash_receipt_verb:
+    parent: verb
+  supplemental_amount_attribute:
+    parent: adjective
+  transaction_performance_verb:
+    parent: verb
+    notes: A light verb with an explicit transaction noun complement, without implying commercial production.
+  threshold_tariff_verb:
+    parent: verb
 adposition_roles:
   allocation-context:
     preposition_category: resource_account_preposition
@@ -61,8 +81,44 @@ members:
   transaction_supplier_preposition: [from]
   transaction_unit_price_preposition: [at, for]
   uniform_price_attribute: [same]
+  account_activity:
+  - trip
+  - picnic
+  - party
+  - meeting
+  cash_deposit_verb:
+  - deposit
+  - deposits
+  - deposited
+  cash_deposit_account:
+  - account
+  - bank account
+  cash_proceeds_noun:
+  - profit
+  - earnings
+  cash_deposit_noun:
+  - deposit
+  passive_cash_receipt_verb:
+  - given
+  - paid
+  supplemental_amount_attribute:
+  - extra
+  - additional
+  transaction_performance_verb:
+  - make
+  - makes
+  - made
+  - making
+  threshold_tariff_verb:
+  - earn
+  - earns
+  - charge
+  - charges
 attribute_compatibility:
   transaction_channel_descriptor: [transaction_supplier]
   uniform_price_attribute: [price_anaphor]
+  supplemental_amount_attribute:
+  - currency_unit
+  - quantity_container
 adverb_verb_compatibility:
   transaction_channel: [purchase, purchase_request, shopping_activity, spend_verb]

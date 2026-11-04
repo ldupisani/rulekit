@@ -1,5 +1,7 @@
 format: rulekit/categories@1
 categories:
+  divisible_food_whole:
+    parent: decomposable_quantity_whole
   recipe_product:
     parent: specification_resource
   recipe_ingredient:
@@ -9,6 +11,7 @@ categories:
   culinary_occasion:
     parent: specification_scope
 members:
+  divisible_food_whole: [cake, pizza, pie]
   recipe_product:
   - tea
   - coffee

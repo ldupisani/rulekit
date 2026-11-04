@@ -24,9 +24,9 @@ rules:
   satisfies: {be: [subject]}
   where: [number_compatible: [amount, be]]
   emits:
-  - {fact: batch_evidence, kind: holder-population, entity: '{population}', measure: '{population}', value: 
+  - {fact: batch_evidence, kind: holder-population, entity: '{population}', measure: '{population}', value:
       population, position: '{population.span_start}', acquisition: '{property.optional}'}
-  - {fact: batch_evidence, kind: measured-holder-total, entity: '{population}', measure: '{item}', value: amount, 
+  - {fact: batch_evidence, kind: measured-holder-total, entity: '{population}', measure: '{item}', value: amount,
       marker: '{amount}', position: '{amount.span_start}', acquisition: '{item}'}
 templates:
   measured-holder-subset:
@@ -43,7 +43,7 @@ templates:
       satisfaction: {be: [subject], hold: [subject], count: [quantifies]}
     rule:
       question_assumption: true
-      description: A counted subset has an explicit measured amount per holder; the complete clause can be a local 
+      description: A counted subset has an explicit measured amount per holder; the complete clause can be a local
         question assumption.
       match:
         sentence:
@@ -57,7 +57,7 @@ templates:
       bindings: {each: {collection: holders}}
       where: {parameter: agreement}
       emits:
-      - {fact: batch_evidence, kind: measured-holder-share, entity: '{holders}', measure: '', value: count, 
+      - {fact: batch_evidence, kind: measured-holder-share, entity: '{holders}', measure: '', value: count,
           per_member: amount, marker: '{amount}', position: '{count.span_start}'}
   remaining-holder-question:
     parameters:
@@ -70,7 +70,7 @@ templates:
       - {slot: each, cat: partitive_distributive_quantifier}
       - {lit: of}
       - {lit: the, consume_skipped: true}
-      - {slot: holders, cat: quantity_container, uncounted: true, number: plural, qualified: true, qualifier_cat: 
+      - {slot: holders, cat: quantity_container, uncounted: true, number: plural, qualified: true, qualifier_cat:
           resource_remnant_attribute, all_qualifiers: true}
       - {slot: hold, cat: container_content_state_verb, present_participle: true}
       unit: ''

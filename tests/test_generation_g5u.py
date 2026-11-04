@@ -75,7 +75,21 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
         )
     }
 
-    assert occurrences == {'arithmetic/population-rate-assessment-finite': ((3, 0), 'frequency', ((3,),)),
+    assert occurrences == {
+        'arithmetic/affine-recipient-transfer': ((2, 0), 'then', ((2,),)),
+        'arithmetic/exhaustive-section-remaining-list': ((0, 0), 'then', ((0,),)),
+        'arithmetic/measured-item-quote': ((1, 0), 'also', ((1,),)),
+        'arithmetic/relative-measured-item-quote': ((1, 0), 'also', ((1,),)),
+        'arithmetic/relative-recipient-transfer': ((2, 0), 'then', ((2,),)),
+        'arithmetic/removed-section-fraction': ((11, 0), 'quickly', ((11,),)),
+        'arithmetic/stated-recipient-transfer': ((2, 0), 'then', ((2,),)),
+'arithmetic/pooled-stock-shared-within-group': ((8,), 'equally', ()),
+                           'arithmetic/sequenced-measured-age-comparison': ((0,), 'sequence', ()),
+                           'arithmetic/container-content-2-fold-change': ((0, 0), 'sequence', ((0,),)),
+                           'arithmetic/container-content-3-fold-change': ((0, 0), 'sequence', ((0,),)),
+                           'arithmetic/deposit-sale-proceeds': ((0, 0), 'sequence', ((0,),)),
+                           'arithmetic/fractional-container-fill-with-departure': ((3,), 'fraction', ()),
+                           'arithmetic/population-rate-assessment-finite': ((3, 0), 'frequency', ((3,),)),
                            'arithmetic/population-rate-assessment-progressive': ((4, 0), 'frequency', ((4,),)),
                            'arithmetic/population-rate-inquiry': ((6, 0), 'frequency', ((6,),)),
                            'arithmetic/population-rate-inquiry-qualified-attribute': ((4, 0), 'particle', ((4,),)),
@@ -184,6 +198,7 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
         "conditional_consequent_marker",
         "flexible_holding_anchor_adverb",
         "narration_sequence_adverb",
+        "transaction_sequence_adverb",
     )
     assert project.registry.word_categories.get("finally", ()) == (
         "narration_sequence_adverb",
@@ -199,7 +214,7 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
     ] == sorted([
         "afterward", "all-around", "already", "always", "back", "continuously", "correctly", "downhill", "earlier", "exactly", "forever", "forth", "initially", "instead", "later", "normally", "otherwise", "quickly", "separately", "strictly",
         "again", "ago", "also", "away", "back and forth", "completely", MOVED_WORD, "daily", "down", "entirely", "equally", "far", "finally", "fully", "further", "however", "immediately", "individually",
-        "just", "next", "off", "once again", "online", "only", "originally", "out", "outside", "recently", "respectively", "safely", "still", "then", "thereafter", "too", "up", "upstairs", "vertically", "yet",
+        "halfway", "just", "next", "off", "once again", "online", "only", "originally", "out", "outside", "recently", "respectively", "safely", "still", "then", "thereafter", "too", "up", "upstairs", "vertically", "yet",
     ])
 
 
@@ -250,13 +265,26 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
     project = load_project(CURATED)
     availability = list_rule_availability(project)
 
-    assert len(availability) == 729
-    assert sum(item.supported for item in availability) == 644
-    assert sum(not item.supported for item in availability) == 85
+    assert len(availability) == 830
+    assert sum(item.supported for item in availability) == 733
+    assert sum(not item.supported for item in availability) == 97
     assert all(
         not item.blockers
         or item.id
-        in {'arithmetic/account-anaphoric-full-settlement',
+        in {
+            "arithmetic/affine-recipient-transfer",
+            "arithmetic/employment-bonus-context",
+            "arithmetic/exhaustive-section-remaining-list",
+            "arithmetic/named-month-activity-schedule",
+            "arithmetic/relative-recipient-transfer",
+            "arithmetic/stock-section-counted-list",
+            "arithmetic/year-qualified-month-schedule",
+            "arithmetic/absence-of-other-occupants",
+            "arithmetic/coordinated-qualified-relative-stock-associated-fraction",
+            "arithmetic/coordinated-qualified-relative-stock-associated-multiplier",
+            'arithmetic/affiliated-recipient-groups',
+            'arithmetic/named-activity-account',
+            'arithmetic/account-anaphoric-full-settlement',
             'arithmetic/indexed-completion-amount-label',
             'arithmetic/named-individual-completion-deadline',
             'arithmetic/named-shared-completion-context',
@@ -345,7 +373,7 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
             'logic-arithmetic/universal-all-have-quantity-pp-incompatible-item-safety'}
         for item in availability
     )
-    assert len(exploration_status(project)["fillers"]) == 2575
+    assert len(exploration_status(project)["fillers"]) == 2601
 
 
 def test_currently_generates_a_matcher_confirmed_anchor() -> None:
@@ -419,7 +447,7 @@ def test_combined_project_exposes_only_declared_holding_anchor_adverbs() -> None
         for item in exploration_status(project)["fillers"]
     }
 
-    assert len(adverbs) == 58
+    assert len(adverbs) == 59
     holding_anchor_adverbs = {
         word
         for word in adverbs

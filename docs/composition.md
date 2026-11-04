@@ -680,3 +680,225 @@ Implementation: [monetary units](../packs/core-english/categories/core.yaml),
 [conversion helpers](../src/rulekit/kernel/monetary.py),
 [capacity consumer](../src/rulekit/kernel/consumers/capacity.py), and
 [boundary regressions](../tests/test_review_language_boundaries.py).
+
+Currency glyphs come from the pack's currency registry. Pounds sterling have
+their own denomination identity, separate from pounds of mass. A named activity
+can total the participants' counted items at matching item or serving prices;
+that quote does not establish payment. A sales cash account instead combines
+actual sales and supplemental receipts, then subtracts explicit deposits from
+cash on hand. Those deposits remain owned assets, so the result is not net worth.
+
+Implementation: [activity accounts](../src/rulekit/kernel/consumers/named_activity_cost.py)
+and [cash transfers](../src/rulekit/kernel/consumers/cash_transaction_balance.py).
+
+## Relative inventories and measured partitions
+
+Cross-item comparisons retain their source and predicate. An omitted comparison
+standard can refer to the preceding item only within the same inventory clause.
+The consumer resolves those affine links before summing the requested declared
+category. Excluded items require a declared disjoint classification; absent
+membership is not evidence of exclusion. Cycles, unknown standards, negative
+counts and unread events decline.
+An ordinary inventory statement keeps its existing `Quantity` representation.
+The comparison-standard particles remain grammatical alternations: the premise
+generator cannot yet realize a particle category. All item and predicate
+vocabulary still uses category gates.
+
+A measured participant partition retains ordinal identities separately from
+the unit being measured. Known and relatively stated members must exhaust the
+initial ordinal prefix; an explicitly equal remaining group shares the residual.
+Population counts, measurement units and the requested remaining group must agree.
+
+Implementation: [relative inventories](../src/rulekit/kernel/consumers/relative_item_total.py)
+and [participant outcomes](../src/rulekit/kernel/consumers/participant_outcome_remainder.py).
+
+## Capacity, projections and counted distributions
+
+Container contents can combine a geometric capacity with a fractional fill and
+ordered `MeasuredContentChange` evidence. Every spill or scale applies to the
+current contents. Capacity uses the shared shape formulas and unit conversions.
+A complete length, width and height specification for an unqualified container
+uses the rectangular-prism interpretation and reports it with the answer when
+the shape is unstated. Other descriptors require an explicit rectangular model
+or shape clarification. Incomplete or conflicting dimensions decline. Unspecified
+overflow and competing content streams decline. A measurement forecast instead
+applies an explicitly directed rate over the stated time to the same event,
+reporting a projected outcome rather than asserting a future observation.
+
+Counted distributions distinguish packages, wholes and their component units.
+Whole-package coverage rounds up only after establishing the complete recipient
+count and units per recipient. A piece remainder subtracts the explicit serving
+roster, including an owner only when listed, and counts a named role once.
+For a stated provision purpose and complete recipient roster, explicitly
+individual packaged units use one unit per listed recipient. The answer reports
+this roster and serving interpretation. An explicit serving quantity overrides
+it. Other missing serving requirements request clarification; insufficient stock declines.
+
+Implementation: [container state](../src/rulekit/kernel/consumers/container_content_state.py),
+[measurement projection](../src/rulekit/kernel/consumers/projected_measured_state.py),
+and [unit distribution](../src/rulekit/kernel/consumers/unit_distribution.py).
+Paraphrases and ambiguity boundaries live in
+[composition regressions](../tests/test_composed_quantity_accounts.py).
+
+## Scoped affine comparison graphs
+
+Comparison nodes retain participant identity and, when relevant, the item class
+or ordinal observation period. Additive and multiplicative links use one shared
+affine graph. An inverse link can recover the standard's quantity from the
+subject. Conflicting paths decline. Unanchored components keep a symbolic
+origin: a difference can be determined when that origin cancels, without
+asserting either participant's absolute age.
+
+Accumulated activity durations require the same activity and an identified
+comparison standard. Indexed averages require one comparison for every position
+in the declared range, a matching baseline and compatible count units. A
+frequency expression can count performances in each period; it is not a
+multiplier of an unstated stock. Ordinary unscoped comparison readers refuse
+the indexed suffix rather than discard it. Calendar month counts convert between
+declared month and year units without assigning a fixed day length to a month.
+
+A construction may use an already resolved pronoun as its reference target
+only through an explicit referential contract. The shared reference projector
+still checks the real antecedent, number, form agreement and conflicting links.
+An unresolved pronoun cannot establish another pronoun's identity.
+Patterns requiring a previously resolved possessor are marked reader-only
+for standalone generation until their antecedent context can be realized.
+
+Implementation: [affine constraints](../src/rulekit/kernel/affine_graph.py),
+[scoped comparisons](../src/rulekit/kernel/consumers/scoped_comparison.py),
+and [reference projections](../src/rulekit/kernel/reference_bindings.py).
+
+## Dependent stocks and reporting periods
+
+An additional ratio acquisition contributes to the buyer's initial stock; it
+does not replace that stock with a total-count comparison. Both container counts
+and their contents must match. Qualified holdings can be compared independently,
+then combined and shared only through an explicit pooling event with the same
+complete holder set. Discrete stock and equal shares must remain whole counts.
+
+A relative preceding-period amount retains its activity and period unit. An
+adjacent-period total requires the complete two-period window, either explicitly
+requested or covered by an aggregate over the entire account; it does not
+repeat a relationship over additional unstated periods. Existing commercial
+basket counts can supply the same observed event count through a checked local
+view. Their original evidence and accounting identity remain intact.
+
+Implementation: [dependent quantity totals](../src/rulekit/kernel/consumers/dependent_quantity_total.py)
+and [source footprints](../src/rulekit/kernel/source_coverage.py).
+
+## Included blocks, measured quotes and available capacity
+
+A duration tariff can state a fixed included block and a separate rate for
+excess usage in the same reporting period. The excess rate prices only usage
+above that threshold. Usage below the block requires an explicit prorating
+policy. This differs from a percentage premium on a continuing base rate.
+
+A measured unit quote can recover a purchase quantity from the decrease in cash
+on hand for the single stated shopping purpose. The purpose supplies intent,
+not an asserted purchase event or an extra quantitative operand. A scaled mass
+measurement can instead determine a change in an asset's quoted value. It
+does not assert a sale or incoming cash. Measurements, product identity, owners
+and denominations must agree. Numeric syntax admits leading decimal fractions
+with or without a registered currency symbol.
+
+Uniform grouped capacity excludes the unavailable groups before counting their
+units. Ordinal exclusions must fall within the declared structure and preserve any
+explicit site owner. Available assignments also require explicit vacancy evidence; identical units alone do
+not establish vacancy. A request for a qualified subset needs its own evidence.
+
+Implementation: [threshold blocks](../src/rulekit/kernel/consumers/threshold_block_total.py),
+[measured values](../src/rulekit/kernel/consumers/measured_value_account.py),
+and [grouped availability](../src/rulekit/kernel/consumers/grouped_availability.py).
+Invented analogues, paraphrases and refusal boundaries live in
+[scoped composition tests](../tests/test_scoped_quantity_compositions.py).
+
+## Calendar schedules and staged quantity accounts
+
+A weekly schedule applies an ordinary daily baseline to its inclusive opening
+window, replacing explicitly identified weekdays with their relative rates.
+An approximate exception yields an approximate total. Named-month schedules
+sum pack-declared month lengths and distinct daily portions. An explicit year
+selects common or leap-year lengths; an unstated year uses the reported
+non-leap assumption. Joint annual savings uses the reported convention of 365
+earning days for both explicitly named participants. These conventions remain
+local interpretations rather than universal year/day or month/day conversions.
+
+A unit earnings rate includes changes to both pay and work duration. Uniform
+product extents first expand the requested output before inverting its stated
+production rate. Measured-item quotes retain physical units, currency and
+relative standards; quote totals do not assert payment. Explicit input/output
+calibrations compose observed inputs and a matching output price. Weather
+observations are one input grammar; named material processing reuses the same
+calculation.
+
+An equal-face-value coin exchange preserves the initial value before a stated
+subset is revalued. Ordinary coins retain face value, and both the exchange and
+subset must contain whole coins. A transfer reconstruction connects recipient
+outcomes through the shared affine graph, then adds the closing remainder.
+Sectioned stock reconstruction adds an observed section to a complementary
+section recovered from its exhaustive remaining list. Container, item, section,
+recipient and currency identities are checked before arithmetic; unrelated
+holdings, overlapping identities, incompatible units and unread changes decline.
+
+Implementation: [calendar resources](../src/rulekit/kernel/consumers/calendar_resource_total.py),
+[adjusted rates](../src/rulekit/kernel/consumers/adjusted_unit_rate.py),
+[output extents](../src/rulekit/kernel/consumers/composite_output_duration.py),
+[measured quotes](../src/rulekit/kernel/consumers/measured_quote_total.py),
+[calibrated resources](../src/rulekit/kernel/consumers/calibrated_resource_value.py),
+[exchange valuation](../src/rulekit/kernel/consumers/exchange_valuation.py),
+[recipient stock](../src/rulekit/kernel/consumers/recipient_stock_reconstruction.py),
+and [section stock](../src/rulekit/kernel/consumers/section_stock_reconstruction.py).
+Invented examples and refusal boundaries live in the
+[quantity account tests](../tests/test_calendar_and_quantity_accounts.py).
+
+## Shared composition operations and domain roles
+
+Component requirements use role unions over material resources, production
+outputs and culinary subcategories. Divisible food and material wholes inherit
+the same component structure. Fractional component use is an explicit event;
+eating retains its edible-object restriction, and food-specific remainder
+wording cannot identify an inedible whole. A single-actor fractional use without
+a per-whole component population can reuse the ordinary fractional-stock ledger
+through a local view. Its prior pool must match the actor, resource and any
+explicit qualifier; the original evidence and conflict metadata remain intact. Being an allocation recipient does
+not imply being an intentional initiator or having personal-pronoun eligibility.
+
+Closed compositions share source coverage and numeric operand auditing through
+[composition evidence](../src/rulekit/kernel/composition_evidence.py).
+Consumers still establish admissible facts, identities, assumptions and account
+scope before calling those checks. Shared finalisation credits only the batch
+facts that the consumer validated. Older share accounts reuse source adapters
+and full question references rather than reconstructing a receipt's syntax.
+
+The [affine graph](../src/rulekit/kernel/affine_graph.py) also provides a directed
+dependency mode. Component requirements and joint shares use this mode to keep
+their anchored, acyclic-definition contract; they do not gain inverse or cyclic
+inference merely by sharing graph arithmetic. Nodes retain their account or
+product scope and measurement identity. A zero multiplier still needs an
+established standard. [Fractional allocations](../src/rulekit/kernel/resource_equations.py)
+likewise require an explicit original-stock or current-remainder basis for each
+step. Reference interpretation and permission to switch bases remain caller
+policies. [Ratio application](../src/rulekit/kernel/rate_calculation.py) retains
+both source operands for specifications and observed calibrations without
+asserting that their resources or application conditions are interchangeable.
+
+[Pricing](../src/rulekit/kernel/pricing.py) resolves agreeing unit-quote
+restatements within one caller-established scope. Agreement requires the same
+item, qualifier and pricing basis; denominations must have a declared monetary
+conversion. Conflicting quotes and incompatible currencies decline. Measured
+quote lines convert their physical denominator before using the existing
+expenditure price resolver. A quotation still does not establish payment.
+
+[Geometric costing](../src/rulekit/kernel/consumers/measure_cost.py) is available
+through the arithmetic pack and evaluates declared shape properties using the
+same inherited formula and unit contracts as geometry and container capacity.
+In the rectangular width-by-height site construction, an unlabelled axis uses
+the other stated axis's unit, or the explicit quoted unit when neither axis
+labels its unit. Explicit physical-unit modifiers take priority over the site's
+noun. Other shape constructions state their parameter roles explicitly. Area
+and linear pricing bases stay distinct; extra dimensions, restrictions and
+unread conditions cannot be discarded.
+
+Cross-domain examples, equivalent and conflicting quotes, scoped dependencies,
+fraction bases and dimensional boundaries are exercised by
+[generalised composition tests](../tests/test_generalised_compositions.py).

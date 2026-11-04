@@ -103,6 +103,7 @@ templates:
         - {parameter: offset.consumes}
         - {parameter: ratio.consumes}
       satisfies: {parameter: offset.satisfies}
+      bindings: {verb: {subject: who}}
       emits:
         - fact: relation
           subject: "{who}"

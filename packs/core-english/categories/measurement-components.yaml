@@ -2,16 +2,40 @@ format: rulekit/categories@1
 categories:
   component_measure:
     parent: noun
+    includes: [resource_measure_unit]
   component_material:
     parent: noun
+    includes: [material_resource, recipe_ingredient]
   component_product:
     parent: noun
+    includes: [producible_quantity_object, fabrication_product, recipe_product]
   component_requirement_verb:
     parent: verb
   component_production_verb:
     parent: verb
   component_miscellaneous_descriptor:
     parent: adjective
+  measurement_change_verb:
+    parent: verb
+  measured_increase_verb:
+    parent: measurement_change_verb
+    polarity: 1
+    antonym: measured_decrease_verb
+  measured_decrease_verb:
+    parent: measurement_change_verb
+    polarity: -1
+    antonym: measured_increase_verb
+  measurement_subject:
+    parent: noun
+    includes:
+    - living_agent
+    - mass_dimension_holder
+    - potential_person_role
+    notes: A holder of an explicitly stated physical measurement, without asserting a biological classification.
+  valuation_descriptor:
+    parent: adjective
+  measurement_origin_participle:
+    parent: verb
 members:
   component_measure:
   - cup
@@ -20,14 +44,6 @@ members:
   - milliliter
   - gram
   - kilogram
-  component_material:
-  - water
-  - flour
-  - salt
-  - sugar
-  component_product:
-  - pizza
-  - cake
   component_requirement_verb:
   - need
   - needs
@@ -37,6 +53,21 @@ members:
   - makes
   component_miscellaneous_descriptor:
   - other
+  measurement_change_verb:
+  - lose
+  - gain
+  - increase
+  - increased
+  - increases
+  measured_increase_verb:
+  - gain
+  - gaining
+  measured_decrease_verb:
+  - lose
+  valuation_descriptor:
+  - worth
+  measurement_origin_participle:
+  - starting
 attribute_compatibility:
   component_miscellaneous_descriptor:
   - purchase_collection_noun

@@ -10,7 +10,7 @@ categories:
   settlement_event: {parent: noun}
   settlement_modal: {parent: modal}
   infinitive_complement_predicate: {parent: verb}
-  nominal_activity: {parent: noun}
+  nominal_activity: {parent: noun, includes: [account_activity]}
   nominal_activity_modifier: {parent: noun}
   nominal_activity_auxiliary: {parent: auxiliary}
 members:

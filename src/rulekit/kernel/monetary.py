@@ -49,7 +49,7 @@ def convert_money(value, source, target, reg, log):
 def canonical_price(price, reg, log):
     target = canonical_currency(reg)
     source = price.measure or target
-    if target is None or source is None or price.per:
+    if target is None or source is None or price.per and price.per != price.item:
         return None
     value = convert_money(price.value, source, target, reg, log)
     if value is None or value <= 0:

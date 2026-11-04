@@ -1,0 +1,433 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/container-filling-context
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: living_agent
+      referential: true
+      bare: true
+    - slot: be
+      cat: copula
+    - slot: fill
+      cat: container_filling_verb
+      present_participle: true
+    - slot: container
+      cat: volumetric_container
+      uncounted: true
+      number: singular
+    - opt:
+      - lit: for
+      - slot: owner
+        cat: possessive_determiner
+      - slot: purpose
+        cat: living_agent
+        uncounted: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: content-container-context
+    entity: '{who}'
+    measure: ''
+    value: '0'
+    position: '{container.span_start}'
+    container: '{container}'
+  consumes:
+  - be
+  - fill
+  satisfies:
+    be:
+    - subject
+    fill:
+    - subject
+    owner:
+    - refers
+  description: Preserve one measured container, its capacity dimensions and ordered changes to current contents.
+- id: arithmetic/fractional-container-fill-with-departure
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: living_agent
+      referential: true
+      bare: true
+    - slot: fill
+      cat: container_filling_verb
+      finite_form: true
+    - slot: object
+      cat: commercial_object_anaphor
+    - slot: fraction
+      cat: fractional_fill_adverb
+    - opt:
+      - lit: and
+      - slot: go
+        cat: temporary_departure_verb
+        finite_form: true
+      - lit: to
+      - slot: response
+        cat: response_activity_verb
+        bare_form: true
+      - slot: target
+        cat: response_target
+        uncounted: true
+        bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: content-opening-fraction
+    entity: '{who}'
+    measure: ''
+    value: 0.5
+    position: '{fraction.span_start}'
+    container: $active:measured-container$
+  consumes:
+  - fill
+  - go
+  - response
+  satisfies:
+    fill:
+    - subject
+    go:
+    - subject
+    response:
+    - subject
+    object:
+    - refers
+  description: Preserve one measured container, its capacity dimensions and ordered changes to current contents.
+- id: arithmetic/contextual-container-spill
+  phase: read
+  match:
+    sentence:
+    - lit: while
+      at_start: true
+    - slot: absent
+      type: entity
+      common_noun_cat: living_agent
+      referential: true
+      bare: true
+    - slot: clitic
+      cat: contracted_copula_clitic
+    - slot: gone
+      cat: temporary_departure_verb
+    - lit: ','
+      consume_skipped: true
+    - slot: owner
+      cat: possessive_determiner
+    - slot: agent
+      type: entity
+      common_noun_cat: living_agent
+      referential: true
+    - slot: knock
+      cat: container_overturn_verb
+      finite_form: true
+    - slot: container
+      cat: volumetric_container
+      uncounted: true
+      number: singular
+    - lit: over
+    - lit: and
+    - slot: spill
+      cat: content_spill_verb
+      finite_form: true
+    - slot: share
+      type: fraction
+      fraction_within_whole: true
+    - opt:
+      - lit: of
+    - slot: content
+      cat: material_resource
+      uncounted: true
+      bare: true
+    - lit: in
+    - slot: object
+      cat: commercial_object_anaphor
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: measured_content_change
+    container: '{container}'
+    content: '{content}'
+    operation: remove_fraction
+    value: share
+  consumes:
+  - gone
+  - knock
+  - spill
+  - share
+  satisfies:
+    gone:
+    - subject
+    knock:
+    - subject
+    spill:
+    - subject
+    clitic:
+    - owner
+    - owned
+    owner:
+    - refers
+    object:
+    - refers
+  description: Preserve one measured container, its capacity dimensions and ordered changes to current contents.
+- id: arithmetic/fractional-container-spill
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: living_agent
+      referential: true
+      bare: true
+    - slot: spill
+      cat: content_spill_verb
+      finite_form: true
+    - slot: share
+      type: fraction
+      fraction_within_whole: true
+    - opt:
+      - lit: of
+    - slot: content
+      cat: material_resource
+      uncounted: true
+      bare: true
+    - lit: in
+    - slot: container
+      cat: volumetric_container
+      uncounted: true
+      number: singular
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: measured_content_change
+    container: '{container}'
+    content: '{content}'
+    operation: remove_fraction
+    value: share
+  consumes:
+  - spill
+  - share
+  satisfies:
+    spill:
+    - subject
+  description: Preserve one measured container, its capacity dimensions and ordered changes to current contents.
+- id: arithmetic/container-content-2-fold-change
+  phase: read
+  match:
+    sentence:
+    - opt:
+      - slot: sequence
+        cat: narration_sequence_adverb
+    - slot: who
+      type: entity
+      common_noun_cat: living_agent
+      referential: true
+      bare: true
+    - opt:
+      - slot: return
+        cat: return_activity_verb
+        finite_form: true
+      - lit: back
+      - lit: and
+    - slot: scale
+      cat: stock_doubling_verb
+      finite_form: true
+    - slot: amount
+      cat: allocation_amount_noun
+      uncounted: true
+      bare: true
+    - lit: of
+    - slot: content
+      cat: material_resource
+      uncounted: true
+      bare: true
+    - lit: in
+    - slot: container
+      cat: volumetric_container
+      uncounted: true
+      number: singular
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: measured_content_change
+    container: '{container}'
+    content: '{content}'
+    operation: multiply_total
+    value: 2
+  consumes:
+  - return
+  - scale
+  satisfies:
+    return:
+    - subject
+    scale:
+    - subject
+  description: Preserve one measured container, its capacity dimensions and ordered changes to current contents.
+- id: arithmetic/container-content-3-fold-change
+  phase: read
+  match:
+    sentence:
+    - opt:
+      - slot: sequence
+        cat: narration_sequence_adverb
+    - slot: who
+      type: entity
+      common_noun_cat: living_agent
+      referential: true
+      bare: true
+    - opt:
+      - slot: return
+        cat: return_activity_verb
+        finite_form: true
+      - lit: back
+      - lit: and
+    - slot: scale
+      cat: stock_tripling_verb
+      finite_form: true
+    - slot: amount
+      cat: allocation_amount_noun
+      uncounted: true
+      bare: true
+    - lit: of
+    - slot: content
+      cat: material_resource
+      uncounted: true
+      bare: true
+    - lit: in
+    - slot: container
+      cat: volumetric_container
+      uncounted: true
+      number: singular
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: measured_content_change
+    container: '{container}'
+    content: '{content}'
+    operation: multiply_total
+    value: 3
+  consumes:
+  - return
+  - scale
+  satisfies:
+    return:
+    - subject
+    scale:
+    - subject
+  description: Preserve one measured container, its capacity dimensions and ordered changes to current contents.
+- id: arithmetic/container-three-axis-dimensions
+  question_assumption: true
+  phase: read
+  match:
+    sentence:
+    - slot: container
+      cat: volumetric_container
+      uncounted: true
+      number: singular
+    - slot: be
+      cat: copula
+    - slot: length
+      cat: length_unit
+      counted: true
+      bare: true
+    - slot: long
+      cat: length_dimension_adjective
+    - lit: ','
+      consume_skipped: true
+    - slot: width
+      cat: length_unit
+      counted: true
+      bare: true
+    - slot: wide
+      cat: width_dimension_adjective
+    - opt:
+      - lit: ','
+        consume_skipped: true
+    - lit: and
+    - slot: height
+      cat: length_unit
+      counted: true
+      bare: true
+    - slot: high
+      cat: height_dimension_adjective
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: content-container-dimension
+    entity: '{container}'
+    measure: '{length}'
+    value: length
+    position: '{length.span_start}'
+    acquisition: cuboid
+    marker: length
+    container: '{container}'
+    attribute: '{container.qualifier}'
+  - fact: batch_evidence
+    kind: content-container-dimension
+    entity: '{container}'
+    measure: '{width}'
+    value: width
+    position: '{width.span_start}'
+    acquisition: cuboid
+    marker: width
+    container: '{container}'
+    attribute: '{container.qualifier}'
+  - fact: batch_evidence
+    kind: content-container-dimension
+    entity: '{container}'
+    measure: '{height}'
+    value: height
+    position: '{height.span_start}'
+    acquisition: cuboid
+    marker: height
+    container: '{container}'
+    attribute: '{container.qualifier}'
+  consumes:
+  - be
+  - length
+  - width
+  - height
+  satisfies:
+    be:
+    - subject
+  description: Preserve one measured container, its capacity dimensions and ordered changes to current contents.
+asks:
+- id: ask/container-content-cubic-amount
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: many
+    - slot: unit
+      cat: length_unit
+      uncounted: true
+      qualified: true
+      qualifier_cat: volume_unit_modifier
+      all_qualifiers: true
+    - lit: of
+    - slot: content
+      cat: material_resource
+      uncounted: true
+      bare: true
+    - slot: be
+      cat: copula
+    - lit: in
+    - slot: container
+      cat: volumetric_container
+      uncounted: true
+      number: singular
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: container-content-state
+    container: '{container}'
+    content: '{content}'
+    unit: '{unit}'
+  satisfies:
+    be:
+    - subject

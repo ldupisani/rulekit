@@ -36,7 +36,7 @@ templates:
         category: direct_source_activity
         link: []
     rule:
-      description: Two stated sources belong to one participant and temporal context; no numerical contribution is 
+      description: Two stated sources belong to one participant and temporal context; no numerical contribution is
         inferred from participation alone.
       match:
         sentence:
@@ -44,10 +44,10 @@ templates:
         - {slot: who, type: entity, common_noun_cat: contribution_recipient, referential: true}
         - {slot: activity, cat: {parameter: activity_frame.category}, finite_form: true}
         - parameter: activity_frame.link
-        - {slot: first, cat: contribution_source, uncounted: true, referential: true, bare_reference_category: 
+        - {slot: first, cat: contribution_source, uncounted: true, referential: true, bare_reference_category:
             mass_quantity_noun}
         - {lit: and}
-        - {slot: second, cat: contribution_source, uncounted: true, referential: true, bare_reference_category: 
+        - {slot: second, cat: contribution_source, uncounted: true, referential: true, bare_reference_category:
             mass_quantity_noun}
         - {lit: ., consume_skipped: true}
       consumes: [activity]
@@ -55,7 +55,7 @@ templates:
       where:
       - {distinct: [first, second]}
       - {number_compatible: [who, activity]}
-      - {verb_roles_compatible: {verb: activity, roles: {actor: [who], theme: [first, second]}, 
+      - {verb_roles_compatible: {verb: activity, roles: {actor: [who], theme: [first, second]},
             require_declared_frame: true, allow_proper_name: [who]}}
       emits:
       - {fact: batch_evidence, kind: contribution-source, entity: '{who}', measure: '', value: 0, container: '{first}',
@@ -72,7 +72,7 @@ templates:
       satisfaction: {change: [subject]}
       constraints: []
     rule:
-      description: A source contributes an explicit fraction of the whole target; a coordinated amount reference 
+      description: A source contributes an explicit fraction of the whole target; a coordinated amount reference
         retains that exact source as standard.
       match:
         sentence:
@@ -84,7 +84,7 @@ templates:
         - {slot: attribute, cat: quantity_attribute, uncounted: true, bare: true, number: singular}
         - {parameter: target_reference}
         - {lit: from}
-        - {slot: source, cat: contribution_source, uncounted: true, referential: true, bare_reference_category: 
+        - {slot: source, cat: contribution_source, uncounted: true, referential: true, bare_reference_category:
             mass_quantity_noun}
         - opt:
           - {slot: prep, cat: temporal_interval_preposition}
@@ -100,7 +100,7 @@ templates:
         - change
       - parameter: constraints
       emits:
-      - {fact: batch_evidence, kind: contribution-fraction, entity: '{who}', measure: '{attribute}', value: 
+      - {fact: batch_evidence, kind: contribution-fraction, entity: '{who}', measure: '{attribute}', value:
           fraction, verb: '{change}', container: '{source}', attribute: '{period.optional}', position: '{fraction.span_start}'}
       - {parameter: extra}
       independent_clause: true
@@ -108,7 +108,7 @@ templates:
     parameters:
       representation: [{slot: represent, cat: component_representation_verb, finite_form: true}]
       remainder:
-      - {slot: attribute, cat: quantity_attribute, uncounted: true, number: singular, qualified: true, 
+      - {slot: attribute, cat: quantity_attribute, uncounted: true, number: singular, qualified: true,
           qualifier_cat: remaining_quantity_descriptor, all_qualifiers: true}
       measure: '{attribute}'
       reference:
@@ -125,11 +125,11 @@ templates:
       constraints:
       - {number_compatible: [who, need]}
     rule:
-      description: A named source accounts for a fraction of the as-yet-unassigned part of a closed contribution 
+      description: A named source accounts for a fraction of the as-yet-unassigned part of a closed contribution
         target.
       match:
         sentence:
-        - {slot: source, cat: contribution_source, uncounted: true, referential: true, bare_reference_category: 
+        - {slot: source, cat: contribution_source, uncounted: true, referential: true, bare_reference_category:
             mass_quantity_noun, at_start: true}
         - {parameter: representation}
         - {slot: fraction, type: fraction, fraction_within_whole: true}
@@ -148,7 +148,7 @@ templates:
       - {number_compatible: [source, represent]}
       - parameter: constraints
       emits:
-      - {fact: batch_evidence, kind: contribution-remainder-fraction, entity: '{who.optional}', measure: {parameter: 
+      - {fact: batch_evidence, kind: contribution-remainder-fraction, entity: '{who.optional}', measure: {parameter:
             measure}, value: fraction, container: '{source}', position: '{fraction.span_start}'}
       independent_clause: true
   contribution-question:
@@ -165,16 +165,16 @@ templates:
         - {slot: who, type: entity, common_noun_cat: contribution_recipient, referential: true, bare: true}
         - {slot: change, cat: contribution_change_verb, bare_form: true}
         - {parameter: source_frame}
-        - {slot: source, cat: contribution_source, uncounted: true, referential: true, bare_reference_category: 
+        - {slot: source, cat: contribution_source, uncounted: true, referential: true, bare_reference_category:
             mass_quantity_noun}
         - {lit: '?', consume_skipped: true}
       satisfies: {parameter: satisfaction}
       where: [number_compatible: [who, aux]]
-      resolves: {consumer: source-contribution-remainder, entity: '{who}', measure: '{unit}', source: '{source}', 
+      resolves: {consumer: source-contribution-remainder, entity: '{who}', measure: '{unit}', source: '{source}',
           verb: '{change}'}
 rules:
 - id: arithmetic/source-relative-amount
-  description: An immediate amount reference names one source's multiple of the preceding contribution; the 
+  description: An immediate amount reference names one source's multiple of the preceding contribution; the
     consumer requires a unique standard.
   match:
     sentence:
@@ -184,7 +184,7 @@ rules:
     - {lit: that}
     - {slot: amount, cat: allocation_amount_noun, uncounted: true, bare: true}
     - {lit: from}
-    - {slot: source, cat: contribution_source, uncounted: true, referential: true, bare_reference_category: 
+    - {slot: source, cat: contribution_source, uncounted: true, referential: true, bare_reference_category:
         mass_quantity_noun}
     - {lit: ., consume_skipped: true}
   consumes: [change, factor]
@@ -195,7 +195,7 @@ rules:
     container: '{source}', position: '{factor.span_start}'}
   independent_clause: true
 - id: arithmetic/source-measured-amount
-  description: A direct measured contribution belongs to its stated source, not a second target or unqualified 
+  description: A direct measured contribution belongs to its stated source, not a second target or unqualified
     holding.
   match:
     sentence:
@@ -203,14 +203,14 @@ rules:
     - {slot: change, cat: contribution_change_verb, finite_form: true}
     - {slot: amount, cat: contribution_unit, counted: true, bare: true}
     - {lit: from}
-    - {slot: source, cat: contribution_source, uncounted: true, referential: true, bare_reference_category: 
+    - {slot: source, cat: contribution_source, uncounted: true, referential: true, bare_reference_category:
         mass_quantity_noun}
     - {lit: ., consume_skipped: true}
   consumes: [change, amount]
   satisfies: {change: [subject]}
   where:
   - {number_compatible: [who, change]}
-  - {verb_roles_compatible: {verb: change, roles: {actor: [who], theme: [amount]}, require_declared_frame: true, 
+  - {verb_roles_compatible: {verb: change, roles: {actor: [who], theme: [amount]}, require_declared_frame: true,
         allow_proper_name: [who]}}
   emits:
   - {fact: batch_evidence, kind: contribution-amount, entity: '{who}', measure: '{amount}', value: amount, verb: '{change}',
@@ -330,14 +330,14 @@ variants:
     - {lit: that}
     - {slot: amount, cat: allocation_amount_noun, uncounted: true, bare: true}
     - {lit: from}
-    - {slot: other_source, cat: contribution_source, uncounted: true, referential: true, bare_reference_category: 
+    - {slot: other_source, cat: contribution_source, uncounted: true, referential: true, bare_reference_category:
         mass_quantity_noun}
     consumed: [need, other_change, factor]
     satisfaction: {change: [subject], need: [subject], other_change: [subject]}
     references: {reference: who, other: who}
     extra:
-    - {fact: batch_evidence, kind: contribution-multiple, entity: '{other}', measure: '{attribute}', value: factor, 
-        verb: '{other_change}', container: '{other_source}', acquisition: '{source}', attribute: '{later_period}', 
+    - {fact: batch_evidence, kind: contribution-multiple, entity: '{other}', measure: '{attribute}', value: factor,
+        verb: '{other_change}', container: '{other_source}', acquisition: '{source}', attribute: '{later_period.optional}',
         position: '{factor.span_start}'}
     constraints:
     - number_compatible:

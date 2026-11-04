@@ -1,53 +1,131 @@
-"""`measure-cost` — Cost of a geometric measure at a unit rate.
+"""Price a declared geometric property through shared formulas and units."""
 
-Moved out of `answer.py` UNCHANGED (the extraction increment). Every branch,
-message and computation is the original; the only edits are `query`/`reg`
-becoming `ctx.` lookups. Pinned across the move by the consumer golden master
-and by all eight corpus slices being byte-neutral.
-"""
-
-from __future__ import annotations
+from math import isfinite
 
 from . import ConsumerContext, consumer
+from ..answer import Answer
+from ..evaluate import evaluate
+from ..properties import Measurement, evaluate_property
+from ...data.properties import PropertyError
+from ..source_coverage import uncovered_units
 
 
 @consumer("measure-cost")
 def measure_cost(ctx: ConsumerContext):
-    from ..answer import Answer
-
-    # cost = (a geometric measure of a W-by-H rectangle) x (a unit rate),
-    # optionally taxed. The operation arrives as a structural OPCODE the
-    # ask named (rules/measure-cost.yaml); no operation WORD reaches here,
-    # and the ask's own rate-unit shape has already cross-checked it.
     op = ctx.query.get("op", "")
-    try:
-        d1 = float(ctx.query.get("d1"))
-        d2 = float(ctx.query.get("d2"))
-        rate = float(ctx.query.get("rate"))
-    except (TypeError, ValueError):
-        return Answer("decline", None, "measure-cost needs two measures and a rate")
-    if d1 <= 0 or d2 <= 0:
-        # a rectangle with a non-positive side is not a shape; decline
-        # rather than return a zero or negative cost
-        return Answer("decline", None, "a measure must be positive")
-    if op == "area":
-        measure = d1 * d2
-    elif op == "perimeter":
-        measure = 2.0 * (d1 + d2)
-    else:
+    if not ctx.reg.word_in_category(op, "priced_geometry_quantity"):
         return Answer("decline", None, f"unsupported measure operation {op!r}")
-    total = measure * rate
+    try:
+        rate = float(ctx.query.get("rate"))
+        dimensions = [
+            (ctx.query.get(f"dim{i}"), float(ctx.query[f"val{i}"]))
+            for i in range(1, 4)
+            if ctx.query.get(f"val{i}") not in (None, "")
+        ]
+        if not dimensions:
+            dimensions = [
+                (None, float(ctx.query["d1"])),
+                (None, float(ctx.query["d2"])),
+            ]
+    except (TypeError, ValueError, KeyError):
+        return Answer("decline", None, "measure-cost needs measures and a rate")
+    if (
+        any(not isfinite(v) or v <= 0 for _, v in dimensions)
+        or not isfinite(rate)
+        or rate < 0
+    ):
+        return Answer("decline", None, "a measure must be positive")
+    quote = ctx.match.slots.get("rate") if ctx.match is not None else None
+    if quote is not None and not ctx.reg.word_in_category(
+        quote.features.get("lemma", ""), "currency_unit"
+    ):
+        return Answer(
+            "decline", None, "a cost quote needs a concrete monetary denomination"
+        )
     raw_tax = ctx.query.get("tax")
-    if raw_tax not in (None, ""):
-        try:
-            total *= 1.0 + float(raw_tax)
-        except (TypeError, ValueError):
-            # the ask BOUND a tax and the consumer cannot read it -- decline
-            # rather than silently answering the untaxed total, which is a
-            # confident wrong answer to a question that stated a tax
-            return Answer("decline", None, f"unreadable tax rate {raw_tax!r}")
-    return Answer(
-        "number", total,
-        f"measure-cost: {op} {measure} x {rate}"
-        + (f" +{raw_tax} tax" if raw_tax not in (None, "") else ""),
+    try:
+        tax = float(raw_tax) if raw_tax not in (None, "") else None
+        if tax is not None and (not isfinite(tax) or tax < 0):
+            raise ValueError
+    except (TypeError, ValueError):
+        return Answer("decline", None, f"unreadable tax rate {raw_tax!r}")
+    shapes = ctx.reg.category_members.get("rectangular_costing_shape", ())
+    shape = ctx.query.get("shape") or (shapes[0] if len(shapes) == 1 else None)
+    if not shape or ctx.reg.derived_attribute(shape, op) is None:
+        return Answer("decline", None, "costing needs a declared shape property")
+    roles = ctx.reg.property_inputs(shape, op)
+    if any(role is None for role, _ in dimensions):
+        if len(roles) != len(dimensions):
+            return Answer(
+                "decline", None, "the dimensions do not identify the priced shape"
+            )
+        dimensions = [(role, pair[1]) for role, pair in zip(roles, dimensions)]
+    units = []
+    for i in range(1, len(dimensions) + 1):
+        slot = ctx.match.slots.get(f"d{i}") if ctx.match is not None else None
+        features = slot.features if slot is not None else {}
+        head = features.get("lemma") if features.get("value_kind") == "count" else None
+        qualifier = features.get("qualifier")
+        if qualifier and ctx.reg.word_in_category(qualifier, "length_unit"):
+            # A measured site (e.g. an explicitly sized floor) retains its
+            # physical unit on the nominal modifier, rather than on the head.
+            if not ctx.reg.word_in_category(head, "costing_surface_site"):
+                return Answer(
+                    "decline", None, "the measured site needs an explicit costing role"
+                )
+            unit = qualifier
+        elif head and ctx.reg.word_in_category(head, "costing_surface_site"):
+            unit = None
+        else:
+            unit = head
+        if unit and not ctx.reg.word_in_category(unit, "length_unit"):
+            return Answer(
+                "decline", None, "shape dimensions need compatible length units"
+            )
+        if (
+            qualifier
+            and not ctx.reg.word_in_category(qualifier, "length_unit")
+            and qualifier != dimensions[i - 1][0]
+        ):
+            return Answer(
+                "decline", None, "the geometric dimension has an unread restriction"
+            )
+        units.append(unit)
+    # The old W-by-H site construction states one rectangular site's axes.
+    # An unlabelled axis shares the other axis's unit, or the explicit quote
+    # basis when neither axis states one. Explicit unit modifiers take priority.
+    if len(units) == 2 and ctx.match is not None:
+        common = next((unit for unit in units if unit), ctx.query.get("rate_unit"))
+        units = [unit or common for unit in units]
+    if any(units) and not all(units):
+        return Answer("decline", None, "all dimensions need a stated unit basis")
+    if len({role for role, _ in dimensions}) != len(dimensions):
+        return Answer("decline", None, "each geometry parameter must be stated once")
+    if ctx.question is not None and uncovered_units(ctx.question, ctx.match.consumed):
+        return Answer("decline", None, "the costing question has an unread condition")
+    values = {
+        role: Measurement(value, unit) for (role, value), unit in zip(dimensions, units)
+    }
+    output = ctx.query.get("rate_unit") if all(units) else None
+    try:
+        result = evaluate_property(
+            ctx.reg, shape, op, values, ctx.log, output_unit=output
+        )
+    except (PropertyError, ArithmeticError, ValueError) as error:
+        return Answer(
+            "decline", None, f"the priced property needs compatible dimensions: {error}"
+        )
+    total = evaluate(
+        "measure * rate",
+        dict(measure=result.value, rate=rate),
+        ctx.log,
+        source="measure-cost",
     )
+    if tax is not None:
+        total = evaluate(
+            "total * (1 + tax)",
+            dict(total=total, tax=tax),
+            ctx.log,
+            source="measure-cost-tax",
+        )
+    return Answer("number", total, f"measure-cost: {op} {result.value:g} x {rate:g}")

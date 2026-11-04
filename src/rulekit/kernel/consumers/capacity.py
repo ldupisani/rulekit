@@ -12,6 +12,7 @@ answer from unfiltered facts.
 from __future__ import annotations
 
 from . import ConsumerContext, consumer
+from ..pricing import resolve_unit_quotes, consume_unit_quotes
 
 
 @consumer("capacity", time_scoped=True)
@@ -34,13 +35,13 @@ def capacity(ctx: ConsumerContext):
     entity = ctx.query["entity"]
     item = ctx.reg.plural_to_singular.get(ctx.query["item"], ctx.query["item"])
     prices = [p for p in ctx.store.by_kind(Price) if p.item == item]
-    if len(prices) != 1:
+    price = resolve_unit_quotes(prices, ctx.reg, ctx.log)
+    if price is None:
         return Answer(
             "decline", None,
             f"{len(prices)} price facts known for {item!r} — a capacity "
             "ask needs exactly one",
         )
-    price = prices[0]
     from math import isfinite
     from ..monetary import canonical_currency, canonical_price, convert_money
     unit_price = canonical_price(price, ctx.reg, ctx.log)
@@ -48,6 +49,8 @@ def capacity(ctx: ConsumerContext):
         return Answer("decline", None, "capacity needs a positive price in a declared currency unit")
     from ..account_totals import AccountTotal, has_resource_account, resolve_account
     if has_resource_account(ctx.store):
+        if len(prices) != 1:
+            return Answer("decline", None, "a scoped account requires one explicit unit-price source")
         from ..learn import price_quote_evidence
         if ctx.query.get("budget_value") is not None:
             return Answer("decline", None, "an additional asked budget cannot replace the stated account")
@@ -71,6 +74,7 @@ def capacity(ctx: ConsumerContext):
         return Answer("number", count,
                       f"floor({account.value:g} remaining in {account.opening.account} / "
                       f"{account_price:g} per {item})")
+    consume_unit_quotes(prices, ctx.log)
     budget_raw = ctx.query.get("budget_value")
     if budget_raw is not None:
         budget = evaluate(str(budget_raw), {}, ctx.log, source="capacity-budget")

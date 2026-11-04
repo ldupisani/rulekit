@@ -1,0 +1,15 @@
+format: rulekit/rules@1
+rules:
+  - id: arithmetic/generic-unit-quote-collection
+    phase: read
+    description: A postpositive per-item quantifier refers to the explicitly stated plural goods class.
+    match:
+      sentence:
+        - {slot: item, cat: purchase_item, uncounted: true, number: plural, bare: true, at_start: true}
+        - {slot: be, cat: plural_copula}
+        - {slot: price, cat: currency_unit, counted: true, bare: true}
+        - {slot: each, cat: postpositive_distributive_quantifier}
+        - {lit: '.', consume_skipped: true}
+    satisfies: {each: [collection]}
+    emits:
+      - {fact: price, item: '{item}', value: price, measure: '{price}', verb: '{be}'}

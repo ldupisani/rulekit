@@ -56,7 +56,7 @@ templates:
       consumes:
       - input
       - output
-      description: An explicitly proportional specification preserves input and 
+      description: An explicitly proportional specification preserves input and
         output resources independently from units.
   specification-application:
     parameters:

@@ -1,0 +1,234 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/previous-period-relative-count
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: act
+      cat: quantity_event_verb
+      finite_form: true
+    - slot: factor
+      type: multiplier
+    - lit: that
+      consume_skipped: true
+    - lit: many
+      consume_skipped: true
+    - lit: the
+      consume_skipped: true
+    - slot: period
+      cat: duration_measure
+      uncounted: true
+      bare: true
+    - slot: before
+      cat: retrospective_period_marker
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: previous-period-relative
+    entity: '{who}'
+    measure: ''
+    value: 0
+    position: '{who.span_start}'
+    fraction: factor
+    marker: '{period}'
+    verb: '{act}'
+  consumes:
+  - act
+  - factor
+  satisfies:
+    act:
+    - subject
+    before:
+    - object
+  disambiguates:
+  - act
+  - period
+asks:
+- id: ask/relative-window-event-total
+  match:
+    question:
+    - lit: how
+      consume_skipped: true
+    - lit: many
+      consume_skipped: true
+    - slot: item
+      cat: countable_event_object
+      uncounted: true
+      bare: true
+    - slot: have
+      cat: possession_state
+      finite_form: true
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: act
+      cat: quantity_event_verb
+      past_participle: true
+    - slot: within
+      cat: retrospective_window_preposition
+    - lit: the
+      consume_skipped: true
+    - slot: window
+      cat: duration_measure
+      counted: true
+      qualified: true
+      qualifier_cat: prior_period_attribute
+      all_qualifiers: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: dependent-quantity-total
+    operation: periods
+    entity: '{who}'
+    measure: '{item}'
+    verb: '{act}'
+    period: '{window}'
+    span_value: '{window.value}'
+  satisfies:
+    have:
+    - subject
+    act:
+    - subject
+- id: ask/relative-period-event-aggregate-perfect
+  match:
+    question:
+    - lit: how
+      consume_skipped: true
+    - lit: many
+      consume_skipped: true
+    - slot: item
+      cat: countable_event_object
+      uncounted: true
+      bare: true
+    - slot: have
+      cat: possession_state
+      finite_form: true
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: act
+      cat: quantity_event_verb
+      past_participle: true
+    - opt:
+      - slot: prep
+        cat: group_total_preposition
+    - slot: total
+      cat: group_total_marker
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: dependent-quantity-total
+    operation: periods
+    entity: '{who}'
+    measure: '{item}'
+    verb: '{act}'
+  satisfies:
+    have:
+    - subject
+    act:
+    - subject
+    prep:
+    - object
+  where:
+  - bound_requires_category:
+      bound: prep
+      slot: total
+      cat: prepositional_group_total_marker
+  disambiguates:
+  - total
+- id: ask/relative-window-event-total-past
+  match:
+    question:
+    - lit: how
+      consume_skipped: true
+    - lit: many
+      consume_skipped: true
+    - slot: item
+      cat: countable_event_object
+      uncounted: true
+      bare: true
+    - slot: aux
+      cat: past_factual_auxiliary
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: act
+      cat: quantity_event_verb
+      bare_form: true
+    - slot: within
+      cat: retrospective_window_preposition
+    - lit: the
+      consume_skipped: true
+    - slot: window
+      cat: duration_measure
+      counted: true
+      qualified: true
+      qualifier_cat: prior_period_attribute
+      all_qualifiers: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: dependent-quantity-total
+    operation: periods
+    entity: '{who}'
+    measure: '{item}'
+    verb: '{act}'
+    period: '{window}'
+    span_value: '{window.value}'
+  satisfies:
+    act:
+    - subject
+- id: ask/relative-period-event-aggregate-past
+  match:
+    question:
+    - lit: how
+      consume_skipped: true
+    - lit: many
+      consume_skipped: true
+    - slot: item
+      cat: countable_event_object
+      uncounted: true
+      bare: true
+    - slot: aux
+      cat: past_factual_auxiliary
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: act
+      cat: quantity_event_verb
+      bare_form: true
+    - opt:
+      - slot: prep
+        cat: group_total_preposition
+    - slot: total
+      cat: group_total_marker
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: dependent-quantity-total
+    operation: periods
+    entity: '{who}'
+    measure: '{item}'
+    verb: '{act}'
+  satisfies:
+    act:
+    - subject
+    prep:
+    - object
+  where:
+  - bound_requires_category:
+      bound: prep
+      slot: total
+      cat: prepositional_group_total_marker
+  disambiguates:
+  - total

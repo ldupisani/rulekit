@@ -1,0 +1,397 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/appositive-stock-processing-context
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - lit: ','
+      consume_skipped: true
+    - slot: role
+      cat: occupation_label
+      uncounted: true
+      bare: true
+    - lit: ','
+      consume_skipped: true
+    - slot: be
+      cat: copula
+    - slot: act
+      cat: stock_placement_verb
+      present_participle: true
+    - slot: item
+      cat: inventory_item
+      uncounted: true
+      bare: true
+    - lit: from
+      consume_skipped: true
+    - slot: holder
+      cat: stock_source_container
+      uncounted: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: section-stock-context
+    entity: '{who}'
+    measure: '{item}'
+    value: 0
+    position: '{who.span_start}'
+    container: '{holder}'
+  consumes:
+  - be
+  - act
+  satisfies:
+    be:
+    - subject
+    act:
+    - subject
+  disambiguates:
+  - role
+  - be
+  - act
+  - item
+  - holder
+- id: arithmetic/stock-section-counted-list
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: act
+      cat: stock_placement_verb
+    - slot: items
+      span: true
+      enumeration_cat: inventory_item
+      enumeration_counted: true
+    - lit: from
+      consume_skipped: true
+    - slot: section
+      cat: stock_section
+      uncounted: true
+      qualified: true
+      qualifier_cat: stock_section_attribute
+    - lit: of
+      consume_skipped: true
+    - slot: holder
+      cat: stock_source_container
+      uncounted: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: section-observed
+    entity: '{who}'
+    measure: '{item}'
+    value: item
+    position: '{item.span_start}'
+    container: '{holder}'
+    attribute: '{section.qualifier}'
+    verb: '{act}'
+    each: items
+    acquisition: '{item}'
+  consumes:
+  - act
+  satisfies:
+    act:
+    - subject
+  disambiguates:
+  - act
+  - section
+  - holder
+- id: arithmetic/removed-section-fraction
+  phase: read
+  match:
+    sentence:
+    - slot: fraction
+      type: fraction
+      at_start: true
+    - slot: item
+      cat: inventory_item
+      uncounted: true
+      bare: true
+    - lit: on
+      consume_skipped: true
+    - slot: section
+      cat: stock_section
+      uncounted: true
+      qualified: true
+      qualifier_cat: stock_section_attribute
+    - lit: of
+      consume_skipped: true
+    - slot: holder
+      cat: stock_source_container
+      uncounted: true
+    - slot: be
+      cat: copula
+    - slot: kind
+      cat: inventory_item
+      uncounted: true
+      qualified: true
+      qualifier_cat: intrinsic_attribute
+    - lit: ','
+      consume_skipped: true
+    - lit: which
+      consume_skipped: true
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - opt:
+      - slot: quickly
+        cat: adverb
+    - slot: put
+      cat: inventory_return_verb
+    - lit: back
+      consume_skipped: true
+    - lit: into
+      consume_skipped: true
+    - slot: place
+      cat: inventory_place_noun
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: section-removed-fraction
+    entity: '{who}'
+    measure: '{item}'
+    value: fraction
+    position: '{fraction.span_start}'
+    container: '{holder}'
+    attribute: '{section.qualifier}'
+    acquisition: '{kind}'
+  consumes:
+  - fraction
+  - be
+  - put
+  satisfies:
+    be:
+    - subject
+    put:
+    - subject
+  disambiguates:
+  - item
+  - section
+  - holder
+  - be
+  - kind
+  - quickly
+  - put
+  - place
+- id: arithmetic/exhaustive-section-remaining-list
+  phase: read
+  match:
+    sentence:
+    - opt:
+      - slot: then
+        cat: transaction_sequence_adverb
+      - lit: ','
+        consume_skipped: true
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: act
+      cat: stock_placement_verb
+    - slot: remaining
+      cat: inventory_item
+      uncounted: true
+      qualified: true
+      qualifier_cat: remaining_quantity_descriptor
+    - lit: from
+      consume_skipped: true
+    - slot: section
+      cat: stock_section_attribute
+      uncounted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: holder
+      cat: stock_source_container
+      uncounted: true
+    - lit: ','
+      consume_skipped: true
+    - lit: including
+      consume_skipped: true
+    - slot: items
+      span: true
+      enumeration_cat: inventory_item
+      enumeration_counted: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: section-remainder
+    entity: '{who}'
+    measure: '{item}'
+    value: item
+    position: '{item.span_start}'
+    container: '{holder}'
+    attribute: '{section}'
+    verb: '{act}'
+    each: items
+    acquisition: '{item}'
+  consumes:
+  - act
+  satisfies:
+    act:
+    - subject
+  disambiguates:
+  - then
+  - act
+  - remaining
+  - section
+  - holder
+- id: arithmetic/stock-processing-context
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: act
+      cat: stock_placement_verb
+    - slot: item
+      cat: inventory_item
+      uncounted: true
+      bare: true
+    - lit: from
+      consume_skipped: true
+    - slot: holder
+      cat: stock_source_container
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: section-stock-context
+    entity: '{who}'
+    measure: '{item}'
+    value: 0
+    position: '{who.span_start}'
+    container: '{holder}'
+  consumes:
+  - act
+  satisfies:
+    act:
+    - subject
+  disambiguates:
+  - act
+  - item
+  - holder
+- id: arithmetic/complementary-section-classification
+  phase: read
+  match:
+    sentence:
+    - slot: fraction
+      type: fraction
+      at_start: true
+    - slot: item
+      cat: inventory_item
+      uncounted: true
+      bare: true
+    - lit: on
+      consume_skipped: true
+    - slot: section
+      cat: stock_section
+      uncounted: true
+      qualified: true
+      qualifier_cat: stock_section_attribute
+    - lit: of
+      consume_skipped: true
+    - slot: holder
+      cat: stock_source_container
+      uncounted: true
+    - slot: be
+      cat: copula
+    - slot: kind
+      cat: inventory_item
+      uncounted: true
+      qualified: true
+      qualifier_cat: intrinsic_attribute
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: section-removed-fraction
+    entity: ''
+    measure: '{item}'
+    value: fraction
+    position: '{fraction.span_start}'
+    container: '{holder}'
+    attribute: '{section.qualifier}'
+    acquisition: '{kind}'
+  consumes:
+  - fraction
+  - be
+  satisfies:
+    be:
+    - subject
+  disambiguates:
+  - item
+  - section
+  - holder
+  - be
+  - kind
+asks:
+- id: ask/initial-section-stock
+  match:
+    question:
+    - lit: how
+      consume_skipped: true
+    - lit: many
+      consume_skipped: true
+    - slot: item
+      cat: inventory_item
+      uncounted: true
+      bare: true
+    - slot: aux
+      type: auxiliary
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: have
+      cat: possession_state
+    - lit: on
+      consume_skipped: true
+    - slot: holder
+      cat: stock_source_container
+      uncounted: true
+    - lit: when
+      consume_skipped: true
+    - slot: who2
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: start
+      cat: start_marker_verb
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: section-stock-reconstruction
+    entity: '{who}'
+    other: '{who2}'
+    measure: '{item}'
+    holder: '{holder}'
+  satisfies:
+    have:
+    - subject
+    start:
+    - subject
+  disambiguates:
+  - item
+  - have
+  - holder
+  - start

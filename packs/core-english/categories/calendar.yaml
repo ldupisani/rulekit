@@ -2,6 +2,115 @@ format: rulekit/categories@1
 categories:
   named_season: {parent: timeperiod}
   period_boundary_noun: {parent: noun}
+  same_day_transaction_marker:
+    parent: time
+  transaction_sequence_adverb:
+    parent: adverb
+  prior_period_attribute:
+    parent: adjective
+  calendar_year_unit:
+    parent: duration_measure
+    attrs:
+      calendar_months: 12
+  calendar_month_unit:
+    parent: duration_measure
+    attrs:
+      calendar_months: 1
+  retrospective_period_marker:
+    parent: preposition
+  retrospective_window_preposition:
+    parent: preposition
+  recurring_quantity_verb:
+    parent: verb
+  daily_frequency_attribute:
+    parent: adjective
+  part_of_day:
+    parent: timeperiod
+  schedule_average_noun:
+    parent: aggregate
+  open_state:
+    parent: verb
+  feeding_action:
+    parent: verb
+  preference_action:
+    parent: verb
+  saving_action:
+    parent: verb
+  decision_action:
+    parent: verb
+  travel_event:
+    parent: noun
+  approximation_marker:
+    parent: preposition
+  plan_noun:
+    parent: noun
 members:
   named_season: [spring, summer, autumn, fall, winter]
   period_boundary_noun: [start, beginning, end]
+  same_day_transaction_marker:
+  - today
+  transaction_sequence_adverb:
+  - later
+  - then
+  prior_period_attribute:
+  - last
+  - previous
+  calendar_year_unit:
+  - year
+  calendar_month_unit:
+  - month
+  retrospective_period_marker:
+  - before
+  retrospective_window_preposition:
+  - in
+  - over
+  - during
+  recurring_quantity_verb:
+  - borrow
+  - borrows
+  - borrowed
+  - collect
+  - collects
+  - collected
+  - produce
+  - produces
+  - produced
+  - read
+  - reads
+  daily_frequency_attribute:
+  - daily
+  part_of_day:
+  - morning
+  - afternoon
+  - evening
+  - night
+  schedule_average_noun:
+  - average
+  open_state:
+  - open
+  feeding_action:
+  - feed
+  - feeds
+  - fed
+  - supply
+  - supplies
+  - supplied
+  preference_action:
+  - like
+  - likes
+  saving_action:
+  - save
+  - saves
+  - saved
+  decision_action:
+  - decide
+  - decides
+  - decided
+  travel_event:
+  - trip
+  - holiday
+  - vacation
+  approximation_marker:
+  - about
+  plan_noun:
+  - plan

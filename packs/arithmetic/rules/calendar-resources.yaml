@@ -1,0 +1,838 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/work-location-context
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: work
+      cat: scheduled_activity_verb
+      finite_form: true
+    - lit: in
+      consume_skipped: true
+    - slot: site
+      cat: quantity_location
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: schedule-site
+    entity: '{who}'
+    measure: ''
+    value: 0
+    position: '{who.span_start}'
+    container: '{site}'
+  consumes:
+  - work
+  satisfies:
+    work:
+    - subject
+  disambiguates:
+  - work
+  - site
+- id: arithmetic/ordinary-daily-average
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: act
+      cat: recurring_quantity_verb
+      finite_form: true
+    - lit: an
+      consume_skipped: true
+    - slot: average
+      cat: schedule_average_noun
+    - lit: of
+      consume_skipped: true
+    - slot: amount
+      cat: inventory_item
+      counted: true
+      bare: true
+    - lit: every
+      consume_skipped: true
+    - slot: period
+      cat: duration_measure
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: schedule-baseline
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    position: '{who.span_start}'
+    marker: '{period}'
+    verb: '{act}'
+  consumes:
+  - act
+  - amount
+  - average
+  satisfies:
+    act:
+    - subject
+  disambiguates:
+  - act
+  - average
+  - amount
+  - period
+- id: arithmetic/weekday-relative-to-daily-average
+  phase: read
+  match:
+    sentence:
+    - lit: every
+      consume_skipped: true
+    - slot: weekday
+      cat: named_weekday
+      uncounted: true
+      bare: true
+    - opt:
+      - lit: ','
+        consume_skipped: true
+    - slot: owner
+      cat: possessive_determiner
+    - slot: number
+      cat: count_aggregate_noun
+      uncounted: true
+    - lit: of
+      consume_skipped: true
+    - slot: act
+      cat: recurring_quantity_verb
+      past_participle: true
+    - slot: item
+      cat: inventory_item
+      uncounted: true
+      bare: true
+    - slot: be
+      cat: copula
+    - opt:
+      - slot: approx
+        cat: approximation_marker
+    - slot: fraction
+      type: fraction
+    - slot: direction
+      cat: higher
+    - lit: than
+      consume_skipped: true
+    - slot: daily
+      cat: daily_frequency_attribute
+    - slot: average
+      cat: schedule_average_noun
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: schedule-exception
+    entity: '{number.owner}'
+    measure: '{item}'
+    value: fraction
+    position: '{weekday.span_start}'
+    marker: '{weekday}'
+    verb: '{act}'
+    sign: 1
+    attribute: '{approx.optional}'
+  consumes:
+  - act
+  - be
+  - fraction
+  - direction
+  - average
+  satisfies:
+    be:
+    - subject
+    direction:
+    - standard
+  disambiguates:
+  - weekday
+  - owner
+  - number
+  - act
+  - item
+  - be
+  - approx
+  - direction
+  - daily
+  - average
+- id: arithmetic/weekday-more-quantity
+  phase: read
+  match:
+    sentence:
+    - lit: on
+      consume_skipped: true
+    - slot: weekday
+      cat: named_weekday
+      uncounted: true
+      bare: true
+    - opt:
+      - lit: ','
+        consume_skipped: true
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: act
+      cat: recurring_quantity_verb
+    - slot: fraction
+      type: fraction
+    - slot: direction
+      cat: count_quantity_delta
+    - slot: item
+      cat: inventory_item
+      uncounted: true
+      bare: true
+    - lit: than
+      consume_skipped: true
+    - slot: daily
+      cat: daily_frequency_attribute
+    - slot: average
+      cat: schedule_average_noun
+    - lit: .
+      consume_skipped: true
+  where:
+  - slot_not_category: {slot: direction, cat: lower}
+  emits:
+  - fact: batch_evidence
+    kind: schedule-exception
+    entity: '{who}'
+    measure: '{item}'
+    value: fraction
+    position: '{weekday.span_start}'
+    marker: '{weekday}'
+    verb: '{act}'
+    sign: 1
+  consumes:
+  - act
+  - fraction
+  - average
+  satisfies:
+    act:
+    - subject
+    direction:
+    - standard
+  disambiguates:
+  - weekday
+  - act
+  - direction
+  - item
+  - daily
+  - average
+- id: arithmetic/named-month-activity-schedule
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - opt:
+      - slot: like
+        cat: preference_action
+      - lit: to
+        consume_skipped: true
+    - slot: act
+      cat: feeding_action
+    - slot: recipient
+      cat: allocation_recipient
+      uncounted: true
+      bare: true
+    - lit: in
+      consume_skipped: true
+    - slot: months
+      span: true
+      enumeration_cat: named_month
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: calendar-months
+    entity: '{who}'
+    measure: ''
+    value: 0
+    position: '{who.span_start}'
+    container: '{recipient}'
+    members: '{months.members}'
+    verb: '{act}'
+  consumes:
+  - like
+  - act
+  satisfies:
+    like:
+    - subject
+    act:
+    - subject
+  disambiguates:
+  - like
+  - act
+  - recipient
+- id: arithmetic/daily-two-part-quantities
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: act
+      cat: feeding_action
+    - slot: recipient
+      type: pronoun
+    - slot: first
+      type: fraction
+    - slot: unit
+      cat: resource_measure_unit
+      uncounted: true
+      bare: true
+    - lit: in
+      consume_skipped: true
+    - slot: part1
+      cat: part_of_day
+      uncounted: true
+      bare: true
+    - lit: and
+      consume_skipped: true
+    - slot: second
+      type: fraction
+    - slot: unit2
+      cat: resource_measure_unit
+      uncounted: true
+      bare: true
+    - lit: in
+      consume_skipped: true
+    - slot: part2
+      cat: part_of_day
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: daily-portion
+    entity: '{who}'
+    measure: '{unit}'
+    value: first
+    position: '{first.span_start}'
+    marker: '{part1}'
+    container: '{recipient}'
+    verb: '{act}'
+  - fact: batch_evidence
+    kind: daily-portion
+    entity: '{who}'
+    measure: '{unit2}'
+    value: second
+    position: '{second.span_start}'
+    marker: '{part2}'
+    container: '{recipient}'
+    verb: '{act}'
+  consumes:
+  - act
+  - first
+  - second
+  satisfies:
+    act:
+    - subject
+    recipient:
+    - refers
+  disambiguates:
+  - act
+  - unit
+  - part1
+  - unit2
+  - part2
+- id: arithmetic/named-joint-plan-context
+  phase: read
+  match:
+    sentence:
+    - slot: a
+      type: name
+      at_start: true
+    - lit: and
+      consume_skipped: true
+    - slot: b
+      type: name
+    - slot: make
+      cat: production_quantity_verb
+    - slot: plan
+      cat: plan_noun
+      uncounted: true
+      bare: true
+    - lit: to
+      consume_skipped: true
+    - slot: go
+      cat: spatial_motion_verb
+    - lit: on
+      consume_skipped: true
+    - slot: event
+      cat: travel_event
+      uncounted: true
+    - lit: at
+      consume_skipped: true
+    - slot: end
+      cat: period_boundary_noun
+      uncounted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: period
+      cat: calendar_year_unit
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: saving-group
+    entity: '{event}'
+    measure: ''
+    value: 0
+    position: '{a.span_start}'
+    container: '{a}'
+    acquisition: '{b}'
+  consumes:
+  - make
+  - go
+  satisfies:
+    make:
+    - subject
+    go:
+    - subject
+  disambiguates:
+  - make
+  - plan
+  - go
+  - event
+  - end
+  - period
+- id: arithmetic/joint-saving-policy
+  phase: read
+  match:
+    sentence:
+    - slot: group
+      cat: discourse_subject_group_pronoun
+      at_start: true
+    - opt:
+      - lit: both
+        consume_skipped: true
+    - slot: decide
+      cat: decision_action
+    - lit: to
+      consume_skipped: true
+    - slot: work
+      cat: scheduled_activity_verb
+    - lit: as
+      consume_skipped: true
+    - slot: role
+      cat: person
+      uncounted: true
+      bare: true
+    - lit: and
+      consume_skipped: true
+    - slot: save
+      cat: saving_action
+    - slot: fraction
+      type: fraction
+    - lit: of
+      consume_skipped: true
+    - lit: what
+      consume_skipped: true
+    - slot: group2
+      cat: discourse_subject_group_pronoun
+    - slot: earn
+      cat: income_action
+    - lit: for
+      consume_skipped: true
+    - slot: owner
+      cat: plural_possessive_determiner
+    - slot: event
+      cat: travel_event
+      uncounted: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: saving-share
+    entity: '{event}'
+    measure: ''
+    value: fraction
+    position: '{fraction.span_start}'
+  consumes:
+  - decide
+  - work
+  - save
+  - earn
+  - fraction
+  satisfies:
+    group:
+    - refers
+    group2:
+    - refers
+    owner:
+    - refers
+    decide:
+    - subject
+    work:
+    - subject
+    save:
+    - subject
+    earn:
+    - subject
+  disambiguates:
+  - group
+  - decide
+  - work
+  - role
+  - save
+  - group2
+  - earn
+  - owner
+  - event
+- id: arithmetic/year-qualified-month-schedule
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - opt:
+      - slot: like
+        cat: preference_action
+      - lit: to
+        consume_skipped: true
+    - slot: act
+      cat: feeding_action
+    - slot: recipient
+      cat: allocation_recipient
+      uncounted: true
+      bare: true
+    - lit: in
+      consume_skipped: true
+    - slot: months
+      span: true
+      enumeration_cat: named_month
+    - lit: of
+      consume_skipped: true
+    - slot: year
+      type: number
+      integer: true
+      value_positive: true
+      standalone: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: calendar-months
+    entity: '{who}'
+    measure: ''
+    value: 0
+    position: '{who.span_start}'
+    container: '{recipient}'
+    members: '{months.members}'
+    verb: '{act}'
+    subtotal: year
+  consumes:
+  - like
+  - act
+  - year
+  satisfies:
+    like:
+    - subject
+    act:
+    - subject
+    year:
+    - quantifies
+  disambiguates:
+  - like
+  - act
+  - recipient
+- id: arithmetic/named-joint-saving-share
+  phase: read
+  match:
+    sentence:
+    - slot: a
+      type: name
+      at_start: true
+    - lit: and
+      consume_skipped: true
+    - slot: b
+      type: name
+    - slot: save
+      cat: saving_action
+    - slot: fraction
+      type: fraction
+    - lit: of
+      consume_skipped: true
+    - slot: owner
+      cat: plural_possessive_determiner
+    - slot: income
+      cat: income_resource_noun
+      uncounted: true
+    - lit: for
+      consume_skipped: true
+    - slot: event
+      cat: travel_event
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: saving-group
+    entity: '{event}'
+    measure: ''
+    value: 0
+    position: '{a.span_start}'
+    container: '{a}'
+    acquisition: '{b}'
+  - fact: batch_evidence
+    kind: saving-share
+    entity: '{event}'
+    measure: ''
+    value: fraction
+    position: '{fraction.span_start}'
+  consumes:
+  - save
+  - fraction
+  satisfies:
+    save:
+    - subject
+    owner:
+    - refers
+asks:
+- id: ask/weekly-open-day-schedule
+  match:
+    question:
+    - lit: how
+      consume_skipped: true
+    - lit: many
+      consume_skipped: true
+    - slot: item
+      cat: inventory_item
+      uncounted: true
+      bare: true
+    - slot: aux
+      type: auxiliary
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: act
+      cat: recurring_quantity_verb
+    - lit: in
+      consume_skipped: true
+    - lit: a
+      consume_skipped: true
+    - slot: week
+      cat: duration_measure
+      uncounted: true
+      bare: true
+    - lit: if
+      consume_skipped: true
+    - slot: site
+      cat: quantity_location
+      uncounted: true
+      bare: true
+    - slot: be
+      cat: copula
+    - slot: open
+      cat: open_state
+    - lit: from
+      consume_skipped: true
+    - slot: first
+      cat: named_weekday
+      uncounted: true
+      bare: true
+    - lit: to
+      consume_skipped: true
+    - slot: last
+      cat: named_weekday
+      uncounted: true
+      bare: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: calendar-resource-total
+    operation: week
+    entity: '{who}'
+    measure: '{item}'
+    verb: '{act}'
+    first: '{first}'
+    last: '{last}'
+    site: '{site}'
+    period: '{week}'
+  satisfies:
+    act:
+    - subject
+    be:
+    - subject
+  disambiguates:
+  - item
+  - act
+  - week
+  - site
+  - be
+  - open
+  - first
+  - last
+- id: ask/named-month-resource-requirement
+  match:
+    question:
+    - lit: how
+      consume_skipped: true
+    - lit: many
+      consume_skipped: true
+    - slot: unit
+      cat: resource_measure_unit
+      uncounted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: item
+      cat: material_resource
+      uncounted: true
+      bare: true
+    - slot: future
+      type: modal
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: need
+      cat: component_requirement_verb
+    - lit: for
+      consume_skipped: true
+    - lit: all
+      consume_skipped: true
+    - slot: months
+      cat: calendar_month_unit
+      counted: true
+      bare: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: calendar-resource-total
+    operation: months
+    entity: '{who}'
+    measure: '{unit}'
+    month_count: '{months.value}'
+  satisfies:
+    need:
+    - subject
+  disambiguates:
+  - unit
+  - item
+  - need
+  - months
+- id: ask/joint-calendar-savings
+  match:
+    question:
+    - lit: how
+      consume_skipped: true
+    - slot: much
+      cat: mass_amount_quantifier
+    - slot: money
+      cat: currency
+      uncounted: true
+    - slot: future
+      type: modal
+    - slot: group
+      cat: discourse_subject_group_pronoun
+    - opt:
+      - lit: both
+        consume_skipped: true
+    - slot: save
+      cat: saving_action
+    - lit: for
+      consume_skipped: true
+    - slot: owner
+      cat: plural_possessive_determiner
+    - slot: event
+      cat: travel_event
+      uncounted: true
+    - lit: after
+      consume_skipped: true
+    - lit: a
+      consume_skipped: true
+    - slot: period
+      cat: calendar_year_unit
+      uncounted: true
+      bare: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: calendar-resource-total
+    operation: savings
+    event: '{event}'
+    period: '{period}'
+  satisfies:
+    save:
+    - subject
+    group:
+    - refers
+    owner:
+    - refers
+  disambiguates:
+  - much
+  - money
+  - group
+  - save
+  - owner
+  - event
+  - period
+- id: ask/joint-calendar-savings-without-purpose
+  match:
+    question:
+    - lit: how
+      consume_skipped: true
+    - slot: much
+      cat: mass_amount_quantifier
+    - slot: money
+      cat: currency
+      uncounted: true
+    - slot: future
+      type: modal
+    - slot: group
+      cat: discourse_subject_group_pronoun
+    - opt:
+      - lit: both
+        consume_skipped: true
+    - slot: save
+      cat: saving_action
+    - lit: after
+      consume_skipped: true
+    - lit: a
+      consume_skipped: true
+    - slot: period
+      cat: calendar_year_unit
+      uncounted: true
+      bare: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: calendar-resource-total
+    operation: savings
+    period: '{period}'
+  satisfies:
+    save:
+    - subject
+    group:
+    - refers
+  disambiguates:
+  - much
+  - money
+  - group
+  - save
+  - period

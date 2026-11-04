@@ -1,0 +1,149 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/accumulated-activity-time
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: spend
+      cat: spend_verb
+      finite_form: true
+    - slot: amount
+      cat: duration_measure
+      counted: true
+      bare: true
+    - slot: act
+      cat: accumulated_activity_verb
+      present_participle: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: duration-amount
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    position: '{who.span_start}'
+    verb: '{act}'
+  consumes:
+  - spend
+  - amount
+  - act
+  satisfies:
+    spend:
+    - subject
+    act:
+    - subject
+  disambiguates:
+  - spend
+  - amount
+  - act
+- id: arithmetic/relative-accumulated-activity-time
+  phase: read
+  match:
+    sentence:
+    - opt:
+      - slot: owner
+        cat: possessive_determiner
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: be
+      cat: sequence_passive_auxiliary
+    - slot: act
+      cat: accumulated_activity_verb
+      present_participle: true
+    - lit: for
+      consume_skipped: true
+    - slot: amount
+      cat: duration_measure
+      counted: true
+      bare: true
+    - slot: direction
+      cat: mass_quantity_delta
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: duration-relative
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    position: '{who.span_start}'
+    verb: '{act}'
+    sign: sign(direction)
+  consumes:
+  - be
+  - act
+  - amount
+  - direction
+  satisfies:
+    be:
+    - subject
+    direction:
+    - standard
+  bindings:
+    act:
+      subject: who
+  disambiguates:
+  - be
+  - act
+  - amount
+asks:
+- id: ask/combined-accumulated-experience
+  match:
+    question:
+    - lit: how
+      consume_skipped: true
+    - slot: long
+      cat: elapsed_extent_adjective
+    - slot: be
+      cat: copula
+    - slot: group
+      cat: plural_possessive_determiner
+    - slot: total
+      cat: prenominal_group_total_marker
+    - slot: experience
+      cat: activity_experience_noun
+      uncounted: true
+      bare: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: scoped-comparison
+    operation: duration-sum
+  satisfies:
+    be:
+    - subject
+  disambiguates:
+  - total
+- id: ask/combined-activity-time
+  match:
+    question:
+    - lit: what
+      consume_skipped: true
+    - slot: be
+      cat: copula
+    - slot: group
+      cat: plural_possessive_determiner
+    - slot: total
+      cat: prenominal_group_total_marker
+    - slot: experience
+      cat: activity_experience_noun
+      uncounted: true
+      bare: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: scoped-comparison
+    operation: duration-sum
+  satisfies:
+    be:
+    - subject
+  disambiguates:
+  - total

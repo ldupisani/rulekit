@@ -1,0 +1,210 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/measured-item-quote
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - opt:
+      - slot: also
+        cat: additive_discourse_adverb
+    - slot: act
+      cat: measured_order_verb
+      finite_form: true
+    - slot: amount
+      cat: resource_measure_unit
+      counted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: item
+      cat: material_resource
+      uncounted: true
+      bare: true
+    - lit:
+      - for
+      - at
+      consume_skipped: true
+    - slot: price
+      cat: currency_unit
+      counted: true
+      bare: true
+    - lit: per
+      consume_skipped: true
+    - slot: per
+      cat: resource_measure_unit
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: measured-item-amount
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    position: '{who.span_start}'
+    container: '{item}'
+    fraction: 1
+    per_member: price
+    attribute: '{price}'
+    verb: '{act}'
+    marker: '{per}'
+  consumes:
+  - act
+  - amount
+  - price
+  satisfies:
+    act:
+    - subject
+  disambiguates:
+  - also
+  - act
+  - amount
+  - item
+  - price
+  - per
+- id: arithmetic/relative-measured-item-quote
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - opt:
+      - slot: also
+        cat: additive_discourse_adverb
+    - slot: act
+      cat: measured_order_verb
+      finite_form: true
+    - slot: factor
+      type: multiplier
+    - lit: that
+      consume_skipped: true
+    - slot: much
+      cat: mass_amount_quantifier
+    - slot: item
+      cat: material_resource
+      uncounted: true
+      bare: true
+    - lit:
+      - for
+      - at
+      consume_skipped: true
+    - slot: price
+      cat: currency_unit
+      counted: true
+      bare: true
+    - lit: per
+      consume_skipped: true
+    - slot: per
+      cat: resource_measure_unit
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: measured-item-relative
+    entity: '{who}'
+    measure: '{per}'
+    value: 0
+    position: '{who.span_start}'
+    container: '{item}'
+    fraction: factor
+    per_member: price
+    attribute: '{price}'
+    verb: '{act}'
+    marker: '{per}'
+  consumes:
+  - act
+  - factor
+  - price
+  satisfies:
+    act:
+    - subject
+  disambiguates:
+  - also
+  - act
+  - much
+  - item
+  - price
+  - per
+- id: arithmetic/order-purpose-context
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: act
+      cat: measured_order_verb
+      finite_form: true
+    - slot: item
+      cat: purchase_item
+      uncounted: true
+      bare: true
+    - lit: for
+      consume_skipped: true
+    - slot: site
+      cat: purchase_context_site
+      uncounted: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: order-purpose
+    entity: '{who}'
+    measure: ''
+    value: 0
+    position: '{who.span_start}'
+    container: '{item}'
+    acquisition: '{site}'
+    verb: '{act}'
+  consumes:
+  - act
+  satisfies:
+    act:
+    - subject
+  disambiguates:
+  - act
+  - item
+  - site
+asks:
+- id: ask/measured-quote-basket-total
+  match:
+    question:
+    - lit: how
+      consume_skipped: true
+    - slot: much
+      cat: mass_amount_quantifier
+    - slot: aux
+      type: auxiliary
+    - slot: all
+      cat: universal_item_reference
+    - slot: cost
+      cat: price_verb
+    - opt:
+      - slot: total
+        cat: group_total_marker
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: measured-quote-total
+    operation: basket
+  satisfies:
+    cost:
+    - subject
+  disambiguates:
+  - much
+  - all
+  - cost
+  - total

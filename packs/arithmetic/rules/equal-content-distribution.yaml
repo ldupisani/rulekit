@@ -10,7 +10,7 @@ rules:
     - {lit: of}
     - {slot: item, cat: ownable_quantity_object, uncounted: true, bare: true, number: plural}
     - {lit: with}
-    - {slot: count, cat: count_aggregate_noun, qualified: true, qualifier_cat: uniform_quantity_attribute, 
+    - {slot: count, cat: count_aggregate_noun, qualified: true, qualifier_cat: uniform_quantity_attribute,
         uncounted: true, number: singular}
     - {lit: of}
     - {slot: repeated, cat: ownable_quantity_object, uncounted: true, bare: true, number: plural}
@@ -22,10 +22,10 @@ rules:
   consumes: [units, have]
   satisfies: {each: [collection]}
   emits:
-  - {fact: batch_evidence, kind: uniform-stock, entity: '{who}', measure: '{item}', container: '{units}', value: 
+  - {fact: batch_evidence, kind: uniform-stock, entity: '{who}', measure: '{item}', container: '{units}', value:
       units, position: '{units.uid}'}
 - id: arithmetic/retained-and-shared-remainder
-  description: A retained count plus an exhaustive equal distribution of the remainder; the recipients remain 
+  description: A retained count plus an exhaustive equal distribution of the remainder; the recipients remain
     scoped to the owner.
   match:
     sentence:
@@ -34,7 +34,7 @@ rules:
     - {slot: amount, cat: ownable_quantity_object, counted: true}
     - {lit: and}
     - {slot: share, cat: allocation_transfer_verb, finite_form: true}
-    - {slot: item, cat: ownable_quantity_object, uncounted: true, qualified: true, qualifier_cat: 
+    - {slot: item, cat: ownable_quantity_object, uncounted: true, qualified: true, qualifier_cat:
         prenominal_remnant_adj}
     - {slot: equally, cat: equal_division_adverb}
     - {slot: recipients_prep, cat: recipient_distribution_preposition}
@@ -46,7 +46,7 @@ rules:
   satisfies: {share: [subject]}
   emits:
   - {fact: batch_evidence, kind: retained-count, entity: '{who}', measure: '{item}', value: amount, position: '{amount.uid}'}
-  - {fact: batch_evidence, kind: remainder-recipients, entity: '{who}', measure: '{item}', container: '{group}', 
+  - {fact: batch_evidence, kind: remainder-recipients, entity: '{who}', measure: '{item}', container: '{group}',
       value: group, attribute: '{owner.optional}', position: '{group.uid}'}
 - id: arithmetic/recipient-content-each
   description: A named or owned recipient class receives a stated count per member.

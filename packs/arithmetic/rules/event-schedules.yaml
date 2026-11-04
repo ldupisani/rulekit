@@ -1,7 +1,7 @@
 format: rulekit/rules@1
 rules:
 - id: arithmetic/separate-participant-schedules
-  description: Counted participants perform a named activity in separate groups, retaining any explicit owner; 
+  description: Counted participants perform a named activity in separate groups, retaining any explicit owner;
     their schedules remain distributive.
   match:
     sentence:
@@ -9,7 +9,7 @@ rules:
     - {slot: perform, cat: timed_activity_verb, finite_form: true}
     - {slot: activity, cat: timed_activity_object, uncounted: true, bare: true}
     - {slot: affiliation, cat: group_affiliation_preposition}
-    - {slot: groups, cat: scheduled_activity_group, uncounted: true, number: plural, qualified: true, qualifier_cat: 
+    - {slot: groups, cat: scheduled_activity_group, uncounted: true, number: plural, qualified: true, qualifier_cat:
         schedule_separation_descriptor, all_qualifiers: true}
     - {lit: ., consume_skipped: true}
   where:
@@ -20,7 +20,7 @@ rules:
   - {fact: batch_evidence, kind: scheduled-participants, entity: '{participants.owner}', container: '{participants}',
     value: participants, measure: '{activity}', verb: '{perform}', marker: '{groups}', position: '{participants.span_start}'}
 - id: arithmetic/distributive-scheduled-event-count
-  description: An explicit each-count refers to the unique preceding participant schedule, optionally within a 
+  description: An explicit each-count refers to the unique preceding participant schedule, optionally within a
     stated calendar period; the consumer validates its plural reference.
   match:
     sentence:
@@ -40,7 +40,7 @@ rules:
   - {fact: batch_evidence, kind: scheduled-event-count, entity: '', measure: '{events}', value: events, acquisition: '{group.surface}',
     container: '{period.optional}', position: '{events.span_start}'}
 - id: arithmetic/per-event-preparation-duration
-  description: A distributive group preparation duration applies once per stated event, preserving the event's 
+  description: A distributive group preparation duration applies once per stated event, preserving the event's
     participant reference.
   match:
     sentence:
@@ -57,16 +57,16 @@ rules:
     - {lit: ., consume_skipped: true}
   where: [number_compatible: [group, prepare], number_compatible: [participants, perform]]
   consumes: [prepare, duration]
-  satisfies: {each: [collection], event_frequency: [collection], prepare: [subject], participants: [refers], 
+  satisfies: {each: [collection], event_frequency: [collection], prepare: [subject], participants: [refers],
       perform: [subject]}
   emits:
-  - {fact: batch_evidence, kind: event-preparation-duration, entity: '{group}', container: '{event}', value: 
+  - {fact: batch_evidence, kind: event-preparation-duration, entity: '{group}', container: '{event}', value:
       duration, measure: '{duration}', verb: '{prepare}', acquisition: '{participants.optional}', attribute: '{perform.optional}',
     position: '{duration.span_start}'}
   independent_clause: true
 - id: arithmetic/distributive-event-duration
   question_assumption: true
-  description: Each event has a stated duration; a complete adjacent conditional supplies question-local duration 
+  description: Each event has a stated duration; a complete adjacent conditional supplies question-local duration
     evidence.
   match:
     sentence:
@@ -80,7 +80,7 @@ rules:
   consumes: [last, duration]
   satisfies: {each: [collection], last: [subject]}
   emits:
-  - {fact: batch_evidence, kind: scheduled-event-duration, entity: '{event}', measure: '{duration}', value: 
+  - {fact: batch_evidence, kind: scheduled-event-duration, entity: '{event}', measure: '{duration}', value:
       duration, position: '{duration.span_start}'}
   independent_clause: true
 asks:
@@ -95,7 +95,7 @@ asks:
     - {slot: spend, cat: spend_verb, bare_form: true}
     - opt:
       - {lit: at}
-      - {slot: place, cat: quantity_location, uncounted: true, referential: true, bare_reference_category: 
+      - {slot: place, cat: quantity_location, uncounted: true, referential: true, bare_reference_category:
           bare_pp_object}
     - {slot: watch, cat: attendance_observation_verb, present_participle: true}
     - {slot: owner, cat: possessive_determiner}
@@ -107,7 +107,7 @@ asks:
     - {lit: '?', consume_skipped: true}
   satisfies: {spend: [subject], watch: [subject], perform: [subject], prepare: [subject], total_prep: [object]}
   disambiguates: [prepare]
-  where: [distinct: [perform, prepare], bound_requires_category: {bound: total_prep, slot: total, cat: 
+  where: [distinct: [perform, prepare], bound_requires_category: {bound: total_prep, slot: total, cat:
           prepositional_group_total_marker}]
   resolves: {consumer: schedule-attendance-duration, entity: '{who}', participants: '{participants}', perform: '{perform}',
     prepare: '{prepare}', measure: '{unit}'}

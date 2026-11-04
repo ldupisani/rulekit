@@ -64,6 +64,22 @@ class ConsumerContext:
     # presence is discovered while composing premise evidence.
     interpretation: str | None = None
 
+    def query_reference(self, role: str = "entity"):
+        """Preserve the full identity projected by an ask's declared role."""
+        from ..reference_identity import ReferenceIdentity
+        from ..patterns import _template_reference
+
+        evidence = self.query.get("evidence_" + role + "_reference")
+        if evidence:
+            return ReferenceIdentity.from_dict(evidence)
+        raw = self.ask.resolves.get(role) if self.ask is not None else None
+        if isinstance(raw, str) and self.match is not None:
+            reference = _template_reference(raw, self.match.slots)
+            if reference is not None:
+                return reference
+        value = self.query.get(role)
+        return ReferenceIdentity(value) if isinstance(value, str) and value else None
+
 
 # name -> handler, dispatched BEFORE `answer()`'s if-chain so an extracted
 # consumer is unreachable from the chain and the two cannot silently diverge.
@@ -127,6 +143,21 @@ def consumer(name: str, *, time_scoped: bool = False,
 
 
 from . import (  # noqa: E402,F401  (import registers each handler)
+    adjusted_unit_rate as _adjusted_unit_rate,
+    exchange_valuation as _exchange_valuation,
+    calibrated_resource_value as _calibrated_resource_value,
+    section_stock_reconstruction as _section_stock_reconstruction,
+    calendar_resource_total as _calendar_resource_total,
+    composite_output_duration as _composite_output_duration,
+    measured_quote_total as _measured_quote_total,
+    recipient_stock_reconstruction as _recipient_stock_reconstruction,
+    projected_measured_state as _projected_measured_state,
+    unit_distribution as _unit_distribution,
+    container_content_state as _container_content_state,
+    cash_transaction_balance as _cash_transaction_balance,
+    named_activity_cost as _named_activity_cost,
+    participant_outcome_remainder as _participant_outcome_remainder,
+    relative_item_total as _relative_item_total,
     scoped_rate_total as _scoped_rate_total,
     weighted_account as _weighted_account,
     ratio_holder_remainder as _ratio_holder_remainder,
@@ -182,6 +213,11 @@ from . import (  # noqa: E402,F401  (import registers each handler)
     combined_elided_measure as _combined_elided_measure,
     purchase_basket as _purchase_basket,
     composed_duration as _composed_duration,
+    threshold_block_total as _threshold_block_total,
+    measured_value_account as _measured_value_account,
+    grouped_availability as _grouped_availability,
+    dependent_quantity_total as _dependent_quantity_total,
+    scoped_comparison as _scoped_comparison,
     combined as _combined,
     per_holder as _per_holder,
     average as _average,

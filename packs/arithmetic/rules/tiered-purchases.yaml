@@ -110,6 +110,7 @@ rules:
     - items
     - item
 - id: arithmetic/postpositive-unit-price
+  independent_clause: true
   phase: read
   match:
     sentence:

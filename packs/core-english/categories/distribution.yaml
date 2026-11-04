@@ -52,6 +52,11 @@ categories:
     parent: preposition
   mean_report_preposition:
     parent: preposition
+  measured_outcome_predicate:
+    parent: verb
+    notes: An additive measured outcome allocated among participants.
+  equal_amount_attribute:
+    parent: adjective
 members:
   uniform_quantity_attribute: [same, equal]
   retention_verb: [keep, keeps, kept, retain, retained, retains]
@@ -128,5 +133,19 @@ members:
   - with
   mean_report_preposition:
   - on
+  measured_outcome_predicate:
+  - lose
+  - lost
+  - gain
+  - gained
+  - collect
+  - collected
+  - earn
+  - earned
+  equal_amount_attribute:
+  - same
+  - equal
 attribute_compatibility:
   uniform_quantity_attribute: [count_aggregate_noun]
+  equal_amount_attribute:
+  - allocation_amount_noun

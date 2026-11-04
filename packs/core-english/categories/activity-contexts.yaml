@@ -7,6 +7,41 @@ categories:
   activity_context_descriptor: {parent: adjective}
   scoped_activity_participle: {parent: verb}
   activity_context_preposition: {parent: preposition}
+  responsibility_role:
+    parent: noun
+  provision_verb:
+    parent: verb
+  supply_decision_verb:
+    parent: verb
+  supply_transport_verb:
+    parent: verb
+  temporary_departure_verb:
+    parent: verb
+  response_activity_verb:
+    parent: verb
+  response_target:
+    parent: noun
+  return_activity_verb:
+    parent: verb
+  accumulated_activity_verb:
+    parent: verb
+  activity_experience_noun:
+    parent: noun
+  comparison_activity_verb:
+    parent: verb
+  comparison_property_noun:
+    parent: noun
+  comparison_report_verb:
+    parent: verb
+  activity_setting:
+    parent: noun
+    includes:
+    - quantity_site_location
+    - timeperiod
+  output_production_verb:
+    parent: verb
+  stock_placement_verb:
+    parent: verb
 members:
   occupational_activity_context: [job, contract, shift]
   planned_activity_context: [project, task, assignment]
@@ -14,5 +49,91 @@ members:
   activity_context_descriptor: [main, primary, secondary, first, second, third, fourth]
   scoped_activity_participle: [working, operating]
   activity_context_preposition: [at, on, in, for, with]
+  responsibility_role:
+  - turn
+  provision_verb:
+  - provide
+  - provides
+  supply_decision_verb:
+  - decide
+  - decided
+  supply_transport_verb:
+  - bring
+  - brings
+  - brought
+  temporary_departure_verb:
+  - go
+  - goes
+  - went
+  - gone
+  response_activity_verb:
+  - answer
+  - answers
+  - answered
+  response_target:
+  - door
+  - phone
+  return_activity_verb:
+  - come
+  - comes
+  - came
+  accumulated_activity_verb:
+  - teach
+  - teaches
+  - teaching
+  - taught
+  - work
+  - works
+  - working
+  - worked
+  - study
+  - studies
+  - studying
+  - studied
+  - practice
+  - practices
+  - practicing
+  activity_experience_noun:
+  - experience
+  - time
+  comparison_activity_verb:
+  - compare
+  - compared
+  - comparing
+  comparison_property_noun:
+  - age
+  - height
+  - weight
+  - length
+  comparison_report_verb:
+  - discovered
+  - realized
+  - find
+  - found
+  activity_setting:
+  - recess
+  output_production_verb:
+  - write
+  - writes
+  - wrote
+  - written
+  - print
+  - prints
+  - printed
+  - produce
+  - produces
+  - produced
+  - make
+  - makes
+  - made
+  stock_placement_verb:
+  - shelve
+  - shelves
+  - shelved
+  - shelving
+  - sort
+  - sorts
+  - sorted
+  - sorting
 attribute_compatibility:
   activity_context_descriptor: [activity_context]

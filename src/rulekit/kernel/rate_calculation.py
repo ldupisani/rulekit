@@ -1,6 +1,36 @@
 """Shared rate arithmetic and activity identity, without vocabulary defaults."""
 
 from .evaluate import evaluate
+from dataclasses import dataclass
+from math import isfinite
+
+
+@dataclass(frozen=True)
+class _Ratio:
+    numerator: float
+    denominator: float
+
+
+def apply_ratio(numerator, denominator, amount, log, *, source):
+    """Apply an explicit input/output ratio without losing its raw operands.
+
+    The caller validates resource identities, unit conversion, scope and the
+    permission to reuse a ratio. This operation supplies only the arithmetic.
+    """
+    if (not all(isfinite(v) for v in (numerator, denominator, amount))
+            or numerator < 0 or denominator <= 0 or amount < 0):
+        return None
+    return apply_rate(_Ratio(numerator, denominator), amount, log, source=source)
+
+
+def convert_calendar_duration(value, source_unit, target_unit, reg, log, *, source):
+    """Convert counts of calendar units without assigning months a day length."""
+    before = reg.attribute_value(source_unit, 'calendar_months')
+    after = reg.attribute_value(target_unit, 'calendar_months')
+    if before is not None and after is not None:
+        return evaluate('value * before / after', dict(value=value, before=before, after=after),
+                        log, source=source)
+    return convert_duration(value, source_unit, target_unit, reg, log, source=source)
 
 
 def rate_operands(rate):

@@ -1,0 +1,69 @@
+format: rulekit/categories@1
+categories:
+  capacity_site:
+    parent: quantity_site_location
+  capacity_partition_group:
+    parent: noun
+  reservable_capacity_unit:
+    parent: noun
+  reservation_verb:
+    parent: verb
+  unavailability_descriptor:
+    parent: adjective
+  uniform_structure_descriptor:
+    parent: adjective
+  occupancy_participant:
+    parent: person
+  check_in_verb:
+    parent: verb
+  availability_descriptor:
+    parent: adjective
+  check_in_particle:
+    parent: preposition
+  distinct_option_descriptor:
+    parent: adjective
+members:
+  capacity_site:
+  - hotel
+  - office
+  - warehouse
+  - building
+  - theater
+  capacity_partition_group:
+  - floor
+  - shelf
+  - building
+  - row
+  reservable_capacity_unit:
+  - room
+  - seat
+  - desk
+  - box
+  reservation_verb:
+  - book
+  - booked
+  - books
+  unavailability_descriptor:
+  - unavailable
+  uniform_structure_descriptor:
+  - identical
+  - equal
+  occupancy_participant:
+  - guest
+  - customer
+  - worker
+  check_in_verb:
+  - check
+  - checked
+  availability_descriptor:
+  - available
+  check_in_particle:
+  - in
+  distinct_option_descriptor:
+  - different
+attribute_compatibility:
+  uniform_structure_descriptor:
+  - reservable_capacity_unit
+  unavailability_descriptor:
+  - capacity_partition_group
+  - reservable_capacity_unit

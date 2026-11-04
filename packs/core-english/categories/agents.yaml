@@ -61,6 +61,11 @@ categories:
   persongroup:
     parent: quantity_holder
     notes: A collection of people; membership does not supply a group size.
+  potential_person_role:
+    parent: noun
+    notes: A surface with a possible personal role alongside other nominal senses. Membership does not assert a
+      person, animate reference eligibility, or biological disjointness; a complete contextual construction must
+      select the role.
 members:
   role_location_preposition: [at]
   social_group: [couple, crew, crowd, family, household, team, tribe, varsity]
@@ -74,9 +79,9 @@ members:
       employee, farmer, father, fisherman, friend, girl, goalkeeper, grandchild, granddaughter, grandfather,
       grandkid, grandmother, grandpa, guest, gymnast, housewife, hunter, husband, kid, kindergartner, lady,
       magician, man, manager, mason, member, merchandiser, mother, mum, neighbor, nephew, nerd, nurse, painter,
-    pal, partner, passenger, person, roommate, salesman, scientist, senior, sibling, soldier, son, spectator,
+      pal, partner, passenger, person, roommate, salesman, scientist, senior, sibling, soldier, son, spectator,
       student, tailor, teammate, technician, traveler, uncle, vet, visitor, waitress, wife, woman, worker,
-      writer]
+      writer, coach, helper]
   named_city:
   - chicago
   situated_role: [artist, athlete, babysitter, baker, bodyguard, cannoneer, captain, carpenter, chef, clerk,
@@ -88,3 +93,10 @@ members:
   activity_site: [garden, park, restaurant, store, theater, warehouse, workplace, zoo]
   organization: [administration, business, club, college, company, government, workshop]
   persongroup: [couple, crew, family, group, household, party, team, tribe, varsity]
+  potential_person_role:
+  - boxer
+  - cardinal
+  - collector
+  - player
+  - pupil
+  - reader

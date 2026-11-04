@@ -20,22 +20,27 @@ rules:
      position: '{parts.span_start}', members: '{people.members}'}
 - id: arithmetic/named-portion-consumption
   phase: read
-  description: A named subgroup consumes a fraction of its own divisible wholes.
+  description: A named subgroup explicitly uses a fraction of its own divisible wholes.
   match:
     sentence:
     - {slot: people, span: true, enumeration_cat: name, at_start: true}
-    - {slot: consumption, cat: eating_quantity_verb, finite_form: true}
+    - {slot: consumption, cat: component_depletion_verb, finite_form: true}
     - {slot: fraction, type: fraction}
     - {lit: of}
     - opt:
       - {slot: owner, cat: possessive_determiner}
     - {slot: whole, cat: decomposable_quantity_whole, uncounted: true}
     - {lit: '.', consume_skipped: true}
+  where:
+  - verb_roles_compatible:
+      verb: consumption
+      roles: {theme: [whole]}
+      frame_categories: [eating_quantity_verb]
   consumes: [fraction]
   satisfies: {consumption: [subject], owner: [refers]}
   emits:
   - {fact: batch_evidence, kind: component-share, entity: '{whole}', measure: '{whole}', value: fraction,
-     position: '{fraction.span_start}', members: '{people.members}', attribute: '{owner.optional}'}
+     position: '{fraction.span_start}', members: '{people.members}', attribute: '{owner.optional}', verb: '{consumption}'}
 asks:
 - id: ask/portion-pieces-left-unconsumed
   match:
@@ -46,7 +51,7 @@ asks:
     - {slot: cop, cat: plural_copula}
     - {lit: left}
     - opt:
-      - {slot: state, cat: portion_unconsumed_attribute}
+      - {slot: state, cat: component_residual_attribute}
     - {lit: '?', consume_skipped: true}
   resolves: {consumer: portion-remainder, measure: '{parts}', whole: '{parts.qualifier}'}
 - id: ask/portion-pieces-unconsumed
@@ -56,6 +61,6 @@ asks:
     - {lit: many}
     - {slot: parts, cat: component_quantity_measure, uncounted: true, number: plural}
     - {slot: cop, cat: plural_copula}
-    - {slot: state, cat: portion_unconsumed_attribute}
+    - {slot: state, cat: component_residual_attribute}
     - {lit: '?', consume_skipped: true}
   resolves: {consumer: portion-remainder, measure: '{parts}', whole: '{parts.qualifier}'}

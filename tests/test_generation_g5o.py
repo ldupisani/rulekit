@@ -18,6 +18,21 @@ ROOT = Path(__file__).resolve().parents[1]
 CURATED = ROOT / "projects" / "curated"
 
 EXPECTED_OCCURRENCES = {
+    "arithmetic/generic-unit-quote-collection": ((3,), "each"),
+    'arithmetic/coin-subset-valuation': ((7,), 'each'),
+    'arithmetic/periodic-rate-every-unit': ((4,), 'freq'),
+    'arithmetic/relative-measured-item-quote': ((5,), 'much'),
+    'arithmetic/returned-exchange-subset-valuation': ((16,), 'each'),
+    'arithmetic/additional-ratio-acquisition': ((4,), 'every'),
+    'arithmetic/distributive-object-unit-price': ((0,), 'each'),
+    'arithmetic/fixed-block-with-excess-rate': ((15,), 'every'),
+    'arithmetic/pooled-stock-shared-within-group': ((2,), 'all'),
+    'arithmetic/uniform-grouped-capacity': ((6,), 'each'),
+    'arithmetic/uniform-indexed-performance': ((4,), 'each'),
+    'arithmetic/uniform-repetition-frequency': ((4,), 'each'),
+    "arithmetic/declared-package-unit-quote": ((6, 0), "each"),
+    "arithmetic/explicit-per-recipient-unit-count": ((0,), "each"),
+    "arithmetic/partitioned-stock-served-to-mixed-roster": ((15,), "all"),
     "arithmetic/collected-components-each": ((5,), "each0"),
     "arithmetic/collected-components-each-each": ((10,), "each1"),
     "arithmetic/collected-components-each-single": ((5,), "each0"),
@@ -186,9 +201,9 @@ def test_g5o_unlocks_only_the_preregistered_rule() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 729
-    assert sum(item.supported for item in availability.values()) == 644
-    assert sum(not item.supported for item in availability.values()) == 85
+    assert len(availability) == 830
+    assert sum(item.supported for item in availability.values()) == 733
+    assert sum(not item.supported for item in availability.values()) == 97
     assert availability[
         "arithmetic/existential-premise-distributive"
     ].supported
@@ -198,7 +213,7 @@ def test_g5o_unlocks_only_the_preregistered_rule() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 2575
+    assert len(exploration_status(project)["fillers"]) == 2601
 
 
 @pytest.mark.parametrize("quantifier", sorted(EXPECTED_DISTRIBUTIVE_FILLERS))
@@ -263,6 +278,9 @@ def test_exploration_exposes_quantifiers_only_on_compatible_rules() -> None:
             if quantifier == "every":
                 expected.add(
                     ("arithmetic/periodic-rate-every-span", "freq")
+                )
+                expected.add(
+                    ("arithmetic/periodic-rate-every-unit", "freq")
                 )
                 expected.add(
                     ("arithmetic/periodic-output-per-unit", "freq")

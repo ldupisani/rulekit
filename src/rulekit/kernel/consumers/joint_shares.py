@@ -9,6 +9,7 @@ from ..numeric_evidence import audit_numeric_mentions
 from ..source_coverage import uncovered_document_units
 from ..predicate_compatibility import predicates_compatible
 from ..rate_calculation import convert_units
+from ..affine_graph import dependency_graph, AffineError
 
 JOINT_KINDS = frozenset({'joint-total', 'joint-share', 'joint-relative'})
 
@@ -73,14 +74,14 @@ def difference(ctx):
             values[r.entity] = evaluate('total * share', {'total':total.value,'share':r.value},ctx.log,source='joint-total-share')
         elif r.container not in total.members or r.container == r.entity:
             return decline('a relative share must reference another participant')
-    pending = [r for r in shares if r.kind == 'joint-relative']
-    while pending:
-        ready = [r for r in pending if r.container in values]
-        if not ready:
-            return decline('relative shares form a cycle or have no known base')
-        for r in ready:
-            values[r.entity] = evaluate('base * share', {'base':values[r.container],'share':r.value},ctx.log,source='relative-earned-share')
-            pending.remove(r)
+    node = lambda entity: (total.key(), total.measure, entity)
+    links = [(node(r.entity), node(r.container), r.value, 0)
+             for r in shares if r.kind == 'joint-relative']
+    try:
+        graph = dependency_graph([(node(k), v) for k, v in values.items()], links, ctx.log)
+        values = {r.entity: graph.value(node(r.entity)) for r in shares}
+    except AffineError:
+        return decline('relative shares form a cycle or have no known base')
     if sum(values.values()) > total.value + 1e-9:
         return decline('the participants shares exceed the joint total')
     a,b = ctx.query.get('a'),ctx.query.get('b')

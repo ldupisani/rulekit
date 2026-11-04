@@ -12,7 +12,7 @@ categories:
 members:
   scheduled_activity_group: [class, club, band]
   schedule_separation_descriptor: [different, separate]
-  scheduled_event: [game, match, lesson, session, meeting, show]
+  scheduled_event: [game, match, lesson, session, meeting, show, fight, race, contest]
   preparation_activity_verb: [practice, practices, practicing]
   event_duration_verb: [last, lasted, lasts]
   attendance_observation_verb: [watch, watched, watches, watching]

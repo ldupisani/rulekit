@@ -45,11 +45,23 @@ def test_only_declared_non_generative_rules_remain_outside_generation(project) -
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 729
+    assert len(availability) == 830
     assert {item.id for item in availability.values() if not item.supported} == (
         SAFETY_RULES | {
+            "arithmetic/affine-recipient-transfer",
+            "arithmetic/employment-bonus-context",
+            "arithmetic/exhaustive-section-remaining-list",
+            "arithmetic/named-month-activity-schedule",
+            "arithmetic/relative-recipient-transfer",
+            "arithmetic/stock-section-counted-list",
+            "arithmetic/year-qualified-month-schedule",
+            "arithmetic/absence-of-other-occupants",
+            "arithmetic/coordinated-qualified-relative-stock-associated-fraction",
+            "arithmetic/coordinated-qualified-relative-stock-associated-multiplier",
 
-            "arithmetic/collected-qualified-nested-population",
+            "arithmetic/affiliated-recipient-groups",
+        "arithmetic/named-activity-account",
+        "arithmetic/collected-qualified-nested-population",
             "arithmetic/indexed-completion-amount-label",
             "arithmetic/named-individual-completion-deadline",
             "arithmetic/named-shared-completion-context",
@@ -190,8 +202,8 @@ def test_generation_api_separates_safety_consumers_from_targets() -> None:
 
     payload = endpoint()
 
-    assert payload["supported"] == 644
-    assert payload["total"] == 721
+    assert payload["supported"] == 733
+    assert payload["total"] == 822
     assert payload["safety_total"] == 8
     assert {rule["id"] for rule in payload["safety_rules"]} == SAFETY_RULES
     assert not ({rule["id"] for rule in payload["rules"]} & SAFETY_RULES)

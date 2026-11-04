@@ -1,5 +1,7 @@
 format: rulekit/categories@1
 categories:
+  divisible_material_whole:
+    parent: decomposable_quantity_whole
   sheet_material: {parent: material_resource}
   material_stock_unit: {parent: quantity_container}
   rectangular_shape: {parent: noun}
@@ -53,7 +55,18 @@ categories:
       polarity.
   spatial_unit_modifier:
     parent: adjective
+  precipitation_resource:
+    parent: material_resource
+  weather_quantity_verb:
+    parent: verb
+  calibrated_collection_verb:
+    parent: verb
+  storage_container:
+    parent: quantity_container
+  precipitation_output:
+    parent: material_resource
 members:
+  divisible_material_whole: [panel, roll, sheet]
   sheet_material: [fabric, cloth, paper, cardboard]
   material_stock_unit:
   - bolt
@@ -70,8 +83,30 @@ members:
   fabrication_product: [curtain, panel, dress, model]
   mass_amount_interrogative: [much]
   mass_amount_quantifier: [much]
-  material_resource: [bamboo, beeswax, cable, charcoal, clay, foam, fuel, fur, glass, ice, material, metal,
-      ribbon, rope, rubber, silk, string, tape, tile, wire, wood, yarn]
+  material_resource:
+  - bamboo
+  - beeswax
+  - cable
+  - charcoal
+  - clay
+  - foam
+  - fuel
+  - fur
+  - glass
+  - ice
+  - material
+  - metal
+  - ribbon
+  - rope
+  - rubber
+  - silk
+  - string
+  - tape
+  - tile
+  - wire
+  - wood
+  - yarn
+  - food
   production_variety_noun: [kind, type, version]
   solid_stock_unit:
   - block
@@ -124,10 +159,33 @@ members:
   - held
   - having
   measured_resource_removal_verb: [cut, cuts, cutting, remove, removed, removes, use, used, uses]
+  precipitation_resource:
+  - rain
+  - rainwater
+  weather_quantity_verb:
+  - rain
+  - rains
+  - rained
+  calibrated_collection_verb:
+  - collect
+  - collects
+  - collected
+  - produce
+  - produces
+  - produced
+  storage_container:
+  - barrel
+  - tank
+  - cart
+  resource_measure_unit:
+  - cup
+  precipitation_output:
+  - water
 attribute_compatibility:
   resource_remnant_attribute: [material_resource]
   rectangular_attribute:
   - material_stock_unit
   - rectangular_shape
+  - volumetric_container
   separate_region_attribute:
   - rectangular_shape

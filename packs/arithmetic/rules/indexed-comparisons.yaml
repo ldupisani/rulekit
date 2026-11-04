@@ -1,0 +1,367 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/named-indexed-activity-context
+  phase: read
+  match:
+    sentence:
+    - slot: a
+      type: name
+      at_start: true
+    - lit: and
+      consume_skipped: true
+    - slot: b
+      type: name
+    - slot: have
+      cat: possession_state
+      finite_form: true
+    - slot: event
+      cat: indexed_activity_context
+      uncounted: true
+    - lit: at
+      consume_skipped: true
+    - slot: context
+      uncounted: true
+      cat: activity_setting
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: indexed-participants
+    entity: '{event}'
+    measure: ''
+    value: 0
+    position: '{a.span_start}'
+    container: '{a}'
+    acquisition: '{b}'
+  consumes:
+  - have
+  satisfies:
+    have:
+    - subject
+  disambiguates:
+  - have
+  - event
+  - context
+- id: arithmetic/partitioned-indexed-activity
+  phase: read
+  match:
+    sentence:
+    - slot: event
+      cat: indexed_activity_context
+      uncounted: true
+      bare: true
+      at_start: true
+    - slot: be
+      cat: copula
+    - slot: split
+      cat: divide
+      past_participle: true
+    - lit: into
+      consume_skipped: true
+    - slot: periods
+      cat: repeating_event
+      counted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: indexed-range
+    entity: '{event}'
+    measure: '{periods}'
+    value: periods
+    position: '{periods.span_start}'
+  consumes:
+  - be
+  - split
+  - periods
+  satisfies:
+    be:
+    - subject
+    split:
+    - subject
+  disambiguates:
+  - event
+  - be
+  - split
+  - periods
+- id: arithmetic/indexed-additive-performance-comparison
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: act
+      cat: repetition_performance_verb
+      finite_form: true
+    - slot: amount
+      type: number
+    - slot: direction
+      cat: count_quantity_delta
+    - slot: item
+      cat: repetition_count_unit
+      uncounted: true
+      bare: true
+    - lit: than
+      consume_skipped: true
+    - slot: standard
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - lit: in
+      consume_skipped: true
+    - slot: period
+      cat: repeating_event
+      uncounted: true
+      qualified: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: indexed-relation
+    entity: '{who}'
+    measure: '{item}'
+    value: amount
+    position: '{who.span_start}'
+    container: '{standard}'
+    verb: '{act}'
+    sign: sign(direction)
+    attribute: '{period.qualifier}'
+    marker: '{period}'
+  consumes:
+  - act
+  - amount
+  - direction
+  satisfies:
+    amount:
+    - quantifies
+  bindings:
+    act:
+      subject: who
+  disambiguates:
+  - act
+  - item
+  - period
+- id: arithmetic/indexed-fractional-performance-comparison
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - opt:
+      - slot: get
+        cat: acquire
+        finite_form: true
+      - slot: condition
+        cat: performance_condition_attribute
+      - lit: and
+        consume_skipped: true
+      - lit: only
+        consume_skipped: true
+    - slot: act
+      cat: repetition_performance_verb
+      finite_form: true
+    - slot: fraction
+      type: fraction
+    - lit: the
+      consume_skipped: true
+    - slot: number
+      cat: count_aggregate_noun
+      uncounted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: item
+      cat: repetition_count_unit
+      uncounted: true
+      bare: true
+    - lit: as
+      consume_skipped: true
+    - slot: standard
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - lit: in
+      consume_skipped: true
+    - slot: period
+      cat: repeating_event
+      uncounted: true
+      qualified: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: indexed-relation
+    entity: '{who}'
+    measure: '{item}'
+    value: 0
+    position: '{who.span_start}'
+    container: '{standard}'
+    verb: '{act}'
+    fraction: fraction
+    attribute: '{period.qualifier}'
+    marker: '{period}'
+  consumes:
+  - get
+  - act
+  - fraction
+  satisfies:
+    get:
+    - subject
+    act:
+    - subject
+  disambiguates:
+  - get
+  - act
+  - number
+  - item
+  - period
+- id: arithmetic/uniform-indexed-performance
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: act
+      cat: repetition_performance_verb
+      finite_form: true
+    - slot: amount
+      cat: repetition_count_unit
+      counted: true
+      bare: true
+    - lit: in
+      consume_skipped: true
+    - slot: each
+      cat: partitive_distributive_quantifier
+    - slot: period
+      cat: repeating_event
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: indexed-uniform
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    position: '{who.span_start}'
+    verb: '{act}'
+    marker: '{period}'
+  consumes:
+  - act
+  - amount
+  satisfies:
+    act:
+    - subject
+    each:
+    - collection
+  question_assumption: true
+  disambiguates:
+  - act
+  - amount
+  - period
+- id: arithmetic/uniform-repetition-frequency
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: act
+      cat: self_named_count_action
+      finite_form: true
+    - slot: amount
+      type: multiplier
+    - lit: in
+      consume_skipped: true
+    - slot: each
+      cat: partitive_distributive_quantifier
+    - slot: period
+      cat: repeating_event
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: indexed-uniform
+    entity: '{who}'
+    measure: '{act}'
+    value: amount
+    position: '{who.span_start}'
+    verb: '{act}'
+    marker: '{period}'
+  consumes:
+  - act
+  - amount
+  satisfies:
+    act:
+    - subject
+    each:
+    - collection
+  question_assumption: true
+  disambiguates:
+  - act
+  - period
+asks:
+- id: ask/mean-indexed-performance
+  match:
+    question:
+    - lit: what
+      consume_skipped: true
+    - slot: be
+      cat: copula
+    - lit: the
+      consume_skipped: true
+    - lit: average
+      consume_skipped: true
+    - slot: number
+      cat: count_aggregate_noun
+      uncounted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: item
+      cat: repetition_count_unit
+      uncounted: true
+      bare: true
+    - lit: per
+      consume_skipped: true
+    - slot: period
+      cat: repeating_event
+      uncounted: true
+      bare: true
+    - slot: complete
+      cat: repetition_performance_verb
+      past_participle: true
+    - lit: by
+      consume_skipped: true
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: scoped-comparison
+    operation: indexed-mean
+    entity: '{who}'
+    measure: '{item}'
+    period: '{period}'
+  satisfies:
+    be:
+    - subject
+    complete:
+    - subject

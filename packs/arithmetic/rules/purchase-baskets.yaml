@@ -2,7 +2,7 @@ format: rulekit/rules@1
 rules:
 - id: arithmetic/owned-occasion-context
   phase: read
-  description: An owned social occasion is nonquantitative context, including a 
+  description: An owned social occasion is nonquantitative context, including a
     contracted copula.
   match:
     sentence:
@@ -84,7 +84,7 @@ rules:
     qualifier: '{item.qualifier}'
 - id: arithmetic/package-purchase-line
   phase: read
-  description: Explicit per-package prices keep the package count separate from 
+  description: Explicit per-package prices keep the package count separate from
     its contents.
   match:
     sentence:
@@ -137,7 +137,7 @@ rules:
     basis: purchase
 - id: arithmetic/package-purchase-line-continuation
   phase: read
-  description: Explicit per-package prices keep the package count separate from 
+  description: Explicit per-package prices keep the package count separate from
     its contents.
   match:
     sentence:
@@ -186,7 +186,7 @@ rules:
     basis: purchase
 - id: arithmetic/package-purchase-line-named
   phase: read
-  description: Explicit per-package prices keep the package count separate from 
+  description: Explicit per-package prices keep the package count separate from
     its contents.
   match:
     sentence:
@@ -236,7 +236,7 @@ rules:
     basis: purchase
 - id: arithmetic/owned-occasion-context-copula
   phase: read
-  description: An owned social occasion is nonquantitative context, including a 
+  description: An owned social occasion is nonquantitative context, including a
     contracted copula.
   match:
     sentence:

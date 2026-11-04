@@ -4,6 +4,51 @@ import math
 from dataclasses import replace
 
 
+def resolve_unit_quotes(prices, reg, log, *, per=None):
+    """Agreeing restatements of one item, qualifier and pricing basis.
+
+    Denominations may differ only through declared monetary conversions.
+    Callers establish actor/event/time scope before supplying the quotes.
+    """
+    from .monetary import canonical_currency, convert_money
+
+    prices = list(prices)
+    if not prices:
+        return None
+    first = prices[0]
+    unit = first.measure or canonical_currency(reg)
+    identity = (first.item, first.qualifier, first.per or first.item)
+    if (
+        identity[2] != (per or first.item)
+        or unit is None
+        or not math.isfinite(first.value)
+        or first.value < 0
+    ):
+        return None
+    for price in prices:
+        if (
+            (price.item, price.qualifier, price.per or price.item) != identity
+            or price.provenance.assumption != first.provenance.assumption
+            or not math.isfinite(price.value)
+            or price.value < 0
+        ):
+            return None
+        value = convert_money(
+            price.value, price.measure or canonical_currency(reg), unit, reg, log
+        )
+        if value is None or not math.isclose(
+            first.value, value, rel_tol=1e-10, abs_tol=1e-10
+        ):
+            return None
+    return first
+
+
+def consume_unit_quotes(prices, log):
+    """Credit validated quote sources only after the caller uses their price."""
+    log.consumed_currency_price_keys.update(p.key() for p in prices)
+    log.consumed_quoted_price_keys.update(p.key() for p in prices)
+
+
 def expenditure_mentions(expense):
     """Original source operands, not derived totals, keyed by unit identity."""
     mentions = {}

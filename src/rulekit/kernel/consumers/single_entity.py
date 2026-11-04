@@ -32,6 +32,22 @@ def single_entity(ctx: ConsumerContext):
     entity, measure = ctx.query["entity"], ctx.query["measure"]
     from ..model import BatchEvidence
     if ctx.store.by_kind(BatchEvidence):
+        from .portion_remainder import individual_stock_view
+        projection = individual_stock_view(ctx)
+        if projection is not None:
+            from dataclasses import replace
+            view, rows = projection
+            result = single_entity(replace(ctx, store=view))
+            if result.committed:
+                ctx.log.consumed_batch_keys.update(r.key() for r in rows)
+            return result
+        if (any(r.kind == "transfer-opening" for r in ctx.store.by_kind(BatchEvidence))
+                and ctx.reg.word_in_category(ctx.query.get("verb", ""), "purchase")):
+            from .recipient_stock_reconstruction import consume as opening_transfers
+            return opening_transfers(ctx)
+        if any(r.kind == "item-relation" for r in ctx.store.by_kind(BatchEvidence)):
+            from .relative_item_total import consume as relative_inventory
+            return relative_inventory(ctx)
         from dataclasses import replace
         from .batch_outcomes import ACQUIRED_BATCH_KINDS, consume
         if (all(r.kind in ACQUIRED_BATCH_KINDS

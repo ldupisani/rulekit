@@ -1,0 +1,46 @@
+format: rulekit/categories@1
+categories:
+  volumetric_container:
+    parent: measurement_container
+  container_filling_verb:
+    parent: verb
+  fractional_fill_adverb:
+    parent: adverb
+  container_overturn_verb:
+    parent: verb
+  content_spill_verb:
+    parent: verb
+  stock_doubling_verb:
+    parent: verb
+  stock_tripling_verb:
+    parent: verb
+members:
+  volumetric_container:
+  - aquarium
+  - tank
+  - box
+  - bucket
+  - pool
+  container_filling_verb:
+  - fill
+  - fills
+  - filled
+  - filling
+  fractional_fill_adverb:
+  - halfway
+  container_overturn_verb:
+  - knock
+  - knocks
+  - knocked
+  content_spill_verb:
+  - spill
+  - spills
+  - spilled
+  stock_doubling_verb:
+  - double
+  - doubles
+  - doubled
+  stock_tripling_verb:
+  - triple
+  - triples
+  - tripled

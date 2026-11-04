@@ -1,0 +1,436 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/collection-container-context
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: have
+      cat: possession_state
+    - slot: holder
+      cat: storage_container
+      uncounted: true
+      qualified: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: calibration-context
+    entity: '{who}'
+    measure: ''
+    value: 0
+    position: '{who.span_start}'
+    container: '{holder}'
+  consumes:
+  - have
+  satisfies:
+    have:
+    - subject
+  disambiguates:
+  - have
+  - holder
+- id: arithmetic/per-measured-input-calibration
+  phase: read
+  match:
+    sentence:
+    - lit: for
+      consume_skipped: true
+    - lit: each
+      consume_skipped: true
+    - slot: input
+      cat: resource_measure_unit
+      uncounted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: resource
+      cat: material_resource
+      uncounted: true
+      bare: true
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: act
+      cat: calibrated_collection_verb
+    - slot: output
+      cat: resource_measure_unit
+      counted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: measured-calibration
+    entity: '{who}'
+    measure: '{input}'
+    value: 1
+    position: '{who.span_start}'
+    container: '{output}'
+    per_member: output
+    attribute: '{resource}'
+    verb: '{act}'
+  consumes:
+  - act
+  - output
+  satisfies:
+    act:
+    - subject
+  disambiguates:
+  - input
+  - resource
+  - act
+  - output
+- id: arithmetic/dated-weather-input
+  phase: read
+  match:
+    sentence:
+    - lit: on
+      consume_skipped: true
+    - slot: day1
+      cat: named_weekday
+      uncounted: true
+      bare: true
+    - lit: it
+      consume_skipped: true
+    - slot: act1
+      cat: weather_quantity_verb
+    - slot: input1
+      cat: resource_measure_unit
+      counted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: calibration-input
+    entity: ''
+    measure: '{input1}'
+    value: input1
+    position: '{input1.span_start}'
+    marker: '{day1}'
+    verb: '{act1}'
+  consumes:
+  - act1
+  - input1
+  satisfies:
+    act1:
+    - subject
+  disambiguates:
+  - day1
+  - act1
+  - input1
+- id: arithmetic/dated-weather-inputs
+  phase: read
+  match:
+    sentence:
+    - lit: on
+      consume_skipped: true
+    - slot: day1
+      cat: named_weekday
+      uncounted: true
+      bare: true
+    - lit: it
+      consume_skipped: true
+    - slot: act1
+      cat: weather_quantity_verb
+    - slot: input1
+      cat: resource_measure_unit
+      counted: true
+      bare: true
+    - lit: and
+      consume_skipped: true
+    - lit: on
+      consume_skipped: true
+    - slot: day2
+      cat: named_weekday
+      uncounted: true
+      bare: true
+    - lit: it
+      consume_skipped: true
+    - slot: act2
+      cat: weather_quantity_verb
+    - slot: input2
+      cat: resource_measure_unit
+      counted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: calibration-input
+    entity: ''
+    measure: '{input1}'
+    value: input1
+    position: '{input1.span_start}'
+    marker: '{day1}'
+    verb: '{act1}'
+  - fact: batch_evidence
+    kind: calibration-input
+    entity: ''
+    measure: '{input2}'
+    value: input2
+    position: '{input2.span_start}'
+    marker: '{day2}'
+    verb: '{act2}'
+  consumes:
+  - act1
+  - input1
+  - act2
+  - input2
+  satisfies:
+    act1:
+    - subject
+    act2:
+    - subject
+  disambiguates:
+  - day1
+  - act1
+  - input1
+  - day2
+  - act2
+  - input2
+- id: arithmetic/calibrated-output-sale-quote
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: can
+      type: modal
+    - slot: sell
+      cat: sell
+      bare_form: true
+    - slot: item
+      cat: material_resource
+      uncounted: true
+      bare: true
+    - lit: for
+      consume_skipped: true
+    - slot: price
+      cat: currency_unit
+      counted: true
+      bare: true
+    - lit: per
+      consume_skipped: true
+    - slot: per
+      cat: resource_measure_unit
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: calibration-price
+    entity: '{who}'
+    measure: '{price}'
+    value: price
+    position: '{who.span_start}'
+    container: '{item}'
+    attribute: '{per}'
+    verb: '{sell}'
+  consumes:
+  - sell
+  - price
+  satisfies:
+    sell:
+    - subject
+  disambiguates:
+  - sell
+  - item
+  - price
+  - per
+- id: arithmetic/resource-collection-container-context
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: have
+      cat: possession_state
+    - slot: resource
+      cat: precipitation_resource
+      uncounted: true
+      bare: true
+    - slot: holder
+      cat: storage_container
+      uncounted: true
+      qualified: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: calibration-context
+    entity: '{who}'
+    measure: ''
+    value: 0
+    position: '{who.span_start}'
+    container: '{holder}'
+    acquisition: '{resource}'
+  consumes:
+  - have
+  satisfies:
+    have:
+    - subject
+  disambiguates:
+  - have
+  - resource
+  - holder
+- id: arithmetic/named-measured-output-calibration
+  phase: read
+  match:
+    sentence:
+    - lit: for
+      consume_skipped: true
+    - lit: each
+      consume_skipped: true
+    - slot: input
+      cat: resource_measure_unit
+      uncounted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: resource
+      cat: material_resource
+      uncounted: true
+      bare: true
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: act
+      cat: calibrated_collection_verb
+    - slot: output
+      cat: resource_measure_unit
+      counted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: product
+      cat: material_resource
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: measured-calibration
+    entity: '{who}'
+    measure: '{input}'
+    value: 1
+    position: '{who.span_start}'
+    container: '{output}'
+    per_member: output
+    attribute: '{resource}'
+    acquisition: '{product}'
+    verb: '{act}'
+  consumes:
+  - act
+  - output
+  satisfies:
+    act:
+    - subject
+- id: arithmetic/dated-measured-input
+  phase: read
+  match:
+    sentence:
+    - lit: on
+      consume_skipped: true
+    - slot: day
+      cat: named_weekday
+      uncounted: true
+      bare: true
+    - lit: ','
+      consume_skipped: true
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: act
+      cat: measured_resource_removal_verb
+    - slot: amount
+      cat: resource_measure_unit
+      counted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: resource
+      cat: material_resource
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: calibration-input
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+    marker: '{day}'
+    attribute: '{resource}'
+    verb: '{act}'
+  consumes:
+  - act
+  - amount
+  satisfies:
+    act:
+    - subject
+asks:
+- id: ask/calibrated-output-sale-proceeds
+  match:
+    question:
+    - lit: how
+      consume_skipped: true
+    - slot: much
+      cat: mass_amount_quantifier
+    - slot: money
+      cat: mass_currency_noun
+      uncounted: true
+      bare: true
+    - slot: aux
+      type: auxiliary
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: make
+      cat: income_action
+    - lit: from
+      consume_skipped: true
+    - slot: sell
+      cat: sale_activity_verb
+      present_participle: true
+    - lit: all
+      consume_skipped: true
+    - slot: item
+      cat: material_resource
+      uncounted: true
+      bare: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: calibrated-resource-value
+    entity: '{who}'
+    item: '{item}'
+  satisfies:
+    make:
+    - subject
+    sell:
+    - subject
+  disambiguates:
+  - much
+  - money
+  - make
+  - sell
+  - item

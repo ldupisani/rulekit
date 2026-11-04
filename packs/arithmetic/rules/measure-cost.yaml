@@ -1,0 +1,101 @@
+format: rulekit/rules@1
+rules: []
+asks:
+  - id: ask/measure-cost-area
+    match:
+      question:
+        - {lit: how}
+        - {slot: amount_query, cat: mass_amount_interrogative}
+        - opt:
+            - {lit: does}
+            - {lit: it}
+            - {lit: cost}
+        - {lit: to}
+        - {slot: op, cat: area_measure}
+        - {slot: d1, type: number}
+        - {lit: by}
+        - {slot: d2, type: counted}
+        - {lit: at}
+        - {slot: rate, type: counted}
+        - {lit: per}
+        - {slot: power, cat: area_unit_modifier}
+        - {slot: runit, cat: measure_unit}
+        - opt:
+            - {lit: plus}
+            - {slot: tax, type: percent}
+            - {lit: tax}
+    disambiguates: [amount_query, power]
+    satisfies: {d1: [quantifies]}
+    resolves:
+      consumer: measure-cost
+      shape: rectangle
+      op: area
+      dim1: length
+      val1: "{d1.value}"
+      dim2: width
+      val2: "{d2.value}"
+      rate_unit: "{runit}"
+      rate: "{rate.value}"
+      tax: "{tax.value}"
+
+  - id: ask/measure-cost-perimeter
+    match:
+      question:
+        - {lit: how}
+        - {slot: amount_query, cat: mass_amount_interrogative}
+        - opt:
+            - {lit: does}
+            - {lit: it}
+            - {lit: cost}
+        - {lit: to}
+        - {slot: op, cat: perimeter_measure}
+        - {slot: d1, type: number}
+        - {lit: by}
+        - {slot: d2, type: counted}
+        - {lit: at}
+        - {slot: rate, type: counted}
+        - {lit: per}
+        - {slot: runit, cat: measure_unit}
+        - opt:
+            - {lit: plus}
+            - {slot: tax, type: percent}
+            - {lit: tax}
+    disambiguates: [amount_query]
+    satisfies: {d1: [quantifies]}
+    resolves:
+      consumer: measure-cost
+      shape: rectangle
+      op: perimeter
+      dim1: length
+      val1: "{d1.value}"
+      dim2: width
+      val2: "{d2.value}"
+      rate_unit: "{runit}"
+      rate: "{rate.value}"
+      tax: "{tax.value}"
+  - id: ask/shape-property-cost-one-dimension
+    match:
+      question:
+        - {lit: how, at_start: true}
+        - {slot: amount_query, cat: mass_amount_interrogative}
+        - {lit: to}
+        - {slot: activity, cat: area_measure}
+        - {slot: shape, cat: geometry_shape, uncounted: true, bare: true}
+        - {slot: prep, cat: costing_dimension_preposition}
+        - {slot: d1, cat: length_unit, counted: true, qualified: true, qualifier_cat: geometry_dimension}
+        - {lit: at}
+        - {slot: rate, cat: currency_unit, counted: true, bare: true}
+        - {lit: per}
+        - {slot: power, cat: area_unit_modifier}
+        - {slot: runit, cat: length_unit, uncounted: true, bare: true}
+        - {lit: '?', consume_skipped: true}
+    disambiguates: [amount_query, power, shape]
+    satisfies: {d1: [quantifies]}
+    resolves:
+      consumer: measure-cost
+      op: area
+      shape: '{shape}'
+      dim1: '{d1.qualifier}'
+      val1: '{d1.value}'
+      rate: '{rate.value}'
+      rate_unit: '{runit}'

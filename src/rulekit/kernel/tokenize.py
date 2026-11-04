@@ -8,6 +8,7 @@ digit-comma stripping handled later by numbers.py reading the raw surface.
 from __future__ import annotations
 
 import re
+from functools import lru_cache
 from collections.abc import Sequence
 
 from .model import Reading, Word
@@ -28,7 +29,7 @@ _TOKEN = re.compile(
     r"\d{4}-\d{2}-\d{2}(?!\d)"                   # ISO date ("2024-01-01")
     r"|\d+/\d+"                                 # slash fraction ("1/4")
     r"|\d[\d,]*(?:st|nd|rd|th)(?![^\W\d_])"     # fused ordinal ("5th", "21st")
-    r"|(?:(?<!\w)-)?\$?\d[\d,]*(?:\.\d+)?%?"  # signed numbers/currency/percent
+    r"|(?:(?<!\w)-)?\$?(?:\d[\d,]*(?:\.\d+)?|\.\d+)%?"  # signed numbers/currency/percent
     # A compound scientific unit is ONE token. This alternative must precede
     # the ordinary word branch: otherwise "m/s^2" becomes 'm', 's', '2' and
     # the exponent masquerades as a stated scalar. Requiring either an
@@ -57,6 +58,14 @@ _TOKEN = re.compile(
 # comparison see ONE spelling
 _FOLD_APOSTROPHE = str.maketrans("’", "'")
 
+
+@lru_cache(maxsize=32)
+def _token_pattern(currency_symbols: tuple[str, ...]):
+    if not currency_symbols:
+        return _TOKEN
+    prefix = '(?:' + '|'.join(re.escape(symbol) for symbol in currency_symbols) + ')?'
+    return re.compile(_TOKEN.pattern.replace(r'\$?', prefix, 1))
+
 def split_sentences(text: str, nonterminal_abbreviations=()) -> list[str]:
     parts = [p.strip() for p in _SENT_SPLIT.split(text.strip())]
     sentences = []
@@ -77,6 +86,7 @@ def tokenize(
     tracing: bool = True,
     contractions: Sequence[tuple[str, str]] = (),
     assumption: bool = False,
+    currency_symbols: Sequence[str] = (),
 ) -> Reading:
     """Text -> one Unit per token.
 
@@ -102,7 +112,8 @@ def tokenize(
     )
     index = 0
     previous_end: int | None = None
-    matches = list(_TOKEN.finditer(sentence))
+    pattern = _token_pattern(tuple(sorted(currency_symbols, key=lambda symbol: (-len(symbol), symbol))))
+    matches = list(pattern.finditer(sentence))
     for match_no, match in enumerate(matches):
         surface = match.group()
         # split contractions ("isn't" -> "is" + "not"); matching runs on the
