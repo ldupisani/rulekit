@@ -8,7 +8,7 @@ from collections import Counter, defaultdict
 from math import isfinite
 
 from . import consumer
-from ..answer import Answer
+from ..answer import Answer, AnswerAssumption
 from ..evaluate import evaluate
 from ..model import BatchEvidence, Rate, Quantity
 from ..numeric_evidence import audit_numeric_mentions
@@ -284,4 +284,8 @@ def consume(ctx):
         "number",
         total,
         "sum each scope’s own rate multiplied by its stated extent for the reporting period",
+        assumptions=(AnswerAssumption("extent-reporting-period",
+            f"The stated work amounts are treated as totals for the requested {reporting}.",
+            tuple(sorted({r.provenance.sentence for r in rows if r.kind in {"scoped-extent", "scoped-relative-extent"}}))),)
+        if reporting and not windows else (),
     )

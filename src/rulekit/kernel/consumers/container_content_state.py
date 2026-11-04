@@ -3,7 +3,7 @@
 from collections import Counter, defaultdict
 from math import isfinite
 from . import consumer
-from ..answer import Answer, ClarificationOption, ClarificationRequest, SemanticNode
+from ..answer import Answer, AnswerAssumption, ClarificationOption, ClarificationRequest, SemanticNode
 from ..evaluate import evaluate
 from ..model import BatchEvidence, MeasuredContentChange, ContainerContent
 from ..numeric_evidence import audit_numeric_mentions
@@ -188,4 +188,8 @@ def consume(ctx):
     reason = "calculate the stated shape’s capacity, fill the stated fraction, then apply each change to current contents"
     if not explicit:
         reason += "; interpreting the complete length, width and height as a rectangular prism"
-    return Answer("number", amount, reason)
+    return Answer("number", amount, reason, assumptions=() if explicit or ctx.interpretation == "rectangular-container" else (
+        AnswerAssumption("rectangular-container",
+            "The stated length, width and height describe a rectangular prism.",
+            tuple(sorted({r.provenance.sentence for r in dimensions}))),
+    ))

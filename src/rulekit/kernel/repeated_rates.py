@@ -10,7 +10,7 @@ from math import isfinite
 
 from .source_coverage import uncovered_units
 
-from .answer import Answer
+from .answer import Answer, AnswerAssumption
 from .evaluate import evaluate
 from .model import Rate, RateThreshold, RatePremium, RepeatedActivityDuration, RateScope
 from .numeric_evidence import numeric_mentions
@@ -143,4 +143,7 @@ def repeated_rate_total(ctx, rate: Rate):
     )
     return Answer("number", total,
                   f"{regular_pay:g} regular + {excess_pay:g} excess-rate pay over "
-                  f"{schedule.value:g} {schedule.period} periods{assumption}")
+                  f"{schedule.value:g} {schedule.period} periods{assumption}",
+                  assumptions=() if not assumption else (AnswerAssumption(
+                      "one-session-per-scheduled-period", assumption.lstrip("; "),
+                      (schedule.provenance.sentence, thresholds[0].provenance.sentence)),))

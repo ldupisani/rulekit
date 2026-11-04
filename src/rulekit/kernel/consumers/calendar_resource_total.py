@@ -5,7 +5,7 @@ from calendar import isleap
 from math import isfinite
 from . import consumer
 from ..composition_evidence import closed_evidence, finish_batch_answer
-from ..answer import Answer
+from ..answer import Answer, AnswerAssumption
 from ..model import BatchEvidence, Rate
 from ..reference_identity import ReferenceIdentity, reference_from_unit, constrains
 from ..evaluate import evaluate
@@ -257,6 +257,10 @@ def consume(ctx):
             facts,
             value,
             f'{"Calendar year "+str(year) if year else "Assuming a non-leap year"}: {sum(days):g} days, with all stated portions supplied every day',
+            assumptions=() if year else (AnswerAssumption(
+                "non-leap-calendar", "An unstated calendar year is treated as non-leap.",
+                (schedule.provenance.sentence,),
+            ),),
         )
     elif op == "savings":
         groups = [r for r in rows if r.kind == "saving-group"]
@@ -307,4 +311,10 @@ def consume(ctx):
         not isfinite(r.value) or r.value < 0 for r in (*rows, *rates)
     ) or not closed_evidence(ctx, facts, operands, covered=covered):
         return fail("every quantity, schedule and condition must be explained")
-    return finish_batch_answer(ctx, facts, value, reason)
+    assumptions = ()
+    if op == "savings":
+        assumptions = (AnswerAssumption(
+            "annual-daily-earnings", f"Both participants earn on all {days:g} days of a non-leap year.",
+            tuple(sorted({r.provenance.sentence for r in rates})),
+        ),)
+    return finish_batch_answer(ctx, facts, value, reason, assumptions=assumptions)

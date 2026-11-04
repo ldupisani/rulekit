@@ -4,7 +4,7 @@ from collections import Counter, defaultdict
 from math import isfinite
 
 from . import consumer
-from ..answer import Answer
+from ..answer import Answer, AnswerAssumption
 from ..evaluate import evaluate
 from ..model import BatchEvidence, Quantity
 from ..numeric_evidence import audit_numeric_mentions
@@ -281,6 +281,9 @@ def consume(ctx):
         "number",
         value,
         "treat the listed sources as accounting for the full target; subtract whole-target and successive unassigned shares",
+        assumptions=(AnswerAssumption("complete-source-partition",
+            "The listed sources account for the full stated total or target.",
+            tuple(sorted({total.provenance.sentence, *[r.provenance.sentence for r in inventory]}))),),
     )
 
 

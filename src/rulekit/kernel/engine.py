@@ -13,7 +13,7 @@ from dataclasses import dataclass, field, replace
 
 from ..data.registry import Registry
 from . import deixis
-from .answer import Answer, answer as run_answer
+from .answer import Answer, answer as run_answer, assumption_records
 from .condense import condense, condense_lexical_phrases
 from .document import (
     Document,
@@ -524,12 +524,24 @@ def _complete_declared_fact_clause(text: str, reg: Registry) -> bool:
     if not independent:
         return False
     reading = analyze(text.strip().rstrip(',;:.') + '.', reg, tracing=False)
-    _probe_unresolved_references(reading)
     content = {u.uid for u in reading.units if u.sense() not in SKIPPABLE_SENSES}
-    return bool(content) and any(
-        result.match.rule.independent_clause and result.facts and content.issubset(result.match.consumed)
-        for result in run_rules(reading, replace(reg, rules=independent), 'read')
-    )
+    if not content:
+        return False
+    scoped = replace(reg, rules=independent)
+
+    def complete():
+        return any(
+            result.facts and content.issubset(result.match.consumed)
+            for result in run_rules(reading, scoped, 'read')
+        )
+
+    # Construction-local links can resolve their own pronouns. Try those
+    # before introducing disposable targets for genuinely external references;
+    # a fabricated identity must not conflict with a grammar-declared binding.
+    if complete():
+        return True
+    _probe_unresolved_references(reading)
+    return complete()
 
 
 def _split_declared_coordinate_clauses(sentence: str, reg: Registry) -> list[str]:
@@ -986,6 +998,7 @@ def diagnose(result: Result) -> dict:
         "answer": result.answer.value if result.answer.committed or result.answer.kind == "verdict" else None,
         "kind": kind,
         "reason": result.answer.reason,
+        "default_assumptions": assumption_records(result.answer),
         "known": [repr(f) for f in result.store.facts],
         "assumptions": [
             {"sentence": reading.sentence_index, "text": reading.text}

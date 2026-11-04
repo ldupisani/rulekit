@@ -215,6 +215,7 @@ def test_three_axis_container_interpretation_is_reported(reg):
     assert not result.answer.clarification
     assert "interpreting" in result.answer.reason
     assert "rectangular prism" in result.answer.reason
+    assert [a.id for a in result.answer.assumptions] == ["rectangular-container"]
     number(reg, tank(), 18, interpretation="rectangular-container")
 
 
@@ -360,6 +361,7 @@ def test_container_overflow_and_competing_content(reg):
 def test_explicit_rectangular_container(reg):
     result = number(reg, tank().replace("The tank is", "The rectangular tank is"), 18)
     assert "interpreting" not in result.answer.reason
+    assert not result.answer.assumptions
 
 
 @pytest.mark.parametrize("role", ["boxer", "collector"])

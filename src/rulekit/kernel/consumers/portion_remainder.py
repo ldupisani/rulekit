@@ -4,7 +4,7 @@ from collections import Counter, defaultdict
 from dataclasses import replace
 from math import isclose, isfinite
 from . import consumer
-from ..answer import Answer, AnswerProof, ProofStep, SemanticNode
+from ..answer import Answer, AnswerAssumption, AnswerProof, ProofStep, SemanticNode
 from ..model import BatchEvidence, FractionQuantity
 from ..numeric_evidence import audit_numeric_mentions
 from ..source_coverage import uncovered_document_units
@@ -283,4 +283,7 @@ def consume(ctx):
         proof=AnswerProof(
             node, (ProofStep("disjoint-portion-partition", node, tuple(rows), detail),)
         ),
+        assumptions=(AnswerAssumption("equal-component-sizes",
+            "Pieces within each whole are treated as equal portions when converting a whole's fraction into a piece count.",
+            (population.provenance.sentence,)),),
     )

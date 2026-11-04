@@ -20,6 +20,7 @@ from ..data.packs import PackError
 from ..data.project import Project, load_project
 from ..data.registry import CompileError, Registry
 from ..data.sources import SourceIndex
+from ..kernel.answer import assumption_records
 from ..generation import (
     AskScenarioMode,
     GenerationError,
@@ -832,6 +833,7 @@ def trace_project(project: Project, body: TraceBody) -> dict[str, Any]:
             "reason": result.answer.reason,
             "committed": result.answer.committed,
             "clarification": _clarification_json(result.answer.clarification),
+            "assumptions": assumption_records(result.answer),
         },
         "rounds": result.document.rounds if result.document else 1,
         "ask": (

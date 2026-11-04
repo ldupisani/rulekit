@@ -3,7 +3,7 @@ from collections import Counter, defaultdict
 from math import isfinite
 
 from . import consumer
-from ..answer import Answer
+from ..answer import Answer, AnswerAssumption
 from ..evaluate import evaluate
 from ..model import BatchEvidence
 from ..numeric_evidence import audit_numeric_mentions
@@ -55,4 +55,7 @@ def consume(ctx):
                      dict(participants=participants.value, events=events.value, preparation=first, duration=second),
                      ctx.log, source='separate-schedule-attendance')
     ctx.log.consumed_batch_keys.update(row.key() for row in rows)
-    return Answer('number', value, 'sum the event and preparation durations across the explicitly separate participant schedules')
+    return Answer('number', value, 'sum the event and preparation durations across the explicitly separate participant schedules',
+                  assumptions=(AnswerAssumption('nonoverlapping-attendance',
+                      'The separate participants’ event and preparation schedules do not overlap for the observer.',
+                      (participants.provenance.sentence, events.provenance.sentence)),))

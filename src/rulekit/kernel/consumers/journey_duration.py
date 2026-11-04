@@ -13,7 +13,7 @@ from ..resource_equations import resource_residual
 
 @consumer("journey-duration")
 def consume(ctx):
-    from ..answer import Answer, AnswerProof, ProofStep, SemanticNode
+    from ..answer import Answer, AnswerAssumption, AnswerProof, ProofStep, SemanticNode
 
     def decline(reason):
         return Answer("decline", None, reason)
@@ -63,4 +63,7 @@ def consume(ctx):
                          ("destination", ctx.query["destination"]), ("period", ctx.query["period"]),
                          ("unit", ctx.query["unit"])))
     return Answer("number", total, detail, proof=AnswerProof(node, (
-        ProofStep("mode-scoped-return-schedules", node, tuple(legs + schedules), detail),)))
+        ProofStep("mode-scoped-return-schedules", node, tuple(legs + schedules), detail),)),
+        assumptions=(AnswerAssumption("equal-return-leg-duration",
+            "Each stated one-way duration applies to both legs of its return trip.",
+            tuple(sorted({r.provenance.sentence for r in legs}))),))

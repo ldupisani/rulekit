@@ -50,6 +50,12 @@ categories:
     parent: transaction_adjustment_noun
   completed_receipt_transfer:
     parent: tender_verb
+  completed_income_receipt:
+    parent: periodic_income_verb
+    notes: Completed incoming earnings or supplements; no global loss or transfer polarity is inferred.
+  service_client:
+    parent: person
+    notes: A commercial recipient of services; a customer population is not an asserted work count.
 context_synonyms:
   wage_earnings:
     gate: currency
@@ -97,6 +103,8 @@ members:
   completed_receipt_transfer:
   - gave
   - paid
+  completed_income_receipt: [got, received, earned]
+  service_client: [customer, client]
 attribute_compatibility:
   sports_activity_noun:
   - recurring_expense_target

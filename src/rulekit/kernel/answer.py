@@ -90,6 +90,15 @@ class ClarificationRequest:
     selected: str | None = None
 
 
+@dataclass(frozen=True)
+class AnswerAssumption:
+    """A defeasible interpretation used by this answer, never an asserted fact."""
+
+    id: str
+    description: str
+    sentences: tuple[int, ...] = ()
+
+
 @dataclass
 class Answer:
     kind: str  # "number" | "series" | "witnesses" | "verdict" | "decline"
@@ -100,6 +109,7 @@ class Answer:
     reason: str
     proof: AnswerProof | None = None
     clarification: ClarificationRequest | None = None
+    assumptions: tuple[AnswerAssumption, ...] = ()
 
     @property
     def committed(self) -> bool:
@@ -114,6 +124,14 @@ class Answer:
         return self.kind in ("number", "series", "witnesses") or (
             self.kind == "verdict" and self.value in ("yes", "no")
         )
+
+
+def assumption_records(answer: Answer) -> list[dict]:
+    """One JSON contract shared by diagnostics and the Designer answer output."""
+    return [
+        {"id": item.id, "description": item.description, "sentences": list(item.sentences)}
+        for item in answer.assumptions
+    ]
 
 
 def _question_reference_time(

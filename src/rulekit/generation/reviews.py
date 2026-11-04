@@ -1161,6 +1161,14 @@ def _expected_answer_contract(scenario: dict) -> dict[str, Any]:
     }
 
 
+def _reviewed_assumptions_match(answer: Any, scenario: dict) -> bool:
+    """Missing historical metadata is unknown, not a reviewed empty list."""
+    from ..kernel.answer import assumption_records
+
+    recorded = scenario.get("answer") or {}
+    return "assumptions" not in recorded or recorded["assumptions"] == assumption_records(answer)
+
+
 def _reviewed_query_matches(actual: Any, expected: Any) -> bool:
     """Allow a reviewed query to gain evidence-policy metadata only.
 
@@ -1232,6 +1240,11 @@ def replay_ask_review(project: Project, review: dict) -> dict[str, str]:
             return {
                 "status": "regressed",
                 "detail": "the answer or decline contract changed",
+            }
+        if not _reviewed_assumptions_match(result.answer, scenario):
+            return {
+                "status": "regressed",
+                "detail": "the answer's default assumptions changed",
             }
     except Exception as exc:  # evidence reporting must not break the Designer
         return {

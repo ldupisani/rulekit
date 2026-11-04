@@ -222,3 +222,63 @@ rules:
     consumes: [item, verb]
     emits:
       - {fact: quantity, entity: '{who}', measure: '{item}', value: item, verb: '{verb}'}
+
+  - id: arithmetic/service-tariff-counted
+    phase: read
+    description: An explicit unit price for one activity on one service object.
+    match:
+      sentence:
+      - slot: who
+        type: entity
+        common_noun_cat: animate
+        referential: true
+        bare: true
+        at_start: true
+      - slot: quote
+        cat: service_tariff_verb
+        finite_form: true
+      - slot: amount
+        cat: currency_unit
+        counted: true
+      - lit: to
+      - slot: verb
+        cat: service_activity_verb
+        bare_form: true
+      - slot: item
+        cat: service_object
+        bare: true
+        counted: true
+        value_min: 1
+      - lit: .
+        consume_skipped: true
+    where:
+    - number_compatible:
+      - who
+      - quote
+    - verb_roles_compatible:
+        verb: verb
+        roles:
+          actor:
+          - who
+          theme:
+          - item
+        allow_proper_name:
+        - who
+        frame_categories:
+        - service_activity_verb
+        require_declared_frame: true
+    consumes:
+    - amount
+    - quote
+    - verb
+    - item
+    emits:
+    - fact: earning_rate
+      entity: '{who}'
+      measure: '{amount}'
+      per: '{item}'
+      value: amount / item
+      verb: '{verb}'
+      basis: service
+      numerator: amount
+      denominator: item

@@ -394,6 +394,16 @@ function renderAnswer(t) {
             : "declined",
       );
   b.replaceChildren(valueNode, reason);
+  if (isAnswer && t.answer.assumptions?.length) {
+    const assumptions = el("div", "answer-assumptions");
+    assumptions.append(el("strong", "", "Assumptions"));
+    const list = el("ul");
+    for (const assumption of t.answer.assumptions) {
+      list.append(el("li", "", assumption.description));
+    }
+    assumptions.append(list);
+    b.append(assumptions);
+  }
 }
 
 function titleAnswerEntity(value) {

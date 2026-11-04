@@ -13,7 +13,7 @@ from ..resource_equations import resource_residual
 
 @consumer("journey-distance-duration")
 def consume(ctx):
-    from ..answer import Answer, AnswerProof, ProofStep, SemanticNode
+    from ..answer import Answer, AnswerAssumption, AnswerProof, ProofStep, SemanticNode
 
     def decline(reason):
         return Answer("decline", None, reason)
@@ -81,4 +81,12 @@ def consume(ctx):
     node = SemanticNode("journey-distance-duration", (("entity", entity), ("mode", mode),
                          ("period", period), ("unit", ctx.query["unit"])))
     return Answer("number", total, detail, proof=AnswerProof(node, (
-        ProofStep("scoped-distance-schedule-rate", node, evidence, detail),)))
+        ProofStep("scoped-distance-schedule-rate", node, evidence, detail),)),
+        assumptions=(
+            AnswerAssumption("weekly-working-day-schedule",
+                "The supplied working-day set describes one weekly schedule.",
+                (schedule.provenance.sentence,)),
+            AnswerAssumption("equal-return-leg-distance",
+                "The stated route distance applies to both legs of each return trip.",
+                (leg.provenance.sentence,)),
+        ))

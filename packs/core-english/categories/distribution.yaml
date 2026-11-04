@@ -48,6 +48,8 @@ categories:
     parent: preposition
   remainder_state_verb:
     parent: verb
+  residual_completion_particle:
+    parent: preposition
   residual_complement_link:
     parent: preposition
   mean_report_preposition:
@@ -58,6 +60,7 @@ categories:
   equal_amount_attribute:
     parent: adjective
 members:
+  residual_completion_particle: [over]
   uniform_quantity_attribute: [same, equal]
   retention_verb: [keep, keeps, kept, retain, retained, retains]
   recipient_distribution_preposition: [with, among, amongst, between, to, into, across]

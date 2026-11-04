@@ -828,6 +828,7 @@ def _json_value(value: Any) -> Any:
 
 
 def _answer_json(answer) -> tuple[dict[str, Any], str]:
+    from ..kernel.answer import assumption_records
     clarification = answer.clarification
     clarification_json = None
     shape = answer.kind
@@ -852,6 +853,7 @@ def _answer_json(answer) -> tuple[dict[str, Any], str]:
             "reason": answer.reason,
             "committed": answer.committed,
             "clarification": clarification_json,
+            "assumptions": assumption_records(answer),
         },
         shape,
     )

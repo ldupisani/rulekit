@@ -122,156 +122,6 @@ rules:
   - number_compatible:
     - who
     - aux
-- id: arithmetic/installment-payment-policy
-  match:
-    sentence:
-    - opt:
-      - slot: trade
-        cat: retail_product
-        uncounted: true
-        bare: true
-    - slot: provider
-      cat: retail_organization
-      uncounted: true
-      referential: true
-    - slot: accept
-      cat: payment_acceptance_verb
-      finite_form: true
-    - slot: payment
-      cat: settlement_payment_noun
-      uncounted: true
-      bare: true
-    - lit: in
-    - slot: installment
-      cat: periodic_payment_noun
-      uncounted: true
-      number: plural
-      bare: true
-    - lit: of
-    - slot: amount
-      cat: currency_unit
-      counted: true
-      bare: true
-    - lit: per
-      consume_skipped: true
-    - slot: period
-      cat: duration_measure
-      uncounted: true
-      bare: true
-    - slot: provided
-      cat: policy_condition_link
-    - lit: that
-    - slot: fraction
-      type: fraction
-      fraction_within_whole: true
-    - slot: deposit
-      cat: initial_payment_noun
-      uncounted: true
-      bare: true
-    - slot: be
-      cat: copula
-    - slot: made
-      cat: payment_realization_verb
-      past_participle: true
-    - lit: .
-      consume_skipped: true
-  emits:
-  - fact: batch_evidence
-    kind: installment-rate
-    entity: ''
-    measure: '{amount}'
-    value: amount
-    position: '{amount.span_start}'
-    marker: '{period}'
-    container: '{provider}'
-  - fact: batch_evidence
-    kind: initial-payment-share
-    entity: ''
-    measure: ''
-    value: fraction
-    position: '{fraction.span_start}'
-    container: '{provider}'
-  consumes:
-  - accept
-  - amount
-  - fraction
-  - made
-  satisfies:
-    accept:
-    - subject
-    be:
-    - subject
-    made:
-    - subject
-  disambiguates:
-  - provider
-  - provided
-  - deposit
-  where:
-  - number_compatible:
-    - provider
-    - accept
-  - number_compatible:
-    - deposit
-    - be
-- id: arithmetic/additional-initial-payment-plan
-  match:
-    sentence:
-    - slot: who
-      type: entity
-      common_noun_cat: intentional_agent
-      referential: true
-      at_start: true
-    - slot: want
-      cat: purchase_plan_verb
-      finite_form: true
-    - lit: to
-    - slot: pay
-      cat: payment_verb
-      bare_form: true
-    - slot: amount
-      cat: currency_unit
-      counted: true
-      qualified: true
-      qualifier_cat: supplemental_payment_descriptor
-      all_qualifiers: true
-    - slot: purpose
-      cat: spend_target_prep
-    - lit: the
-      consume_skipped: true
-    - slot: deposit
-      cat: initial_payment_noun
-      uncounted: true
-      bare: true
-    - lit: .
-      consume_skipped: true
-  emits:
-  - fact: batch_evidence
-    kind: initial-payment-supplement
-    entity: '{who}'
-    measure: '{amount}'
-    value: amount
-    position: '{amount.span_start}'
-  consumes:
-  - want
-  - pay
-  - amount
-  satisfies:
-    want:
-    - subject
-    pay:
-    - subject
-  question_assumption: true
-  disambiguates:
-  - pay
-  - deposit
-  bindings:
-    purpose:
-      object: deposit
-  where:
-  - number_compatible:
-    - who
-    - want
 - id: arithmetic/planned-priced-purchase-for-price
   match:
     sentence:
@@ -380,83 +230,376 @@ rules:
   - number_compatible:
     - who
     - aux
-asks:
+asks: []
+templates:
+  installment-policy:
+    parameters:
+      condition_prefix:
+      - slot: provided
+        cat: policy_condition_link
+      - lit: that
+      condition_suffix:
+      - slot: be
+        cat: copula
+      - slot: made
+        cat: payment_realization_verb
+        past_participle: true
+      policy_satisfies:
+        accept:
+        - subject
+        be:
+        - subject
+        made:
+        - subject
+      policy_consumes:
+      - made
+      condition_slots:
+      - provided
+      policy_agreement:
+      - number_compatible:
+        - deposit
+        - be
+    rule:
+      match:
+        sentence:
+        - opt:
+          - slot: trade
+            cat: retail_product
+            uncounted: true
+            bare: true
+        - slot: provider
+          cat: retail_organization
+          uncounted: true
+          referential: true
+        - slot: accept
+          cat: payment_acceptance_verb
+          finite_form: true
+        - slot: payment
+          cat: settlement_payment_noun
+          uncounted: true
+          bare: true
+        - opt:
+          - lit: in
+          - slot: installment
+            cat: periodic_payment_noun
+            uncounted: true
+            number: plural
+            bare: true
+        - lit: of
+        - slot: amount
+          cat: currency_unit
+          counted: true
+          bare: true
+        - lit: per
+          consume_skipped: true
+        - slot: period
+          cat: duration_measure
+          uncounted: true
+          bare: true
+        - parameter: condition_prefix
+        - slot: fraction
+          type: fraction
+          fraction_within_whole: true
+        - slot: deposit
+          cat: initial_payment_noun
+          uncounted: true
+          bare: true
+        - parameter: condition_suffix
+        - lit: .
+          consume_skipped: true
+      emits:
+      - fact: batch_evidence
+        kind: installment-rate
+        entity: ''
+        measure: '{amount}'
+        value: amount
+        position: '{amount.span_start}'
+        marker: '{period}'
+        container: '{provider}'
+      - fact: batch_evidence
+        kind: initial-payment-share
+        entity: ''
+        measure: ''
+        value: fraction
+        position: '{fraction.span_start}'
+        container: '{provider}'
+      consumes:
+      - accept
+      - amount
+      - fraction
+      - parameter: policy_consumes
+      satisfies:
+        parameter: policy_satisfies
+      disambiguates:
+      - provider
+      - deposit
+      - parameter: condition_slots
+      where:
+      - number_compatible:
+        - provider
+        - accept
+      - parameter: policy_agreement
+  initial-payment-supplement:
+    parameters:
+      payment_action:
+      - slot: want
+        cat: purchase_plan_verb
+        finite_form: true
+      - lit: to
+      - slot: pay
+        cat: payment_verb
+        bare_form: true
+      action_consumes:
+      - want
+      - pay
+      action_satisfies:
+        want:
+        - subject
+        pay:
+        - subject
+      action_agreement:
+      - number_compatible:
+        - who
+        - want
+    rule:
+      match:
+        sentence:
+        - slot: who
+          type: entity
+          common_noun_cat: intentional_agent
+          referential: true
+          at_start: true
+        - parameter: payment_action
+        - slot: amount
+          cat: currency_unit
+          counted: true
+          qualified: true
+          qualifier_cat: supplemental_payment_descriptor
+          all_qualifiers: true
+        - slot: purpose
+          cat: spend_target_prep
+        - lit: the
+          consume_skipped: true
+        - slot: deposit
+          cat: initial_payment_noun
+          uncounted: true
+          bare: true
+        - lit: .
+          consume_skipped: true
+      emits:
+      - fact: batch_evidence
+        kind: initial-payment-supplement
+        entity: '{who}'
+        measure: '{amount}'
+        value: amount
+        position: '{amount.span_start}'
+      consumes:
+      - parameter: action_consumes
+      - amount
+      satisfies:
+        parameter: action_satisfies
+      question_assumption: true
+      disambiguates:
+      - pay
+      - deposit
+      bindings:
+        purpose:
+          object: deposit
+      where:
+      - parameter: action_agreement
+  nominal-initial-payment-supplement:
+    parameters:
+      light_action:
+      - slot: pay
+        cat: nominal_activity_auxiliary
+    rule:
+      match:
+        sentence:
+        - slot: who
+          type: entity
+          common_noun_cat: intentional_agent
+          referential: true
+          at_start: true
+        - parameter: light_action
+        - slot: amount
+          cat: currency_unit
+          counted: true
+          qualified: true
+          qualifier_cat: supplemental_payment_descriptor
+          all_qualifiers: true
+        - slot: deposit
+          cat: initial_payment_noun
+          uncounted: true
+          bare: true
+        - lit: .
+          consume_skipped: true
+      emits:
+      - fact: batch_evidence
+        kind: initial-payment-supplement
+        entity: '{who}'
+        measure: '{amount}'
+        value: amount
+        position: '{amount.span_start}'
+      consumes:
+      - pay
+      - amount
+      satisfies:
+        pay:
+        - subject
+      question_assumption: true
+      disambiguates:
+      - pay
+      - deposit
+      bindings: {}
+      where:
+      - number_compatible:
+        - who
+        - pay
+  projected-payment-balance:
+    parameters:
+      opener:
+      - lit: how
+        at_start: true
+      - lit: much
+      payment_span:
+      - slot: pay
+        cat: payment_verb
+        present_participle: true
+      - opt:
+        - lit: for
+      - slot: elapsed
+        cat: duration_measure
+        counted: true
+        bare: true
+        value_min: 0
+      span_satisfies:
+        be:
+        - subject
+        pay:
+        - subject
+    rule:
+      match:
+        question:
+        - parameter: opener
+        - slot: will
+          cat: future_modal
+        - slot: owner
+          cat: possessive_determiner
+        - slot: balance
+          cat: balance_quantity_noun
+          uncounted: true
+        - slot: be
+          cat: planning_state_auxiliary
+          bare_form: true
+        - lit: after
+        - parameter: payment_span
+        - lit: '?'
+          consume_skipped: true
+      resolves:
+        consumer: installment-balance
+        entity: '{balance.owner}'
+        elapsed: '{elapsed.value}'
+        period: '{elapsed}'
+      satisfies:
+        parameter: span_satisfies
+      where: []
+variants:
+- id: arithmetic/installment-payment-policy
+  template: installment-policy
+- id: arithmetic/installment-payment-policy-if
+  template: installment-policy
+  arguments:
+    condition_prefix:
+    - lit: if
+    condition_slots: []
+- id: arithmetic/installment-payment-policy-with
+  template: installment-policy
+  arguments:
+    condition_prefix:
+    - lit: with
+    condition_suffix: []
+    policy_satisfies:
+      accept:
+      - subject
+    policy_consumes: []
+    condition_slots: []
+    policy_agreement: []
+- id: arithmetic/additional-initial-payment-plan
+  template: initial-payment-supplement
+- id: arithmetic/additional-initial-payment
+  template: initial-payment-supplement
+  arguments:
+    payment_action:
+    - slot: pay
+      cat: initial_payment_supplement_verb
+      finite_form: true
+    action_consumes:
+    - pay
+    action_satisfies:
+      pay:
+      - subject
+    action_agreement:
+    - number_compatible:
+      - who
+      - pay
+- id: arithmetic/additional-initial-payment-light-auxiliary
+  template: nominal-initial-payment-supplement
+- id: arithmetic/additional-initial-payment-light-verb
+  template: nominal-initial-payment-supplement
+  arguments:
+    light_action:
+    - slot: pay
+      cat: payment_realization_verb
+      finite_form: true
+ask_variants:
 - id: ask/projected-installment-balance
-  match:
-    question:
+  template: projected-payment-balance
+- id: ask/projected-installment-balance-what
+  template: projected-payment-balance
+  arguments:
+    opener:
+    - lit: what
+      at_start: true
+- id: ask/projected-payment-balance-after-periods-amount
+  template: projected-payment-balance
+  arguments:
+    opener:
     - lit: how
       at_start: true
     - lit: much
-    - slot: will
-      cat: future_modal
-    - slot: owner
-      cat: possessive_determiner
-    - slot: balance
-      cat: balance_quantity_noun
-      uncounted: true
-    - slot: be
-      cat: planning_state_auxiliary
-      bare_form: true
-    - lit: after
-    - slot: pay
-      cat: payment_verb
-      present_participle: true
-    - opt:
-      - lit: for
+    payment_span:
     - slot: elapsed
       cat: duration_measure
       counted: true
       bare: true
       value_min: 0
-    - lit: '?'
-      consume_skipped: true
-  resolves:
-    consumer: installment-balance
-    entity: '{balance.owner}'
-    elapsed: '{elapsed.value}'
-    period: '{elapsed}'
-  satisfies:
-    be:
-    - subject
-    pay:
-    - subject
-  where: []
-- id: ask/projected-installment-balance-what
-  match:
-    question:
+    - lit: of
+    - slot: payments
+      cat: periodic_payment_noun
+      uncounted: true
+      bare: true
+      number: plural
+    span_satisfies:
+      be:
+      - subject
+- id: ask/projected-payment-balance-after-periods-what
+  template: projected-payment-balance
+  arguments:
+    opener:
     - lit: what
       at_start: true
-    - slot: will
-      cat: future_modal
-    - slot: owner
-      cat: possessive_determiner
-    - slot: balance
-      cat: balance_quantity_noun
-      uncounted: true
-    - slot: be
-      cat: planning_state_auxiliary
-      bare_form: true
-    - lit: after
-    - slot: pay
-      cat: payment_verb
-      present_participle: true
-    - opt:
-      - lit: for
+    payment_span:
     - slot: elapsed
       cat: duration_measure
       counted: true
       bare: true
       value_min: 0
-    - lit: '?'
-      consume_skipped: true
-  resolves:
-    consumer: installment-balance
-    entity: '{balance.owner}'
-    elapsed: '{elapsed.value}'
-    period: '{elapsed}'
-  satisfies:
-    be:
-    - subject
-    pay:
-    - subject
-  where: []
+    - lit: of
+    - slot: payments
+      cat: periodic_payment_noun
+      uncounted: true
+      bare: true
+      number: plural
+    span_satisfies:
+      be:
+      - subject

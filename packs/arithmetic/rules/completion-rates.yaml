@@ -1,108 +1,5 @@
 format: rulekit/rules@1
 rules:
-- id: arithmetic/named-shared-completion-context
-  match:
-    sentence:
-    - slot: people
-      span: true
-      enumeration_cat: name
-      enumeration_min_members: 2
-      at_start: true
-    - slot: be
-      cat: plural_copula
-    - slot: compete
-      cat: competitive_activity_verb
-      present_participle: true
-    - lit: in
-    - slot: event
-      cat: competitive_event
-      uncounted: true
-      referential: true
-    - lit: .
-      consume_skipped: true
-  emits:
-  - fact: batch_evidence
-    kind: completion-group
-    entity: ''
-    measure: ''
-    value: '0'
-    position: '{people.span_start}'
-    members: '{people.members}'
-    container: '{event}'
-    attribute: '{event.qualifier}'
-  consumes:
-  - be
-  - compete
-  satisfies:
-    be:
-    - subject
-    compete:
-    - subject
-  where: []
-- id: arithmetic/shared-completion-deadline
-  match:
-    sentence:
-    - slot: group
-      cat: discourse_subject_group_pronoun
-      at_start: true
-    - opt:
-      - slot: each
-        cat: postpositive_distributive_quantifier
-    - slot: have
-      cat: plain_have_state
-      finite_form: true
-    - slot: duration
-      cat: duration_measure
-      counted: true
-      bare: true
-      value_min: 1
-    - lit: to
-    - slot: act
-      cat: goal_quantity_activity
-      bare_form: true
-    - slot: goal
-      cat: goal_progress_measure
-      counted: true
-      bare: true
-      value_min: 0
-    - lit: .
-      consume_skipped: true
-  emits:
-  - fact: batch_evidence
-    kind: completion-target
-    entity: ''
-    measure: '{goal}'
-    value: goal
-    position: '{goal.span_start}'
-    marker: '{duration}'
-    per_member: duration
-    verb: '{act}'
-    attribute: '{each.optional}'
-    container: '{group.surface}'
-  consumes:
-  - have
-  - duration
-  - goal
-  - act
-  satisfies:
-    group:
-    - refers
-    each:
-    - collection
-    have:
-    - subject
-    act:
-    - subject
-  where:
-  - verb_roles_compatible:
-      verb: act
-      roles:
-        theme:
-        - goal
-      require_declared_frame: true
-  - number_compatible:
-    - group
-    - have
 - id: arithmetic/prefix-average-counted
   match:
     sentence:
@@ -213,60 +110,6 @@ rules:
   - span
   - average
   - value
-  satisfies:
-    average:
-    - subject
-  disambiguates:
-  - average
-  where:
-  - number_compatible:
-    - who
-    - average
-- id: arithmetic/average-over-initial-periods
-  match:
-    sentence:
-    - slot: who
-      type: entity
-      common_noun_cat: collection_agent
-      referential: true
-      at_start: true
-    - slot: average
-      cat: averaging_verb
-      finite_form: true
-    - slot: value
-      cat: goal_progress_measure
-      counted: true
-      bare: true
-    - lit: a
-      consume_skipped: true
-    - slot: per
-      cat: duration_measure
-      uncounted: true
-      bare: true
-    - lit: over
-    - slot: span
-      cat: duration_measure
-      counted: true
-      qualified: true
-      qualifier_cat: initial_sequence_ordinal
-      all_qualifiers: true
-      value_min: 1
-    - lit: .
-      consume_skipped: true
-  emits:
-  - fact: batch_evidence
-    kind: completion-rate
-    entity: '{who}'
-    measure: '{value}'
-    value: value
-    position: '{value.span_start}'
-    marker: '{span}'
-    fraction: span
-    attribute: '{per}'
-  consumes:
-  - average
-  - value
-  - span
   satisfies:
     average:
     - subject
@@ -523,3 +366,226 @@ asks:
   - mean
   - mean2
   where: []
+templates:
+  named-event-participation:
+    parameters:
+      participation:
+      - slot: compete
+        cat: direct_event_participation_verb
+        present_participle: true
+    rule:
+      match:
+        sentence:
+        - slot: people
+          span: true
+          enumeration_cat: name
+          enumeration_min_members: 2
+          at_start: true
+        - slot: be
+          cat: plural_copula
+        - parameter: participation
+        - lit: in
+        - slot: event
+          cat: competitive_event
+          uncounted: true
+          referential: true
+        - lit: .
+          consume_skipped: true
+      emits:
+      - fact: batch_evidence
+        kind: completion-group
+        entity: ''
+        measure: ''
+        value: '0'
+        position: '{people.span_start}'
+        members: '{people.members}'
+        container: '{event}'
+        attribute: '{event.qualifier}'
+      consumes:
+      - be
+      - compete
+      satisfies:
+        be:
+        - subject
+        compete:
+        - subject
+      where: []
+  shared-completion-deadline:
+    parameters:
+      duration_phrase:
+      - slot: duration
+        cat: duration_measure
+        counted: true
+        bare: true
+        value_min: 1
+      duration_value: duration
+      duration_basis: ''
+    rule:
+      match:
+        sentence:
+        - slot: group
+          cat: discourse_subject_group_pronoun
+          at_start: true
+        - opt:
+          - slot: each
+            cat: postpositive_distributive_quantifier
+        - slot: have
+          cat: plain_have_state
+          finite_form: true
+        - parameter: duration_phrase
+        - lit: to
+        - slot: act
+          cat: goal_quantity_activity
+          bare_form: true
+        - slot: goal
+          cat: goal_progress_measure
+          counted: true
+          bare: true
+          value_min: 0
+        - lit: .
+          consume_skipped: true
+      emits:
+      - fact: batch_evidence
+        kind: completion-target
+        entity: ''
+        measure: '{goal}'
+        value: goal
+        position: '{goal.span_start}'
+        marker: '{duration}'
+        per_member:
+          parameter: duration_value
+        verb: '{act}'
+        attribute: '{each.optional}'
+        container: '{group.surface}'
+        acquisition:
+          parameter: duration_basis
+      consumes:
+      - have
+      - duration
+      - goal
+      - act
+      satisfies:
+        group:
+        - refers
+        each:
+        - collection
+        have:
+        - subject
+        act:
+        - subject
+      where:
+      - verb_roles_compatible:
+          verb: act
+          roles:
+            theme:
+            - goal
+          require_declared_frame: true
+      - number_compatible:
+        - group
+        - have
+  average-over-initial-periods:
+    parameters:
+      cadence:
+      - lit: a
+        consume_skipped: true
+      cadence_satisfies:
+        average:
+        - subject
+      cadence_bindings: {}
+    rule:
+      match:
+        sentence:
+        - slot: who
+          type: entity
+          common_noun_cat: collection_agent
+          referential: true
+          at_start: true
+        - slot: average
+          cat: averaging_verb
+          finite_form: true
+        - slot: value
+          cat: goal_progress_measure
+          counted: true
+          bare: true
+        - parameter: cadence
+        - slot: per
+          cat: duration_measure
+          uncounted: true
+          bare: true
+        - lit: over
+        - slot: span
+          cat: duration_measure
+          counted: true
+          qualified: true
+          qualifier_cat: initial_sequence_ordinal
+          all_qualifiers: true
+          value_min: 1
+        - lit: .
+          consume_skipped: true
+      emits:
+      - fact: batch_evidence
+        kind: completion-rate
+        entity: '{who}'
+        measure: '{value}'
+        value: value
+        position: '{value.span_start}'
+        marker: '{span}'
+        fraction: span
+        attribute: '{per}'
+      consumes:
+      - average
+      - value
+      - span
+      satisfies:
+        parameter: cadence_satisfies
+      disambiguates:
+      - average
+      where:
+      - number_compatible:
+        - who
+        - average
+      bindings:
+        parameter: cadence_bindings
+variants:
+- id: arithmetic/named-shared-completion-context
+  template: named-event-participation
+- id: arithmetic/named-shared-completion-participation
+  template: named-event-participation
+  arguments:
+    participation:
+    - slot: compete
+      cat: participation_light_verb
+      present_participle: true
+    - slot: part
+      cat: participation_role_noun
+      uncounted: true
+      bare: true
+- id: arithmetic/shared-completion-deadline
+  template: shared-completion-deadline
+- id: arithmetic/shared-completion-deadline-single-period
+  template: shared-completion-deadline
+  arguments:
+    duration_phrase:
+    - lit: a
+      consume_skipped: true
+    - slot: duration
+      cat: duration_measure
+      uncounted: true
+      bare: true
+      number: singular
+    duration_value: '1'
+    duration_basis: implicit-unit
+- id: arithmetic/average-over-initial-periods
+  template: average-over-initial-periods
+- id: arithmetic/average-each-initial-period
+  template: average-over-initial-periods
+  arguments:
+    cadence:
+    - slot: each
+      cat: distributive_quantifier
+    cadence_satisfies:
+      average:
+      - subject
+    cadence_bindings:
+      each:
+        collection: per

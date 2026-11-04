@@ -4,7 +4,7 @@ from dataclasses import replace
 from math import isfinite
 
 from . import consumer
-from ..answer import Answer
+from ..answer import Answer, AnswerAssumption
 from ..evaluate import evaluate
 from ..model import BatchEvidence, EarningRate, Rate, ServiceScope, VerbalRelation
 from ..numeric_evidence import audit_numeric_mentions
@@ -114,4 +114,7 @@ def consume(ctx):
     ctx.log.consumed_batch_keys.update(r.key() for r in rows)
     ctx.log.consumed_earnings_account_keys.update(f.key() for f in [tariff, *tasks])
     return Answer("number", value,
-                  f"{total:g} required, earned over {periods:g} saving periods; using the declared {count:g} {unit} cycle for the activity period")
+                  f"{total:g} required, earned over {periods:g} saving periods; using the declared {count:g} {unit} cycle for the activity period",
+                  assumptions=(AnswerAssumption("activity-enclosing-cycle",
+                      f"The activity period occurs once per {count:g} {unit} cycle.",
+                      (active.provenance.sentence,)),))

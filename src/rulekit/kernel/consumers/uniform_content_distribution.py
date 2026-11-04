@@ -3,7 +3,7 @@ from collections import Counter, defaultdict
 from math import isclose, isfinite
 
 from . import consumer
-from ..answer import Answer
+from ..answer import Answer, AnswerAssumption
 from ..evaluate import evaluate
 from ..model import BatchEvidence, Quantity
 from ..numeric_evidence import audit_numeric_mentions
@@ -190,4 +190,8 @@ def _remaining_holders(ctx):
     ctx.log.consumed_batch_keys.update(row.key() for row in rows)
     reason = ('the average remaining contents; individual amounts need not be equal' if ctx.query.get('average')
               else 'the requested uniform contents of each remaining holder')
-    return Answer('number', value, reason + ': residual amount divided by remaining holders')
+    return Answer('number', value, reason + ': residual amount divided by remaining holders',
+                  assumptions=() if ctx.query.get('average') else (AnswerAssumption(
+                      'uniform-remaining-contents',
+                      'The question about each remaining holder is interpreted as specifying equal contents.',
+                      (ctx.question.sentence_index,)),))

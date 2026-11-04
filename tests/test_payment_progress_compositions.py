@@ -71,7 +71,6 @@ def test_independent_receipt_and_existing_tariff_grammar(reg):
 @pytest.mark.parametrize(
     "before,after",
     [
-        ("each gave", "gave"),
         ("her a $3", "Ezra a $3"),
         ("8 cars", "-8 cars"),
         ("last week?", "last month?"),

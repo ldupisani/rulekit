@@ -50,6 +50,8 @@ members:
   - amount
   personal_ratio_preposition:
   - to
+  - compared to
+  - compared with
   personal_holding_depletion:
   - spend
   - spent

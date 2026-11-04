@@ -240,6 +240,21 @@ def mixture_component(ctx: ConsumerContext):
         require(math.isfinite(value), "mixture calculation is not finite")
         ctx.log.consumed_mixture_keys.update(e.key() for e in evidence)
         convention = "" if all(s.basis for s in shares) else "; unspecified percentage uses the elementary sample-unit convention"
-        return Answer("number", float(value), explanation + convention)
+        from ..answer import AnswerAssumption
+        assumptions = []
+        if convention:
+            assumptions.append(AnswerAssumption(
+                "mixture-same-dimension-percentage",
+                "An unspecified percentage uses the same measurement basis as the stated sample.",
+                tuple(sorted({s.provenance.sentence for s in shares if not s.basis})),
+            ))
+        if ctx.query.get("process") and ctx.query["process"] != "explicit-recovery":
+            assumptions.append(AnswerAssumption(
+                "aqueous-component-retention",
+                "The declared aqueous evaporation convention retains the requested component completely.",
+                (ctx.question.sentence_index,),
+            ))
+        return Answer("number", float(value), explanation + convention,
+                      assumptions=tuple(assumptions))
     except Unsupported as exc:
         return Answer("decline", None, str(exc))

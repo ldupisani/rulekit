@@ -4683,7 +4683,7 @@ rules:
     generation_context:
       before:
         - sentence:
-            - {slot: context_owner, type: name}
+            - {slot: context_owner, type: entity, referential: true, bare_reference_category: bare_entity_reference}
             - {slot: context_verb, cat: possession_state, finite_form: true}
             - {lit: a, consume_skipped: true}
             - {slot: context_place, cat: owned_collection_location, number: singular}

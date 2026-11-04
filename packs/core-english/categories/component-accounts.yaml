@@ -8,8 +8,11 @@ categories:
     - component_quantity_measure
   mechanical_component:
     parent: noun
-  collection_account_verb:
+  component_account_activity:
     parent: quantity_event_verb
+    notes: An activity identifies a population whose explicitly stated parts can be counted; it does not imply ownership or action on every part.
+  collection_account_verb:
+    parent: component_account_activity
   component_bearing_object:
     parent: noun
     includes:
@@ -34,6 +37,16 @@ categories:
     selectional_roles:
       actor: collection_agent
       theme: assembled_component_bearer
+  component_depiction_activity:
+    parent: component_account_activity
+    selectional_roles:
+      actor: collection_agent
+      theme: component_bearing_object
+  component_observation_activity:
+    parent: component_account_activity
+    selectional_roles:
+      actor: collection_agent
+      theme: component_bearing_object
 members:
   mechanical_component:
   - wheel
@@ -58,3 +71,5 @@ members:
   - assemble
   - assembles
   - assembled
+  component_depiction_activity: [paint, paints, painted]
+  component_observation_activity: [observe, observes, observed]

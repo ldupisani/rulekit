@@ -51,10 +51,10 @@ def closed_evidence(ctx, rows, operands, *, additional_kinds=(), covered=None):
     )
 
 
-def finish_batch_answer(ctx, rows, value, reason):
+def finish_batch_answer(ctx, rows, value, reason, *, assumptions=()):
     if value is None or not isfinite(value):
         return Answer("decline", None, "the calculated result must be finite")
     ctx.log.consumed_batch_keys.update(
         r.key() for r in rows if isinstance(r, BatchEvidence)
     )
-    return Answer("number", value, reason)
+    return Answer("number", value, reason, assumptions=tuple(assumptions))

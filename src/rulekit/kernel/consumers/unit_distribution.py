@@ -3,7 +3,7 @@
 from collections import Counter, defaultdict
 from math import isfinite
 from . import consumer
-from ..answer import Answer, ClarificationOption, ClarificationRequest, SemanticNode
+from ..answer import Answer, AnswerAssumption, ClarificationOption, ClarificationRequest, SemanticNode
 from ..evaluate import evaluate
 from ..model import BatchEvidence
 from ..numeric_evidence import audit_numeric_mentions
@@ -240,4 +240,8 @@ def consume(ctx):
     reason = "count the explicit recipients once, then apply the stated units per whole and per recipient"
     if ctx.query["mode"] == "packages" and not requirements:
         reason += "; treating the listed groups as the complete roster, with one individual unit per recipient"
-    return Answer("number", value, reason)
+    return Answer("number", value, reason, assumptions=(AnswerAssumption(
+        "one-individual-unit-per-recipient",
+        "The listed groups form the complete roster, with one individual unit per recipient.",
+        tuple(sorted({r.provenance.sentence for r in population})),
+    ),) if ctx.query["mode"] == "packages" and not requirements and ctx.interpretation != "one-unit-each" else ())

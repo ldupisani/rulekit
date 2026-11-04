@@ -41,6 +41,7 @@ def test_threshold_resets_before_each_repetition(project, elapsed, repeats, prem
     result = solve(story(elapsed=elapsed, repeats=repeats, premium=premium), project.registry)
     assert (result.answer.kind, result.answer.value) == ("number", expected), result.answer
     assert "one shift" in result.answer.reason
+    assert [a.id for a in result.answer.assumptions] == ["one-session-per-scheduled-period"]
     assert len(result.store.by_kind(RateThreshold)) == 1
     assert len(result.store.by_kind(RatePremium)) == 1
     assert len(result.store.by_kind(RepeatedActivityDuration)) == 1
@@ -70,6 +71,7 @@ def test_explicit_shift_repetition_needs_no_daily_assumption(project):
     result = solve(story(period="shift"), project.registry)
     assert result.answer.value == 780, result.answer
     assert "treating" not in result.answer.reason
+    assert not result.answer.assumptions
 
 
 def test_schedule_without_a_tier_uses_only_stated_base_rate(project):

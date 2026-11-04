@@ -4,7 +4,7 @@ from collections import Counter
 from math import isfinite, isclose
 
 from . import ConsumerContext, consumer
-from ..answer import Answer, AnswerProof, ProofStep, SemanticNode
+from ..answer import Answer, AnswerAssumption, AnswerProof, ProofStep, SemanticNode
 from ..evaluate import evaluate
 from ..model import Quantity, Rate
 from ..source_coverage import uncovered_document_units
@@ -133,4 +133,7 @@ def per_member_rate_chain(ctx: ConsumerContext):
             "Scale the complete per-period requirement once, not each dependency link."))
     proof = AnswerProof(SemanticNode("per-period-requirement", (
         ("measure", ctx.query["measure"]), ("period", period))), tuple(steps))
-    return Answer("number", value, f"{value:g} {ctx.query['measure']}; interpreting {interpretation}.", proof=proof)
+    return Answer("number", value, f"{value:g} {ctx.query['measure']}; interpreting {interpretation}.", proof=proof,
+                  assumptions=() if individual else (AnswerAssumption("closed-quota-chain",
+                      "Each required intermediate member supplies its full stated amount during the same period.",
+                      tuple(sorted({r.provenance.sentence for r in selected}))),))

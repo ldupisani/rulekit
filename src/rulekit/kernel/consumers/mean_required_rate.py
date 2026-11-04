@@ -4,7 +4,7 @@ from collections import Counter, defaultdict
 from math import isfinite, isclose
 
 from . import consumer
-from ..answer import Answer
+from ..answer import Answer, AnswerAssumption
 from ..model import BatchEvidence
 from ..evaluate import evaluate
 from ..numeric_evidence import audit_numeric_mentions
@@ -88,7 +88,21 @@ def consume(ctx):
         elif not ctx.reg.word_in_category(qualifier, "duration_extent_descriptor"):
             return decline("the completion context has an unsupported restriction")
     expected = defaultdict(Counter)
-    expected[goal.provenance.sentence].update((goal.value, goal.per_member))
+    assumptions = []
+    expected[goal.provenance.sentence][goal.value] += 1
+    if goal.acquisition == "implicit-unit":
+        if goal.per_member != 1:
+            return decline("an indefinite singular deadline must denote one period")
+    elif goal.acquisition:
+        return decline("the deadline's quantity basis is unknown")
+    else:
+        expected[goal.provenance.sentence][goal.per_member] += 1
+    if not goal.attribute:
+        assumptions.append(AnswerAssumption(
+            "individual-competition-goal",
+            "The stated goal applies separately to each participant, rather than to their combined total.",
+            (group.provenance.sentence, goal.provenance.sentence),
+        ))
     expected[ctx.question.sentence_index][elapsed] += 1
     work = defaultdict(list)
     for row in progress:
@@ -117,6 +131,12 @@ def consume(ctx):
         if amount is None:
             return decline("progress must measure the same quantity as the goal")
         if row.kind == "completion-rate":
+            if not row.attribute:
+                assumptions.append(AnswerAssumption(
+                    "prefix-average-per-period",
+                    "An average over the initial interval is interpreted per stated period.",
+                    (row.provenance.sentence,),
+                ))
             expected[row.provenance.sentence][row.fraction] += 1
             end = convert_duration(
                 row.fraction,
@@ -247,4 +267,5 @@ def consume(ctx):
         "number",
         value,
         "mean of the individual required rates; each participant has the stated goal and an initial-period average is per stated period",
+        assumptions=tuple(assumptions),
     )

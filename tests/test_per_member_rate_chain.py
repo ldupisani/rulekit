@@ -38,6 +38,7 @@ def test_three_coordinated_rates_and_conditional_population(project):
     assert all(r.provenance.distributive for r in result.store.by_kind(Rate))
     assert [(q.measure, q.value) for q in result.store.by_kind(Quantity)] == [("jaguar", 3)]
     assert "not inferred total populations" in result.answer.reason
+    assert [a.id for a in result.answer.assumptions] == ["closed-quota-chain"]
     assert [dict(s.conclusion.fields)["value"] for s in result.answer.proof.steps] == [3, 12, 24, 168]
     assert len(result.answer.proof.steps[-1].evidence) == 4
 

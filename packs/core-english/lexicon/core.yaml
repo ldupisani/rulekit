@@ -1485,6 +1485,7 @@ entries:
     senses:
     - noun
     plural: clerks
+  client: {senses: [noun], plural: clients}
   climbed:
     senses:
     - verb
@@ -1631,6 +1632,8 @@ entries:
     - verb
     verb:
       lemma: compare
+  compared to: {senses: [preposition]}
+  compared with: {senses: [preposition]}
   compares:
     senses:
     - verb
@@ -3986,6 +3989,7 @@ entries:
   initial:
     senses:
     - adjective
+  initial payment: {senses: [noun], plural: initial payments, lexical_phrase: true}
   initially:
     senses:
     - adverb
@@ -5588,6 +5592,8 @@ entries:
   participated:
     senses:
     - verb
+  participates: {senses: [verb], number: singular, verb: {lemma: participate}}
+  participating: {senses: [verb], verb: {lemma: participate}}
   particular: {senses: [adjective]}
   partner: {senses: [noun], plural: partners}
   party: {senses: [noun], plural: parties}
@@ -8634,9 +8640,13 @@ entries:
     senses:
     - adjective
   up: {senses: [adverb]}
+  up-front: {senses: [adjective]}
+  up-front payment: {senses: [noun], plural: up-front payments, lexical_phrase: true}
   upcoming:
     senses:
     - adjective
+  upfront: {senses: [adjective]}
+  upfront payment: {senses: [noun], plural: upfront payments, lexical_phrase: true}
   upon: {senses: [preposition]}
   upper:
     senses:

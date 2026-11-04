@@ -8,7 +8,7 @@ from collections import Counter
 from math import isclose, isfinite
 
 from . import ConsumerContext, consumer
-from ..answer import Answer, AnswerProof, ProofStep, SemanticNode
+from ..answer import Answer, AnswerAssumption, AnswerProof, ProofStep, SemanticNode
 from ..evaluate import evaluate, EvaluationError
 from ..model import ORDERED_SEQUENCE_KINDS as SEQUENCE_KINDS
 from ..source_coverage import uncovered_document_units
@@ -184,4 +184,7 @@ def ordered_sequence(ctx: ConsumerContext):
                    (step, total), f"next = {step.factor:g} × previous + {step.offset:g}")),
     )
     return Answer("number", value,
-                  f"Term {int(index)} is {value:g} {measure}; interpreting {detail}.", proof=proof)
+                  f"Term {int(index)} is {value:g} {measure}; interpreting {detail}.", proof=proof,
+                  assumptions=(AnswerAssumption("one-complete-carrier-per-event",
+                      f"Each event uses one whole {series}, and the stated total covers their complete contents.",
+                      (cadence.provenance.sentence, total.provenance.sentence)),))

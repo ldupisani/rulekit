@@ -8,7 +8,7 @@ from collections import Counter
 from dataclasses import replace
 from math import isclose, isfinite
 
-from ..answer import Answer, AnswerProof, ProofStep, SemanticNode
+from ..answer import Answer, AnswerAssumption, AnswerProof, ProofStep, SemanticNode
 from ..evaluate import evaluate
 from ..model import (AccumulationWindow, EarningRate, ServiceScope, PurchaseEndpoint,
                      EARNINGS_ACCOUNT_KINDS, Quantity)
@@ -139,4 +139,6 @@ def earnings_account(ctx):
                   (target, quote, closing), "purchase cost + cash remaining − known income, divided by service price"),
     ))
     return Answer("number", float(round(count)),
-                  f"{count:g} {measure}; interpreting that {interpretation}.", proof=proof)
+                  f"{count:g} {measure}; interpreting that {interpretation}.", proof=proof,
+                  assumptions=(AnswerAssumption("closed-savings-account", interpretation,
+                      tuple(sorted({f.provenance.sentence for f in facts}))),))

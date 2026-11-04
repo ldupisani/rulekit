@@ -607,6 +607,16 @@ service objects retains its denominator. Component groups retain separate counts
 and explicit per-object amounts, including a single exceptional object. A plural
 group without an explicit per-member statement cannot silently supply one.
 
+The same component account describes collected, depicted or observed objects.
+An activity-qualified relative clause or participle identifies the population;
+an omitted actor requires a unique, resolved participant across that account.
+Counting those objects' parts does not establish possession or an action on
+each part. Direct depiction questions count the explicitly described parts
+included in the depictions and report that interpretation as answer metadata.
+Different participants, activities, host classes or component measures cannot
+be conflated. [Paraphrase tests](../tests/test_share_component_paraphrases.py)
+cover animals and manufactured objects, with those boundaries.
+
 Implementation: [account grammar](../packs/arithmetic/rules/weighted-accounts.yaml)
 and [weighted totals](../src/rulekit/kernel/consumers/weighted_account.py).
 
@@ -629,6 +639,15 @@ equations. Fractions of what a holder has then reduce that holder's own share, i
 order. A follow-up remainder pronoun requires one immediately preceding depleted
 holder and compatible reference forms. A ratio between qualified resources does
 not license an unqualified pool. Discrete shares and balances must be whole counts.
+
+Comparison links preserve holder order, including an elided repeated possession
+clause. A bare joint count can inherit its resource only from one preceding
+ratio. Explicitly possessed withdrawals must match both the holder and resource.
+Remainder questions can ask what is left over or still available to spend within
+that account. Ellipsis does not repair malformed grammar or introduce another
+resource, owner or reporting period.
+The ratio consumer participates in ask selection only when an `AllocationRatio`
+exists, so these remainder surfaces also retain ordinary stock-account answers.
 
 Implementation: [share grammar](../packs/arithmetic/rules/named-share-balances.yaml)
 and [personal balances](../src/rulekit/kernel/consumers/ratio_holder_remainder.py).
@@ -902,3 +921,49 @@ unread conditions cannot be discarded.
 Cross-domain examples, equivalent and conflicting quotes, scoped dependencies,
 fraction bases and dimensional boundaries are exercised by
 [generalised composition tests](../tests/test_generalised_compositions.py).
+
+## Answer assumptions
+
+An answer can carry structured default assumptions alongside its value and
+explanation. Each assumption has a stable ID, a description and zero-based
+source sentence indices. These records belong to the answer, not to the fact
+store, and do not establish a premise or bypass a commitment guard. Explicit
+question-local hypothetical clauses retain their existing, separate provenance;
+a caller-confirmed clarification remains a clarification rather than an
+automatic default. Failed calculations return no applied defaults.
+
+The CLI prints these records beside the result. Diagnostics expose them as
+`default_assumptions`, leaving the existing hypothetical `assumptions` field
+intact. Designer traces expose `answer.assumptions` and render a separate
+Assumptions list below the answer. Generated ask evidence saves the same
+records. Review replay compares them when the saved evidence contains the
+field; its absence in historical records means unknown metadata, not a reviewed
+claim that no assumptions were used. Existing review records are not rewritten.
+
+The implemented defaults include:
+
+| Calculation | Reported interpretation |
+| --- | --- |
+| Service supplements | An omitted distributive marker applies the stated tip per client or counted service; all clients can use one distinct client per completed service when no competing evidence appears. Explicit per-service receipts reuse completed work without inventing clients. |
+| Completion rates | Competition goals apply individually; an initial-interval average without a denominator is per stated period. An indefinite singular deadline denotes one period without inventing a numeric source mention. |
+| Calendar schedules and savings | An unstated year is non-leap; annual joint daily savings uses 365 earning days. |
+| Activity funding | A pack-declared enclosing cycle supplies the complementary earning window. |
+| Unqualified recurring goals | The target is a daily minimum with missed amounts carried forward. Explicit cumulative goals remain separate. |
+| Containers and measured sites | Complete untyped container axes use a rectangular prism; width-by-height sites are rectangular, and omitted axis units share the explicit length basis. Explicit shapes suppress the corresponding default. |
+| Mixtures | Unspecified percentages use the sample's quantity dimension; declared aqueous evaporation can retain the target component completely. Explicit recovery and basis statements remain evidence. |
+| Uniform distributions and portions | An each-holder query selects equal remaining contents; individual package servings can supply one unit per listed recipient; whole-to-piece fractions treat pieces as equal portions. Average-content queries require no equality default. |
+| Closed accounts and dependencies | Savings accounts have no unstated opening resources or cash flows; financed balances and production profits use the stated charges; quota chains use complete intermediate requirements; source contributions exhaust the target; bounded carrier sequences use one whole carrier per event. |
+| Journey and work schedules | Return legs share the stated one-way distance or duration; a working-day set can supply one weekly schedule; unqualified work extents can use the question's reporting period. Separate attendance schedules are treated as nonoverlapping. |
+| Personal name components | The declared prefix and capitalization layout determine the remaining name component. |
+
+The additional service, payment-policy and participation grammar uses the
+existing weighted account, installment balance and completion-rate consumers.
+It does not create new arithmetic solvers. Scope, currency, chronology, unpaid
+plans, contradictory modifiers and unread charges still constrain commitments.
+
+Implementation: [answer metadata](../src/rulekit/kernel/answer.py),
+[Designer serialization](../src/rulekit/server/api.py), and
+[review replay](../src/rulekit/generation/reviews.py).
+Executable examples and boundaries live in
+[assumption tests](../tests/test_answer_assumptions.py) and
+[payment and progress paraphrases](../tests/test_payment_progress_paraphrases.py).

@@ -24,6 +24,11 @@ categories:
     parent: adjective
   balance_quantity_noun:
     parent: currency_measure
+  initial_payment_supplement_verb:
+    parent: verb
+    notes: Increasing a stated initial payment in this construction, without asserting unrelated account movements.
+  initial_payment_descriptor:
+    parent: adjective
 members:
   planning_state_auxiliary:
   - be
@@ -63,16 +68,24 @@ members:
   - down payment
   - downpayment
   - deposit
+  - upfront payment
+  - up-front payment
+  - initial payment
   policy_condition_link:
   - provided
   payment_realization_verb:
   - made
+  - make
+  - makes
+  initial_payment_supplement_verb: [pay, pays, paid, add, adds, added]
+  initial_payment_descriptor: [upfront, up-front]
   supplemental_payment_descriptor:
   - additional
   - extra
   balance_quantity_noun:
   - balance
 attribute_compatibility:
+  initial_payment_descriptor: [settlement_payment_noun]
   retail_product:
   - retail_organization
   supplemental_payment_descriptor:

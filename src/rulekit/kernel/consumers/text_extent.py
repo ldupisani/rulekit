@@ -3,7 +3,7 @@
 from math import isclose, isfinite
 
 from . import ConsumerContext, consumer
-from ..answer import Answer, AnswerProof, ProofStep, SemanticNode
+from ..answer import Answer, AnswerAssumption, AnswerProof, ProofStep, SemanticNode
 from ..evaluate import evaluate
 from ..model import Quantity, Relation, TextPrefixSplit, TextValue
 from ..reference_identity import flat_reference
@@ -40,6 +40,7 @@ def text_extent(ctx: ConsumerContext):
     # has a quantity. Saturation materializes numbers; this verifies every
     # stated equation, including those it did not need to materialize.
     steps = []
+    assumptions = []
     for value in ctx.store.by_kind(TextValue):
         count = quantity(value.entity_ref)
         if count is None:
@@ -65,6 +66,8 @@ def text_extent(ctx: ConsumerContext):
         steps.append(ProofStep("explicit-prefix-split", SemanticNode("text-component", (
             ("entity", part.entity_ref.display()),)), (split,),
             f"{interpretation} Extracted component: {remainder!r}."))
+        assumptions.append(AnswerAssumption("name-component-layout", interpretation,
+                                            (split.provenance.sentence,)))
     for relation in ctx.store.by_kind(Relation):
         subject, standard = quantity(relation.subject_ref), quantity(relation.standard_ref)
         if relation.measure != measure or subject is None or standard is None:
@@ -90,4 +93,5 @@ def text_extent(ctx: ConsumerContext):
     return Answer("number", target.value,
                   f"{target.value:g} letters in {target.entity_ref.display()}",
                   proof=AnswerProof(SemanticNode("text-extent", (
-                      ("entity", target.entity_ref.display()), ("value", target.value))), tuple(steps)))
+                      ("entity", target.entity_ref.display()), ("value", target.value))), tuple(steps)),
+                  assumptions=tuple(assumptions))

@@ -1,7 +1,13 @@
 format: rulekit/categories@1
 categories:
   competitive_activity_verb:
+    parent: direct_event_participation_verb
+  direct_event_participation_verb:
     parent: verb
+  participation_light_verb:
+    parent: verb
+  participation_role_noun:
+    parent: noun
   competitive_event:
     parent: noun
   goal_quantity_activity:
@@ -18,6 +24,9 @@ categories:
   indexed_progress_predicate:
     parent: quantity_event_verb
 members:
+  direct_event_participation_verb: [participate, participates, participating, participated]
+  participation_light_verb: [take, takes, taking, took]
+  participation_role_noun: [part]
   competitive_activity_verb:
   - compete
   - competes

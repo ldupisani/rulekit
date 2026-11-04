@@ -265,9 +265,9 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
     project = load_project(CURATED)
     availability = list_rule_availability(project)
 
-    assert len(availability) == 830
-    assert sum(item.supported for item in availability) == 733
-    assert sum(not item.supported for item in availability) == 97
+    assert len(availability) == 850
+    assert sum(item.supported for item in availability) == 752
+    assert sum(not item.supported for item in availability) == 98
     assert all(
         not item.blockers
         or item.id
@@ -288,6 +288,7 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
             'arithmetic/indexed-completion-amount-label',
             'arithmetic/named-individual-completion-deadline',
             'arithmetic/named-shared-completion-context',
+            'arithmetic/named-shared-completion-participation',
             'arithmetic/measured-outcome-with-source-inventory',
 
             'arithmetic/account-coordinated-payment',
@@ -373,7 +374,7 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
             'logic-arithmetic/universal-all-have-quantity-pp-incompatible-item-safety'}
         for item in availability
     )
-    assert len(exploration_status(project)["fillers"]) == 2601
+    assert len(exploration_status(project)["fillers"]) == 2609
 
 
 def test_currently_generates_a_matcher_confirmed_anchor() -> None:

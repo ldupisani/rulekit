@@ -14,7 +14,7 @@ from ..resource_equations import resource_residual
 from ..source_coverage import uncovered_document_units
 
 
-@consumer("ratio-holder-remainder")
+@consumer("ratio-holder-remainder", applicable=lambda store: bool(store.by_kind(AllocationRatio)))
 def consume(ctx):
     def decline(reason):
         return Answer("decline", None, reason)
@@ -104,8 +104,8 @@ def consume(ctx):
         who.head not in members
         or members[0] == members[1]
         or ratio.group_size != 2
-        or pool.measure != ratio.resource
-        or ctx.query["measure"] not in ("", ratio.resource)
+        or pool.measure not in ("", ratio.resource)
+        or ctx.query.get("measure", "") not in ("", ratio.resource)
         or ratio.provenance.assumption
         or pool.provenance.sentence < ratio.provenance.sentence
         or any(
@@ -147,6 +147,8 @@ def consume(ctx):
     for row in sorted(withdrawals, key=lambda r: (r.provenance.sentence, r.position)):
         if (
             row.entity_ref != who
+            or row.measure not in ("", ratio.resource)
+            or row.measure and row.acquisition_ref != who
             or row.provenance.sentence < pool.provenance.sentence
             or not 0 <= row.value <= 1
         ):

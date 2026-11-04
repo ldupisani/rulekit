@@ -350,14 +350,18 @@ def learn_expenditures(reading: Reading, reg: Registry) -> list[Expenditure]:
             if tail is None:
                 break
             end, fields = tail
-            out.append(Expenditure(
-                provenance=Provenance(source="fold:expenditure", sentence=reading.sentence_index,
-                                      assumption=reading.assumption),
-                entity=_lemma(subject), item=_lemma(target), verb=_lemma(verb),
-                qualifier=target.features.get("qualifier") or "",
-                value=float(amount.features["value"]), measure=_lemma(amount), position=amount.uid, event=verb.uid,
-                basis="payment", supplier=supplier, supplier_qualifier=supplier_qualifier, **fields,
-            ))
+            # Read rules already account for every part of this payment frame.
+            # A claimed verb alone is insufficient: the amount, preposition
+            # and target must also have been claimed before suppressing a fold.
+            if not all(u.features.get("pattern_consumed") for u in (verb, amount, prep, target)):
+                out.append(Expenditure(
+                    provenance=Provenance(source="fold:expenditure", sentence=reading.sentence_index,
+                                          assumption=reading.assumption),
+                    entity=_lemma(subject), item=_lemma(target), verb=_lemma(verb),
+                    qualifier=target.features.get("qualifier") or "",
+                    value=float(amount.features["value"]), measure=_lemma(amount), position=amount.uid, event=verb.uid,
+                    basis="payment", supplier=supplier, supplier_qualifier=supplier_qualifier, **fields,
+                ))
             i = end
             separator = False
             while i < len(units) and units[i].surface == ",":

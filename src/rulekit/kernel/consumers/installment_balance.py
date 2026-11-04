@@ -4,7 +4,7 @@ from collections import Counter, defaultdict
 from math import isfinite, isclose
 
 from . import consumer
-from ..answer import Answer
+from ..answer import Answer, AnswerAssumption
 from ..model import BatchEvidence, PurchaseEndpoint
 from ..evaluate import evaluate
 from ..numeric_evidence import audit_numeric_mentions
@@ -144,4 +144,7 @@ def consume(ctx):
         "number",
         value,
         "project the quoted balance after the percentage deposit, additional deposit and complete installment periods",
+        assumptions=(AnswerAssumption("closed-finance-charges",
+            "The balance includes only the stated purchase price and payments, with no unlisted interest or fees.",
+            (quote.provenance.sentence, rate.provenance.sentence)),),
     )

@@ -260,6 +260,9 @@ body.resizing iframe, body.resizing textarea { pointer-events: none; }
 .banner.clarify .big { color: var(--amber); }
 .banner.undetermined .big { color: var(--amber); }
 .banner .reason { color: var(--dim); font-size: 0.75rem; }
+.answer-assumptions { margin-top: 0.65rem; font-size: 0.8rem; }
+.answer-assumptions ul { margin: 0.3rem 0 0; padding-left: 1.3rem; }
+.answer-assumptions li + li { margin-top: 0.25rem; }
 .answer-series {
   display: inline-grid; gap: 2px; vertical-align: top;
 }

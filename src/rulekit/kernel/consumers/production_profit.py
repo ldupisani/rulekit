@@ -24,7 +24,7 @@ def compatible_products(reg, items):
 
 @consumer("production-profit")
 def consume(ctx):
-    from ..answer import Answer, AnswerProof, ProofStep, SemanticNode
+    from ..answer import Answer, AnswerAssumption, AnswerProof, ProofStep, SemanticNode
 
     def decline(reason):
         return Answer("decline", None, reason)
@@ -102,4 +102,7 @@ def consume(ctx):
     node = SemanticNode("production-profit", (("entity", entity), ("measure", cost.measure)))
     proof = AnswerProof(node, (ProofStep("closed-production-account", node,
                                         tuple(terms + rates), detail),))
-    return Answer("number", value, detail, proof=proof)
+    return Answer("number", value, detail, proof=proof,
+                  assumptions=(AnswerAssumption("closed-production-costs",
+                      "The profit calculation includes only the stated costs of this production stream.",
+                      tuple(sorted({r.provenance.sentence for r in terms}))),))

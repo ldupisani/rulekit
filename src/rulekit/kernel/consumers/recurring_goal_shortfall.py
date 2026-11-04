@@ -4,7 +4,7 @@ from collections import Counter, defaultdict
 from math import isfinite
 
 from . import consumer
-from ..answer import Answer
+from ..answer import Answer, AnswerAssumption
 from ..evaluate import evaluate
 from ..model import BatchEvidence
 from ..numeric_evidence import audit_numeric_mentions
@@ -247,4 +247,8 @@ def consume(ctx):
     )
     if not goal.marker:
         reason += "; interpreting the target as applying to each named day in the make-up schedule"
-    return Answer("number", value, reason)
+    return Answer("number", value, reason, assumptions=() if goal.marker else (
+        AnswerAssumption("daily-goal-with-carryover",
+            "The unqualified target is a daily minimum, with missed amounts carried forward.",
+            (goal.provenance.sentence,)),
+    ))

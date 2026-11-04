@@ -1,73 +1,5 @@
 format: rulekit/rules@1
 rules:
-- id: arithmetic/service-unit-price
-  match:
-    sentence:
-    - slot: who
-      type: entity
-      common_noun_cat: collection_agent
-      referential: true
-      at_start: true
-    - slot: act
-      cat: habitual_service_predicate
-      finite_form: true
-    - slot: item
-      cat: service_object
-      counted: true
-      bare: true
-      value_min: 1
-    - lit: and
-    - slot: charge
-      cat: service_tariff_verb
-      finite_form: true
-    - slot: amount
-      cat: currency_unit
-      counted: true
-      bare: true
-    - lit: .
-      consume_skipped: true
-  emits:
-  - fact: earning_rate
-    entity: '{who}'
-    measure: '{amount}'
-    per: '{item}'
-    value: amount / item
-    verb: '{act}'
-    basis: service
-    numerator: amount
-    denominator: item
-  consumes:
-  - act
-  - charge
-  - item
-  - amount
-  satisfies:
-    act:
-    - subject
-    charge:
-    - subject
-  where:
-  - number_compatible:
-    - who
-    - act
-  - number_compatible:
-    - who
-    - charge
-  - slot_not_category:
-      slot: act
-      cat: past_service_predicate
-  - verb_roles_compatible:
-      verb: act
-      roles:
-        actor:
-        - who
-        theme:
-        - item
-      allow_proper_name:
-      - who
-      frame_categories:
-      - service_activity_verb
-      require_declared_frame: true
 - id: arithmetic/bounded-completed-service
   match:
     sentence:
@@ -120,152 +52,6 @@ rules:
       frame_categories:
       - service_activity_verb
       require_declared_frame: true
-- id: arithmetic/completed-service-with-supplement
-  match:
-    sentence:
-    - opt:
-      - slot: period
-        cat: duration_measure
-        uncounted: true
-        qualified: true
-        qualifier_cat: relative_period_attribute
-        all_qualifiers: true
-    - slot: who
-      type: entity
-      common_noun_cat: collection_agent
-      referential: true
-      at_start: false
-    - slot: act
-      cat: past_service_predicate
-      finite_form: true
-    - slot: item
-      cat: service_object
-      counted: true
-      bare: true
-    - lit: and
-    - slot: givers
-      cat: intentional_agent
-      counted: true
-      bare: true
-      value_min: 1
-    - slot: each
-      cat: postpositive_distributive_quantifier
-    - slot: give
-      cat: completed_receipt_transfer
-      finite_form: true
-    - slot: recipient
-      cat: singular_animate_object_pronoun
-    - slot: amount
-      cat: currency_unit
-      counted: true
-      bare: true
-    - slot: adjustment
-      cat: supplemental_receipt_noun
-      uncounted: true
-      bare: true
-    - lit: .
-      consume_skipped: true
-  emits:
-  - fact: batch_evidence
-    kind: account-work
-    entity: '{who}'
-    measure: '{item}'
-    value: item
-    position: '{item.span_start}'
-    verb: '{act}'
-    marker: '{period.optional}'
-    container: '{period.optional}'
-  - fact: batch_evidence
-    kind: account-product
-    entity: '{recipient}'
-    measure: '{amount}'
-    value: givers
-    position: '{givers.span_start}'
-    per_member: amount
-    marker: '{period.optional}'
-    verb: '{act}'
-    container: '{period.optional}'
-  consumes:
-  - act
-  - item
-  - give
-  - amount
-  - givers
-  satisfies:
-    act:
-    - subject
-    give:
-    - subject
-    each:
-    - collection
-  where:
-  - number_compatible:
-    - who
-    - act
-  - number_compatible:
-    - givers
-    - give
-  - verb_roles_compatible:
-      verb: act
-      roles:
-        actor:
-        - who
-        theme:
-        - item
-      allow_proper_name:
-      - who
-      frame_categories:
-      - service_activity_verb
-      require_declared_frame: true
-- id: arithmetic/distributed-supplemental-receipt
-  match:
-    sentence:
-    - slot: givers
-      cat: intentional_agent
-      counted: true
-      bare: true
-      at_start: true
-      value_min: 1
-    - slot: each
-      cat: postpositive_distributive_quantifier
-    - slot: give
-      cat: completed_receipt_transfer
-      finite_form: true
-    - slot: recipient
-      type: entity
-      common_noun_cat: collection_agent
-      referential: true
-    - slot: amount
-      cat: currency_unit
-      counted: true
-      bare: true
-    - slot: adjustment
-      cat: supplemental_receipt_noun
-      uncounted: true
-      bare: true
-    - lit: .
-      consume_skipped: true
-  emits:
-  - fact: batch_evidence
-    kind: account-product
-    entity: '{recipient}'
-    measure: '{amount}'
-    value: givers
-    position: '{givers.span_start}'
-    per_member: amount
-  consumes:
-  - givers
-  - give
-  - amount
-  satisfies:
-    give:
-    - subject
-    each:
-    - collection
-  where:
-  - number_compatible:
-    - givers
-    - give
 - id: arithmetic/collected-components-each
   match:
     sentence:
@@ -275,7 +61,7 @@ rules:
       referential: true
       at_start: true
     - slot: act
-      cat: collection_account_verb
+      cat: component_account_activity
       finite_form: true
     - slot: host0
       cat: component_bearing_object
@@ -325,7 +111,7 @@ rules:
       allow_proper_name:
       - who
       frame_categories:
-      - collection_account_verb
+      - component_account_activity
       require_declared_frame: true
 - id: arithmetic/collected-components-single
   match:
@@ -336,7 +122,7 @@ rules:
       referential: true
       at_start: true
     - slot: act
-      cat: collection_account_verb
+      cat: component_account_activity
       finite_form: true
     - slot: host0
       cat: component_bearing_object
@@ -383,7 +169,7 @@ rules:
       allow_proper_name:
       - who
       frame_categories:
-      - collection_account_verb
+      - component_account_activity
       require_declared_frame: true
 - id: arithmetic/collected-components-each-single
   match:
@@ -394,7 +180,7 @@ rules:
       referential: true
       at_start: true
     - slot: act
-      cat: collection_account_verb
+      cat: component_account_activity
       finite_form: true
     - slot: host0
       cat: component_bearing_object
@@ -469,7 +255,7 @@ rules:
       allow_proper_name:
       - who
       frame_categories:
-      - collection_account_verb
+      - component_account_activity
       require_declared_frame: true
 - id: arithmetic/collected-components-each-each
   match:
@@ -480,7 +266,7 @@ rules:
       referential: true
       at_start: true
     - slot: act
-      cat: collection_account_verb
+      cat: component_account_activity
       finite_form: true
     - slot: host0
       cat: component_bearing_object
@@ -558,7 +344,7 @@ rules:
       allow_proper_name:
       - who
       frame_categories:
-      - collection_account_verb
+      - component_account_activity
       require_declared_frame: true
 - id: arithmetic/collected-components-single-each
   match:
@@ -569,7 +355,7 @@ rules:
       referential: true
       at_start: true
     - slot: act
-      cat: collection_account_verb
+      cat: component_account_activity
       finite_form: true
     - slot: host0
       cat: component_bearing_object
@@ -644,7 +430,7 @@ rules:
       allow_proper_name:
       - who
       frame_categories:
-      - collection_account_verb
+      - component_account_activity
       require_declared_frame: true
 - id: arithmetic/collected-components-single-single
   match:
@@ -655,7 +441,7 @@ rules:
       referential: true
       at_start: true
     - slot: act
-      cat: collection_account_verb
+      cat: component_account_activity
       finite_form: true
     - slot: host0
       cat: component_bearing_object
@@ -727,8 +513,161 @@ rules:
       allow_proper_name:
       - who
       frame_categories:
-      - collection_account_verb
+      - component_account_activity
       require_declared_frame: true
+- id: arithmetic/supplement-per-completed-service
+  description: A receipt for each completed service reuses the explicit compatible work population,
+    without inventing additional work.
+  match:
+    sentence:
+    - lit: for
+      at_start: true
+    - slot: each
+      cat: distributive_quantifier
+    - slot: item
+      cat: service_object
+      uncounted: true
+      bare: true
+      number: singular
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+    - slot: receipt
+      cat: completed_income_receipt
+      finite_form: true
+    - slot: amount
+      cat: currency_unit
+      counted: true
+      bare: true
+    - slot: adjustment
+      cat: supplemental_receipt_noun
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  consumes:
+  - receipt
+  - amount
+  satisfies: {}
+  bindings:
+    each:
+      collection: item
+    receipt:
+      subject: who
+  emits:
+  - fact: batch_evidence
+    kind: account-unit-supplement
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+    container: '{item}'
+- id: arithmetic/supplement-for-counted-services
+  description: A supplemental receipt attached to a counted service subset; the per-service reading
+    is an explicit answer assumption.
+  match:
+    sentence:
+    - lit: for
+      at_start: true
+    - slot: item
+      cat: service_object
+      counted: true
+      bare: true
+      value_min: 1
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+    - slot: receipt
+      cat: completed_income_receipt
+      finite_form: true
+    - slot: amount
+      cat: currency_unit
+      counted: true
+      qualified: true
+      qualifier_cat: supplemental_payment_descriptor
+      all_qualifiers: true
+    - slot: adjustment
+      cat: supplemental_receipt_noun
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  consumes:
+  - receipt
+  - amount
+  - item
+  satisfies:
+    receipt:
+    - subject
+  emits:
+  - fact: batch_evidence
+    kind: account-product
+    entity: '{who}'
+    measure: '{amount}'
+    value: item
+    position: '{item.span_start}'
+    per_member: amount
+    acquisition: '{item}'
+    attribute: implicit-per-service
+- id: arithmetic/supplement-from-all-service-clients
+  description: All clients supply a per-client supplement; one client per completed service remains
+    a reported default, not a textual population count.
+  match:
+    sentence:
+    - slot: all
+      cat: group_total_quantifier
+      at_start: true
+    - lit: of
+    - slot: owner
+      cat: possessive_determiner
+    - slot: clients
+      cat: service_client
+      uncounted: true
+      possessed: true
+      number: plural
+    - slot: each
+      cat: postpositive_distributive_quantifier
+    - slot: give
+      cat: completed_receipt_transfer
+      finite_form: true
+    - slot: recipient
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+    - slot: amount
+      cat: currency_unit
+      counted: true
+      bare: true
+    - slot: adjustment
+      cat: supplemental_receipt_noun
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  consumes:
+  - give
+  - amount
+  satisfies:
+    owner:
+    - refers
+  bindings:
+    give:
+      subject: clients
+    each:
+      collection: clients
+    all:
+      collection: clients
+  emits:
+  - fact: batch_evidence
+    kind: account-client-supplement
+    entity: '{recipient}'
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+    container: '{clients}'
+    acquisition: '{clients.owner}'
 asks:
 - id: ask/service-earned-total
   match:
@@ -811,7 +750,7 @@ asks:
       common_noun_cat: intentional_agent
       referential: true
     - slot: act
-      cat: collection_account_verb
+      cat: component_account_activity
       finite_form: true
     - slot: have
       cat: plain_have_state
@@ -821,8 +760,9 @@ asks:
         cat: group_total_preposition
       - slot: total
         cat: group_total_marker
-    - lit: '?'
-      consume_skipped: true
+    - opt:
+      - lit: '?'
+        consume_skipped: true
   resolves:
     consumer: weighted-account-total
     mode: components
@@ -841,3 +781,489 @@ asks:
   - number_compatible:
     - hosts
     - aux
+- id: ask/service-earned-total-amount
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - slot: amount_query
+      cat: mass_amount_interrogative
+    - slot: aux
+      cat: auxiliary
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+    - slot: earn
+      cat: wage_verb
+      bare_form: true
+    - slot: act
+      cat: service_activity_verb
+      present_participle: true
+    - slot: item
+      cat: service_object
+      uncounted: true
+      number: plural
+      bare: true
+    - opt:
+      - slot: period
+        cat: duration_measure
+        uncounted: true
+        qualified: true
+        qualifier_cat: relative_period_attribute
+        all_qualifiers: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: weighted-account-total
+    mode: earnings
+    entity: '{who}'
+    verb: '{act}'
+    item: '{item}'
+    period: '{period.optional}'
+  satisfies:
+    earn:
+    - subject
+    act:
+    - subject
+  where:
+  - number_compatible:
+    - who
+    - aux
+  disambiguates:
+  - act
+  - amount_query
+- id: ask/activity-components-participle-total
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: many
+    - slot: unit
+      cat: countable_component
+      uncounted: true
+      number: plural
+      bare: true
+    - slot: aux
+      cat: auxiliary
+    - lit: the
+      consume_skipped: true
+    - slot: act
+      cat: component_account_activity
+      past_participle: true
+    - slot: hosts
+      cat: noun
+      uncounted: true
+      number: plural
+      bare: true
+    - slot: have
+      cat: plain_have_state
+      bare_form: true
+    - opt:
+      - slot: total_prep
+        cat: group_total_preposition
+      - slot: total
+        cat: group_total_marker
+    - opt:
+      - lit: '?'
+        consume_skipped: true
+  resolves:
+    consumer: weighted-account-total
+    mode: components
+    entity: ''
+    measure: '{unit}'
+    host: '{hosts}'
+    verb: '{act}'
+  satisfies:
+    have:
+    - subject
+    total_prep:
+    - object
+  where:
+  - number_compatible:
+    - hosts
+    - aux
+- id: ask/depicted-components-total
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: many
+    - slot: unit
+      cat: countable_component
+      uncounted: true
+      number: plural
+      bare: true
+    - slot: aux
+      cat: auxiliary
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+    - slot: act
+      cat: component_depiction_activity
+      bare_form: true
+    - opt:
+      - lit: '?'
+        consume_skipped: true
+  resolves:
+    consumer: weighted-account-total
+    mode: components
+    entity: '{who}'
+    measure: '{unit}'
+    host: ''
+    verb: '{act}'
+    scope: depicted-components
+  satisfies:
+    act:
+    - subject
+    who:
+    - refers
+  where:
+  - number_compatible:
+    - who
+    - aux
+templates:
+  service-unit-quote:
+    parameters:
+      price_link:
+      - lit: and
+      - slot: charge
+        cat: service_tariff_verb
+        finite_form: true
+      price_consumes:
+      - charge
+      price_satisfies:
+        act:
+        - subject
+        charge:
+        - subject
+      price_agreement:
+      - number_compatible:
+        - who
+        - charge
+    rule:
+      match:
+        sentence:
+        - slot: who
+          type: entity
+          common_noun_cat: collection_agent
+          referential: true
+          at_start: true
+        - slot: act
+          cat: habitual_service_predicate
+          finite_form: true
+        - slot: item
+          cat: service_object
+          counted: true
+          bare: true
+          value_min: 1
+        - parameter: price_link
+        - slot: amount
+          cat: currency_unit
+          counted: true
+          bare: true
+        - lit: .
+          consume_skipped: true
+      emits:
+      - fact: earning_rate
+        entity: '{who}'
+        measure: '{amount}'
+        per: '{item}'
+        value: amount / item
+        verb: '{act}'
+        basis: service
+        numerator: amount
+        denominator: item
+      consumes:
+      - act
+      - item
+      - amount
+      - parameter: price_consumes
+      satisfies:
+        parameter: price_satisfies
+      where:
+      - number_compatible:
+        - who
+        - act
+      - slot_not_category:
+          slot: act
+          cat: past_service_predicate
+      - verb_roles_compatible:
+          verb: act
+          roles:
+            actor:
+            - who
+            theme:
+            - item
+          allow_proper_name:
+          - who
+          frame_categories:
+          - service_activity_verb
+          require_declared_frame: true
+      - parameter: price_agreement
+  work-and-receipt:
+    parameters:
+      giver_phrase:
+      - slot: givers
+        cat: intentional_agent
+        counted: true
+        bare: true
+        value_min: 1
+      - slot: each
+        cat: postpositive_distributive_quantifier
+      count: givers
+      position: '{givers.span_start}'
+      interpretation: ''
+      count_consumes:
+      - givers
+      satisfaction:
+        give:
+        - subject
+        each:
+        - collection
+        act:
+        - subject
+      giver_agreement:
+      - number_compatible:
+        - givers
+        - give
+      role_bindings: {}
+    rule:
+      match:
+        sentence:
+        - opt:
+          - slot: period
+            cat: duration_measure
+            uncounted: true
+            qualified: true
+            qualifier_cat: relative_period_attribute
+            all_qualifiers: true
+        - slot: who
+          type: entity
+          common_noun_cat: collection_agent
+          referential: true
+          at_start: false
+        - slot: act
+          cat: past_service_predicate
+          finite_form: true
+        - slot: item
+          cat: service_object
+          counted: true
+          bare: true
+        - lit: and
+        - parameter: giver_phrase
+        - slot: give
+          cat: completed_receipt_transfer
+          finite_form: true
+        - slot: recipient
+          cat: singular_animate_object_pronoun
+        - slot: amount
+          cat: currency_unit
+          counted: true
+          bare: true
+        - slot: adjustment
+          cat: supplemental_receipt_noun
+          uncounted: true
+          bare: true
+        - lit: .
+          consume_skipped: true
+      emits:
+      - fact: batch_evidence
+        kind: account-work
+        entity: '{who}'
+        measure: '{item}'
+        value: item
+        position: '{item.span_start}'
+        verb: '{act}'
+        marker: '{period.optional}'
+        container: '{period.optional}'
+      - fact: batch_evidence
+        kind: account-product
+        entity: '{recipient}'
+        measure: '{amount}'
+        value:
+          parameter: count
+        position:
+          parameter: position
+        per_member: amount
+        marker: '{period.optional}'
+        verb: '{act}'
+        container: '{period.optional}'
+        attribute:
+          parameter: interpretation
+      consumes:
+      - act
+      - item
+      - give
+      - amount
+      - parameter: count_consumes
+      satisfies:
+        parameter: satisfaction
+      where:
+      - number_compatible:
+        - who
+        - act
+      - verb_roles_compatible:
+          verb: act
+          roles:
+            actor:
+            - who
+            theme:
+            - item
+          allow_proper_name:
+          - who
+          frame_categories:
+          - service_activity_verb
+          require_declared_frame: true
+      - parameter: giver_agreement
+      bindings:
+        parameter: role_bindings
+  supplemental-receipt:
+    parameters:
+      giver_phrase:
+      - slot: givers
+        cat: intentional_agent
+        counted: true
+        bare: true
+        at_start: true
+        value_min: 1
+      - slot: each
+        cat: postpositive_distributive_quantifier
+      count: givers
+      position: '{givers.span_start}'
+      interpretation: ''
+      count_consumes:
+      - givers
+      satisfaction:
+        give:
+        - subject
+        each:
+        - collection
+      giver_agreement:
+      - number_compatible:
+        - givers
+        - give
+      role_bindings: {}
+    rule:
+      match:
+        sentence:
+        - parameter: giver_phrase
+        - slot: give
+          cat: completed_receipt_transfer
+          finite_form: true
+        - slot: recipient
+          type: entity
+          common_noun_cat: collection_agent
+          referential: true
+        - slot: amount
+          cat: currency_unit
+          counted: true
+          bare: true
+        - slot: adjustment
+          cat: supplemental_receipt_noun
+          uncounted: true
+          bare: true
+        - lit: .
+          consume_skipped: true
+      emits:
+      - fact: batch_evidence
+        kind: account-product
+        entity: '{recipient}'
+        measure: '{amount}'
+        value:
+          parameter: count
+        position:
+          parameter: position
+        per_member: amount
+        attribute:
+          parameter: interpretation
+      consumes:
+      - give
+      - amount
+      - parameter: count_consumes
+      satisfies:
+        parameter: satisfaction
+      where:
+      - parameter: giver_agreement
+      bindings:
+        parameter: role_bindings
+variants:
+- id: arithmetic/service-unit-price
+  template: service-unit-quote
+- id: arithmetic/service-unit-price-for
+  template: service-unit-quote
+  arguments:
+    price_link:
+    - lit: for
+    price_consumes: []
+    price_satisfies:
+      act:
+      - subject
+    price_agreement: []
+- id: arithmetic/completed-service-with-supplement
+  template: work-and-receipt
+- id: arithmetic/completed-service-with-supplement-implicit-each
+  template: work-and-receipt
+  arguments:
+    giver_phrase:
+    - slot: givers
+      cat: service_client
+      counted: true
+      bare: true
+      value_min: 1
+    interpretation: implicit-per-client
+    satisfaction:
+      give:
+      - subject
+      act:
+      - subject
+- id: arithmetic/distributed-supplemental-receipt
+  template: supplemental-receipt
+- id: arithmetic/distributed-supplemental-receipt-implicit-each
+  template: supplemental-receipt
+  arguments:
+    giver_phrase:
+    - slot: givers
+      cat: service_client
+      counted: true
+      bare: true
+      at_start: true
+      value_min: 1
+    interpretation: implicit-per-client
+    satisfaction:
+      give:
+      - subject
+- id: arithmetic/partitive-distributed-supplemental-receipt
+  template: supplemental-receipt
+  arguments:
+    giver_phrase:
+    - slot: count
+      type: number
+      value_min: 1
+      at_start: true
+    - lit: of
+    - opt:
+      - slot: owner
+        cat: possessive_determiner
+    - slot: givers
+      cat: intentional_agent
+      uncounted: true
+      number: plural
+      referential: true
+    - slot: each
+      cat: postpositive_distributive_quantifier
+    count: count
+    position: '{count.span_start}'
+    count_consumes:
+    - count
+    satisfaction:
+      owner:
+      - refers
+      count:
+      - quantifies
+    role_bindings:
+      each:
+        collection: givers
+      give:
+        subject: givers

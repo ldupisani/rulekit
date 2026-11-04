@@ -537,6 +537,15 @@ def _nominal_pass(reading: Reading, reg: Registry) -> bool:
             and "value" not in a.features
             and a.features.get("label") is None
             and not (a.features.get("owner") and b.features.get("owner"))
+            # A counted monetary amount followed by an adjustment noun
+            # denotes its value, rather than a population of adjustments.
+            # Nominal currency descriptions of other objects still compose.
+            and not (
+                i > 0
+                and units[i - 1].features.get("value_kind") == "count"
+                and reg.word_in_category(a.features.get("lemma", ""), "currency_unit")
+                and reg.word_in_category(b.features.get("lemma", ""), "transaction_adjustment_noun")
+            )
             # A qualified relative period is a temporal adjunct, not the
             # lexical head of the preceding object: ``toy cars last month``
             # must remain [toy cars] [last month], never one quantity of

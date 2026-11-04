@@ -3,7 +3,7 @@
 from math import isfinite
 
 from . import ConsumerContext, consumer
-from ..answer import Answer
+from ..answer import Answer, AnswerAssumption
 from ..evaluate import evaluate
 from ..properties import Measurement, evaluate_property
 from ...data.properties import PropertyError
@@ -94,6 +94,7 @@ def measure_cost(ctx: ConsumerContext):
     # The old W-by-H site construction states one rectangular site's axes.
     # An unlabelled axis shares the other axis's unit, or the explicit quote
     # basis when neither axis states one. Explicit unit modifiers take priority.
+    inferred_axis_unit = len(units) == 2 and not all(units)
     if len(units) == 2 and ctx.match is not None:
         common = next((unit for unit in units if unit), ctx.query.get("rate_unit"))
         units = [unit or common for unit in units]
@@ -128,4 +129,14 @@ def measure_cost(ctx: ConsumerContext):
             ctx.log,
             source="measure-cost-tax",
         )
-    return Answer("number", total, f"measure-cost: {op} {result.value:g} x {rate:g}")
+    assumptions = []
+    if ctx.match is not None and len(dimensions) == 2 and "shape" not in ctx.match.slots:
+        assumptions.append(AnswerAssumption("rectangular-costing-site",
+            "The width-by-height site is rectangular.",
+            (ctx.question.sentence_index,) if ctx.question else ()))
+    if inferred_axis_unit:
+        assumptions.append(AnswerAssumption("shared-axis-length-unit",
+            "An unlabelled axis uses the other axis's stated length unit, or the quoted length unit.",
+            (ctx.question.sentence_index,) if ctx.question else ()))
+    return Answer("number", total, f"measure-cost: {op} {result.value:g} x {rate:g}",
+                  assumptions=tuple(assumptions))

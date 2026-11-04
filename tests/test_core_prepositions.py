@@ -68,7 +68,7 @@ REQUESTED_SINGLE_FORMS = {
     "within", "without", "worth",
 }
 MULTIWORD_PREPOSITIONS = {
-    "according to", "apart from", "because of", "but for", "due to", "instead of",
+    "according to", "apart from", "because of", "but for", "compared to", "compared with", "due to", "instead of",
     "next to", "out of", "short of",
 }
 DEFERRED_OVERLOADED_FORMS = {

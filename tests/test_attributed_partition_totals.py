@@ -234,6 +234,10 @@ def test_attribute_class_context_has_no_independent_semantic_filter(project) -> 
     assert token.type == "plural"
     assert token.cat is None
     assert context.target_identity_links["context_item"] == "item"
+    owner = next(token for token in context.before[0].sentence if token.slot == "context_owner")
+    target_owner = next(token for token in rule.match["sentence"] if token.slot == "who")
+    assert owner.type == target_owner.type == "entity"
+    assert owner.bare_reference_category == target_owner.bare_reference_category
 
 
 @pytest.mark.parametrize(

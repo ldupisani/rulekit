@@ -152,6 +152,7 @@ rules:
       slot: have
       cat: singular_present_possession
 - id: arithmetic/joint-holder-count-total
+  independent_clause: true
   match:
     sentence:
     - lit: the
@@ -255,6 +256,7 @@ rules:
       slot: have
       cat: singular_present_possession
 - id: arithmetic/fraction-of-personal-holding-spent
+  independent_clause: true
   match:
     sentence:
     - slot: who
@@ -375,6 +377,230 @@ rules:
     - quantifies
     n:
     - quantifies
+- id: arithmetic/named-holder-ratio-comparison
+  match:
+    sentence:
+    - lit: the
+      consume_skipped: true
+      at_start: true
+    - slot: ratio
+      cat: allocation_ratio_noun
+      uncounted: true
+      bare: true
+    - lit: of
+    - slot: item
+      cat: ownable_quantity_object
+      uncounted: true
+      number: plural
+      bare: true
+    - opt:
+      - lit: that
+    - slot: first
+      type: entity
+      common_noun_cat: quantity_holder
+      referential: true
+    - slot: have1
+      cat: plain_have_state
+      finite_form: true
+    - slot: link
+      cat: personal_ratio_preposition
+    - slot: second
+      type: entity
+      common_noun_cat: quantity_holder
+      referential: true
+    - slot: be
+      cat: copula
+    - slot: m
+      type: number
+      value_min: 0
+    - lit: ':'
+      consume_skipped: true
+    - slot: n
+      type: number
+      value_min: 0
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: allocation_ratio
+    resource: '{item}'
+    source: ''
+    first: '{first}'
+    second: '{second}'
+    numerator: m
+    denominator: n
+    group_size: '2'
+  consumes:
+  - m
+  - n
+  - have1
+  satisfies:
+    have1:
+    - subject
+    m:
+    - quantifies
+    n:
+    - quantifies
+    link:
+    - object
+  where:
+  - distinct:
+    - first
+    - second
+  - number_compatible:
+    - first
+    - have1
+  - number_compatible:
+    - ratio
+    - be
+  description: An ordered ratio compares the holdings of the first holder with the second, with the repeated possession clause elided.
+- id: arithmetic/joint-holder-elided-count
+  independent_clause: true
+  description: A plural holder group states its combined count. An omitted resource must be recovered from one preceding ordered ratio.
+  question_assumption: true
+  match:
+    sentence:
+    - slot: group
+      cat: discourse_subject_group_pronoun
+      at_start: true
+    - slot: have
+      cat: plain_have_state
+      finite_form: true
+    - slot: amount
+      type: number
+      standalone: true
+      integer: true
+      value_min: 0
+    - slot: total_prep
+      cat: group_total_preposition
+    - slot: total
+      cat: group_total_marker
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: ratio-pool
+    entity: ''
+    measure: ''
+    value: amount
+    position: '{amount.span_start}'
+    container: '{group.surface}'
+  consumes:
+  - have
+  - amount
+  satisfies:
+    group:
+    - refers
+    have:
+    - subject
+    amount:
+    - quantifies
+    total_prep:
+    - object
+  where:
+  - number_compatible:
+    - group
+    - have
+- id: arithmetic/joint-holder-resource-count
+  independent_clause: true
+  description: A plural holder group states its combined count. An omitted resource must be recovered from one preceding ordered ratio.
+  question_assumption: true
+  match:
+    sentence:
+    - slot: group
+      cat: discourse_subject_group_pronoun
+      at_start: true
+    - slot: have
+      cat: plain_have_state
+      finite_form: true
+    - slot: amount
+      cat: ownable_quantity_object
+      counted: true
+      bare: true
+      value_min: 0
+    - slot: total_prep
+      cat: group_total_preposition
+    - slot: total
+      cat: group_total_marker
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: ratio-pool
+    entity: ''
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+    container: '{group.surface}'
+  consumes:
+  - have
+  - amount
+  satisfies:
+    group:
+    - refers
+    have:
+    - subject
+    amount:
+    - quantifies
+    total_prep:
+    - object
+  where:
+  - number_compatible:
+    - group
+    - have
+- id: arithmetic/fraction-of-owned-holding-spent
+  independent_clause: true
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+      at_start: true
+    - slot: spend
+      cat: personal_holding_depletion
+      finite_form: true
+    - slot: fraction
+      type: fraction
+      fraction_within_whole: true
+    - lit: of
+    - opt:
+      - slot: owner
+        cat: possessive_determiner
+    - slot: item
+      cat: ownable_quantity_object
+      uncounted: true
+      possessed: true
+      number: plural
+    - opt:
+      - slot: prep
+        cat: spend_target_prep
+      - slot: purpose
+        cat: ownable_quantity_object
+        uncounted: true
+        referential: true
+        bare_reference_category: bare_pp_object
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: ratio-withdrawal
+    entity: '{who}'
+    measure: '{item}'
+    value: fraction
+    position: '{fraction.span_start}'
+    acquisition: '{item.owner}'
+  consumes:
+  - spend
+  - fraction
+  satisfies:
+    spend:
+    - subject
+  where:
+  - number_compatible:
+    - who
+    - spend
+  question_assumption: true
+  description: A fractional withdrawal explicitly names the same holder’s possessed resource.
 asks:
 - id: ask/named-share-remainder
   match:
@@ -470,6 +696,81 @@ asks:
     - subject
     with:
     - object
+    who:
+    - refers
+  where: []
+- id: ask/named-share-left-over
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: many
+    - opt:
+      - slot: unit
+        cat: ownable_quantity_object
+        uncounted: true
+        number: plural
+        bare: true
+    - slot: modal
+      cat: future_modal
+    - slot: who
+      type: entity
+      common_noun_cat: quantity_holder
+      referential: true
+    - slot: have
+      cat: plain_have_state
+      bare_form: true
+    - slot: left
+      cat: remnant_adj
+    - opt:
+      - slot: particle
+        cat: residual_completion_particle
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: ratio-holder-remainder
+    entity: '{who}'
+    measure: '{unit}'
+  satisfies:
+    have:
+    - subject
+    who:
+    - refers
+    particle:
+    - object
+  where: []
+- id: ask/named-share-still-available
+  match:
+    question:
+    - lit: how
+      at_start: true
+    - lit: many
+    - opt:
+      - slot: unit
+        cat: ownable_quantity_object
+        uncounted: true
+        number: plural
+        bare: true
+    - slot: modal
+      cat: ability_modal
+    - slot: who
+      type: entity
+      common_noun_cat: quantity_holder
+      referential: true
+    - slot: still
+      cat: capacity_residual_adverb
+    - slot: spend
+      cat: personal_holding_depletion
+      bare_form: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: ratio-holder-remainder
+    entity: '{who}'
+    measure: '{unit}'
+  satisfies:
+    spend:
+    - subject
     who:
     - refers
   where: []

@@ -28,6 +28,8 @@ def cmd_solve(args) -> int:
         a = result.answer
         print(f"{a.kind}: {a.value if a.value is not None else '(no result)'}")
         print(f"  reason: {a.reason}")
+        for assumption in a.assumptions:
+            print(f"  assumption: {assumption.description}")
         if args.trace:
             for event in result.trace():
                 if event["kind"] == "question-assumption":

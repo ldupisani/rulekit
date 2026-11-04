@@ -825,11 +825,18 @@ def _counted_qualified_fillers(
             )
             if not surface or not _is_atomic_noun_surface(surface, reg):
                 continue
+            symbols = (sorted(symbol for symbol, unit in reg.currencies.items() if unit == identity)
+                       if reg.word_in_category(qualifier, "supplemental_amount_attribute") else [])
+            # A symbolic amount keeps the currency identity separate from a
+            # following nominal target, including multiword denominations.
+            # Otherwise a qualified amount can read as a count of that target.
+            phrase = (f"{qualifier} {symbols[0]}{count}" if symbols else
+                      f"{qualifier} {count} {surface}"
+                      if reg.word_in_category(qualifier, "precardinal_attribute")
+                      else f"{count} {qualifier} {surface}")
             out.append(
                 _Filler(
-                    surface=(f"{qualifier} {count} {surface}"
-                             if reg.word_in_category(qualifier, "precardinal_attribute")
-                             else f"{count} {qualifier} {surface}"),
+                    surface=phrase,
                     identity=identity,
                     qualifier=qualifier,
                     number="singular" if count == 1 else "plural",
