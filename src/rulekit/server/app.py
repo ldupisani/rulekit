@@ -17,7 +17,7 @@ STATIC = Path(__file__).parent / "static"
 def create_app(project_root: Path) -> FastAPI:
     state = ServerState(project_root)
     app = FastAPI(title="rulekit designer", docs_url="/api/docs-ui")
-    app.include_router(build_router(state))
+    app.include_router(build_router(state, background_reads=True))
     app.include_router(build_help_router())
 
     @app.middleware("http")
@@ -41,4 +41,7 @@ def create_app(project_root: Path) -> FastAPI:
 def serve(project_root: Path, host: str = "127.0.0.1", port: int = 8321) -> None:
     import uvicorn
 
-    uvicorn.run(create_app(project_root), host=host, port=port, log_level="warning")
+    uvicorn.run(
+        create_app(project_root), host=host, port=port, log_level="warning",
+        timeout_graceful_shutdown=2,
+    )

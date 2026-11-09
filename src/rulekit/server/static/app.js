@@ -19,6 +19,12 @@ const state = {
   generationRules: [],
   generationAsks: [],
   generationExploration: { rules: [], fillers: [], summary: {} },
+  generationRevision: 0,
+  generationLoad: null,
+  generationReady: false,
+  generationPremisesReady: false,
+  generationAsksReady: false,
+  generationExplorationReady: false,
   candidate: null,
   askCandidate: null,
   askReviewVerdict: null,
@@ -35,6 +41,10 @@ const state = {
   reviewOffset: 0,
   reviewLimit: 100,
   reviewTotal: 0,
+  reviewRequest: 0,
+  reviewLoading: false,
+  reviewChecking: false,
+  reviewError: "",
   reviewSort: { key: "timestamp", dir: "desc" },
   reviewRetests: {},
   resolvingReview: null,
@@ -213,6 +223,15 @@ function renderProjectDocuments(p) {
 async function loadProject() {
   const p = await api("GET", "/api/project");
   renderProjectDocuments(p);
+  const safety = new Set(p.safety_rules || []);
+  const pending = (id) => ({ id, supported: null, blockers: [] });
+  if (!state.generationPremisesReady) {
+    state.generationPremiseRules = (p.rules || []).filter((id) => !safety.has(id)).map(pending);
+    state.generationSafetyRules = [...safety].map(pending);
+    $("generation-rule").disabled = false;
+    populateGenerationRuleSelect();
+  }
+  if (!state.generationAsksReady) populateGenerationAskSelect((p.asks || []).map(pending));
   const target = $("impact-target");
   target.replaceChildren();
   for (const t of p.impact_targets) {
@@ -224,9 +243,6 @@ async function loadProject() {
     $("spend-look").classList.toggle("hidden", target.value !== "test");
     $("spend-look-cb").checked = false;
   };
-  await loadGenerationRules();
-  await loadGenerationAsks();
-  await loadGenerationExploration();
 }
 
 async function openDoc(path, node) {
@@ -279,9 +295,18 @@ async function saveCurrentDoc({ rerunTrace = true } = {}) {
   for (const f of res.lint) {
     lintBox.append(el("div", `lint-item ${f.level}`, `[${f.code}] ${f.message}`));
   }
-  await loadGenerationRules();
-  await loadGenerationAsks();
-  await loadGenerationExploration();
+  state.generationRevision++;
+  state.generationLoad = null;
+  state.generationReady = false;
+  state.generationPremisesReady = false;
+  state.generationAsksReady = false;
+  state.generationExplorationReady = false;
+  for (const id of ["generation-rule", "generation-ask", "generation-filler"]) {
+    $(id).disabled = true;
+  }
+  updateGenerationRuleState();
+  updateAskGenerationState();
+  if (document.body.classList.contains("generate-mode")) loadGenerationPane();
   setStatus(`saved · ${res.lint.length} lint finding(s)`, "ok");
   if (rerunTrace && $("trace-input").value.trim()) runTrace();  // live re-read
   return res;
@@ -1226,7 +1251,7 @@ function setView(which) {
   document.body.classList.toggle("generate-mode", which === "generate");
   document.body.classList.toggle("reviews-mode", which === "reviews");
   if (which === "reviews") loadReviews();
-  if (which === "generate") loadGenerationExploration();
+  if (which === "generate") loadGenerationPane();
 }
 
 /* ---------- review history ----------
@@ -1240,19 +1265,54 @@ const VERDICTS = ["valid", "invalid", "unclear"];
 const VERDICT_RANK = { invalid: 0, unclear: 1, valid: 2 };
 
 async function loadReviews() {
+  const request = ++state.reviewRequest;
+  state.reviewLoading = true;
+  state.reviewChecking = false;
+  state.reviewError = "";
+  renderReviews();
   const query = new URLSearchParams({
     limit: String(state.reviewLimit),
     offset: String(state.reviewOffset),
     view: state.reviewView === "archive" ? "archive" : "attention",
   });
-  const [payload, evidence] = await Promise.all([
-    api("GET", `/api/generation/history?${query}`),
-    api("GET", "/api/generation/review-evidence"),
-  ]);
-  state.reviews = payload.reviews || [];
-  state.reviewTotal = payload.total || 0;
-  state.reviewEvidence = evidence.groups ? evidence : { summary: {}, targets: {}, groups: [] };
-  renderReviews();
+  function showPage(payload) {
+    if (payload.detail) throw new Error(payload.detail);
+    state.reviews = payload.reviews || [];
+    state.reviewTotal = payload.total || 0;
+  }
+  function finish(error = "") {
+    if (request !== state.reviewRequest) return;
+    state.reviewLoading = false;
+    state.reviewChecking = false;
+    state.reviewError = error;
+    if (!state.editingReview && !state.resolvingReview) renderReviews();
+  }
+  try {
+    if (state.reviewView === "validated") {
+      const evidence = await api("GET", "/api/generation/review-evidence");
+      if (request !== state.reviewRequest) return;
+      if (evidence.detail) throw new Error(evidence.detail);
+      state.reviewEvidence = evidence;
+      finish();
+      return;
+    }
+    const recorded = await api("GET", `/api/generation/recorded-history?${query}`);
+    if (request !== state.reviewRequest) return;
+    showPage(recorded);
+    state.reviewLoading = false;
+    state.reviewChecking = true;
+    renderReviews();
+    api("GET", `/api/generation/history?${query}`).then((verified) => {
+      if (request !== state.reviewRequest) return;
+      showPage(verified);
+      finish();
+    }).catch((error) => finish(`Current replay failed: ${error.message}`));
+  } catch (error) {
+    if (request !== state.reviewRequest) return;
+    state.reviews = [];
+    state.reviewTotal = 0;
+    finish(`Could not load reviews: ${error.message}`);
+  }
 }
 
 function setReviewView(view) {
@@ -1296,7 +1356,7 @@ function renderReviews() {
 
   const head = el("div", "rv-head");
   head.append(el("div", "pane-title", "Human review evidence"));
-  head.append(el("span", "dim",
+  if (state.reviewView === "validated" && !state.reviewLoading && !state.reviewError) head.append(el("span", "dim",
     `${premiseSummary.validated_group_count || 0}/${premiseSummary.group_count || 0} premise shapes · ` +
     `${summary.validated_group_count || 0}/${summary.group_count || 0} ask shapes validated · ` +
     `${(summary.regressed_group_count || 0) + (premiseSummary.regressed_group_count || 0)} coverage groups regressed · append-only`));
@@ -1314,6 +1374,13 @@ function renderReviews() {
   }
   box.append(views);
   box.append(el("p", "dim", "VALID is your verdict. Attention reasons track issues separately. Retest the saved example to record fresh evidence, or mark an issue resolved to close it."));
+  if (state.reviewLoading || state.reviewChecking || state.reviewError) {
+    const message = el("div", "rv-empty", state.reviewError ||
+      (state.reviewLoading ? "Loading reviews…" : "Showing recorded reviews while checking current rules…"));
+    message.setAttribute("role", "status");
+    box.append(message);
+    if (state.reviewLoading || state.reviewView === "validated") return;
+  }
 
   if (state.reviewView === "validated") {
     renderValidatedCoverage(box);
@@ -1321,7 +1388,7 @@ function renderReviews() {
   }
 
   if (!state.reviews.length) {
-    box.append(el("div", "rv-empty",
+    if (!state.reviewChecking && !state.reviewError) box.append(el("div", "rv-empty",
       state.reviewView === "attention"
         ? "No unresolved invalid, unclear, or regressed reviews need attention."
         : "No reviews recorded for this project yet."));
@@ -1458,15 +1525,12 @@ function reviewRow(r) {
     tag.title = r.resolution_note || "the reported issue has been reconciled";
     verdict.append(tag);
   }
-  const evidenceGroup = [
-    ...(state.reviewEvidence.groups || []),
-    ...(state.reviewEvidence.premise_groups || []),
-  ].find(
-    (group) => group.canonical_review_id === r.id,
+  const regression = (r.attention_reasons || []).find(
+    (reason) => reason.code === "regressed" && reason.source === "current_replay",
   );
-  if (evidenceGroup?.replay_status === "regressed") {
+  if (regression) {
     const tag = el("span", "rv-regressed", "regressed");
-    tag.title = evidenceGroup.replay_detail;
+    tag.title = regression.detail;
     verdict.append(tag);
   }
   row.append(verdict);
@@ -1916,19 +1980,48 @@ async function openReviewInReader(r) {
 
 /* ---------- generation and human review ---------- */
 
-async function loadGenerationRules() {
+function loadGenerationPane() {
+  if (state.generationReady || state.generationLoad) return;
+  const revision = state.generationRevision;
+  $("generation-coverage").textContent = "Checking premise rules and lexicon probes…";
+  $("generation-ask-coverage").textContent = "Checking ask rules…";
+  state.generationLoad = Promise.allSettled([
+    loadGenerationRules(revision), loadGenerationAsks(revision),
+    loadGenerationExploration(revision),
+  ]).then((results) => {
+    if (revision !== state.generationRevision) return;
+    state.generationLoad = null;
+    state.generationReady = results.every((item) => item.status === "fulfilled");
+    const [premises, asks, probes] = results;
+    if (premises.status === "rejected" || probes.status === "rejected") {
+      $("generation-coverage").textContent =
+        `Could not load premise rules or probes. Reopen Generate to retry. ${(premises.reason || probes.reason).message}`;
+    }
+    if (asks.status === "rejected") {
+      $("generation-ask-coverage").textContent =
+        `Could not load ask rules. Reopen Generate to retry. ${asks.reason.message}`;
+    }
+  });
+}
+
+async function loadGenerationRules(revision) {
   const payload = await api("GET", "/api/generation/rules");
+  if (revision !== state.generationRevision) return;
+  if (payload.detail) throw new Error(payload.detail);
   state.generationPremiseRules = payload.rules || [];
   state.generationSafetyRules = payload.safety_rules || [];
+  state.generationPremisesReady = true;
+  $("generation-rule").disabled = false;
   populateGenerationRuleSelect();
   $("generation-coverage").textContent =
     `${payload.supported}/${payload.total} premise rules currently realizable · ` +
-    `${payload.safety_total || 0} safety consumers available as negative boundaries`;
+    `${payload.safety_total || 0} safety consumers available as negative boundaries` +
+    (state.generationExplorationReady ? "" : " · checking lexicon probes…");
 }
 
 function populateGenerationRuleSelect() {
   const select = $("generation-rule");
-  const priorSelection = select.value;
+  const priorSelection = select.value || state.candidate?.target_rule;
   const safetyMode = selectedGenerationMode() === "safety_boundary";
   state.generationRules = safetyMode
     ? state.generationSafetyRules || []
@@ -1943,7 +2036,9 @@ function populateGenerationRuleSelect() {
   select.append(random);
   for (const rule of state.generationRules) {
     const kind = rule.generation === "contextual" ? " · contextual" : "";
-    const suffix = safetyMode
+    const suffix = rule.supported === null
+      ? " · checking availability"
+      : safetyMode
       ? " · negative boundary"
       : rule.supported
       ? kind
@@ -2141,10 +2236,21 @@ async function saveAskGenerationReview() {
   setStatus("ask scenario review recorded in project generation history", "ok");
 }
 
-async function loadGenerationAsks() {
-  const payload = await api("GET", "/api/generation/asks");
-  state.generationAsks = payload.asks || [];
+async function loadGenerationAsks(revision) {
+  const query = new URLSearchParams({ include_evidence: "false" });
+  const payload = await api("GET", "/api/generation/asks" + `?${query}`);
+  if (revision !== state.generationRevision) return;
+  if (payload.detail) throw new Error(payload.detail);
+  state.generationAsksReady = true;
+  populateGenerationAskSelect(payload.asks || []);
+  $("generation-ask-coverage").textContent =
+    `${payload.supported}/${payload.total} independent ask surfaces`;
+}
+
+function populateGenerationAskSelect(asks) {
+  state.generationAsks = asks;
   const select = $("generation-ask");
+  select.disabled = false;
   const priorSelection = select.value;
   select.replaceChildren();
   const random = el("option", "", "Random supported ask");
@@ -2153,7 +2259,9 @@ async function loadGenerationAsks() {
   select.append(random);
   for (const ask of state.generationAsks) {
     const consumer = ask.consumer ? ` · ${ask.consumer}` : "";
-    const suffix = ask.supported
+    const suffix = ask.supported === null
+      ? " · checking availability"
+      : ask.supported
       ? consumer
       : ` — blocked: ${ask.blockers.join("; ")}`;
     const option = el("option", "", ask.id + suffix);
@@ -2164,9 +2272,6 @@ async function loadGenerationAsks() {
   if (state.generationAsks.some((ask) => ask.id === priorSelection)) {
     select.value = priorSelection;
   }
-  $("generation-ask-coverage").textContent =
-    `${payload.supported}/${payload.total} independent ask surfaces · ` +
-    `${payload.evidence?.validated_group_count || 0} validated structural groups`;
   select.onchange = updateAskGenerationState;
   updateAskGenerationState();
 }
@@ -2184,14 +2289,14 @@ function generationAskSupportsSelectedMode(ask) {
 
 function updateAskGenerationState() {
   const ask = selectedGenerationAsk();
-  const modeSupported = generationAskSupportsSelectedMode(ask);
+  const modeSupported = !state.generationAsksReady || generationAskSupportsSelectedMode(ask);
   const blocker = $("generation-ask-blocker");
   blocker.classList.toggle("hidden", !ask || modeSupported);
   blocker.textContent = ask && !modeSupported
     ? `Unavailable in ${$("generation-ask-mode").selectedOptions[0].text}: ` +
       ask.blockers.join(" · ")
     : "";
-  $("generation-ask-next").disabled = Boolean(ask && !modeSupported);
+  $("generation-ask-next").disabled = !state.generationAsksReady || Boolean(ask && !modeSupported);
 }
 
 function renderAskGenerationCandidate(candidate) {
@@ -2484,13 +2589,20 @@ function renderGenerationFilters(payload) {
   }
 }
 
-async function loadGenerationExploration() {
-  const payload = await api("GET", "/api/generation/exploration");
+async function loadGenerationExploration(revision = state.generationRevision) {
+  const payload = await api("GET", "/api/generation/exploration?view=workbench");
+  if (revision !== state.generationRevision) return;
   if (payload.detail) {
+    if (!state.generationExplorationReady) throw new Error(payload.detail);
     setStatus(payload.detail, "err");
     return;
   }
+  for (const filler of payload.fillers) {
+    filler.compatible_rules = filler.compatible_rule_indices.map((index) => payload.rules[index].id);
+    delete filler.compatible_rule_indices;
+  }
   state.generationExploration = payload;
+  state.generationExplorationReady = true;
   renderGenerationFilters(payload);
   const select = $("generation-filler");
   const priorSelection = select.value;
@@ -2525,11 +2637,11 @@ async function loadGenerationExploration() {
 
   const ruleCounts = payload.summary?.rules || {};
   const fillerCounts = payload.summary?.fillers || {};
-  const premiseRules = state.generationPremiseRules || state.generationRules;
+  const premiseRules = (payload.rules || []).filter((rule) => rule.generation !== "safety");
   const supported = premiseRules.filter((rule) => rule.supported).length;
   $("generation-coverage").textContent =
     `${supported}/${premiseRules.length} premise rules realizable · ` +
-    `${(state.generationSafetyRules || []).length} safety boundaries · ` +
+    `${(payload.rules || []).length - premiseRules.length} safety boundaries · ` +
     `${ruleCounts.never_generated || 0} untouched rules · ` +
     `${ruleCounts.attempted_failed || 0} attempted, not realized · ` +
     `${ruleCounts.generated_unreviewed || 0} generated, unreviewed · ` +
@@ -2615,7 +2727,7 @@ function updateGenerationRuleState() {
   const ruleStatus = (state.generationExploration.rules || [])
     .find((item) => item.id === rule?.id);
   const blocker = $("generation-blocker");
-  const blocked = rule && !rule.supported && !(
+  const blocked = rule && rule.supported === false && !(
     safetyMode && rule.generation === "safety"
   );
   const incompatible = Boolean(
@@ -2645,15 +2757,16 @@ function updateGenerationRuleState() {
           ? `${filler.identity} cannot fill any rule left by the selected filters`
       : "";
   $("generation-next").disabled = Boolean(
+    !state.generationPremisesReady || (strict && !state.generationExplorationReady) ||
     blocked || incompatible || filteredOut || fillerFilteredOut ||
     (strict && !rule && !eligibleRules.length) ||
     (safetyMode && !rule && !state.generationRules.length),
   );
-  $("generation-filler").disabled = !strict;
-  $("generation-objective").disabled = !strict;
+  $("generation-filler").disabled = !strict || !state.generationExplorationReady;
+  $("generation-objective").disabled = !strict || !state.generationExplorationReady;
   document.querySelectorAll(
     "#generation-filter-groups input[data-filter]",
-  ).forEach((node) => { node.disabled = !strict; });
+  ).forEach((node) => { node.disabled = !strict || !state.generationExplorationReady; });
   renderGenerationExplorationSelection(rule, filler);
 }
 

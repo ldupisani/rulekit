@@ -151,6 +151,11 @@ def test_measured_relative_quotes(reg):
     number(reg, order().replace("$4 per kilogram", "$0.004 per gram"), 20)
 
 
+@pytest.mark.parametrize("factor,total", [("half", 10), ("75%", 11), ("3/2", 14)])
+def test_measured_quotes_accept_fractional_ratios(reg, factor, total):
+    number(reg, order().replace("three times", factor), total)
+
+
 @pytest.mark.parametrize(
     "old,new",
     [

@@ -26,6 +26,9 @@ categories:
     parent: adjective
   allocation_amount_noun:
     parent: noun
+  nominal_count_comparison_head:
+    parent: noun
+    includes: [allocation_amount_noun]
   personal_ratio_preposition:
     parent: preposition
   personal_holding_depletion:
@@ -48,6 +51,7 @@ members:
   - certain
   allocation_amount_noun:
   - amount
+  nominal_count_comparison_head: [number]
   personal_ratio_preposition:
   - to
   - compared to

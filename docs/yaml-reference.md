@@ -486,8 +486,10 @@ Use one token form: `lit`, a named `slot`, or an `opt` sequence.
 `type` or a category `cat`. Optional groups contain ordinary tokens.
 Tokens match analyzed/condensed units, not raw character spans.
 
-Common built-in types include `number, ordinal, fraction, multiplier, name, entity,
+Common built-in types include `number, ordinal, fraction, multiplier, ratio, name, entity,
 noun, plural, counted, possessed, qualified, verb, auxiliary, pronoun`.
+`ratio` accepts complete fractions and multipliers in a construction that identifies
+the quantity to scale. The rule supplies the reference and any value bounds.
 `ordinal` matches a productive numeric ordinal, separately from a cardinal
 count. Lexical ordinals remain pack-declared noun modifiers. Numeric ordinal
 slots currently have no Designer generation realizer.
@@ -590,6 +592,9 @@ String templates such as `'{who}'`, `'{item.qualified}'`, or
 `'{who.owner}'` render bound identities/attributes. Numeric fields such as
 `value: item` read a slot value; arithmetic expressions use the restricted
 evaluator, not Python execution. `sign(dir)` reads category polarity.
+`attr(slot, name)` can supply a whole numeric field from the bound lemma's
+declared scalar attribute. If the slot or attribute is missing, the rule
+emits no facts.
 Not every unit property is a supported template attribute.
 
 `'{people.members}'` emits a tuple of canonical heads from a span with

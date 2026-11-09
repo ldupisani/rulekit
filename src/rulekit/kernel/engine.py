@@ -193,11 +193,17 @@ def _is_complete_declared_ask(question: str, reg: Registry) -> bool:
 
 
 def _leading_assumption_marker(text: str, reg: Registry | None) -> str | None:
-    """Literal conditional or a pack-declared participial introducer."""
+    """Literal conditional or a pack-declared question assumption phrase."""
     first = text.split(maxsplit=1)[0].casefold() if text.split() else ""
-    if first == "if" or reg is not None and reg.word_in_category(
-            first, "question_assumption_introducer"):
+    if first == "if":
         return first
+    if reg is not None:
+        markers = reg.cat_members_deep("question_assumption_introducer")
+        for marker in sorted(markers, key=lambda word: (-len(word), word)):
+            pattern = r"\s+".join(re.escape(word) for word in marker.split())
+            match = re.match(pattern + r"(?=\s|$)", text, re.IGNORECASE)
+            if match is not None:
+                return match.group()
     return None
 
 

@@ -19,6 +19,7 @@ _TYPE_EXAMPLES = {
     "fraction": "half",
     "multiplier": "twice",
     "nonunit_multiplier": "twice",
+    "ratio": "half",
     "name": "Alex",
     "noun": "apple",
     "plural": "apples",
@@ -124,6 +125,7 @@ def _tokens_intersect(a: MatchToken, b: MatchToken, reg: Registry) -> bool:
                 "fraction",
                 "multiplier",
                 "nonunit_multiplier",
+                "ratio",
             }:
                 return False  # a fixed literal is never a value slot
             senses = _TYPE_SENSES.get(slot.type)
@@ -161,7 +163,10 @@ def _tokens_intersect(a: MatchToken, b: MatchToken, reg: Registry) -> bool:
         return bool(set(reg.cat_members_deep(a.cat)) & set(reg.cat_members_deep(b.cat)))
     if ta == "word" or tb == "word":
         return True
-    return base.get(ta, ta) == base.get(tb, tb)
+    ta, tb = base.get(ta, ta), base.get(tb, tb)
+    if ta == "ratio" or tb == "ratio":
+        return {ta, tb} <= {"ratio", "fraction", "multiplier"}
+    return ta == tb
 
 
 def _witness_word(token: MatchToken, reg: Registry) -> str:
@@ -255,6 +260,8 @@ def rules_overlap(a: PatternRule, b: PatternRule, reg: Registry) -> str | None:
             return None
         # the witness uses the MORE specific side (lit > cat > type)
         pick = ta if (ta.lit is not None or (ta.cat and not tb.lit)) else tb
+        if tb.type == "ratio" and ta.type in {"fraction", "multiplier", "nonunit_multiplier"}:
+            pick = ta
         words.append(_witness_word(pick, reg))
     return " ".join(words)
 

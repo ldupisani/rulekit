@@ -5237,6 +5237,7 @@ rules:
 
   - id: arithmetic/stated-count-holding
     phase: read
+    question_assumption: true
     description: >
       A direct counted holding such as "Aven has 12 apples". This explicit
       target lets the Designer create exact multi-holder evidence without
@@ -7636,6 +7637,31 @@ asks:
            earning_quantity_verb, enrollment_quantity_verb,
            find_quantity_verb, production_quantity_verb,
            teaching_quantity_verb, initiation_quantity_verb, transfer_out]
+
+  - id: ask/calculate-entity-count
+    match:
+      question:
+        - {slot: command, cat: compute_verb, at_start: true}
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: plural}
+        - {slot: who, type: name}
+        - {slot: verb, cat: quantity_comparison_verb, finite_form: true}
+        - {lit: ['.', '?'], consume_skipped: true}
+    where:
+      - number_compatible: [who, verb]
+      - verb_roles_compatible:
+          verb: verb
+          roles: {actor: [who], theme: [item]}
+          frame_categories: [ownership_state, service_activity_verb]
+          allow_proper_name: [who]
+    resolves:
+      consumer: single-entity
+      entity: "{who}"
+      measure: "{item}"
+      verb: "{verb}"
+      measure_qualifier: "{item.qualifier}"
+      sum_measure_variants: "true"
 
   - id: ask/how-many-components-entity-period
     # A category-scoped quantity-activity ask for a stated discourse interval.

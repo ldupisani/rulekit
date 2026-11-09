@@ -3445,6 +3445,7 @@ entries:
     verb:
       lemma: give
       past_participle: true
+  given that: {senses: [verb]}
   gives: {senses: [verb], number: singular, verb: {lemma: give, number: singular}}
   giving:
     senses:
@@ -3646,9 +3647,8 @@ entries:
     senses:
     - noun
     plural: halls
-  halved:
-    senses:
-    - verb
+  halve: {senses: [verb]}
+  halved: {senses: [verb], verb: {lemma: halve}}
   halves:
     senses:
     - noun
@@ -5104,6 +5104,8 @@ entries:
   multiples:
     senses:
     - verb
+  multiplied: {senses: [verb], verb: {lemma: multiply}}
+  multiplies: {senses: [verb], verb: {lemma: multiply, number: singular}}
   multiply:
     senses:
     - verb
@@ -6272,6 +6274,9 @@ entries:
   quadruple:
     senses:
     - multiplier
+    - verb
+  quadrupled: {senses: [verb], verb: {lemma: quadruple}}
+  quadruples: {senses: [verb], verb: {lemma: quadruple, number: singular}}
   quantity:
     senses:
     - noun
@@ -6976,6 +6981,7 @@ entries:
   saying: {senses: [verb], verb: {lemma: say}}
   says: {senses: [verb], number: singular, verb: {lemma: say}}
   scale: {senses: [noun], plural: scales}
+  scaled: {senses: [verb], verb: {lemma: scale}}
   scanner:
     senses:
     - noun

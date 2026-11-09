@@ -110,12 +110,14 @@ categories:
         result_dimension: {length: 2}
   quantity_extent_modifier: {parent: noun}
   quantity_extent_adjective: {parent: adjective}
+  linear_axis_adjective:
+    parent: adjective
   length_dimension_adjective:
-    parent: adjective
+    parent: linear_axis_adjective
   width_dimension_adjective:
-    parent: adjective
+    parent: linear_axis_adjective
   height_dimension_adjective:
-    parent: adjective
+    parent: linear_axis_adjective
 members:
   rectangular_costing_shape: [rectangle]
   priced_geometry_quantity: [area, perimeter]

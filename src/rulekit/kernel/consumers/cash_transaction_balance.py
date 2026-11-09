@@ -6,7 +6,7 @@ opening balance is invented, and account-balance questions use other models.
 
 from collections import Counter, defaultdict
 from . import consumer
-from ..answer import Answer
+from ..answer import Answer, AnswerAssumption
 from ..evaluate import evaluate
 from ..model import BatchEvidence, EventTime
 from ..numeric_evidence import audit_numeric_mentions
@@ -15,7 +15,12 @@ from ..reference_identity import reference_from_unit
 from ..source_coverage import uncovered_document_units
 
 
-@consumer("cash-transaction-balance")
+@consumer(
+    "cash-transaction-balance",
+    applicable=lambda store: any(
+        row.kind == "cash-deposit" for row in store.by_kind(BatchEvidence)
+    ),
+)
 def consume(ctx):
     def decline(reason):
         return Answer("decline", None, reason)
@@ -56,6 +61,7 @@ def consume(ctx):
     expected = defaultdict(Counter)
     amount = 0.0
     used = set()
+    implicit_sources = []
     for row in rows:
         if row.value < 0:
             return decline("cash operands must be nonnegative")
@@ -99,12 +105,47 @@ def consume(ctx):
         if row.kind == "cash-deposit":
             # The owner form must resolve to this account's participant.
             if (
-                row.acquisition_ref != who
-                or row.container_ref is None
+                row.container_ref is None
                 or row.container_ref.owner != who
                 or not row.container_ref.resolved
             ):
                 return decline("a deposit must identify its destination account owner")
+            daily = False
+            source = row.acquisition_ref
+            if row.attribute == "owned":
+                if (
+                    source is None
+                    or not source.resolved
+                    or source.owner != who
+                    or source.label
+                    or len(source.qualifiers) > 1
+                    or any(
+                        not ctx.reg.word_in_category(q, "daily_frequency_attribute")
+                        for q in source.qualifiers
+                    )
+                ):
+                    return decline(
+                        "the deposit source must be the seller’s stated proceeds"
+                    )
+                daily = bool(source.qualifiers)
+            elif source != who:
+                return decline(
+                    "the deposit must belong to the cash account participant"
+                )
+            prior_sales = [
+                s for s in sales if s.provenance.sentence < row.provenance.sentence
+            ]
+            if (
+                not prior_sales
+                or (daily and len({s.marker for s in prior_sales}) != 1)
+                or (
+                    row.marker
+                    and any(s.marker and s.marker != row.marker for s in prior_sales)
+                )
+            ):
+                return decline("the deposit must apply to the same preceding proceeds")
+            if row.attribute == "implicit":
+                implicit_sources.append(row.provenance.sentence)
             converted = -converted
         amount = evaluate(
             "cash + change",
@@ -132,4 +173,15 @@ def consume(ctx):
         "number",
         amount,
         "priced sales plus the explicit receipt, less the cash deposited; the deposit remains an owned asset",
+        assumptions=(
+            (
+                AnswerAssumption(
+                    "deposit-from-stated-proceeds",
+                    "The deposit with no stated source uses the cash from the preceding sales and receipts.",
+                    tuple(sorted(set(implicit_sources))),
+                ),
+            )
+            if implicit_sources
+            else ()
+        ),
     )

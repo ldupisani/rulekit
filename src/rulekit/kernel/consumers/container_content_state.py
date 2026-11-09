@@ -3,7 +3,15 @@
 from collections import Counter, defaultdict
 from math import isfinite
 from . import consumer
-from ..answer import Answer, AnswerAssumption, ClarificationOption, ClarificationRequest, SemanticNode
+from ..affine_graph import AffineError, dependency_graph
+from ..answer import (
+    Answer,
+    AnswerAssumption,
+    ClarificationOption,
+    ClarificationRequest,
+    SemanticNode,
+)
+from ..dimensions import conversion_factor
 from ..evaluate import evaluate
 from ..model import BatchEvidence, MeasuredContentChange, ContainerContent
 from ..numeric_evidence import audit_numeric_mentions
@@ -11,6 +19,23 @@ from ..properties import Measurement, evaluate_property
 from ...data.properties import PropertyError
 from ..reference_identity import reference_from_unit, constrains
 from ..source_coverage import uncovered_document_units
+
+
+AXIS_CATEGORIES = {
+    "length": "length_dimension_adjective",
+    "width": "width_dimension_adjective",
+    "height": "height_dimension_adjective",
+}
+
+
+def _axis(reg, adjective):
+    if adjective in AXIS_CATEGORIES:
+        return adjective
+    return next(
+        (axis for axis, category in AXIS_CATEGORIES.items()
+         if reg.word_in_category(adjective, category)),
+        None,
+    )
 
 
 @consumer("container-content-state")
@@ -35,12 +60,15 @@ def consume(ctx):
     contexts = [r for r in rows if r.kind == "content-container-context"]
     openings = [r for r in rows if r.kind == "content-opening-fraction"]
     dimensions = [r for r in rows if r.kind == "content-container-dimension"]
+    axes = {_axis(ctx.reg, r.marker): r for r in dimensions}
+    transitions = [r for r in rows if r.kind == "content-container-transition"]
     if (
-        len(contexts) != 1
+        len(contexts) > 1
         or len(openings) != 1
         or len(dimensions) != 3
         or not changes
-        or len(rows) != 5
+        or len(rows)
+        != len(contexts) + len(openings) + len(dimensions) + len(transitions)
         or len(ctx.store.facts) != len(rows) + len(changes) + len(mirrors)
         or ctx.store.collisions
         or ctx.store.quarantined
@@ -48,25 +76,39 @@ def consume(ctx):
         return decline(
             "one complete measured container, fill and change stream is required"
         )
-    context, opening = contexts[0], openings[0]
+    opening = openings[0]
+    context = contexts[0] if contexts else None
     container = reference_from_unit(ctx.match.slots["container"])
+    identity = opening.container_ref or (context.container_ref if context else None)
     if (
-        not constrains(container, context.container_ref)
-        or opening.entity_ref != context.entity_ref
+        identity is None
+        or not constrains(container, identity)
+        or context is not None
+        and (
+            opening.entity_ref != context.entity_ref
+            or not constrains(context.container_ref, identity)
+            or opening.provenance.sentence <= context.provenance.sentence
+        )
+        or any(
+            r.entity_ref != opening.entity_ref
+            or not opening.provenance.sentence
+            < r.provenance.sentence
+            < min(c.provenance.sentence for c in changes)
+            for r in transitions
+        )
         or any(
             not constrains(container, r.container_ref)
             or not (
-                constrains(context.container_ref, r.container_ref)
-                or constrains(r.container_ref, context.container_ref)
+                constrains(identity, r.container_ref)
+                or constrains(r.container_ref, identity)
             )
             for r in dimensions
         )
-        or len({r.marker for r in dimensions}) != 3
+        or set(axes) != AXIS_CATEGORIES.keys()
         or any(
             c.container != container.head or c.content != ctx.query["content"]
             for c in changes
         )
-        or opening.provenance.sentence <= context.provenance.sentence
         or any(c.provenance.sentence <= opening.provenance.sentence for c in changes)
         or any(not isfinite(r.value) or r.value <= 0 for r in dimensions)
         or not 0 <= opening.value <= 1
@@ -75,7 +117,7 @@ def consume(ctx):
             "all dimensions and ordered changes must belong to the same container and contents"
         )
     container_refs = [
-        context.container_ref,
+        identity,
         container,
         *(r.container_ref for r in dimensions),
     ]
@@ -92,12 +134,18 @@ def consume(ctx):
                 u.features.get("lemma", ""), "volumetric_container"
             )
         ]
+        if not targets:
+            targets = [
+                ref
+                for u in reading.units
+                if u.sense() == "pronoun"
+                and (ref := reference_from_unit(u)).head == change.container
+            ]
         if (
             len(targets) != 1
             or not targets[0].resolved
             or not (
-                constrains(context.container_ref, targets[0])
-                or constrains(targets[0], context.container_ref)
+                constrains(identity, targets[0]) or constrains(targets[0], identity)
             )
         ):
             return decline("each content change needs the same identified container")
@@ -106,7 +154,7 @@ def consume(ctx):
     for row in dimensions:
         expected[row.provenance.sentence][row.value] += 1
     for change in changes:
-        if change.operation == "remove_fraction":
+        if change.operation == "remove_fraction" or change.explicit_factor:
             expected[change.provenance.sentence][change.value] += 1
     if uncovered_document_units(
         ctx.premises, ctx.question, ctx.match.consumed
@@ -142,16 +190,44 @@ def consume(ctx):
                 ),
             ),
         )
+    measurements = {
+        axis: Measurement(row.value, row.measure)
+        for axis, row in axes.items()
+        if row.measure
+    }
+    relative = [
+        (axis, _axis(ctx.reg, row.attribute), row.value, 0)
+        for axis, row in axes.items()
+        if not row.measure
+    ]
     try:
+        if relative:
+            unit = ctx.reg.formula_units.get("length")
+            if unit is None:
+                return decline("relative dimensions need a declared length unit")
+            category = ctx.reg.formula_unit_categories.get("length")
+            anchors = []
+            for axis, measurement in measurements.items():
+                factor = conversion_factor(ctx.reg, measurement.unit, unit, category=category)
+                if factor is None:
+                    return decline("relative dimensions need compatible length units")
+                anchors.append((axis, evaluate(
+                    "value * factor",
+                    {"value": measurement.value, "factor": factor},
+                    ctx.log,
+                    source="relative-dimension-unit-conversion",
+                )))
+            graph = dependency_graph(anchors, relative, ctx.log)
+            measurements = {axis: Measurement(graph.value(axis), unit) for axis in axes}
         capacity = evaluate_property(
             ctx.reg,
             dimensions[0].acquisition,
             "volume",
-            {r.marker: Measurement(r.value, r.measure) for r in dimensions},
+            measurements,
             ctx.log,
             output_unit=ctx.query["unit"],
         ).value
-    except PropertyError as error:
+    except (AffineError, PropertyError) as error:
         return decline(str(error))
     amount = evaluate(
         "capacity * share",
@@ -188,8 +264,19 @@ def consume(ctx):
     reason = "calculate the stated shape’s capacity, fill the stated fraction, then apply each change to current contents"
     if not explicit:
         reason += "; interpreting the complete length, width and height as a rectangular prism"
-    return Answer("number", amount, reason, assumptions=() if explicit or ctx.interpretation == "rectangular-container" else (
-        AnswerAssumption("rectangular-container",
-            "The stated length, width and height describe a rectangular prism.",
-            tuple(sorted({r.provenance.sentence for r in dimensions}))),
-    ))
+    return Answer(
+        "number",
+        amount,
+        reason,
+        assumptions=(
+            ()
+            if explicit or ctx.interpretation == "rectangular-container"
+            else (
+                AnswerAssumption(
+                    "rectangular-container",
+                    "The stated length, width and height describe a rectangular prism.",
+                    tuple(sorted({r.provenance.sentence for r in dimensions})),
+                ),
+            )
+        ),
+    )

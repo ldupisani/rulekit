@@ -1,0 +1,29 @@
+format: rulekit/categories@1
+categories:
+  quantity_scaling_verb:
+    parent: verb
+  intrinsic_quantity_scaling_verb:
+    parent: quantity_scaling_verb
+    notes: The verb lemma supplies the factor through its scaling_factor attribute.
+  explicit_quantity_scaling_verb:
+    parent: quantity_scaling_verb
+    notes: The construction supplies a separate factor.
+members:
+  intrinsic_quantity_scaling_verb:
+  - double
+  - doubled
+  - doubles
+  - halve
+  - halved
+  - quadruple
+  - quadrupled
+  - quadruples
+  - triple
+  - tripled
+  - triples
+  explicit_quantity_scaling_verb: [multiplied, multiplies, multiply, scaled]
+attrs:
+  double: {scaling_factor: 2}
+  halve: {scaling_factor: 0.5}
+  quadruple: {scaling_factor: 4}
+  triple: {scaling_factor: 3}

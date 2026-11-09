@@ -72,7 +72,7 @@
       <div class="generation-controls">
         <div>
           <div id="generation-rule-title" class="pane-title">Target premise rule</div>
-          <select id="generation-rule"></select>
+          <select id="generation-rule" disabled><option value="">Loading premise rules…</option></select>
           <div id="generation-blocker" class="generation-blocker hidden"></div>
         </div>
         <label>
@@ -86,13 +86,13 @@
         </label>
         <div>
           <div class="pane-title">Lexicon probe</div>
-          <select id="generation-filler"></select>
+          <select id="generation-filler" disabled><option value="">Loading lexicon probes…</option></select>
         </div>
         <label>
           <span class="pane-title">Seed</span>
           <input id="generation-seed" type="number" step="1">
         </label>
-        <button id="generation-next" class="primary">Generate next</button>
+        <button id="generation-next" class="primary" disabled>Generate next</button>
         <div id="generation-coverage" class="dim"></div>
         <details id="generation-structure-controls" class="generation-structure-controls">
           <summary>Structural coverage &amp; filters</summary>
@@ -132,7 +132,7 @@
         <div class="ask-generation-controls">
           <div>
             <div class="pane-title">Target ask rule</div>
-            <select id="generation-ask"></select>
+            <select id="generation-ask" disabled><option value="">Loading ask rules…</option></select>
             <div id="generation-ask-blocker"
                  class="generation-blocker hidden"></div>
           </div>
@@ -149,7 +149,7 @@
             <span class="pane-title">Seed</span>
             <input id="generation-ask-seed" type="number" step="1">
           </label>
-          <button id="generation-ask-next" class="primary">
+          <button id="generation-ask-next" class="primary" disabled>
             Generate ask
           </button>
         </div>

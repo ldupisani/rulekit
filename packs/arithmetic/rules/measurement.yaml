@@ -50,7 +50,7 @@ templates:
   multiply-total:
     parameters:
       effect:
-        - {slot: factor, type: multiplier}
+        - {slot: factor, cat: intrinsic_quantity_scaling_verb, bare_form: true}
         - {slot: dimension, cat: mass_dimension_noun, referential: true}
     rule:
       phase: read
@@ -86,14 +86,13 @@ templates:
               - {slot: repetition, cat: event_repetition_adverb}
       where:
         - {number_compatible: [actor, verb]}
-        - bound_requires_category: {bound: factor, slot: factor, cat: predeterminer_multiplier}
       consumes: [factor]
       emits:
         - fact: measured_content_change
           container: $active:measured-container$
           content: '{content}'
           operation: multiply_total
-          value: factor
+          value: attr(factor, scaling_factor)
           dimension: '{dimension}'
 
 variants:
@@ -141,7 +140,7 @@ variants:
         - {slot: cause, cat: causative_result_verb, bare_form: true}
         - {slot: dimension, cat: mass_dimension_noun, referential: true}
         - {lit: to}
-        - {slot: factor, type: multiplier}
+        - {slot: factor, cat: intrinsic_quantity_scaling_verb, bare_form: true}
 
 rules:
 

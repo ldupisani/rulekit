@@ -180,5 +180,6 @@ members:
   - today
   - yesterday
 attribute_compatibility:
+  daily_frequency_attribute: [cash_proceeds_noun]
   relative_period_attribute:
   - duration_measure

@@ -87,10 +87,15 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
         'arithmetic/stated-recipient-transfer': ((2, 0), 'then', ((2,),)),
 'arithmetic/pooled-stock-shared-within-group': ((8,), 'equally', ()),
                            'arithmetic/sequenced-measured-age-comparison': ((0,), 'sequence', ()),
-                           'arithmetic/container-content-2-fold-change': ((0, 0), 'sequence', ((0,),)),
-                           'arithmetic/container-content-3-fold-change': ((0, 0), 'sequence', ((0,),)),
+                           'arithmetic/container-content-scale': ((0, 0), 'sequence', ((0,),)),
+                           'arithmetic/container-content-scale-by-number': ((0, 0), 'sequence', ((0,),)),
+                           'arithmetic/container-content-scale-by-fraction': ((0, 0), 'sequence', ((0,),)),
                            'arithmetic/deposit-sale-proceeds': ((0, 0), 'sequence', ((0,),)),
+                           'arithmetic/deposit-owned-proceeds': ((0, 0), 'sequence', ((0,),)),
+                           'arithmetic/deposit-without-stated-source': ((0, 0), 'sequence', ((0,),)),
                            'arithmetic/fractional-container-fill-with-departure': ((3,), 'fraction', ()),
+                           'arithmetic/fractional-fill-of-named-container': ((4,), 'fraction', ()),
+                           'arithmetic/temporary-departure-for-response': ((1,), 'sequence', ()),
                            'arithmetic/population-rate-assessment-finite': ((3, 0), 'frequency', ((3,),)),
                            'arithmetic/population-rate-assessment-progressive': ((4, 0), 'frequency', ((4,),)),
                            'arithmetic/population-rate-inquiry': ((6, 0), 'frequency', ((6,),)),
@@ -130,6 +135,7 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
                            'arithmetic/equal-resource-transfer-volume-passive': ((5,), 'equal', ()),
                            'arithmetic/explicit-equal-bill-division': ((4,), 'equal', ()),
                            'arithmetic/fraction-as-many': ((1, 0), 'addition', ((1,),)),
+                           'arithmetic/fraction-of-comparative-count': ((1, 0), 'addition', ((1,),)),
                            'arithmetic/fraction-as-many-qualified-measures': ((1, 0), 'addition', ((1,),)),
                            'arithmetic/goal-progress-fraction-needed': ((2, 0), 'focus', ((2,),)),
                            'arithmetic/inactive-period-saving-plan': ((12, 0), 'up', ((12,),)),
@@ -267,8 +273,8 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
     project = load_project(CURATED)
     availability = list_rule_availability(project)
 
-    assert len(availability) == 915
-    assert sum(item.supported for item in availability) == 814
+    assert len(availability) == 934
+    assert sum(item.supported for item in availability) == 833
     assert sum(not item.supported for item in availability) == 101
     assert all(
         not item.blockers

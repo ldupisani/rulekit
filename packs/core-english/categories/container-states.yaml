@@ -6,13 +6,13 @@ categories:
     parent: verb
   fractional_fill_adverb:
     parent: adverb
+  container_disturbance_action:
+    parent: verb
   container_overturn_verb:
-    parent: verb
+    parent: container_disturbance_action
+  overturn_result_particle:
+    parent: preposition
   content_spill_verb:
-    parent: verb
-  stock_doubling_verb:
-    parent: verb
-  stock_tripling_verb:
     parent: verb
 members:
   volumetric_container:
@@ -28,19 +28,19 @@ members:
   - filling
   fractional_fill_adverb:
   - halfway
+  container_disturbance_action:
+  - drop
+  - drops
+  - dropped
+  - hit
+  - hits
   container_overturn_verb:
   - knock
   - knocks
   - knocked
+  overturn_result_particle:
+  - over
   content_spill_verb:
   - spill
   - spills
   - spilled
-  stock_doubling_verb:
-  - double
-  - doubles
-  - doubled
-  stock_tripling_verb:
-  - triple
-  - triples
-  - tripled

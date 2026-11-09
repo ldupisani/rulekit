@@ -41,6 +41,14 @@ def test_scoped_rates_and_relative_extents(reg, before, after, expected):
     number(reg, wages().replace(before, after), expected)
 
 
+@pytest.mark.parametrize(
+    'comparison,expected',
+    [('twice as much', 1200), ('three fourths that much', 750), ('50% that amount', 660)],
+)
+def test_scoped_extents_share_fractional_and_multiplier_ratios(reg, comparison, expected):
+    number(reg, wages().replace('half that much', comparison), expected)
+
+
 def test_independently_quoted_components_and_extents(reg):
     text = wages().replace('She earns 25% less while working her second job.',
                           'She earns $9 an hour at her second job.')

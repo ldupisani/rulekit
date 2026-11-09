@@ -1,5 +1,6 @@
 """Invented compositions of comparisons, cash, measurements and counted units."""
 
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -28,6 +29,22 @@ def test_coordinated_subject_comparison(reg, delta):
         "If Iris has 54 pears, how many pears does Theo have?"
     )
     number(reg, text, 21)
+
+
+@pytest.mark.parametrize(
+    "suffix",
+    [
+        "Given that Iris has 54 pears, how many pears does Theo have?",
+        "Given  that Iris has 54 pears, determine how many pears Theo has.",
+        "If Iris has 54 pears, calculate how many pears Theo has.",
+    ],
+)
+def test_nominal_count_fraction_and_question_frames(reg, suffix):
+    premises = "Nora has 12 fewer pears than Iris, and Theo has half the number of pears as Nora. "
+    number(reg, premises + suffix, 21)
+    assert not solve(
+        (premises + suffix).replace("54 pears", "54 oranges"), reg
+    ).answer.committed
 
 
 def cash():
@@ -65,6 +82,23 @@ def test_sale_cash_and_deposit(reg, old, new, value):
 )
 def test_cash_account_boundaries(reg, old, new):
     assert not solve(cash().replace(old, new), reg).answer.committed
+
+
+@pytest.mark.parametrize("source", ["from her daily profits", "of her profits", ""])
+def test_cash_deposit_source_and_short_remainder_questions(reg, source):
+    text = cash().replace("per book", "each")
+    text = text.replace("from today's profits ", f"{source} " if source else "")
+    for question in (
+        "How many dollars does Nora have left?",
+        "How many dollars is Nora left with?",
+        "How many dollars does Nora have left with after making the deposit?",
+    ):
+        result = number(reg, text.rsplit("How many", 1)[0] + question, 35)
+        assert [a.id for a in result.answer.assumptions] == (
+            [] if source else ["deposit-from-stated-proceeds"]
+        )
+    wrong_source = text.replace("into her bank account", "into Iris's bank account")
+    assert not solve(wrong_source, reg).answer.committed
 
 
 def breakfast():
@@ -219,6 +253,134 @@ def test_three_axis_container_interpretation_is_reported(reg):
     number(reg, tank(), 18, interpretation="rectangular-container")
 
 
+@pytest.mark.parametrize(
+    "change,amount",
+    [
+        ("Nora doubled the amount of water in the tank.", 12),
+        ("Nora quadrupled the amount of water in the tank.", 24),
+        ("When Nora came back, she halved the amount of water in the tank.", 3),
+        ("Nora multiplied the amount of water in the tank by 1.5.", 9),
+        ("Nora scaled the amount of water in the tank by 3/4.", 4.5),
+    ],
+)
+def test_container_scaling_uses_the_declared_or_stated_factor(reg, change, amount):
+    text = tank().replace("Nora triples the amount of water in the tank.", change)
+    number(reg, text, amount)
+
+
+def test_container_scaling_uses_the_verb_lemma_and_requires_a_factor(reg):
+    text = tank().replace("tank", "bucket").replace("water", "oil")
+    attrs = dict(reg.attrs)
+    attrs["triple"] = {**attrs["triple"], "scaling_factor": 1.5}
+    number(replace(reg, attrs=attrs), text, 9)
+    attrs.pop("triple")
+    assert not solve(text, replace(reg, attrs=attrs)).answer.committed
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        "Nora scaled the amount of water in the tank.",
+        "Nora multiplied the amount of water in the tank by 2 liters.",
+        "Nora tripled the amount of water in the tank by 2.",
+        "Nora scaled the amount of water in the tank by -1.",
+    ],
+)
+def test_container_scaling_does_not_infer_or_ignore_a_factor(reg, change):
+    text = tank().replace("Nora triples the amount of water in the tank.", change)
+    assert not solve(text, reg).answer.committed
+
+
+def test_named_fill_separate_departure_and_referenced_spill(reg):
+    text = (
+        "Nora fills her tank halfway. She then goes to answer the phone. "
+        "While she's gone, her dog spills half the water in it. "
+        "When Nora comes back, she triples the amount of water in the tank. "
+        "The tank is 2 feet long, 3 feet wide, and 4 feet high. "
+        "How many cubic feet of water are in the tank?"
+    )
+    number(reg, text, 18)
+    assert not solve(
+        text.replace("water in it", "water in the bucket"), reg
+    ).answer.committed
+
+
+@pytest.mark.parametrize(
+    "cause",
+    ["knocked the tank over", "hit the tank", "dropped the tank"],
+)
+def test_container_disturbance_uses_the_explicit_spill_fraction(reg, cause):
+    text = tank().replace(
+        "She spills half the water in the tank.",
+        f"While she's gone, her dog {cause} and spilled half the water in it.",
+    )
+    number(reg, text, 18)
+
+
+def test_container_disturbance_requires_a_measured_loss_of_its_contents(reg):
+    text = (
+        "Nora fills her bucket halfway. "
+        "While she's gone, her brother drops the bucket and spills a quarter of the oil in it. "
+        "Nora doubles the amount of oil in the bucket. "
+        "The bucket is 2 feet long, 3 feet wide, and 4 feet high. "
+        "How many cubic feet of oil are in the bucket?"
+    )
+    number(reg, text, 18)
+    for change in (
+        text.replace("a quarter of the oil", "the oil"),
+        text.replace(" and spills a quarter of the oil in it", ""),
+        text.replace("drops the bucket", "drops the tank"),
+        text.replace("in it.", "in the tank."),
+    ):
+        assert not solve(change, reg).answer.committed
+
+
+@pytest.mark.parametrize("axis,volume", [("wide", 27), ("long", 18)])
+def test_relative_container_axis_and_fractional_evaporation(reg, axis, volume):
+    text = tank().replace(
+        "She spills half the water in the tank.",
+        "While she's gone, half the water in the tank evaporates.",
+    )
+    text = text.replace("feet", "metres").replace(
+        "4 metres high", f"twice as high as it is {axis}"
+    )
+    number(reg, text.replace("cubic metres", "cubic meters"), volume)
+    assert not solve(
+        text.replace("3 metres wide", "3 kilograms wide"), reg
+    ).answer.committed
+
+
+@pytest.mark.parametrize(
+    "dimensions,volume",
+    [
+        ("half as long as it is wide, 4 feet wide, and 3 feet high", 18),
+        ("4 feet long, 50% as wide as it is long, and 3 feet high", 18),
+        ("4 feet long, 3 feet wide, and 1/2 as tall as it is long", 18),
+        ("three fourths as wide as it is high, twice as tall as it is long, and 2 feet long", 18),
+        ("2 feet high, 18 inches wide, and 3/2 as long as it is wide", 5.0625),
+        ("half as wide as it is long, 4 feet long, and 1.5 times as tall as it is wide", 18),
+        ("4 feet long, half as wide as it is long, and 1.5 times as tall as it is wide", 18),
+    ],
+)
+def test_any_container_axis_can_use_a_fraction_or_multiplier(reg, dimensions, volume):
+    number(reg, tank().replace("2 feet long, 3 feet wide, and 4 feet high", dimensions), volume)
+
+
+@pytest.mark.parametrize(
+    "dimensions",
+    [
+        "4 feet long, half as wide as it is high, and twice as high as it is wide",
+        "4 feet long, half as wide as it is wide, and 3 feet high",
+        "4 feet long, 3 feet high, and half as tall as it is long",
+        "4 feet long, half as wide as the bucket is long, and 3 feet high",
+        "4 feet long, half as wide as it is long, and 3 kilograms high",
+    ],
+)
+def test_relative_axes_require_distinct_compatible_dimensions_of_one_container(reg, dimensions):
+    text = tank().replace("2 feet long, 3 feet wide, and 4 feet high", dimensions)
+    assert not solve(text, reg).answer.committed
+
+
 def pieces():
     return (
         "Nora had 4 cookie pies to share with her 15 classmates and her teacher, Ms. Iris. "
@@ -281,6 +443,21 @@ def test_unspecified_package_units_still_need_a_requirement(reg):
     assert not result.answer.committed
     assert result.answer.clarification
     number(reg, text, 3, interpretation="one-unit-each")
+
+
+@pytest.mark.parametrize(
+    "provision",
+    [
+        "It is Ira's turn to provide lunch for the baseball team after the game and he has decided to bring rice.",
+        "Ira is providing a snack for the baseball team after the game and he has decided to bring rice.",
+        "Ira is providing rice for his baseball team.",
+    ],
+)
+def test_provision_contexts_and_named_portions(reg, provision):
+    text = provision + ".".join(packages().split(".")[1:])
+    number(reg, text.replace("individual pouches", "portions"), 3)
+    other_group = text.replace("on his baseball team", "on his softball team")
+    assert not solve(other_group, reg).answer.committed
 
 
 @pytest.mark.parametrize(

@@ -133,7 +133,7 @@ variants:
       - lit: ','
         consume_skipped: true
     - {lit: and}
-    - {slot: factor, type: fraction, fraction_positive: true}
+    - {slot: factor, type: ratio, value_positive: true}
     - lit: that
     - slot: much
       cat: mass_amount_quantifier
@@ -167,7 +167,7 @@ variants:
       - lit: ','
         consume_skipped: true
     - {lit: and}
-    - {slot: factor, type: fraction, fraction_positive: true}
+    - {slot: factor, type: ratio, value_positive: true}
     - lit: as
     - slot: much
       cat: mass_amount_quantifier
@@ -205,7 +205,7 @@ variants:
       - lit: ','
         consume_skipped: true
     - {lit: and}
-    - {slot: factor, type: fraction, fraction_positive: true}
+    - {slot: factor, type: ratio, value_positive: true}
     - lit: that
     - slot: reference_amount
       cat: allocation_amount_noun

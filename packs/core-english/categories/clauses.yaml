@@ -19,6 +19,6 @@ categories:
       second sense to either word. engine.py ORs membership across both
       categories to recognize a leading temporal-clause marker.
 members:
-  question_assumption_introducer: [assuming]
+  question_assumption_introducer: [assuming, given that]
   clause_marker: [when]
   clause_marker_prep: [after]

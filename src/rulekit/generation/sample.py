@@ -8,7 +8,7 @@ import re
 import secrets
 from collections import Counter, OrderedDict
 from dataclasses import dataclass, replace
-from functools import lru_cache
+from functools import lru_cache, wraps
 from itertools import product
 from pathlib import Path
 from threading import RLock
@@ -58,6 +58,7 @@ _SUPPORTED_SLOT_TYPES = frozenset(
         "number",
         "fraction",
         "multiplier",
+        "ratio",
         "nonunit_multiplier",
         "name",
         "noun",
@@ -120,6 +121,8 @@ _AVAILABILITY_CACHE: OrderedDict[
     tuple[str, _FixtureCacheKey], tuple[RuleAvailability, ...]
 ] = OrderedDict()
 _MAX_DOMAIN_CACHE_ENTRIES = 4096
+_FILLER_CACHE: OrderedDict[tuple, list["_Filler"]] = OrderedDict()
+_MAX_FILLER_CACHE_ENTRIES = 256
 _SELECTIONAL_FRAME_CACHE: OrderedDict[
     tuple[str, str, tuple[str, ...]], tuple
 ] = OrderedDict()
@@ -511,6 +514,28 @@ def _is_atomic_noun_surface(surface: str, reg: Registry) -> bool:
     return bool(entry and entry.lexical_phrase and entry.senses == ["noun"])
 
 
+def _cache_filler_domain(build):
+    @wraps(build)
+    def get(reg, **kwargs):
+        fingerprint = getattr(reg, "fingerprint", None)
+        if not fingerprint:
+            return build(reg, **kwargs)
+        key = (fingerprint, build, tuple(sorted(kwargs.items())))
+        with _CACHE_LOCK:
+            if key in _FILLER_CACHE:
+                _FILLER_CACHE.move_to_end(key)
+                return _FILLER_CACHE[key]
+        result = build(reg, **kwargs)
+        with _CACHE_LOCK:
+            _FILLER_CACHE[key] = result
+            _FILLER_CACHE.move_to_end(key)
+            while len(_FILLER_CACHE) > _MAX_FILLER_CACHE_ENTRIES:
+                _FILLER_CACHE.popitem(last=False)
+        return result
+    return get
+
+
+@_cache_filler_domain
 def _lexical_fillers(
     reg: Registry,
     *,
@@ -643,7 +668,8 @@ def _fraction_fillers(reg: Registry) -> list[_Filler]:
     return direct + counted
 
 
-def _counted_fillers(reg: Registry) -> list[_Filler]:
+@_cache_filler_domain
+def _counted_fillers(reg: Registry, *, category: str | None = None) -> list[_Filler]:
     """Compose declared integer counts with declared noun morphology."""
 
     counts = [
@@ -656,6 +682,7 @@ def _counted_fillers(reg: Registry) -> list[_Filler]:
         if (
             singular
             and plural
+            and (category is None or reg.word_in_category(singular, category))
             and _is_atomic_noun_surface(singular, reg)
             and _is_atomic_noun_surface(plural, reg)
             and (entry := reg.lexicon.get(singular)) is not None
@@ -683,6 +710,7 @@ def _counted_fillers(reg: Registry) -> list[_Filler]:
         for symbol, singular in sorted(reg.currencies.items()):
             if (
                 not symbol
+                or (category is not None and not reg.word_in_category(singular, category))
                 or any(ch.isspace() for ch in symbol)
                 or (entry := reg.lexicon.get(singular)) is None
                 or "noun" not in entry.senses
@@ -699,7 +727,9 @@ def _counted_fillers(reg: Registry) -> list[_Filler]:
     return out
 
 
-def _possessed_fillers(reg: Registry, fixtures: _Fixtures) -> list[_Filler]:
+def _possessed_fillers(
+    reg: Registry, fixtures: _Fixtures, *, category: str | None = None,
+) -> list[_Filler]:
     """Compose declared proper-name owners with declared noun surfaces."""
 
     possessive = reg.lexicon.get("'s")
@@ -714,6 +744,7 @@ def _possessed_fillers(reg: Registry, fixtures: _Fixtures) -> list[_Filler]:
     for singular, entry in sorted(reg.lexicon.items()):
         if (
             not singular
+            or (category is not None and not reg.word_in_category(singular, category))
             or not _is_atomic_noun_surface(singular, reg)
             or set(entry.senses) != {"noun"}
             or reg.plural_to_singular.get(singular, singular) != singular
@@ -735,6 +766,7 @@ def _possessed_fillers(reg: Registry, fixtures: _Fixtures) -> list[_Filler]:
     ]
 
 
+@_cache_filler_domain
 def _qualified_fillers(
     reg: Registry, *, head_category: str | None = None,
     modifier_category: str | None = None,
@@ -781,21 +813,42 @@ def _qualified_fillers(
         modifiers = [m for m in modifiers if reg.word_in_category(m.identity, modifier_category)]
     if head_category is not None:
         heads = [h for h in heads if reg.word_in_category(h.identity, head_category)]
-    return [
-        _Filler(
-            surface=f"{modifier.surface} {head.surface}",
-            identity=head.identity,
-            qualifier=modifier.identity,
-            number=head.number,
-            kind="noun",
-        )
+
+    # Index each permitted head category once. Several modifiers can share a
+    # compatibility route, and a head can have several surface forms.
+    routes = {
+        modifier.identity: {
+            noun_category
+            for direct in reg.word_categories.get(modifier.identity, ())
+            for category in reg.cat_ancestors(direct)
+            for noun_category in reg.attribute_compatibility.get(category, ())
+        }
         for modifier in modifiers
-        for head in heads
-        if modifier.identity != head.identity
-        and reg.attribute_applies_to(modifier.identity, head.identity)
-    ]
+    }
+    by_category = {
+        category: {
+            index for index, head in enumerate(heads)
+            if reg.word_in_category(head.identity, category)
+        }
+        for category in set().union(*routes.values())
+    }
+    out: list[_Filler] = []
+    for modifier in modifiers:
+        indices = set().union(*(by_category[cat] for cat in routes[modifier.identity]))
+        for index in sorted(indices):
+            head = heads[index]
+            if modifier.identity != head.identity:
+                out.append(_Filler(
+                    surface=f"{modifier.surface} {head.surface}",
+                    identity=head.identity,
+                    qualifier=modifier.identity,
+                    number=head.number,
+                    kind="noun",
+                ))
+    return out
 
 
+@_cache_filler_domain
 def _counted_qualified_fillers(
     reg: Registry, *, head_category: str | None = None,
     modifier_category: str | None = None,
@@ -815,25 +868,40 @@ def _counted_qualified_fillers(
             if filler.qualifier is not None
         }
     )
+    precardinal = {
+        qualifier for qualifier, _ in classes
+        if reg.word_in_category(qualifier, "precardinal_attribute")
+    }
+    supplemental = {
+        qualifier for qualifier, _ in classes
+        if reg.word_in_category(qualifier, "supplemental_amount_attribute")
+    }
+    symbols_by_unit: dict[str, str] = {}
+    for symbol, unit in sorted(reg.currencies.items()):
+        symbols_by_unit.setdefault(unit, symbol)
+    noun_surfaces = {
+        (identity, singular): surface
+        for identity in {identity for _, identity in classes}
+        for singular in (True, False)
+        if (surface := identity if singular else reg.singular_to_plural.get(identity))
+        and _is_atomic_noun_surface(surface, reg)
+    }
     out: list[_Filler] = []
     for count in counts:
         for qualifier, identity in classes:
-            surface = (
-                identity
-                if count == 1
-                else reg.singular_to_plural.get(identity)
-            )
-            if not surface or not _is_atomic_noun_surface(surface, reg):
+            surface = noun_surfaces.get((identity, count == 1))
+            if not surface:
                 continue
-            symbols = (sorted(symbol for symbol, unit in reg.currencies.items() if unit == identity)
-                       if reg.word_in_category(qualifier, "supplemental_amount_attribute") else [])
+            symbol = symbols_by_unit.get(identity) if qualifier in supplemental else None
             # A symbolic amount keeps the currency identity separate from a
             # following nominal target, including multiword denominations.
             # Otherwise a qualified amount can read as a count of that target.
-            phrase = (f"{qualifier} {symbols[0]}{count}" if symbols else
-                      f"{qualifier} {count} {surface}"
-                      if reg.word_in_category(qualifier, "precardinal_attribute")
-                      else f"{count} {qualifier} {surface}")
+            if symbol is not None:
+                phrase = f"{qualifier} {symbol}{count}"
+            elif qualifier in precardinal:
+                phrase = f"{qualifier} {count} {surface}"
+            else:
+                phrase = f"{count} {qualifier} {surface}"
             out.append(
                 _Filler(
                     surface=phrase,
@@ -847,6 +915,7 @@ def _counted_qualified_fillers(
     return out
 
 
+@_cache_filler_domain
 def _attributive_counted_fillers(reg: Registry) -> list[_Filler]:
     """Compose numeric hyphen modifiers from declared measure/holder pairs."""
 
@@ -896,31 +965,17 @@ def _raw_domain(
                 if reg.word_in_category(filler.identity, token.cat)
             ]
         if token.counted and token.qualified:
-            return [
-                filler
-                for filler in _counted_qualified_fillers(
-                    reg, head_category=token.cat, modifier_category=token.qualifier_cat)
-                if reg.word_in_category(filler.identity, token.cat)
-            ]
+            return _counted_qualified_fillers(
+                reg, head_category=token.cat, modifier_category=token.qualifier_cat,
+            )
         if token.counted:
-            return [
-                filler
-                for filler in _counted_fillers(reg)
-                if reg.word_in_category(filler.identity, token.cat)
-            ]
+            return _counted_fillers(reg, category=token.cat)
         if token.possessed:
-            return [
-                filler
-                for filler in _possessed_fillers(reg, fixtures)
-                if reg.word_in_category(filler.identity, token.cat)
-            ]
+            return _possessed_fillers(reg, fixtures, category=token.cat)
         if token.qualified:
-            return [
-                filler
-                for filler in _qualified_fillers(
-                    reg, head_category=token.cat, modifier_category=token.qualifier_cat)
-                if reg.word_in_category(filler.identity, token.cat)
-            ]
+            return _qualified_fillers(
+                reg, head_category=token.cat, modifier_category=token.qualifier_cat,
+            )
         root = reg.root_sense(token.cat)
         if "numeric_index_head" in reg.cat_ancestors(token.cat):
             # Mirror the reader's trailing index: it identifies a collection,
@@ -1085,6 +1140,13 @@ def _raw_domain(
         return fillers
     if slot_type == "fraction":
         return _fraction_fillers(reg)
+    if slot_type == "ratio":
+        return [
+            *(_Filler(surface, surface, value=float(value))
+              for surface, value in sorted(reg.multipliers.items())
+              if not any(ch.isspace() for ch in surface)),
+            *_fraction_fillers(reg),
+        ]
     if slot_type == "multiplier":
         return [
             _Filler(surface, surface)
@@ -1313,7 +1375,11 @@ def _domain(
     key = (
         reg.fingerprint,
         fixtures.cache_key,
-        token.model_dump_json(exclude_none=True),
+        # Slot names and sentence positioning affect matching, not fillers.
+        token.model_dump_json(
+            exclude_none=True,
+            exclude={"slot", "at_start", "consume_skipped", "blocks_skipped"},
+        ),
     )
     with _CACHE_LOCK:
         cached = _DOMAIN_CACHE.get(key)
@@ -1819,23 +1885,26 @@ def _rule_blockers(
     else:
         absent_categories = _absent_categories(rule)
         slot_category_exclusions = _slot_category_exclusions(rule)
-        safe_domains: dict[str, list[_Filler]] = {}
+        safe_domains: dict[int, list[_Filler]] = {}
 
         def safe_domain(token: MatchToken) -> list[_Filler]:
-            key = token.model_dump_json(exclude_none=True)
-            if key not in safe_domains:
-                safe_domains[key] = [
+            key = id(token)
+            cached = safe_domains.get(key)
+            if cached is not None:
+                return cached
+            domain = _domain(token, reg, fixtures)
+            exclusions = tuple(
+                pair for pair in slot_category_exclusions if pair[0] == token.slot
+            )
+            if absent_categories or exclusions:
+                domain = [
                     filler
-                    for filler in _domain(token, reg, fixtures)
+                    for filler in domain
                     if _outside_categories(filler, absent_categories, reg)
-                    and _outside_slot_categories(
-                        filler,
-                        token.slot,
-                        slot_category_exclusions,
-                        reg,
-                    )
+                    and _outside_slot_categories(filler, token.slot, exclusions, reg)
                 ]
-            return safe_domains[key]
+            safe_domains[key] = domain
+            return domain
 
         for _, token, _ in _leaf_tokens(seq):
             token_blockers = _token_blockers(token, reg)
@@ -2285,32 +2354,21 @@ def _rule_blockers(
                 tokens_by_slot.get(holder)
                 for holder in compatibility.holders
             ]
+            memo: dict[tuple, bool] = {}
+            proper_name_categories = tuple(compatibility.proper_name_measure_categories)
 
             def holder_ok(
                 measure: _Filler,
                 holder: _Filler,
                 attribute: _Filler | None,
             ) -> bool:
-                if (
-                    compatibility.when_declared
-                    and not reg.measure_has_holder_boundary(measure.identity)
-                ):
-                    return True
-                return (
-                    holder.kind == "name"
-                    and _proper_name_measure_allowed(
-                        measure,
-                        attribute=attribute,
-                        allow_proper_name=compatibility.allow_proper_name,
-                        measure_categories=tuple(
-                            compatibility.proper_name_measure_categories
-                        ),
-                        reg=reg,
-                    )
-                ) or reg.measure_applies_to_holder(
-                    measure.identity,
-                    holder.identity,
-                    attribute.identity if attribute is not None else None,
+                return _measure_holder_assignment_compatible(
+                    measure, holder, attribute,
+                    allow_proper_name=compatibility.allow_proper_name,
+                    proper_name_measure_categories=proper_name_categories,
+                    when_declared=compatibility.when_declared,
+                    reg=reg,
+                    memo=memo,
                 )
 
             if (
@@ -4877,6 +4935,8 @@ def _numeric_sources(
     project: Project, token: MatchToken, unit: Unit
 ) -> list[SourceRef | None]:
     slot_type = token.type
+    if slot_type == "ratio":
+        slot_type = unit.features.get("value_kind")
     fold = unit.surface.casefold()
     index = project.source_index
     reg = project.registry

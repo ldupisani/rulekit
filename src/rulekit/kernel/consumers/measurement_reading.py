@@ -196,6 +196,9 @@ def measurement_reading(ctx: ConsumerContext):
                 )
             if change.value <= 0:
                 return Answer("decline", None, "a total multiplier must be positive")
+            # This measurement stream scales the aggregate through additions.
+            if change.value < 1:
+                return Answer("decline", None, "a measured addition leaves no positive content amount")
             total = evaluate(
                 f"{total} * {change.value}",
                 {},

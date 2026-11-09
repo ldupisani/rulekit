@@ -11,6 +11,9 @@ categories:
     parent: noun
   provision_verb:
     parent: verb
+  provision_purpose_noun:
+    parent: noun
+    includes: [purchase_item, dining_account_activity]
   supply_decision_verb:
     parent: verb
   supply_transport_verb:
@@ -54,6 +57,7 @@ members:
   provision_verb:
   - provide
   - provides
+  - providing
   supply_decision_verb:
   - decide
   - decided

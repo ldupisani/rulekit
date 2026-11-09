@@ -8,6 +8,8 @@ categories:
     parent: conventionally_capitalized_modifier
   serving_measure:
     parent: measured_output_container
+  individual_serving_measure:
+    parent: serving_measure
   dining_activity:
     parent: purchase_context_activity
   dining_account_activity:
@@ -26,8 +28,6 @@ members:
   food_origin_descriptor:
   - french
   serving_measure:
-  - portion
-  - serving
   - piece
   - set
   - cup
@@ -35,6 +35,7 @@ members:
   - plate
   - bowl
   - slice
+  individual_serving_measure: [portion, serving]
   dining_activity:
   - eat
   - eats

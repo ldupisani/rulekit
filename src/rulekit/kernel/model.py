@@ -2749,6 +2749,8 @@ class MeasuredContentChange(Fact):
     dimension: str | None = None
     measure: str | None = None
     occurrence: int | None = None
+    # Some scaling verbs encode the factor without a separate numeric operand.
+    explicit_factor: bool = field(default=False, repr=False, compare=False)
 
     def key(self) -> tuple:
         return ("measured-content-change", self.container, self.occurrence)

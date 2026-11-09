@@ -62,6 +62,7 @@ templates:
             - {slot: appos_det, cat: possessive_determiner}
             - {slot: appos_role, cat: personal_relation_role}
       plural_classes: []
+      comparative_head: [{lit: as}, {lit: many}]
       extra_guards: []
       generation_guards: []
     rule:
@@ -74,8 +75,7 @@ templates:
           - {parameter: verb}
           - {parameter: offset.tokens}
           - {parameter: ratio.tokens}
-          - {lit: as}
-          - {lit: many}
+          - {parameter: comparative_head}
           - {parameter: layout.item}
           - {parameter: layout.item_tail}
           - {lit: as}
@@ -163,6 +163,23 @@ variants:
       extra_guards:
         - verb_role_compatible: {verb: verb, roles: [who], verb_cat: spend_verb, role_cat: animate}
         - verb_role_compatible: {verb: verb, roles: [std], verb_cat: spend_verb, role_cat: animate, allow_plural_class: true}
+        - slot_not_category: {slot: pp_prep, cat: quantity_remainder_preposition}
+
+  - id: arithmetic/fraction-of-comparative-count
+    template: as-many
+    description: A fraction of a nominal count compares two holders of the same item.
+    arguments:
+      subject: *referential_holder
+      verb: {slot: verb, cat: quantity_comparison_verb, finite_form: true}
+      ratio: *fraction_ratio
+      standard: *holder_standard
+      apposition: *animate_apposition
+      comparative_head:
+        - {lit: the, consume_skipped: true}
+        - {slot: amount, cat: nominal_count_comparison_head, uncounted: true, bare: true}
+        - {lit: of}
+      extra_guards:
+        - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: spend_verb, role_cat: animate}
         - slot_not_category: {slot: pp_prep, cat: quantity_remainder_preposition}
 
   - id: arithmetic/affine-times-as-many

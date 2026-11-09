@@ -158,8 +158,8 @@ def test_g5r_unlocks_exactly_the_preregistered_rule() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 915
-    assert sum(item.supported for item in availability.values()) == 814
+    assert len(availability) == 934
+    assert sum(item.supported for item in availability.values()) == 833
     assert sum(not item.supported for item in availability.values()) == 101
     assert availability[
         "arithmetic/anchored-relation-postfix-dimension"

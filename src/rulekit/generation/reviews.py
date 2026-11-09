@@ -314,10 +314,17 @@ def _raw_reviews(project: Project) -> list[dict]:
     if not path.exists():
         return []
     rows = []
-    for line in path.read_text(encoding="utf-8").splitlines():
+    # A concurrent append may be visible before its final newline. Earlier
+    # rows are complete and remain readable while a review is being written.
+    for line in path.read_bytes().splitlines(keepends=True):
         if not line.strip():
             continue
-        record = json.loads(line)
+        try:
+            record = json.loads(line)
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            if line.endswith(b"\n"):
+                raise
+            break
         record.setdefault("id", _legacy_id(record))
         rows.append(record)
     return rows
@@ -879,8 +886,9 @@ def review_replay(project: Project, review: dict) -> dict:
         [str(project.root.resolve()), project.registry.fingerprint, review],
         sort_keys=True,
     ).encode()).hexdigest()
-    if key in _REVIEW_REPLAY_CACHE:
-        return _REVIEW_REPLAY_CACHE[key]
+    cached = _REVIEW_REPLAY_CACHE.get(key)
+    if cached is not None:
+        return cached
     replay = replay_ask_review if review.get("ask_scenario") else replay_premise_review
     result = replay(project, review)
     if len(_REVIEW_REPLAY_CACHE) >= 512:

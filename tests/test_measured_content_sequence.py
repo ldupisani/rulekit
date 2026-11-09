@@ -99,10 +99,16 @@ def test_explicit_output_unit_uses_declared_mass_conversion(registry):
 @pytest.mark.parametrize("old,new", [
     ("Mira placed a jar on a scale, and then she ", "Mira "),
     ("cause the weight to triple", "cause the weight to halve"),
+    ("cause the weight to triple", "halve the weight"),
     ("another 4 pounds", "another 4 liters"),
 ])
 def test_unread_or_unanchored_updates_do_not_return_a_partial_total(registry, old, new):
     assert not solve(_paraphrased_story().replace(old, new), registry).answer.committed
+
+
+def test_causative_weight_update_uses_the_same_scaling_lexicon(registry):
+    story = _paraphrased_story().replace("cause the weight to triple", "cause the weight to quadruple")
+    assert solve(story, registry).answer.value == pytest.approx(48)
 
 
 @pytest.mark.parametrize("content,expected", [("clay", 10.0), ("sugar", 19.0)])

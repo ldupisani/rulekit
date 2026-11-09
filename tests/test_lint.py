@@ -180,6 +180,9 @@ rules:
     ('cat: animal, qualified: true, attributive_counted: true', 'cat: animal', True),
     ('cat: animal, counted: true', 'cat: animal, counted: true', True),
     ('cat: animal, qualified: true, attributive_counted: true', 'cat: animal, qualified: true, attributive_counted: true', True),
+    ('type: ratio', 'type: fraction', True),
+    ('type: multiplier', 'type: ratio', True),
+    ('type: ratio', 'type: number', False),
 ])
 def test_numeric_nominal_structures_keep_their_runtime_disjointness(tmp_path, first, second, overlaps):
     reg = _mk(tmp_path, BASE_LEX, BASE_CATS,

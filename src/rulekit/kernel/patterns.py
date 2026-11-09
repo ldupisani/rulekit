@@ -507,7 +507,9 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
             return kind == "ordinal"
         if t == "number":
             return kind == "count"
-        if t == "fraction":
+        if t == "ratio" and kind == "multiplier":
+            return True
+        if t in {"fraction", "ratio"}:
             # A declared plural fraction surface ("fifths") is an
             # incomplete phrase until numbers.py merges an explicit word
             # count with it ("two fifths"). Singular forms and completed
@@ -1844,6 +1846,7 @@ def _check_where(
 
 _TEMPLATE = re.compile(r"\{(\w+)(?:\.(\w+))?\}")
 _SIGN = re.compile(r"sign\((\w+)\)")
+_SCALAR_ATTRIBUTE = re.compile(r"attr\((\w+),\s*(\w+)\)")
 
 
 def _naive_singular(word: str) -> str:
@@ -2420,7 +2423,7 @@ def _build_fact(
     emit_fields: dict, fact_kind: str, slots: dict[str, Unit], reg: Registry,
     provenance: Provenance, log: ArithmeticLog | None, rule_id: str,
     reading=None, temporal_perspective: str | None = None,
-) -> Fact:
+) -> Fact | None:
     cls = _FACT_CLASSES[fact_kind]
     if temporal_perspective is not None:
         perspective = _resolve_field(
@@ -2434,6 +2437,17 @@ def _build_fact(
         # Quantity is numeric for a priced expenditure, but names a dimension
         # in other fact contracts (for example physics).
         numeric = key in _NUMERIC_FIELDS or (cls is Expenditure and key == "quantity")
+        attribute = _SCALAR_ATTRIBUTE.fullmatch(raw) if numeric and isinstance(raw, str) else None
+        if attribute:
+            slot, name = attribute.groups()
+            unit = slots.get(slot)
+            if not isinstance(unit, Unit):
+                return None
+            value = reg.attribute_value(_lemma_of(unit), name)
+            if value is None:
+                return None
+            kwargs[key] = value
+            continue
         kwargs[key] = _resolve_field(raw, slots, reg, numeric, log, rule_id)
     if cls in (Expenditure, AccountEntry, BatchEvidence, ActivityAccountEvidence,
                SpecificationEvidence, PopulationEvidence, RegionEvidence):
@@ -2581,6 +2595,7 @@ def run_rules(
                 sentence=reading.sentence_index,
                 assumption=reading.assumption,
             )
+            log_start = len(log.entries) if log is not None else 0
             facts = []
             for e in rule.emits:
                 emit_provenance = replace(
@@ -2647,21 +2662,31 @@ def run_rules(
                             log, rule.id, reading=reading,
                             temporal_perspective=e.temporal_perspective,
                         )
+                        if fact is None:
+                            break
                         facts.append(fact)
                         facts.extend(atom_variants(fact, e.fields, sub_slots, reg))
-                    continue
+                    else:
+                        continue
+                    break
                 fact = _build_fact(
                     e.fields, e.fact, effective_slots, reg, emit_provenance, log, rule.id,
                     reading=reading,
                     temporal_perspective=e.temporal_perspective,
                 )
+                if fact is None:
+                    break
                 facts.append(fact)
                 # intersective decomposition (atom_variants): a no-op unless
                 # the registry declares the opt-in category AND the emitted
                 # fact is a positive span-pred Atom — no benchmark pack does
                 # either, so every benchmark corpus is byte-identical
                 facts.extend(atom_variants(fact, e.fields, effective_slots, reg))
-            results.append(RuleMatchResult(match=m, facts=facts))
+            else:
+                results.append(RuleMatchResult(match=m, facts=facts))
+                continue
+            if log is not None:
+                del log.entries[log_start:]
     return results
 
 

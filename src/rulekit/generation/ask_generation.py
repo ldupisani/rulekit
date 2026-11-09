@@ -291,6 +291,8 @@ def _ask_mode_blockers(
     project: Project,
     ask: AskRule,
     scenario_mode: AskScenarioMode,
+    *,
+    surface_blockers: tuple[str, ...] | None = None,
 ) -> tuple[str, ...]:
     """Return only blockers that apply to one requested scenario mode.
 
@@ -300,7 +302,9 @@ def _ask_mode_blockers(
     mutating a standalone reading.
     """
 
-    blockers = list(_ask_blockers(project, ask))
+    blockers = list(
+        _ask_blockers(project, ask) if surface_blockers is None else surface_blockers
+    )
     contracts = _span_contracts(ask)
     group_blocker = (
         "ask requires an antecedent discourse group; generate it as a "
@@ -541,7 +545,7 @@ def list_ask_availability(project: Project) -> list[AskAvailability]:
         supported_modes = tuple(
             mode
             for mode in _ASK_SCENARIO_MODES
-            if not _ask_mode_blockers(project, ask, mode)
+            if not _ask_mode_blockers(project, ask, mode, surface_blockers=blockers)
         )
         availability.append(
             AskAvailability(

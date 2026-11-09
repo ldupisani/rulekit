@@ -46,6 +46,8 @@ categories:
     parent: noun
   cash_proceeds_noun:
     parent: noun
+  cash_proceeds_preposition:
+    parent: preposition
   cash_deposit_noun:
     parent: noun
   passive_cash_receipt_verb:
@@ -96,6 +98,7 @@ members:
   cash_proceeds_noun:
   - profit
   - earnings
+  cash_proceeds_preposition: [from, of]
   cash_deposit_noun:
   - deposit
   passive_cash_receipt_verb:

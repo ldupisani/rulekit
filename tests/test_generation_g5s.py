@@ -157,9 +157,11 @@ def test_modal_occurrence_and_core_ownership_maps_are_complete() -> None:
         "measured_output_container",
         "nested_content_container",
         "ordinal_quantity_holder",
+        "package_distribution_unit",
         "partition_count_unit",
         "population_member",
         "production_creation_source",
+        "provision_purpose_noun",
         "purchase_item",
         "quantity_account",
         "quantity_container",
@@ -245,8 +247,8 @@ def test_g5s_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 915
-    assert sum(item.supported for item in availability.values()) == 814
+    assert len(availability) == 934
+    assert sum(item.supported for item in availability.values()) == 833
     assert sum(not item.supported for item in availability.values()) == 101
     assert availability["arithmetic/periodic-rate-every-span"].supported
     assert all(availability[rule_id].supported for rule_id in FUTURE_RULES)

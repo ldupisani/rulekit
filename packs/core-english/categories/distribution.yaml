@@ -1,5 +1,8 @@
 format: rulekit/categories@1
 categories:
+  package_distribution_unit:
+    parent: noun
+    includes: [quantity_container, individual_serving_measure]
   allocation_recipient:
     parent: noun
     includes:

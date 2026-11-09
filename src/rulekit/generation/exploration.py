@@ -11,6 +11,7 @@ import json
 import random
 import uuid
 from collections import Counter, OrderedDict, defaultdict
+from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -24,6 +25,8 @@ from .candidate import GenerationCandidate, GenerationObjective
 from .reviews import SourceLocation, premise_review_target_counts, read_reviews
 from .sample import (
     GenerationError,
+    _Filler,
+    _FixtureCacheKey,
     _absent_categories,
     _category_membership_requirements,
     _distinct_measure_groups,
@@ -45,7 +48,7 @@ from .sample import (
 
 _PROBE_CACHE_LOCK = RLock()
 _PROBE_CACHE: OrderedDict[
-    tuple[str, tuple[str, ...]], tuple["ProbePlacement", ...]
+    tuple[str, _FixtureCacheKey], tuple["ProbePlacement", ...]
 ] = OrderedDict()
 _MAX_PROBE_CACHE_ENTRIES = 16
 
@@ -141,6 +144,7 @@ _NUMERIC_SLOT_TYPES = frozenset(
         "nonunit_multiplier",
         "number",
         "percent",
+        "ratio",
     }
 )
 _GENERATION_OBJECTIVES = frozenset(
@@ -325,7 +329,7 @@ def exploration_failure_path(project: Project) -> Path:
 
 def _probe_catalog(project: Project) -> tuple[ProbePlacement, ...]:
     fixtures = _load_fixtures(project.root)
-    cache_key = (project.registry.fingerprint, fixtures.names)
+    cache_key = (project.registry.fingerprint, fixtures.cache_key)
     with _PROBE_CACHE_LOCK:
         cached = _PROBE_CACHE.get(cache_key)
         if cached is not None:
@@ -334,7 +338,21 @@ def _probe_catalog(project: Project) -> tuple[ProbePlacement, ...]:
     supported = {
         item.id for item in list_rule_availability(project) if item.supported
     }
-    surfaces: dict[tuple[str, str, int, str], set[str]] = defaultdict(set)
+    catalog_entries: list[ProbePlacement] = []
+    grouped_domains: dict[int, tuple[list[_Filler], dict[str, tuple[str, ...]]]] = {}
+
+    def group_surfaces(fillers: Iterable[_Filler]) -> dict[str, tuple[str, ...]]:
+        grouped: dict[str, set[str]] = defaultdict(set)
+        for filler in fillers:
+            if (
+                filler.identity in project.registry.lexicon
+                and filler.identity in project.source_index.lexicon
+            ):
+                grouped[filler.identity].add(filler.surface)
+        return {
+            identity: tuple(sorted(values, key=str.casefold))
+            for identity, values in grouped.items()
+        }
     for rule in project.registry.rules:
         if rule.id not in supported:
             continue
@@ -456,45 +474,39 @@ def _probe_catalog(project: Project) -> tuple[ProbePlacement, ...]:
                 )
             ):
                 continue
-            for filler in _domain(token, project.registry, fixtures):
-                if (
-                    _outside_categories(
+            domain = _domain(token, project.registry, fixtures)
+            exclusions = tuple(
+                pair for pair in slot_category_exclusions if pair[0] == token.slot
+            )
+            measure = token.slot in measure_slots
+            membership = token.slot in membership_slots
+            if not (absent_categories or exclusions or measure or membership):
+                # Hold the domain alongside its grouping so an evicted list's
+                # identity cannot be reused during this build.
+                key = id(domain)
+                if key not in grouped_domains:
+                    grouped_domains[key] = domain, group_surfaces(domain)
+                grouped = grouped_domains[key][1]
+            else:
+                grouped = group_surfaces(
+                    filler for filler in domain
+                    if (not absent_categories or _outside_categories(
                         filler, absent_categories, project.registry
-                    )
-                    and _outside_slot_categories(
-                        filler,
-                        token.slot,
-                        slot_category_exclusions,
-                        project.registry,
-                    )
-                    and (
-                        token.slot not in measure_slots
-                        or measure_assignment_extends(token.slot, filler)
-                    )
-                    and (
-                        token.slot not in membership_slots
-                        or category_membership_assignment_extends(
-                            token.slot, filler
-                        )
-                    )
-                    and filler.identity in project.registry.lexicon
-                    and filler.identity in project.source_index.lexicon
-                ):
-                    surfaces[
-                        (rule.id, token.slot, token_index, filler.identity)
-                    ].add(filler.surface)
-    catalog = tuple(
-        ProbePlacement(
-            rule_id=rule_id,
-            slot=slot,
-            token_index=token_index,
-            identity=identity,
-            surfaces=tuple(sorted(values, key=lambda value: value.casefold())),
-        )
-        for (rule_id, slot, token_index, identity), values in sorted(
-            surfaces.items()
-        )
-    )
+                    ))
+                    and (not exclusions or _outside_slot_categories(
+                        filler, token.slot, exclusions, project.registry
+                    ))
+                    and (not measure or measure_assignment_extends(token.slot, filler))
+                    and (not membership or category_membership_assignment_extends(token.slot, filler))
+                )
+            catalog_entries.extend(
+                ProbePlacement(rule.id, token.slot, token_index, identity, surfaces)
+                for identity, surfaces in grouped.items()
+            )
+    catalog = tuple(sorted(
+        catalog_entries,
+        key=lambda entry: (entry.rule_id, entry.slot, entry.token_index, entry.identity),
+    ))
     with _PROBE_CACHE_LOCK:
         _PROBE_CACHE[cache_key] = catalog
         _PROBE_CACHE.move_to_end(cache_key)
@@ -651,60 +663,39 @@ def append_exploration_failure(
     return record
 
 
-def read_exploration_events(project: Project) -> list[dict[str, Any]]:
-    """Read and schema-check every generation observation in write order."""
-
-    path = exploration_path(project)
+def _read_exploration_ledger(
+    path: Path, model: type[BaseModel], kind: str,
+) -> list[dict[str, Any]]:
     if not path.exists():
         return []
-    events: list[dict[str, Any]] = []
-    for line_no, line in enumerate(
-        path.read_text(encoding="utf-8").splitlines(), start=1
-    ):
+    rows: list[dict[str, Any]] = []
+    for line_no, line in enumerate(path.read_bytes().splitlines(keepends=True), start=1):
         if not line.strip():
             continue
         try:
             raw = json.loads(line)
-            checked = DurableExplorationEvent.model_validate(raw)
-        except Exception as exc:  # noqa: BLE001 - report corrupt authoring state
-            raise GenerationError(
-                f"{path}:{line_no}: invalid exploration event: {exc}"
-            ) from exc
-        events.append(
-            {
-                **raw,
-                **checked.model_dump(),
-            }
-        )
-    return events
+            checked = model.model_validate(raw)
+        except ValueError as exc:
+            # A concurrent writer may still be appending the last row.
+            if isinstance(exc, (UnicodeDecodeError, json.JSONDecodeError)) and not line.endswith(b"\n"):
+                break
+            raise GenerationError(f"{path}:{line_no}: invalid exploration {kind}: {exc}") from exc
+        rows.append({**raw, **checked.model_dump()})
+    return rows
+
+
+def read_exploration_events(project: Project) -> list[dict[str, Any]]:
+    """Read and schema-check every generation observation in write order."""
+
+    return _read_exploration_ledger(exploration_path(project), DurableExplorationEvent, "event")
 
 
 def read_exploration_failures(project: Project) -> list[dict[str, Any]]:
     """Read and schema-check every failed attempt in write order."""
 
-    path = exploration_failure_path(project)
-    if not path.exists():
-        return []
-    failures: list[dict[str, Any]] = []
-    for line_no, line in enumerate(
-        path.read_text(encoding="utf-8").splitlines(), start=1
-    ):
-        if not line.strip():
-            continue
-        try:
-            raw = json.loads(line)
-            checked = DurableExplorationFailure.model_validate(raw)
-        except Exception as exc:  # noqa: BLE001 - report corrupt authoring state
-            raise GenerationError(
-                f"{path}:{line_no}: invalid exploration failure: {exc}"
-            ) from exc
-        failures.append(
-            {
-                **raw,
-                **checked.model_dump(),
-            }
-        )
-    return failures
+    return _read_exploration_ledger(
+        exploration_failure_path(project), DurableExplorationFailure, "failure",
+    )
 
 
 def _status(

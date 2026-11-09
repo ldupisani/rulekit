@@ -173,7 +173,7 @@ def test_designer_help_routes_and_editor_link(monkeypatch):
     # Exercise the real app integration without loading corpus state;
     # help is independent of the selected project.
     monkeypatch.setattr(app_module, "ServerState", lambda _: object())
-    monkeypatch.setattr(app_module, "build_router", lambda _: APIRouter())
+    monkeypatch.setattr(app_module, "build_router", lambda _, **kwargs: APIRouter())
     app = app_module.create_app(ROOT / "projects/curated")
     status, _, page = asyncio.run(_get(app, "/"))
     assert status == 200

@@ -21,7 +21,7 @@ rules:
       cat: provision_verb
       bare_form: true
     - slot: resource
-      cat: purchase_item
+      cat: provision_purpose_noun
       uncounted: true
     - lit: for
     - slot: team
@@ -79,7 +79,8 @@ rules:
       owned: turn
   references:
     who: principal
-  description: Preserve stocks, units per package or whole, counted recipient groups and explicit serving participants.
+  description: Preserve stocks, units per package or whole, counted recipient groups and explicit serving
+    participants.
 - id: arithmetic/packaged-unit-capacity
   phase: read
   match:
@@ -100,7 +101,7 @@ rules:
       bare: true
     - lit: of
     - slot: units
-      cat: quantity_container
+      cat: package_distribution_unit
       counted: true
     - lit: .
       consume_skipped: true
@@ -120,7 +121,8 @@ rules:
   satisfies:
     come:
     - subject
-  description: Preserve stocks, units per package or whole, counted recipient groups and explicit serving participants.
+  description: Preserve stocks, units per package or whole, counted recipient groups and explicit serving
+    participants.
 - id: arithmetic/affiliated-recipient-groups
   phase: read
   match:
@@ -178,7 +180,8 @@ rules:
     - subject
   references:
     owner: who
-  description: Preserve stocks, units per package or whole, counted recipient groups and explicit serving participants.
+  description: Preserve stocks, units per package or whole, counted recipient groups and explicit serving
+    participants.
 - id: arithmetic/stock-for-counted-and-named-recipients
   phase: read
   match:
@@ -248,7 +251,8 @@ rules:
     - subject
     share:
     - subject
-  description: Preserve stocks, units per package or whole, counted recipient groups and explicit serving participants.
+  description: Preserve stocks, units per package or whole, counted recipient groups and explicit serving
+    participants.
   references:
     owner: who
     other_owner: who
@@ -337,7 +341,8 @@ rules:
     - subject
     each:
     - collection
-  description: Preserve stocks, units per package or whole, counted recipient groups and explicit serving participants.
+  description: Preserve stocks, units per package or whole, counted recipient groups and explicit serving
+    participants.
   references:
     owner: who
 - id: arithmetic/explicit-per-recipient-unit-count
@@ -355,7 +360,7 @@ rules:
       cat: goal_predicate
       finite_form: true
     - slot: units
-      cat: quantity_container
+      cat: package_distribution_unit
       counted: true
       bare: true
     - lit: .
@@ -376,7 +381,8 @@ rules:
     - collection
     need:
     - subject
-  description: Preserve stocks, units per package or whole, counted recipient groups and explicit serving participants.
+  description: Preserve stocks, units per package or whole, counted recipient groups and explicit serving
+    participants.
 asks:
 - id: ask/required-whole-packages
   match:
@@ -446,3 +452,112 @@ asks:
   satisfies:
     be:
     - subject
+templates:
+  active-provision:
+    parameters:
+      resource:
+        slot: item
+        cat: purchase_item
+        uncounted: true
+      decision: []
+      item: '{item}'
+      consumes:
+      - be
+      - provide
+      satisfies:
+        be:
+        - subject
+        provide:
+        - subject
+      references: {}
+    rule:
+      description: An ongoing provision or an explicitly selected supply identifies the material and recipient
+        group.
+      phase: read
+      match:
+        sentence:
+        - slot: who
+          type: entity
+          common_noun_cat: intentional_agent
+          referential: true
+          at_start: true
+        - slot: be
+          cat: copula
+        - slot: provide
+          cat: provision_verb
+          present_participle: true
+        - parameter: resource
+        - lit: for
+        - opt:
+          - slot: owner
+            cat: possessive_determiner
+        - slot: team
+          cat: social_group
+          uncounted: true
+        - opt:
+          - lit: after
+          - slot: event
+            cat: scheduled_event
+            uncounted: true
+        - parameter: decision
+        - {lit: '.', consume_skipped: true}
+      emits:
+      - fact: batch_evidence
+        kind: distribution-context
+        entity: '{who}'
+        measure:
+          parameter: item
+        value: 0
+        position: '0'
+        container: '{team}'
+      consumes:
+        parameter: consumes
+      satisfies:
+        parameter: satisfies
+      where:
+      - number_compatible:
+        - who
+        - be
+      references:
+        parameter: references
+variants:
+- id: arithmetic/active-provision-of-item
+  template: active-provision
+- id: arithmetic/active-provision-with-supply-choice
+  template: active-provision
+  arguments:
+    resource:
+      slot: resource
+      cat: provision_purpose_noun
+      uncounted: true
+    decision:
+    - lit: and
+    - slot: subject
+      cat: anaphoric_person_subject
+    - slot: decide
+      cat: supply_decision_verb
+      finite_form: true
+    - lit: to
+    - slot: bring
+      cat: supply_transport_verb
+      bare_form: true
+    - slot: item
+      cat: purchase_item
+      uncounted: true
+      bare: true
+    consumes:
+    - be
+    - provide
+    - decide
+    - bring
+    satisfies:
+      be:
+      - subject
+      provide:
+      - subject
+      decide:
+      - subject
+      bring:
+      - subject
+    references:
+      subject: who

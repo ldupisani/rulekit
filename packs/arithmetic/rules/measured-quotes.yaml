@@ -84,7 +84,7 @@ rules:
       cat: measured_order_verb
       finite_form: true
     - slot: factor
-      type: multiplier
+      type: ratio
     - lit: that
       consume_skipped: true
     - slot: much

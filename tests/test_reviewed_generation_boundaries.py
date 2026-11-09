@@ -144,6 +144,7 @@ POSITIVE_FRACTION_RULES = {
     "arithmetic/affine-fraction-as-many",
     "arithmetic/fraction-as-far",
     "arithmetic/fraction-as-many",
+    "arithmetic/fraction-of-comparative-count",
     "arithmetic/fraction-as-many-qualified-measures",
     "arithmetic/fraction-as-many-elided",
     "arithmetic/fraction-as-many-elided-standard",
@@ -881,10 +882,11 @@ def test_numeric_bounds_qualify_scalar_and_counted_slots() -> None:
     assert MatchToken(
         slot="span", cat="duration_measure", counted=True, value_min=1
     ).value_min == 1
+    assert MatchToken(slot="factor", type="ratio", value_positive=True).value_positive
 
     with pytest.raises(
         ValidationError,
-        match="only qualify a `type: number` or counted slot",
+        match="only qualify number, ratio, or counted slots",
     ):
         MatchToken(slot="item", type="noun", value_min=1)
 

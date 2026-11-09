@@ -88,6 +88,7 @@ categories:
   quantity_combination_verb:
     parent: verb
 members:
+  purchase_item: [item]
   new_purchase_condition: [new]
   price_at_marker: [at]
   price_for_marker: [for]

@@ -66,6 +66,7 @@ from ..kernel.model import PATTERN, Unit, _jsonable
 from ..kernel.patterns import match_ask, subsumes
 from ..lint.checks import lint_checks
 from ..lint.overlap import lint_overlaps
+from .read_worker import ReadWorker
 
 
 # module-level (not nested in build_router): `from __future__ import
@@ -941,13 +942,23 @@ def trace_project(project: Project, body: TraceBody) -> dict[str, Any]:
     }
 
 
-def build_router(state: ServerState) -> APIRouter:
+def build_router(state: ServerState, *, background_reads: bool = False) -> APIRouter:
     router = APIRouter(prefix="/api")
+    catalog_reads = ReadWorker()
+    review_reads = ReadWorker()
+
+    def read_route(path, worker):
+        def register(endpoint):
+            router.get(path)(worker.wrap(endpoint) if background_reads else endpoint)
+            return endpoint
+        return register
 
     @router.get("/project")
     def project_info():
-        docs = pack_documents(state.project)
-        source_index = state.project.source_index
+        project = state.project
+        registry = project.registry
+        docs = pack_documents(project)
+        source_index = project.source_index
         sources = {}
         if source_index is not None:
             sources = {
@@ -958,20 +969,21 @@ def build_router(state: ServerState) -> APIRouter:
                 }.items()
             }
         return {
-            "name": state.project.doc.name,
-            "packs": [p.name for p in state.project.packs],
-            "fingerprint": state.registry.fingerprint[:16],
-            "registry_fingerprint": state.registry.fingerprint,
+            "name": project.doc.name,
+            "packs": [p.name for p in project.packs],
+            "fingerprint": registry.fingerprint[:16],
+            "registry_fingerprint": registry.fingerprint,
             "docs": docs,
-            "has_suite": bool(state.project.doc.suite),
-            "has_datasets": bool(state.project.doc.datasets),
+            "has_suite": bool(project.doc.suite),
+            "has_datasets": bool(project.doc.datasets),
             "impact_targets": (
-                (["suite"] if state.project.doc.suite else [])
+                (["suite"] if project.doc.suite else [])
                 + (["dev-train", "dev-holdout", "test"]
-                   if state.project.doc.datasets else [])
+                   if project.doc.datasets else [])
             ),
-            "rules": [r.id for r in state.registry.rules],
-            "asks": [a.id for a in state.registry.asks],
+            "rules": [r.id for r in registry.rules],
+            "safety_rules": [r.id for r in registry.rules if r.generation == "safety"],
+            "asks": [a.id for a in registry.asks],
             "sources": sources,
         }
 
@@ -1123,7 +1135,7 @@ def build_router(state: ServerState) -> APIRouter:
             for f in findings
         ]
 
-    @router.get("/generation/rules")
+    @read_route("/generation/rules", catalog_reads)
     def generation_rules():
         try:
             rules = list_rule_availability(state.project)
@@ -1139,13 +1151,20 @@ def build_router(state: ServerState) -> APIRouter:
             "safety_total": len(safety_rules),
         }
 
-    @router.get("/generation/asks")
-    def generation_asks():
+    @read_route("/generation/asks", catalog_reads)
+    def generation_asks(include_evidence: bool = True):
+        project = state.project
         try:
-            asks = list_ask_availability(state.project)
-            evidence = ask_review_evidence(state.project)
+            asks = list_ask_availability(project)
+            evidence = ask_review_evidence(project) if include_evidence else None
         except GenerationError as exc:
             raise HTTPException(422, str(exc)) from exc
+        if evidence is None:
+            return {
+                "asks": [ask.to_json() for ask in asks],
+                "supported": sum(ask.supported for ask in asks),
+                "total": len(asks),
+            }
         target_counts = evidence["targets"]
         return {
             "asks": [
@@ -1180,16 +1199,35 @@ def build_router(state: ServerState) -> APIRouter:
                 raise HTTPException(422, str(exc)) from exc
         return candidate.to_json()
 
-    @router.get("/generation/exploration")
-    def generation_exploration():
-        with state.generation_lock:
-            try:
-                return exploration_status(
-                    state.project,
-                    include_placements=False,
-                )
-            except GenerationError as exc:
-                raise HTTPException(422, str(exc)) from exc
+    @read_route("/generation/exploration", catalog_reads)
+    def generation_exploration(view: Literal["full", "workbench"] = "full"):
+        try:
+            status = exploration_status(state.project, include_placements=False)
+        except GenerationError as exc:
+            raise HTTPException(422, str(exc)) from exc
+        if view == "workbench":
+            # The browser needs filter tags and coverage counts. Encode the
+            # many probe-to-rule relationships as indices into this response.
+            fields = (
+                "id", "generation", "supported", "status", "generated_count",
+                "failed_count", "reviewed_count", "validated_count",
+                "structural_covered", "structural_total",
+            )
+            tags = ("phenomena", "categories", "fact_types", "slot_types")
+            rules = status["rules"]
+            rule_indices = {rule["id"]: index for index, rule in enumerate(rules)}
+            status["rules"] = [
+                {
+                    **{field: rule[field] for field in fields},
+                    "profile": {tag: rule["profile"][tag] for tag in tags},
+                }
+                for rule in rules
+            ]
+            for filler in status["fillers"]:
+                filler["compatible_rule_indices"] = [
+                    rule_indices[rule_id] for rule_id in filler.pop("compatible_rules")
+                ]
+        return status
 
     @router.post("/generation/candidate")
     def generation_candidate(body: GenerationCandidateBody):
@@ -1385,30 +1423,26 @@ def build_router(state: ServerState) -> APIRouter:
             record = append_review(state.project, body)
         return {"ok": True, "review": record}
 
-    @router.get("/generation/history")
-    def generation_history(
-        limit: int = 100,
-        offset: int = 0,
-        view: Literal["attention", "archive"] = "archive",
-    ):
+    def review_page(project, limit, offset, view, *, replay_current):
         bounded = max(1, min(limit, 500))
         start = max(0, offset)
-        with state.generation_lock:
-            history = read_review_history(state.project, 100_000)
-            evidence = ask_review_evidence(state.project)
-            premise_evidence = premise_review_evidence(state.project)
-        regressions = {
-            group["canonical_review_id"]: group["replay_detail"]
-            for group in evidence["groups"] + premise_evidence["groups"]
-            if group["replay_status"] == "regressed"
-        }
-        # Coverage may choose another healthy exemplar. Check each positive
-        # independently so that no regressed issue is hidden by that choice.
-        for review in history:
-            if review.get("verdict") == "valid" and not review_needs_attention(review):
-                replay = review_replay(state.project, review)
-                if replay["status"] == "regressed":
-                    regressions[review["id"]] = replay["detail"]
+        history = read_review_history(project, 100_000)
+        regressions = {}
+        if replay_current:
+            evidence = ask_review_evidence(project)
+            premise_evidence = premise_review_evidence(project)
+            regressions.update({
+                group["canonical_review_id"]: group["replay_detail"]
+                for group in evidence["groups"] + premise_evidence["groups"]
+                if group["replay_status"] == "regressed"
+            })
+            # Coverage can choose another healthy exemplar. Check each clean
+            # positive independently for the attention inbox.
+            for review in history:
+                if review.get("verdict") == "valid" and not review_needs_attention(review):
+                    replay = review_replay(project, review)
+                    if replay["status"] == "regressed":
+                        regressions[review["id"]] = replay["detail"]
         for review in history:
             review["attention_reasons"] = review_attention_reasons(review)
             if review["id"] in regressions:
@@ -1429,7 +1463,7 @@ def build_router(state: ServerState) -> APIRouter:
             if target is None and isinstance(review.get("ask_scenario"), dict):
                 target = review["ask_scenario"].get("target_ask")
             source_ref = _identifier_source_json(
-                state.project.source_index,
+                project.source_index,
                 target,
             )
             if source_ref is not None:
@@ -1441,11 +1475,25 @@ def build_router(state: ServerState) -> APIRouter:
             "limit": bounded,
         }
 
-    @router.get("/generation/review-evidence")
+    @read_route("/generation/history", review_reads)
+    def generation_history(
+        limit: int = 100, offset: int = 0,
+        view: Literal["attention", "archive"] = "archive",
+    ):
+        return review_page(state.project, limit, offset, view, replay_current=True)
+
+    @router.get("/generation/recorded-history")
+    def generation_recorded_history(
+        limit: int = 100, offset: int = 0,
+        view: Literal["attention", "archive"] = "archive",
+    ):
+        return review_page(state.project, limit, offset, view, replay_current=False)
+
+    @read_route("/generation/review-evidence", review_reads)
     def generation_review_evidence():
-        with state.generation_lock:
-            ask_evidence = ask_review_evidence(state.project)
-            premise_evidence = premise_review_evidence(state.project)
+        project = state.project
+        ask_evidence = ask_review_evidence(project)
+        premise_evidence = premise_review_evidence(project)
         return {
             **ask_evidence,
             "ask_summary": ask_evidence["summary"],

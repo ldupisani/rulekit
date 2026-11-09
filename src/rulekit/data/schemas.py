@@ -479,7 +479,7 @@ class ObligationsDoc(StrictModel):
 # ---------------------------------------------------------------------------
 
 SLOT_TYPES = (
-    "number", "ordinal", "scale_label", "fraction", "multiplier", "nonunit_multiplier",
+    "number", "ordinal", "scale_label", "fraction", "multiplier", "nonunit_multiplier", "ratio",
     "name", "noun", "plural", "counted",
     "entity", "verb", "auxiliary", "modal", "future_modal",
     "pronoun", "word",
@@ -929,10 +929,10 @@ class MatchToken(StrictModel):
             raise ValueError("`integer` only qualifies a `type: number` slot")
         if (
             self.value_positive or self.value_min is not None or self.value_max is not None
-        ) and self.type not in {"number", "counted"} and not self.counted:
+        ) and self.type not in {"number", "ratio", "counted"} and not self.counted:
             raise ValueError(
-                "`value_positive`/`value_min`/`value_max` only qualify a `type: number` "
-                "or counted slot"
+                "`value_positive`/`value_min`/`value_max` only qualify number, ratio, "
+                "or counted slots"
             )
         if (
             self.value_min is not None
