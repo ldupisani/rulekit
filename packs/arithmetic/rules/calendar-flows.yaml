@@ -41,8 +41,8 @@ rules:
 - id: arithmetic/maximum-day-postposed-count
   match:
     sentence:
-    - lit: during
-      consume_skipped: true
+    - slot: interval
+      cat: temporal_interval_preposition
     - lit: the
       consume_skipped: true
     - slot: week
@@ -89,6 +89,8 @@ rules:
   - act
   - amount
   satisfies:
+    interval:
+    - object
     most:
     - collection
     act:

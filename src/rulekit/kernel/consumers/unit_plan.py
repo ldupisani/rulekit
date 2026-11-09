@@ -9,7 +9,7 @@ from ..affine_graph import AffineError
 from ..composition_evidence import closed_evidence, finish_batch_answer
 from ..reference_identity import reference_from_unit, constrains
 from ..predicate_compatibility import predicates_compatible
-from ..rate_calculation import convert_units, convert_duration
+from ..rate_calculation import convert_units, convert_exact_duration
 from ..evaluate import evaluate
 
 KINDS = {
@@ -90,6 +90,13 @@ def consume(ctx):
         )
     if objects:
         obj = objects[0]
+        activity = ctx.query.get("verb")
+        if (
+            not activity
+            or any(r.verb != activity for r in links + extras)
+            or (obj.verb and obj.verb != activity)
+        ):
+            return fail("component requirements must describe the requested activity")
         first = links[0]
         part = first.container
         plural = ctx.reg.singular_to_plural.get(part, part)
@@ -121,8 +128,6 @@ def consume(ctx):
         start = (anchors[0].measure, anchors[0].attribute)
         value = anchors[0].value
     elif "span_value" in ctx.query and mode == "capacity":
-        start = (ctx.query["span_unit"], ctx.query["basis_resource"])
-        value = float(ctx.query["span_value"])
         basis = next(
             (
                 r
@@ -131,33 +136,40 @@ def consume(ctx):
             ),
             None,
         )
-        duration = (
-            (
-                convert_duration(
-                    value,
-                    start[0],
-                    basis.container,
-                    ctx.reg,
-                    ctx.log,
-                    source="capacity-complete-periods",
-                )
-            )
-            if basis
-            else None
+        if basis is None:
+            return fail("the carrying capacity needs a stated schedule period")
+        duration = convert_exact_duration(
+            float(ctx.query["span_value"]),
+            ctx.query["span_unit"],
+            basis.container,
+            ctx.reg,
+            ctx.log,
+            source="capacity-complete-periods",
         )
-        periods = duration / (basis.per_member or 1) if duration is not None else None
-        if periods is None or not float(periods).is_integer():
+        if duration is None:
+            return fail(
+                "the capacity horizon and schedule need compatible duration units"
+            )
+        periods = duration / (basis.per_member or 1)
+        if periods <= 0 or not float(periods).is_integer():
             return fail(
                 "the capacity horizon must contain complete stated schedule periods"
             )
+        start = (basis.container, ctx.query["basis_resource"])
+        value = duration
     else:
         return fail("a stated starting quantity or capacity horizon is required")
     target = (
         ctx.query.get("measure") or links[-1].measure,
         ctx.query.get("resource") or links[-1].attribute,
     )
-    if exact and exact[0].measure != target[1]:
-        return fail("the exact-use statement must name the same application")
+    if exact and (
+        exact[0].measure != target[1]
+        or any(r.measure != target[1] for r in rows if r.kind == "unit-plan-context")
+    ):
+        return fail(
+            "the plan context, exact use and question must name the same application"
+        )
     resources = {r.attribute for r in links} | {r.acquisition for r in links}
     if any(
         r.kind == "unit-plan-context"

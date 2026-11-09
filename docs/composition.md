@@ -928,7 +928,8 @@ Named stock and output partitions share the same checked allocation balance.
 Each share preserves its holder, item, label and original-stock or remainder
 basis. A per-package classification scales only through a matching purchase;
 repeated populations preserve their stated duration. Exhaustive partition
-prices can value each part separately, including an explicitly relative price.
+prices can value each part of a repeated supply or consumable population,
+including an explicitly relative price.
 Unknown classifications, overlapping labels, incompatible currencies,
 overspending and fractional discrete counts decline.
 
@@ -936,10 +937,11 @@ Quantity plans compose connected ratios between **(unit, resource)** nodes.
 Physical conversions join only the same resource; equal dimensions do not
 identify different substances. Callers retain the distinction between capacity,
 required supplies and actual use. Supply capacity needs an explicit exact-use
-statement before answering an actual recipient count. Scheduled carrying
-capacity projects through complete periods. Maintenance requirements can use
-inherited component counts, plus a separately stated allowance for the rest of
-the object. Scoped container comparisons additionally preserve ordinal identity,
+statement naming the same application before answering an actual recipient count.
+Scheduled carrying capacity and recurring prices use exact duration conversions
+and require whole schedule periods. Component work can use inherited part counts
+and a separate allowance for the rest of the object. Both requirements must apply
+to the activity asked about. Scoped container comparisons preserve ordinal identity,
 apply resource-per-size limits, and round down to whole members before a stated
 within-group removal. They report the proportional filling and stocking default.
 Container populations retain their ordinary `Quantity` representation and are

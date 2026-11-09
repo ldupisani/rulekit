@@ -3,10 +3,6 @@
 from dataclasses import dataclass
 from math import isfinite
 
-from .dimensions import conversion_factor
-from .rate_calculation import convert_calendar_duration
-from .evaluate import evaluate
-
 
 @dataclass(frozen=True)
 class ReportingPeriod:
@@ -59,16 +55,3 @@ def reporting_period(reference, reg):
 def period_annotation(reference):
     """Render preserved source qualifiers for existing temporal metadata."""
     return " ".join((*reference.qualifiers, reference.head))
-
-
-def reporting_duration(value, unit, target, reg, log, *, source):
-    """Reuse exact calendar and fixed-duration conversions without month lengths."""
-    result = convert_calendar_duration(value, unit, target, reg, log, source=source)
-    if result is not None:
-        return result
-    factor = conversion_factor(reg, unit, target, category="duration_measure")
-    if factor is None:
-        return None
-    return evaluate(
-        "value * factor", dict(value=value, factor=factor), log, source=source
-    )

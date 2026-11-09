@@ -9,8 +9,13 @@ from ..composition_evidence import closed_evidence, finish_batch_answer
 from ..reference_identity import reference_from_unit
 from ..reference_bindings import referenced_forms_agree
 from ..rate_query import rate_subject_reference
-from ..rate_calculation import apply_rate, convert_units, rate_operands
-from ..reporting_periods import reporting_period, reporting_duration, period_annotation
+from ..rate_calculation import (
+    apply_rate,
+    convert_exact_duration,
+    convert_units,
+    rate_operands,
+)
+from ..reporting_periods import reporting_period, period_annotation
 from ..evaluate import evaluate
 from ..resource_equations import resource_residual
 from ..source_coverage import covered_temporal_annotation
@@ -141,7 +146,7 @@ def consume(ctx):
     for row in spans:
         if row.verb != rate.verb or not isfinite(row.value) or row.value < 0:
             return fail("each interval must use the same stated activity rate")
-        duration = reporting_duration(
+        duration = convert_exact_duration(
             row.value,
             row.measure,
             rate.per,
@@ -169,7 +174,7 @@ def consume(ctx):
                     (row.provenance.sentence,),
                 )
             )
-    budget = reporting_duration(
+    budget = convert_exact_duration(
         1, window.unit, rate.per, ctx.reg, ctx.log, source="account-reporting-window"
     )
     if budget is not None and sum(elapsed) > budget + 1e-9:

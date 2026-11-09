@@ -32,6 +32,20 @@ def gsm8k():
     return load_project(GSM8K)
 
 
+def test_service_ask_generation_accepts_a_meal_application(curated):
+    case = generate_ask_scenario(
+        curated,
+        ask_id="ask/material-service-recipient-count",
+        seed=0,
+        scenario_mode="ask_only",
+        locked_bindings={
+            "unit": "people", "be": "is", "who": "Cato", "act": "serving", "service": "meal",
+        },
+    )
+    assert case.target_ask == "ask/material-service-recipient-count"
+    assert case.query["resource"] == "meal"
+
+
 def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
     curated,
 ) -> None:
@@ -49,7 +63,7 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
     assert any("antecedent discourse group" in blocker for blocker in contextual.blockers)
     # The reusable physics pack adds the independently generatable
     # ask/physics-quantity surface to curated.
-    assert sum(item.supported for item in availability.values()) == 459
+    assert sum(item.supported for item in availability.values()) == 460
     assert availability["ask/how-many-of-collection-are-label"].supported
     assert availability["ask/how-many-of-collection-are-label"].supported_modes == (
         "ask_only",
@@ -76,8 +90,7 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
     assert len(availability) == 505
     assert {
         item.id for item in availability.values() if not item.supported
-    } == {'ask/material-service-recipient-count',
-          'ask/available-unit-assignments-with-vacancy',
+    } == {'ask/available-unit-assignments-with-vacancy',
           'ask/container-content-cubic-amount',
           'ask/chem-cost-of-moles',
           'ask/measured-remainder-after-production-varieties',
@@ -177,15 +190,17 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
     unfilled_capacity_participants = {"ask/available-unit-assignments-with-vacancy"}
     assert availability[next(iter(unfilled_capacity_participants))].blockers == (
         "no project-backed ask filler exists for others",)
-    unfilled_service_actions = {"ask/material-service-recipient-count"}
-    assert availability[next(iter(unfilled_service_actions))].blockers == (
-        "no project-backed ask filler exists for act",)
-    assert availability[next(iter(unfilled_service_actions))].supported_modes == ()
+    service = availability["ask/material-service-recipient-count"]
+    assert service.supported
+    assert not service.blockers
+    assert service.supported_modes == (
+        "ask_only", "answerable", "validated_premises", "missing_evidence",
+    )
     assert all(
         "answerable" in item.supported_modes
         for item in availability.values()
         if not item.supported and not item.id.startswith("ask/chem-")
-        and item.id not in unfilled_ordinals | unfilled_scale_labels | unfilled_collections | unfilled_powered_units | unfilled_production | unfilled_process_indices | unfilled_capacity_participants | unfilled_service_actions
+        and item.id not in unfilled_ordinals | unfilled_scale_labels | unfilled_collections | unfilled_powered_units | unfilled_production | unfilled_process_indices | unfilled_capacity_participants
     )
     for ask_id in deadline_asks:
         assert availability[ask_id].supported

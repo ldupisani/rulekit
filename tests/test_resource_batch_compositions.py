@@ -164,6 +164,11 @@ def test_classification_preserves_package_basis_and_whole_queries(
     number(reg, classified().rsplit("How many", 1)[0] + question, expected)
 
 
+def test_package_classification_also_counts_defective_supplies(reg):
+    text = classified().replace("magic cards", "stickers").replace("cards", "stickers")
+    number(reg, text.replace("uncommon", "defective"), 16)
+
+
 @pytest.mark.parametrize(
     "before,after",
     [
@@ -197,6 +202,15 @@ def test_repeated_exhaustive_partition_prices(reg):
     number(reg, repeated_prices().replace("a day", "per day"), 180)
 
 
+def test_repeated_supply_prices_apply_across_complete_calendar_periods(reg):
+    text = repeated_prices().replace("took", "used").replace("pills", "stickers")
+    text = text.replace("a day for 5 days", "per month for one year")
+    number(reg, text, 432)
+    number(reg, text.replace("one year", "0.5 years"), 216)
+    assert not solve(text.replace("used", "took"), reg).answer.committed
+    assert not solve(text.replace("one year", "60 days"), reg).answer.committed
+
+
 @pytest.mark.parametrize(
     "before,after",
     [
@@ -223,6 +237,24 @@ def test_nested_supply_units_support_recipient_capacity(reg):
     r = number(reg, supply(), 24)
     assert "full-capacity-plan" in {a.id for a in r.answer.assumptions}
     number(reg, supply().replace("3 boxes", "5 boxes"), 40)
+
+
+def test_exact_service_plan_can_supply_a_meal(reg):
+    capacity = "Each bottle of juice will hold enough juice for 3 people's meal. "
+    plan = (
+        "Selene decides to bring 3 boxes of juice, each of which holds 2 bottles of juice, "
+        "and this will be the exact amount she needs for everyone's meal. "
+    )
+    question = "How many people is Selene serving with the meal?"
+    text = capacity + plan + question
+    number(reg, text, 18)
+    cosmetics = text.replace("juice", "lip gloss").replace("meal", "makeup")
+    number(reg, cosmetics.replace("serving", "painting"), 18)
+    assert not solve(text.replace("serving", "painting"), reg).answer.committed
+    assert not solve(text.replace("the meal?", "makeup?"), reg).answer.committed
+    assert not solve(
+        capacity + supply().split("Each bottle")[0] + question, reg
+    ).answer.committed
 
 
 @pytest.mark.parametrize(
@@ -263,6 +295,28 @@ def test_requirement_unit_question_converts_declared_aliases(reg):
     number(reg, repair().replace("How much oil", "How many milliliters of oil"), 7)
 
 
+def test_component_work_reuses_counts_for_repairs_and_cleaning(reg):
+    text = repair().replace("fixing", "repairing").replace("fix", "repair")
+    text = text.replace("ml of oil", "meters of tape").replace(
+        "How much oil", "How much tape"
+    )
+    number(reg, text, 7)
+
+    text = repair("cow").replace("fixing", "cleaning").replace("fix", "clean")
+    text = text.replace("wheel", "leg").replace("ml of oil", "liters of water")
+    text = text.replace("How much oil", "How much water")
+    number(reg, text, 11)
+
+    for clause in (
+        "is cleaning",
+        "to clean each",
+        "to clean the rest",
+        "to clean the cow?",
+    ):
+        mixed = text.replace(clause, clause.replace("clean", "repair"))
+        assert not solve(mixed, reg).answer.committed
+
+
 @pytest.mark.parametrize(
     "before,after",
     [
@@ -293,6 +347,16 @@ def test_scheduled_operation_capacity_uses_complete_periods(reg):
         transport().replace("trips", "journeys").replace("per trip", "per journey"),
         72,
     )
+
+
+def test_scheduled_capacity_can_cross_exact_duration_units(reg):
+    text = transport().replace("boat", "train").replace("per day", "per month")
+    number(reg, text.replace("3 days?", "one year?"), 288)
+    number(reg, text.replace("3 days?", "0.5 years?"), 144)
+    assert not solve(text.replace("3 days?", "60 days?"), reg).answer.committed
+    text = transport().replace("per day", "per hour")
+    number(reg, text.replace("3 days?", "7200 seconds?"), 48)
+    assert not solve(text.replace("3 days?", "5400 seconds?"), reg).answer.committed
 
 
 @pytest.mark.parametrize(
@@ -328,6 +392,8 @@ def test_resource_constrained_populations_keep_ordinal_scope_identity(reg):
     number(reg, constrained(loss=True), 2)
     number(reg, constrained("cars"), 3)
     number(reg, constrained("cars", True), 2)
+    text = constrained("cars").replace("water", "sand")
+    number(reg, text.replace("liters", "kilograms").replace("liter", "kilogram"), 3)
 
 
 @pytest.mark.parametrize(
@@ -412,6 +478,7 @@ def test_explicit_calendar_graph_reports_approximations(reg):
     r = number(reg, daily(), 104)
     assert "Approximate" in r.answer.reason
     assert "approximate-calendar-total" in {a.id for a in r.answer.assumptions}
+    number(reg, daily().replace("During the week", "Over the week"), 104)
 
 
 def test_exact_daily_counts_do_not_report_an_estimate(reg):

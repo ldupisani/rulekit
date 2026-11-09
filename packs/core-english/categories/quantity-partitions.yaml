@@ -11,8 +11,10 @@ categories:
     parent: noun
   partition_output_verb:
     parent: verb
-  partition_consumption_verb:
+  partition_input_activity:
     parent: verb
+  partition_consumption_verb:
+    parent: partition_input_activity
   complementary_partition_attribute:
     parent: adjective
   scoped_quantity_predicate:
@@ -31,11 +33,12 @@ members:
   - take
   - takes
   - took
+  - consume
+  - consumed
+  partition_input_activity:
   - use
   - uses
   - used
-  - consume
-  - consumed
   complementary_partition_attribute:
   - other
   - remaining

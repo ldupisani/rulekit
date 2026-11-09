@@ -1,5 +1,6 @@
 """Shared rate arithmetic and activity identity, without vocabulary defaults."""
 
+from .dimensions import conversion_factor
 from .evaluate import evaluate
 from dataclasses import dataclass
 from math import isfinite
@@ -31,6 +32,19 @@ def convert_calendar_duration(value, source_unit, target_unit, reg, log, *, sour
         return evaluate('value * before / after', dict(value=value, before=before, after=after),
                         log, source=source)
     return convert_duration(value, source_unit, target_unit, reg, log, source=source)
+
+
+def convert_exact_duration(value, unit, target, reg, log, *, source):
+    """Use exact calendar or fixed-duration conversions, including unit chains."""
+    result = convert_calendar_duration(value, unit, target, reg, log, source=source)
+    if result is not None:
+        return result
+    factor = conversion_factor(reg, unit, target, category="duration_measure")
+    if factor is None:
+        return None
+    return evaluate(
+        "value * factor", dict(value=value, factor=factor), log, source=source
+    )
 
 
 def rate_operands(rate):

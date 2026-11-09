@@ -9,7 +9,7 @@ from ..resource_equations import FractionalAllocation, FractionBasis
 from ..evaluate import evaluate
 from ..reference_identity import reference_from_unit
 from ..source_coverage import quantity_ledger_source_units
-from ..rate_calculation import convert_duration, convert_units
+from ..rate_calculation import convert_exact_duration, convert_units
 
 KINDS = {
     "partition-pool",
@@ -105,7 +105,7 @@ def consume(ctx):
         if pool.marker:
             if pool.per_member <= 0 or not pool.attribute:
                 return fail("a repeated partition needs an explicit complete duration")
-            scale = convert_duration(
+            scale = convert_exact_duration(
                 pool.per_member,
                 pool.attribute,
                 pool.marker,

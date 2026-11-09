@@ -4,8 +4,12 @@ categories:
     parent: adjective
   functional_state_action:
     parent: verb
-  maintenance_action:
+  component_work_action:
     parent: verb
+  maintenance_action:
+    parent: component_work_action
+  component_cleaning_action:
+    parent: component_work_action
   material_sufficiency_attribute:
     parent: adjective
   object_condition_belief:
@@ -16,10 +20,16 @@ categories:
     parent: verb
   quantity_supply_action:
     parent: verb
-  recipient_service_action:
+  material_application_action:
     parent: verb
+  recipient_service_action:
+    parent: material_application_action
+  cosmetic_application_action:
+    parent: material_application_action
   resource_application:
     parent: noun
+  cosmetic_application:
+    parent: resource_application
   stock_limit_attribute:
     parent: adjective
   stock_resource_noun:
@@ -43,6 +53,15 @@ members:
   - fixes
   - fixed
   - fixing
+  - repair
+  - repairs
+  - repaired
+  - repairing
+  component_cleaning_action:
+  - clean
+  - cleans
+  - cleaned
+  - cleaning
   material_sufficiency_attribute:
   - enough
   object_condition_belief:
@@ -71,10 +90,14 @@ members:
   - serve
   - serves
   - served
+  - serving
+  cosmetic_application_action:
+  - paint
   resource_application:
-  - makeup
   - meal
   - painting
+  cosmetic_application:
+  - makeup
   stock_limit_attribute:
   - limited
   stock_resource_noun:

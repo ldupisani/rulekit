@@ -241,10 +241,10 @@ rules:
       referential: true
       at_start: true
     - slot: act
-      cat: partition_consumption_verb
+      cat: partition_input_activity
       finite_form: true
     - slot: amount
-      cat: consumable_quantity_object
+      cat: purchase_item
       counted: true
       bare: true
     - lit:
@@ -261,7 +261,7 @@ rules:
       cat: duration_measure
       counted: true
       bare: true
-      value_min: 1
+      value_min: 0
     - lit: .
       consume_skipped: true
   emits:
@@ -281,9 +281,15 @@ rules:
   satisfies:
     act:
     - subject
-  where: []
-  description: Preserve the holder, item, partition label and basis before scaling or valuing an exhaustive 
-    account.
+  where:
+  - number_compatible: [who, act]
+  - bound_requires_category:
+      bound: act
+      bound_cat: partition_consumption_verb
+      slot: amount
+      cat: consumable_quantity_object
+  description: A repeated, counted input population can be valued using an exhaustive price partition.
+    Consumptive readings of taking require a consumable item.
 - id: arithmetic/counted-partition-price
   match:
     sentence:

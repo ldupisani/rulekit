@@ -6,7 +6,8 @@ from rulekit.data.project import load_project
 from rulekit.kernel.engine import solve
 from rulekit.kernel.model import ActivityAccountEvidence
 from rulekit.kernel.reference_identity import ReferenceIdentity
-from rulekit.kernel.reporting_periods import reporting_period, reporting_duration
+from rulekit.kernel.reporting_periods import reporting_period
+from rulekit.kernel.rate_calculation import convert_exact_duration
 from rulekit.kernel.evaluate import ArithmeticLog
 
 
@@ -208,5 +209,5 @@ def test_period_normalization_retains_scope_and_declines_compound_restrictions(r
     ]:
         assert reporting_period(ref, reg) is None
     log = ArithmeticLog()
-    assert reporting_duration(2, "hour", "second", reg, log, source="test") == 7200
-    assert reporting_duration(1, "month", "day", reg, log, source="test") is None
+    assert convert_exact_duration(2, "hour", "second", reg, log, source="test") == 7200
+    assert convert_exact_duration(1, "month", "day", reg, log, source="test") is None

@@ -7142,7 +7142,7 @@ entries:
   service:
     senses:
     - adjective
-  serving: {senses: [noun], plural: servings}
+  serving: {senses: [noun, verb], plural: servings, verb: {lemma: serve}}
   session:
     senses:
     - noun

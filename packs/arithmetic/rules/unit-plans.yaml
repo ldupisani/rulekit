@@ -278,7 +278,7 @@ rules:
       uncounted: true
       qualified: true
       qualifier_cat: exact_quantity_attribute
-    - slot: she
+    - slot: subject
       cat: clause_subject_personal_pronoun
     - slot: need
       cat: direct_quantity_goal_predicate
@@ -346,7 +346,7 @@ rules:
     - resource
     - content
   references:
-    she: who
+    subject: who
   bindings:
     poss:
       owner: everyone
@@ -427,7 +427,7 @@ rules:
       cat: resource_application
       uncounted: true
       bare: true
-    - slot: she
+    - slot: who
       type: entity
       common_noun_cat: collection_agent
       referential: true
@@ -449,7 +449,7 @@ rules:
       bare: true
     - lit: so
       consume_skipped: true
-    - slot: again
+    - slot: counting_subject
       cat: clause_subject_personal_pronoun
     - slot: count
       cat: quantity_counting_action
@@ -463,7 +463,7 @@ rules:
       uncounted: true
       bare: true
       number: plural
-    - slot: she2
+    - slot: requirement_subject
       cat: clause_subject_personal_pronoun
     - slot: need
       cat: direct_quantity_goal_predicate
@@ -473,7 +473,7 @@ rules:
   emits:
   - fact: batch_evidence
     kind: unit-plan-context
-    entity: '{she}'
+    entity: '{who}'
     measure: '{service}'
     value: '0'
     position: '0'
@@ -495,8 +495,8 @@ rules:
     - subject
   where: []
   references:
-    again: she
-    she2: she
+    counting_subject: who
+    requirement_subject: who
   description: Preserve a declared object, resource, application or unit ratio in one quantity plan; the
     consumer checks identity and actual use versus capacity.
 - id: arithmetic/discovered-object-resource-assessment
@@ -600,8 +600,8 @@ rules:
       bare: true
     - lit: to
       consume_skipped: true
-    - slot: fix
-      cat: maintenance_action
+    - slot: work
+      cat: component_work_action
       bare_form: true
     - slot: each
       cat: distributive_quantifier
@@ -630,8 +630,8 @@ rules:
       bare: true
     - lit: to
       consume_skipped: true
-    - slot: fix2
-      cat: maintenance_action
+    - slot: work2
+      cat: component_work_action
       bare_form: true
     - lit: the
       consume_skipped: true
@@ -656,7 +656,7 @@ rules:
     position: '{amount.span_start}'
     container: '{part}'
     attribute: '{resource}'
-    verb: '{fix}'
+    verb: '{work}'
   - fact: batch_evidence
     kind: unit-plan-supplement
     entity: '{who}'
@@ -665,32 +665,32 @@ rules:
     position: '{extra.span_start}'
     attribute: '{resource2}'
     container: '{object}'
-    verb: '{fix2}'
+    verb: '{work2}'
   consumes:
   - need
   - amount
-  - fix
+  - work
   - need2
   - extra
-  - fix2
+  - work2
   satisfies:
     need:
     - subject
-    fix:
+    work:
     - subject
     each:
     - collection
     need2:
     - subject
-    fix2:
+    work2:
     - subject
   where:
   - same_lemma:
     - resource
     - resource2
   - same_lemma:
-    - fix
-    - fix2
+    - work
+    - work2
   description: Preserve a declared object, resource, application or unit ratio in one quantity plan; the
     consumer checks identity and actual use versus capacity.
 - id: arithmetic/planned-material-supply
@@ -790,7 +790,7 @@ rules:
     - hold
   description: Preserve a declared object, resource, application or unit ratio in one quantity plan; the
     consumer checks identity and actual use versus capacity.
-- id: arithmetic/active-object-maintenance-context
+- id: arithmetic/active-component-work-context
   match:
     sentence:
     - slot: who
@@ -800,8 +800,8 @@ rules:
       at_start: true
     - slot: be
       cat: copula
-    - slot: fix
-      cat: maintenance_action
+    - slot: work
+      cat: component_work_action
       present_participle: true
     - slot: object
       type: entity
@@ -817,14 +817,14 @@ rules:
     value: '0'
     position: '0'
     container: '{object}'
-    verb: '{fix}'
+    verb: '{work}'
   consumes:
   - be
-  - fix
+  - work
   satisfies:
     be:
     - subject
-    fix:
+    work:
     - subject
   where: []
   description: Preserve a declared object, resource, application or unit ratio in one quantity plan; the
@@ -852,8 +852,8 @@ rules:
       bare: true
     - lit: to
       consume_skipped: true
-    - slot: fix
-      cat: maintenance_action
+    - slot: work
+      cat: component_work_action
       bare_form: true
     - slot: each
       cat: distributive_quantifier
@@ -872,15 +872,15 @@ rules:
     position: '{amount.span_start}'
     container: '{part}'
     attribute: '{resource}'
-    verb: '{fix}'
+    verb: '{work}'
   consumes:
   - need
   - amount
-  - fix
+  - work
   satisfies:
     need:
     - subject
-    fix:
+    work:
     - subject
     each:
     - collection
@@ -910,8 +910,8 @@ rules:
       bare: true
     - lit: to
       consume_skipped: true
-    - slot: fix
-      cat: maintenance_action
+    - slot: work
+      cat: component_work_action
       bare_form: true
     - lit: the
       consume_skipped: true
@@ -936,15 +936,15 @@ rules:
     position: '{extra.span_start}'
     attribute: '{resource}'
     container: '{object}'
-    verb: '{fix}'
+    verb: '{work}'
   consumes:
   - need
   - extra
-  - fix
+  - work
   satisfies:
     need:
     - subject
-    fix:
+    work:
     - subject
   where: []
   description: Preserve a declared object, resource, application or unit ratio in one quantity plan; the
@@ -1064,7 +1064,7 @@ asks:
       cat: duration_measure
       counted: true
       bare: true
-      value_min: 1
+      value_min: 0
     - lit: '?'
       consume_skipped: true
   resolves:
@@ -1100,7 +1100,7 @@ asks:
       common_noun_cat: collection_agent
       referential: true
     - slot: act
-      cat: component_depiction_activity
+      cat: material_application_action
       present_participle: true
     - lit: with
       consume_skipped: true
@@ -1116,6 +1116,13 @@ asks:
     measure: '{unit}'
     resource: '{service}'
     mode: exact
+  where:
+  - number_compatible: [who, be]
+  - verb_role_compatible:
+      verb: act
+      verb_cat: cosmetic_application_action
+      roles: [service]
+      role_cat: cosmetic_application
   satisfies:
     be:
     - subject
@@ -1149,8 +1156,8 @@ asks:
       cat: group_total_marker
     - lit: to
       consume_skipped: true
-    - slot: fix
-      cat: maintenance_action
+    - slot: work
+      cat: component_work_action
       bare_form: true
     - slot: object
       type: entity
@@ -1163,12 +1170,12 @@ asks:
     entity: '{who}'
     resource: '{resource}'
     scope: '{object}'
-    verb: '{fix}'
+    verb: '{work}'
     mode: requirement
   satisfies:
     need:
     - subject
-    fix:
+    work:
     - subject
     link:
     - object
@@ -1236,8 +1243,8 @@ asks:
       cat: group_total_marker
     - lit: to
       consume_skipped: true
-    - slot: fix
-      cat: maintenance_action
+    - slot: work
+      cat: component_work_action
       bare_form: true
     - slot: object
       type: entity
@@ -1250,13 +1257,13 @@ asks:
     entity: '{who}'
     resource: '{resource}'
     scope: '{object}'
-    verb: '{fix}'
+    verb: '{work}'
     mode: requirement
     measure: '{unit}'
   satisfies:
     need:
     - subject
-    fix:
+    work:
     - subject
     link:
     - object
