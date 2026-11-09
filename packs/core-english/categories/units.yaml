@@ -1,9 +1,9 @@
 format: rulekit/categories@1
 categories:
-  measure_unit: {parent: noun, notes: Units available to pairwise conversion rules when an explicit conversion
-      is declared.}
+  measure_unit: {parent: noun, notes: Units available to pairwise conversion rules when an explicit
+      conversion is declared.}
   calendar_span_unit: {parent: noun}
 members:
-  measure_unit: [centimeter, day, degree, foot, gallon, gram, hour, inch, kilogram, kilometer, liter, meter,
-      mile, milliliter, minute, moles, ounce, pint, pound, quart, radian, watt, week, yard]
+  measure_unit: [centimeter, day, degree, foot, gallon, gram, hour, inch, kilogram, kilometer, liter,
+    meter, mile, milliliter, minute, moles, ounce, pint, pound, quart, radian, watt, week, yard, ml]
   calendar_span_unit: [day, month, week, year]

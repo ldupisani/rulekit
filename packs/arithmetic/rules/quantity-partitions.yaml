@@ -1,0 +1,505 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/owned-output-scope-fraction
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: quantity_holder
+      referential: true
+      at_start: true
+    - slot: act
+      cat: scoped_quantity_predicate
+      finite_form: true
+    - slot: share
+      type: fraction
+      fraction_within_whole: true
+    - lit: of
+      consume_skipped: true
+    - slot: owner
+      cat: possessive_determiner
+    - slot: item
+      cat: partition_count_unit
+      uncounted: true
+      possessed: true
+    - slot: link
+      cat: group_total_preposition
+    - slot: scope
+      type: entity
+      common_noun_cat: allocation_section
+      referential: true
+  emits:
+  - fact: batch_evidence
+    kind: partition-fraction
+    entity: '{who}'
+    measure: '{item}'
+    value: share
+    position: '{share.span_start}'
+    container: '{scope}'
+    acquisition: '{item.owner}'
+    marker: '{item.qualifier}'
+  consumes:
+  - act
+  - share
+  satisfies:
+    act:
+    - subject
+    link:
+    - object
+  where: []
+  references:
+    owner: who
+  description: Preserve the holder, item, partition label and basis before scaling or valuing an exhaustive 
+    account.
+- id: arithmetic/owned-output-scope-fraction-continuation
+  match:
+    sentence:
+    - lit: ','
+      consume_skipped: true
+    - slot: share
+      type: fraction
+      fraction_within_whole: true
+    - lit: of
+      consume_skipped: true
+    - slot: owner
+      cat: possessive_determiner
+    - slot: item
+      cat: partition_count_unit
+      uncounted: true
+      possessed: true
+    - slot: link
+      cat: group_total_preposition
+    - slot: scope
+      type: entity
+      common_noun_cat: allocation_section
+      referential: true
+  emits:
+  - fact: batch_evidence
+    kind: partition-fraction
+    entity: ''
+    measure: '{item}'
+    value: share
+    position: '{share.span_start}'
+    container: '{scope}'
+    acquisition: '{item.owner}'
+    marker: '{item.qualifier}'
+  consumes:
+  - share
+  satisfies:
+    link:
+    - object
+  where: []
+  description: Preserve the holder, item, partition label and basis before scaling or valuing an exhaustive 
+    account.
+- id: arithmetic/scoped-output-explicit-remainder
+  match:
+    sentence:
+    - lit: and
+      consume_skipped: true
+    - slot: rest
+      cat: partition_remnant
+      uncounted: true
+      bare: true
+    - slot: link
+      cat: group_total_preposition
+    - slot: scope
+      type: entity
+      common_noun_cat: allocation_section
+      referential: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: partition-rest
+    entity: ''
+    measure: ''
+    value: '0'
+    position: '0'
+    container: '{scope}'
+  consumes: []
+  satisfies:
+    link:
+    - object
+  where: []
+  description: Preserve the holder, item, partition label and basis before scaling or valuing an exhaustive 
+    account.
+- id: arithmetic/collective-transaction-output-count
+  match:
+    sentence:
+    - slot: who
+      cat: discourse_subject_group_pronoun
+      at_start: true
+    - slot: act
+      cat: partition_output_verb
+      finite_form: true
+    - slot: amount
+      cat: transaction_count_unit
+      counted: true
+      bare: true
+    - opt:
+      - slot: time
+        cat: time
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: quantity
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    verb: '{act}'
+    time: '{time.optional}'
+  consumes:
+  - act
+  - amount
+  satisfies:
+    who:
+    - refers
+    act:
+    - subject
+  where: []
+  description: Preserve the holder, item, partition label and basis before scaling or valuing an exhaustive 
+    account.
+- id: arithmetic/packaged-classified-content
+  match:
+    sentence:
+    - slot: each
+      cat: distributive_quantifier
+      at_start: true
+    - slot: package
+      cat: quantity_container
+      uncounted: true
+      bare: true
+    - slot: have
+      cat: possession_state
+      finite_form: true
+    - slot: amount
+      cat: inventory_item
+      counted: true
+      bare: true
+    - lit: and
+      consume_skipped: true
+    - slot: share
+      type: fraction
+      fraction_within_whole: true
+    - lit: of
+      consume_skipped: true
+    - lit: those
+      consume_skipped: true
+    - slot: item
+      cat: inventory_item
+      uncounted: true
+      bare: true
+      number: plural
+    - slot: be
+      cat: plural_copula
+    - slot: label
+      cat: inventory_classification_attribute
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: partition-pool
+    entity: ''
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+    container: '{package}'
+  - fact: batch_evidence
+    kind: partition-fraction
+    entity: ''
+    measure: '{item}'
+    value: share
+    position: '{share.span_start}'
+    attribute: '{label}'
+  consumes:
+  - have
+  - amount
+  - share
+  - be
+  satisfies:
+    each:
+    - collection
+    have:
+    - subject
+    be:
+    - subject
+  where:
+  - same_lemma:
+    - amount
+    - item
+  - number_compatible:
+    - package
+    - have
+  description: Preserve the holder, item, partition label and basis before scaling or valuing an exhaustive 
+    account.
+- id: arithmetic/repeated-item-population
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+      at_start: true
+    - slot: act
+      cat: partition_consumption_verb
+      finite_form: true
+    - slot: amount
+      cat: consumable_quantity_object
+      counted: true
+      bare: true
+    - lit:
+      - a
+      - per
+      consume_skipped: true
+    - slot: period
+      cat: duration_measure
+      uncounted: true
+      bare: true
+    - lit: for
+      consume_skipped: true
+    - slot: span
+      cat: duration_measure
+      counted: true
+      bare: true
+      value_min: 1
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: partition-pool
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+    marker: '{period}'
+    per_member: span
+    attribute: '{span}'
+  consumes:
+  - act
+  - amount
+  - span
+  satisfies:
+    act:
+    - subject
+  where: []
+  description: Preserve the holder, item, partition label and basis before scaling or valuing an exhaustive 
+    account.
+- id: arithmetic/counted-partition-price
+  match:
+    sentence:
+    - lit: of
+      consume_skipped: true
+    - lit: these
+      consume_skipped: true
+    - slot: total
+      cat: purchase_item
+      counted: true
+      bare: true
+    - lit: ','
+      consume_skipped: true
+    - slot: subset
+      cat: purchase_item
+      counted: true
+      bare: true
+    - slot: cost
+      cat: price_verb
+      finite_form: true
+    - slot: price
+      cat: currency_unit
+      counted: true
+      bare: true
+    - slot: each
+      cat: postpositive_distributive_quantifier
+    - lit: ','
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: partition-reference
+    entity: ''
+    measure: '{total}'
+    value: total
+    position: '{total.span_start}'
+  - fact: batch_evidence
+    kind: partition-count
+    entity: ''
+    measure: '{subset}'
+    value: subset
+    position: '{subset.span_start}'
+    attribute: specified
+  - fact: batch_evidence
+    kind: partition-price
+    entity: ''
+    measure: '{price}'
+    value: price
+    position: '{price.span_start}'
+    attribute: specified
+  consumes:
+  - total
+  - subset
+  - cost
+  - price
+  satisfies:
+    cost:
+    - subject
+    each:
+    - collection
+  where:
+  - same_lemma:
+    - total
+    - subset
+  description: Preserve the holder, item, partition label and basis before scaling or valuing an exhaustive 
+    account.
+- id: arithmetic/remaining-partition-relative-unit-price
+  match:
+    sentence:
+    - lit: and
+      consume_skipped: true
+    - slot: item
+      cat: purchase_item
+      qualified: true
+      uncounted: true
+      qualifier_cat: complementary_partition_attribute
+      number: plural
+    - slot: each
+      cat: postpositive_distributive_quantifier
+    - slot: cost
+      cat: price_verb
+      finite_form: true
+    - slot: price
+      cat: currency_unit
+      counted: true
+      bare: true
+    - slot: more
+      cat: more_dir
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: partition-rest
+    entity: ''
+    measure: '{item}'
+    value: '0'
+    position: '0'
+    attribute: remaining
+  - fact: batch_evidence
+    kind: partition-price-offset
+    entity: ''
+    measure: '{price}'
+    value: price
+    position: '{price.span_start}'
+    attribute: remaining
+  consumes:
+  - cost
+  - price
+  - more
+  satisfies:
+    each:
+    - collection
+    cost:
+    - subject
+    more:
+    - standard
+  where: []
+  description: Preserve the holder, item, partition label and basis before scaling or valuing an exhaustive 
+    account.
+asks:
+- id: ask/scoped-output-count
+  match:
+    question:
+    - lit: how
+      consume_skipped: true
+    - lit: many
+      consume_skipped: true
+    - slot: unit
+      cat: partition_count_unit
+      uncounted: true
+      bare: true
+      number: plural
+    - slot: be
+      cat: plural_copula
+    - slot: link
+      cat: group_total_preposition
+    - slot: scope
+      type: entity
+      common_noun_cat: allocation_section
+      referential: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: partitioned-account
+    measure: '{unit}'
+    scope: '{scope}'
+    operation: amount
+  satisfies:
+    be:
+    - subject
+    link:
+    - object
+- id: ask/partitioned-acquisition-count
+  match:
+    question:
+    - lit: how
+      consume_skipped: true
+    - lit: many
+      consume_skipped: true
+    - slot: unit
+      cat: inventory_item
+      uncounted: true
+      number: plural
+    - slot: aux
+      cat: auxiliary
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+    - slot: act
+      cat: allocation_receipt_verb
+      bare_form: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: partitioned-account
+    entity: '{who}'
+    measure: '{unit}'
+    operation: amount
+  satisfies:
+    act:
+    - subject
+- id: ask/partitioned-item-expenditure
+  match:
+    question:
+    - lit: how
+      consume_skipped: true
+    - slot: amount_query
+      cat: mass_amount_interrogative
+    - slot: aux
+      cat: auxiliary
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+    - slot: spend
+      cat: spend_verb
+      bare_form: true
+    - slot: link
+      cat: group_total_preposition
+    - slot: total
+      cat: group_total_marker
+    - lit: on
+      consume_skipped: true
+    - slot: item
+      type: entity
+      common_noun_cat: purchase_item
+      referential: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: partitioned-account
+    entity: '{who}'
+    item: '{item}'
+    operation: value
+  satisfies:
+    spend:
+    - subject
+    link:
+    - object

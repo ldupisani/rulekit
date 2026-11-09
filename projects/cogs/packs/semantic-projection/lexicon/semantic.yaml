@@ -21,7 +21,6 @@ entries:
   adored: {senses: [verb], verb: {lemma: adore}}
   appreciated: {senses: [verb], verb: {lemma: appreciate}}
   burned: {senses: [verb], verb: {lemma: burn}}
-  cleaned: {senses: [verb], verb: {lemma: clean}}
   crumpled: {senses: [verb], verb: {lemma: crumple}}
   decomposed: {senses: [verb], verb: {lemma: decompose}}
   disintegrated: {senses: [verb], verb: {lemma: disintegrate}}

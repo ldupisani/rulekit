@@ -1,0 +1,1224 @@
+format: rulekit/rules@1
+templates:
+  resumed-account-context:
+    parameters:
+      period_tokens:
+      - slot: period
+        cat: reporting_time_marker
+      prior_tokens:
+      - slot: prior_period
+        cat: reporting_time_marker
+    rule:
+      description: An existing account and its reporting scope retain the optional initiating activity, prior
+        period and site without requiring a text product.
+      match:
+        sentence:
+        - opt:
+          - slot: period_link
+            cat: temporal_interval_preposition
+        - parameter: period_tokens
+        - opt:
+          - lit: at
+            consume_skipped: true
+          - slot: site
+            type: entity
+            common_noun_cat: activity_location
+            referential: true
+            bare_reference_category: activity_workplace
+        - lit: ','
+          consume_skipped: true
+        - slot: who
+          type: entity
+          common_noun_cat: collection_agent
+          referential: true
+        - slot: continued
+          cat: activity_continuation_action
+          finite_form: true
+        - slot: working
+          cat: scoped_activity_participle
+          present_participle: true
+        - lit: on
+          consume_skipped: true
+        - slot: account
+          type: entity
+          common_noun_cat: quantity_account
+          referential: true
+        - slot: subject
+          cat: clause_subject_personal_pronoun
+        - slot: started
+          cat: stock_start_action
+          finite_form: true
+        - opt:
+          - slot: initiating_activity
+            cat: quantity_account_activity
+            present_participle: true
+        - opt:
+          - slot: prior_link
+            cat: temporal_interval_preposition
+        - parameter: prior_tokens
+        - lit: .
+          consume_skipped: true
+      emits:
+      - fact: activity_account_evidence
+        kind: activity-account-context
+        entity: '{who}'
+        measure: ''
+        value: '0'
+        position: '0'
+        container: '{account}'
+        verb: '{initiating_activity.optional}'
+        prior_period: '{prior_period}'
+        reporting_period: '{period}'
+      consumes:
+      - continued
+      - working
+      - started
+      - initiating_activity
+      satisfies:
+        continued:
+        - subject
+        working:
+        - subject
+        started:
+        - subject
+        initiating_activity:
+        - subject
+        period_link:
+        - object
+        prior_link:
+        - object
+      references:
+        subject: who
+      where:
+      - number_compatible:
+        - who
+        - continued
+      - number_compatible:
+        - subject
+        - started
+  resumed-account-activity:
+    parameters:
+      period_tokens:
+      - slot: period
+        cat: reporting_time_marker
+    rule:
+      description: A continued activity belongs to one identified account and relative reporting period.
+      match:
+        sentence:
+        - slot: who
+          type: entity
+          common_noun_cat: collection_agent
+          referential: true
+          at_start: true
+        - slot: continued
+          cat: activity_continuation_action
+          finite_form: true
+        - slot: activity
+          cat: quantity_account_activity
+          present_participle: true
+        - slot: account
+          type: entity
+          common_noun_cat: quantity_account
+          referential: true
+        - parameter: period_tokens
+        - lit: .
+          consume_skipped: true
+      emits:
+      - fact: activity_account_evidence
+        kind: activity-account-context
+        entity: '{who}'
+        measure: ''
+        value: '0'
+        position: '0'
+        container: '{account}'
+        verb: '{activity}'
+        reporting_period: '{period}'
+      consumes:
+      - continued
+      - activity
+      satisfies:
+        continued:
+        - subject
+        activity:
+        - subject
+      where:
+      - number_compatible:
+        - who
+        - continued
+  resumed-account-work:
+    parameters:
+      period_tokens:
+      - slot: period
+        cat: reporting_time_marker
+    rule:
+      description: A continued activity belongs to one identified account and relative reporting period.
+      match:
+        sentence:
+        - slot: who
+          type: entity
+          common_noun_cat: collection_agent
+          referential: true
+          at_start: true
+        - slot: continued
+          cat: activity_continuation_action
+          finite_form: true
+        - slot: working
+          cat: scoped_activity_participle
+          present_participle: true
+        - lit: on
+          consume_skipped: true
+        - slot: account
+          type: entity
+          common_noun_cat: quantity_account
+          referential: true
+        - parameter: period_tokens
+        - lit: .
+          consume_skipped: true
+      emits:
+      - fact: activity_account_evidence
+        kind: activity-account-context
+        entity: '{who}'
+        measure: ''
+        value: '0'
+        position: '0'
+        container: '{account}'
+        verb: ''
+        reporting_period: '{period}'
+      consumes:
+      - continued
+      - working
+      satisfies:
+        continued:
+        - subject
+        working:
+        - subject
+      where:
+      - number_compatible:
+        - who
+        - continued
+  closing-account-stock:
+    parameters:
+      period_tokens:
+      - slot: period
+        cat: reporting_time_marker
+    rule:
+      description: A closing stock observation identifies the account, counted resource and complete reporting
+        scope.
+      match:
+        sentence:
+        - lit: in
+          consume_skipped: true
+        - lit: all
+          consume_skipped: true
+        - lit: ','
+          consume_skipped: true
+        - slot: account
+          type: entity
+          common_noun_cat: quantity_account
+          referential: true
+        - slot: have
+          cat: possession_state
+          finite_form: true
+        - slot: amount
+          cat: account_quantity_unit
+          counted: true
+          bare: true
+        - lit: by
+          consume_skipped: true
+        - lit: the
+          consume_skipped: true
+        - slot: end
+          cat: period_end_boundary_noun
+          uncounted: true
+          bare: true
+        - slot: of
+          cat: partitive
+        - parameter: period_tokens
+        - lit: .
+          consume_skipped: true
+      emits:
+      - fact: activity_account_evidence
+        kind: activity-account-closing
+        entity: '{account}'
+        measure: '{amount}'
+        value: amount
+        position: '{amount.span_start}'
+        reporting_period: '{period}'
+      consumes:
+      - have
+      - amount
+      satisfies:
+        have:
+        - subject
+        of:
+        - object
+      where:
+      - number_compatible:
+        - account
+        - have
+  closing-account-progress:
+    parameters:
+      period_tokens:
+      - slot: period
+        cat: reporting_time_marker
+    rule:
+      description: An activity-qualified cumulative count records completed work rather than the physical
+        stock of its objects.
+      match:
+        sentence:
+        - lit: in
+          consume_skipped: true
+        - lit: all
+          consume_skipped: true
+        - lit: ','
+          consume_skipped: true
+        - slot: who
+          type: entity
+          common_noun_cat: collection_agent
+          referential: true
+        - slot: activity
+          cat: quantity_account_activity
+          finite_form: true
+        - slot: amount
+          cat: account_quantity_unit
+          counted: true
+          bare: true
+        - lit: by
+          consume_skipped: true
+        - lit: the
+          consume_skipped: true
+        - slot: end
+          cat: period_end_boundary_noun
+          uncounted: true
+          bare: true
+        - slot: of
+          cat: partitive
+        - parameter: period_tokens
+        - lit: .
+          consume_skipped: true
+      emits:
+      - fact: activity_account_evidence
+        kind: activity-account-closing
+        entity: '{who}'
+        measure: '{amount}'
+        value: amount
+        position: '{amount.span_start}'
+        verb: '{activity}'
+        reporting_period: '{period}'
+      consumes:
+      - activity
+      - amount
+      satisfies:
+        activity:
+        - subject
+        of:
+        - object
+      where:
+      - number_compatible:
+        - who
+        - activity
+  dated-account-activity:
+    parameters:
+      period_tokens:
+      - slot: period
+        cat: reporting_time_marker
+    rule:
+      match:
+        sentence:
+        - slot: who
+          type: entity
+          common_noun_cat: collection_agent
+          referential: true
+          at_start: true
+        - slot: activity
+          cat: quantity_account_activity
+          finite_form: true
+        - lit: for
+          consume_skipped: true
+        - slot: span
+          cat: duration_measure
+          counted: true
+          bare: true
+          value_min: 0
+        - parameter: period_tokens
+        - lit: .
+          consume_skipped: true
+      emits:
+      - fact: activity_account_evidence
+        kind: activity-account-duration
+        entity: '{who}'
+        measure: '{span}'
+        value: span
+        position: '{span.span_start}'
+        verb: '{activity}'
+        reporting_period: '{period}'
+      consumes:
+      - activity
+      - span
+      satisfies:
+        activity:
+        - subject
+      where:
+      - number_compatible:
+        - who
+        - activity
+      description: Preserve the actor, activity, quantity and occurrence in one scoped account; a duration
+        does not imply creation.
+  opening-account-stock:
+    parameters:
+      period_tokens:
+      - slot: period
+        cat: reporting_time_marker
+    rule:
+      match:
+        question:
+        - lit: how
+          consume_skipped: true
+        - lit: many
+          consume_skipped: true
+        - slot: unit
+          cat: account_quantity_unit
+          uncounted: true
+          bare: true
+          number: plural
+        - slot: aux
+          cat: auxiliary
+        - slot: who
+          type: entity
+          common_noun_cat: collection_agent
+          referential: true
+        - slot: start
+          cat: stock_start_action
+          bare_form: true
+        - slot: with
+          cat: residual_complement_link
+        - parameter: period_tokens
+        - lit: '?'
+          consume_skipped: true
+      resolves:
+        consumer: activity-account-opening
+        entity: '{who}'
+        measure: '{unit}'
+        period: '{period}'
+      satisfies:
+        start:
+        - subject
+        with:
+        - object
+      where:
+      - number_compatible:
+        - who
+        - aux
+  opening-account-progress:
+    parameters:
+      period_tokens:
+      - slot: period
+        cat: reporting_time_marker
+    rule:
+      match:
+        question:
+        - lit: how
+          consume_skipped: true
+        - lit: many
+          consume_skipped: true
+        - slot: unit
+          cat: account_quantity_unit
+          uncounted: true
+          bare: true
+          number: plural
+        - slot: aux
+          cat: possession_state
+          finite_form: true
+        - slot: who
+          type: entity
+          common_noun_cat: collection_agent
+          referential: true
+        - slot: activity
+          cat: quantity_account_activity
+          past_participle: true
+        - lit: at
+          consume_skipped: true
+        - lit: the
+          consume_skipped: true
+        - slot: start
+          cat: period_start_boundary_noun
+          uncounted: true
+          bare: true
+        - slot: of
+          cat: partitive
+        - parameter: period_tokens
+        - lit: '?'
+          consume_skipped: true
+      resolves:
+        consumer: activity-account-opening
+        entity: '{who}'
+        measure: '{unit}'
+        period: '{period}'
+        activity: '{activity}'
+      satisfies:
+        activity:
+        - subject
+        of:
+        - object
+      where:
+      - number_compatible:
+        - who
+        - aux
+rules:
+- id: arithmetic/ability-account-rate
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+      at_start: true
+    - slot: can
+      cat: ability_modal
+    - slot: activity
+      cat: quantity_account_activity
+      bare_form: true
+    - slot: amount
+      cat: account_quantity_unit
+      counted: true
+      bare: true
+    - lit: per
+      consume_skipped: true
+    - slot: period
+      cat: duration_measure
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: rate
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    per: '{period}'
+    verb: '{activity}'
+  consumes:
+  - activity
+  - amount
+  satisfies:
+    activity:
+    - subject
+  where:
+  - verb_roles_compatible:
+      verb: activity
+      roles:
+        actor:
+        - who
+        theme:
+        - amount
+      frame_categories:
+      - quantity_account_activity
+      allow_proper_name:
+      - who
+      require_declared_frame: false
+  disambiguates:
+  - can
+  - activity
+  description: Preserve the actor, activity, quantity and occurrence in one scoped account; a duration does
+    not imply creation.
+- id: arithmetic/observed-account-rate
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+      at_start: true
+    - slot: activity
+      cat: quantity_account_activity
+      finite_form: true
+    - slot: amount
+      cat: account_quantity_unit
+      counted: true
+      bare: true
+    - lit: per
+      consume_skipped: true
+    - slot: period
+      cat: duration_measure
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: rate
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    per: '{period}'
+    verb: '{activity}'
+  consumes:
+  - activity
+  - amount
+  satisfies:
+    activity:
+    - subject
+  where:
+  - verb_roles_compatible:
+      verb: activity
+      roles:
+        actor:
+        - who
+        theme:
+        - amount
+      frame_categories:
+      - quantity_account_activity
+      allow_proper_name:
+      - who
+      require_declared_frame: false
+  - number_compatible:
+    - who
+    - activity
+  disambiguates:
+  - activity
+  description: Preserve the actor, activity, quantity and occurrence in one scoped account; a duration does
+    not imply creation.
+- id: arithmetic/paused-account-activity-intervals
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+      at_start: true
+    - slot: activity
+      cat: quantity_account_activity
+      finite_form: true
+    - lit: for
+      consume_skipped: true
+    - slot: first
+      cat: duration_measure
+      counted: true
+      bare: true
+      value_min: 0
+    - lit: ','
+      consume_skipped: true
+    - slot: took
+      cat: activity_pause_action
+    - lit: a
+      consume_skipped: true
+    - slot: break
+      cat: activity_pause_noun
+      uncounted: true
+      bare: true
+    - lit: ','
+      consume_skipped: true
+    - lit: and
+      consume_skipped: true
+    - slot: activity2
+      cat: quantity_account_activity
+      finite_form: true
+    - slot: second
+      cat: duration_measure
+      counted: true
+      bare: true
+      value_min: 0
+    - slot: more
+      cat: activity_continuation_marker
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: activity_account_evidence
+    kind: activity-account-duration
+    entity: '{who}'
+    measure: '{first}'
+    value: first
+    position: '{first.span_start}'
+    verb: '{activity}'
+  - fact: activity_account_evidence
+    kind: activity-account-duration
+    entity: '{who}'
+    measure: '{second}'
+    value: second
+    position: '{second.span_start}'
+    verb: '{activity2}'
+    marker: additional-duration
+  consumes:
+  - activity
+  - first
+  - took
+  - activity2
+  - second
+  - more
+  satisfies:
+    activity:
+    - subject
+    took:
+    - subject
+    activity2:
+    - subject
+    more:
+    - standard
+  where:
+  - same_lemma:
+    - activity
+    - activity2
+  - number_compatible:
+    - who
+    - activity
+  - number_compatible:
+    - who
+    - activity2
+  description: Preserve the actor, activity, quantity and occurrence in one scoped account; a duration does
+    not imply creation.
+- id: arithmetic/after-event-account-activity
+  match:
+    sentence:
+    - lit: after
+      consume_skipped: true
+    - slot: event
+      type: entity
+      common_noun_cat: interruption_event
+      referential: true
+    - lit: ','
+      consume_skipped: true
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+    - slot: activity
+      cat: quantity_account_activity
+      finite_form: true
+    - lit: for
+      consume_skipped: true
+    - slot: span
+      cat: duration_measure
+      counted: true
+      bare: true
+      value_min: 0
+    - opt:
+      - slot: more
+        cat: activity_continuation_marker
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: activity_account_evidence
+    kind: activity-account-duration
+    entity: '{who}'
+    measure: '{span}'
+    value: span
+    position: '{span.span_start}'
+    verb: '{activity}'
+  consumes:
+  - activity
+  - span
+  - more
+  satisfies:
+    activity:
+    - subject
+    more:
+    - standard
+  where:
+  - number_compatible:
+    - who
+    - activity
+  description: Preserve the actor, activity, quantity and occurrence in one scoped account; a duration does
+    not imply creation.
+- id: arithmetic/account-activity-duration
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+      at_start: true
+    - slot: activity
+      cat: quantity_account_activity
+      finite_form: true
+    - lit: for
+      consume_skipped: true
+    - slot: span
+      cat: duration_measure
+      counted: true
+      bare: true
+      value_min: 0
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: activity_account_evidence
+    kind: activity-account-duration
+    entity: '{who}'
+    measure: '{span}'
+    value: span
+    position: '{span.span_start}'
+    verb: '{activity}'
+  consumes:
+  - activity
+  - span
+  satisfies:
+    activity:
+    - subject
+  where:
+  - number_compatible:
+    - who
+    - activity
+  description: Preserve the actor, activity, quantity and occurrence in one scoped account; a duration does
+    not imply creation.
+- id: arithmetic/required-account-correction
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+      at_start: true
+    - lit: then
+      consume_skipped: true
+    - slot: had
+      cat: past_obligation_auxiliary
+      finite_form: true
+    - lit: to
+      consume_skipped: true
+    - slot: adjustment
+      cat: stock_correction_action
+      bare_form: true
+    - slot: amount
+      cat: account_quantity_unit
+      counted: true
+      bare: true
+    - slot: subject
+      cat: clause_subject_personal_pronoun
+    - slot: prior_activity
+      cat: quantity_account_activity
+      finite_form: true
+    - slot: quality
+      cat: incorrect_output_modifier
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: activity_account_evidence
+    kind: activity-account-removal
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+    marker: required-correction
+    verb: '{adjustment}'
+    attribute: '{prior_activity}'
+  consumes:
+  - had
+  - adjustment
+  - amount
+  - prior_activity
+  satisfies:
+    had:
+    - subject
+    adjustment:
+    - subject
+    prior_activity:
+    - subject
+  where:
+  - verb_roles_compatible:
+      verb: adjustment
+      roles:
+        actor:
+        - who
+        theme:
+        - amount
+      frame_categories:
+      - stock_correction_action
+      allow_proper_name:
+      - who
+      require_declared_frame: true
+  - number_compatible:
+    - who
+    - had
+  references:
+    subject: who
+  description: Preserve the actor, activity, quantity and occurrence in one scoped account; a duration does
+    not imply creation.
+- id: arithmetic/account-quantity-removal
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+      at_start: true
+    - slot: adjustment
+      cat: stock_correction_action
+      finite_form: true
+    - slot: amount
+      cat: account_quantity_unit
+      counted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: activity_account_evidence
+    kind: activity-account-removal
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+    verb: '{adjustment}'
+  consumes:
+  - adjustment
+  - amount
+  satisfies:
+    adjustment:
+    - subject
+  where:
+  - verb_roles_compatible:
+      verb: adjustment
+      roles:
+        actor:
+        - who
+        theme:
+        - amount
+      frame_categories:
+      - stock_correction_action
+      allow_proper_name:
+      - who
+      require_declared_frame: true
+  description: Preserve the actor, activity, quantity and occurrence in one scoped account; a duration does
+    not imply creation.
+variants:
+- id: arithmetic/resumed-account-context-deictic-from-deictic
+  template: resumed-account-context
+  arguments:
+    period_tokens:
+    - slot: period
+      cat: reporting_time_marker
+    prior_tokens:
+    - slot: prior_period
+      cat: reporting_time_marker
+- id: arithmetic/resumed-account-context-deictic-from-current
+  template: resumed-account-context
+  arguments:
+    period_tokens:
+    - slot: period
+      cat: reporting_time_marker
+    prior_tokens:
+    - lit: this
+      consume_skipped: true
+    - slot: prior_period
+      cat: reporting_period_unit
+      uncounted: true
+      bare: true
+      number: singular
+- id: arithmetic/resumed-account-context-deictic-from-relative
+  template: resumed-account-context
+  arguments:
+    period_tokens:
+    - slot: period
+      cat: reporting_time_marker
+    prior_tokens:
+    - slot: prior_period
+      cat: reporting_period_unit
+      qualified: true
+      qualifier_cat: relative_period_attribute
+      all_qualifiers: true
+      uncounted: true
+      number: singular
+- id: arithmetic/resumed-account-context-current-from-deictic
+  template: resumed-account-context
+  arguments:
+    period_tokens:
+    - lit: this
+      consume_skipped: true
+    - slot: period
+      cat: reporting_period_unit
+      uncounted: true
+      bare: true
+      number: singular
+    prior_tokens:
+    - slot: prior_period
+      cat: reporting_time_marker
+- id: arithmetic/resumed-account-context-current-from-current
+  template: resumed-account-context
+  arguments:
+    period_tokens:
+    - lit: this
+      consume_skipped: true
+    - slot: period
+      cat: reporting_period_unit
+      uncounted: true
+      bare: true
+      number: singular
+    prior_tokens:
+    - lit: this
+      consume_skipped: true
+    - slot: prior_period
+      cat: reporting_period_unit
+      uncounted: true
+      bare: true
+      number: singular
+- id: arithmetic/resumed-account-context-current-from-relative
+  template: resumed-account-context
+  arguments:
+    period_tokens:
+    - lit: this
+      consume_skipped: true
+    - slot: period
+      cat: reporting_period_unit
+      uncounted: true
+      bare: true
+      number: singular
+    prior_tokens:
+    - slot: prior_period
+      cat: reporting_period_unit
+      qualified: true
+      qualifier_cat: relative_period_attribute
+      all_qualifiers: true
+      uncounted: true
+      number: singular
+- id: arithmetic/resumed-account-context-relative-from-deictic
+  template: resumed-account-context
+  arguments:
+    period_tokens:
+    - slot: period
+      cat: reporting_period_unit
+      qualified: true
+      qualifier_cat: relative_period_attribute
+      all_qualifiers: true
+      uncounted: true
+      number: singular
+    prior_tokens:
+    - slot: prior_period
+      cat: reporting_time_marker
+- id: arithmetic/resumed-account-context-relative-from-current
+  template: resumed-account-context
+  arguments:
+    period_tokens:
+    - slot: period
+      cat: reporting_period_unit
+      qualified: true
+      qualifier_cat: relative_period_attribute
+      all_qualifiers: true
+      uncounted: true
+      number: singular
+    prior_tokens:
+    - lit: this
+      consume_skipped: true
+    - slot: prior_period
+      cat: reporting_period_unit
+      uncounted: true
+      bare: true
+      number: singular
+- id: arithmetic/resumed-account-context-relative-from-relative
+  template: resumed-account-context
+  arguments:
+    period_tokens:
+    - slot: period
+      cat: reporting_period_unit
+      qualified: true
+      qualifier_cat: relative_period_attribute
+      all_qualifiers: true
+      uncounted: true
+      number: singular
+    prior_tokens:
+    - slot: prior_period
+      cat: reporting_period_unit
+      qualified: true
+      qualifier_cat: relative_period_attribute
+      all_qualifiers: true
+      uncounted: true
+      number: singular
+- id: arithmetic/resumed-account-activity-deictic
+  template: resumed-account-activity
+  arguments:
+    period_tokens:
+    - slot: period
+      cat: reporting_time_marker
+- id: arithmetic/resumed-account-activity-current
+  template: resumed-account-activity
+  arguments:
+    period_tokens:
+    - lit: this
+      consume_skipped: true
+    - slot: period
+      cat: reporting_period_unit
+      uncounted: true
+      bare: true
+      number: singular
+- id: arithmetic/resumed-account-activity-relative
+  template: resumed-account-activity
+  arguments:
+    period_tokens:
+    - lit: during
+      consume_skipped: true
+    - slot: period
+      cat: reporting_period_unit
+      qualified: true
+      qualifier_cat: relative_period_attribute
+      all_qualifiers: true
+      uncounted: true
+      number: singular
+- id: arithmetic/resumed-account-work-deictic
+  template: resumed-account-work
+  arguments:
+    period_tokens:
+    - slot: period
+      cat: reporting_time_marker
+- id: arithmetic/resumed-account-work-current
+  template: resumed-account-work
+  arguments:
+    period_tokens:
+    - lit: this
+      consume_skipped: true
+    - slot: period
+      cat: reporting_period_unit
+      uncounted: true
+      bare: true
+      number: singular
+- id: arithmetic/resumed-account-work-relative
+  template: resumed-account-work
+  arguments:
+    period_tokens:
+    - lit: during
+      consume_skipped: true
+    - slot: period
+      cat: reporting_period_unit
+      qualified: true
+      qualifier_cat: relative_period_attribute
+      all_qualifiers: true
+      uncounted: true
+      number: singular
+- id: arithmetic/closing-account-stock-deictic
+  template: closing-account-stock
+  arguments:
+    period_tokens:
+    - slot: period
+      cat: reporting_time_marker
+- id: arithmetic/closing-account-stock-current
+  template: closing-account-stock
+  arguments:
+    period_tokens:
+    - lit: this
+      consume_skipped: true
+    - slot: period
+      cat: reporting_period_unit
+      uncounted: true
+      bare: true
+      number: singular
+- id: arithmetic/closing-account-stock-relative
+  template: closing-account-stock
+  arguments:
+    period_tokens:
+    - slot: period
+      cat: reporting_period_unit
+      qualified: true
+      qualifier_cat: relative_period_attribute
+      all_qualifiers: true
+      uncounted: true
+      number: singular
+- id: arithmetic/closing-account-progress-deictic
+  template: closing-account-progress
+  arguments:
+    period_tokens:
+    - slot: period
+      cat: reporting_time_marker
+- id: arithmetic/closing-account-progress-current
+  template: closing-account-progress
+  arguments:
+    period_tokens:
+    - lit: this
+      consume_skipped: true
+    - slot: period
+      cat: reporting_period_unit
+      uncounted: true
+      bare: true
+      number: singular
+- id: arithmetic/closing-account-progress-relative
+  template: closing-account-progress
+  arguments:
+    period_tokens:
+    - slot: period
+      cat: reporting_period_unit
+      qualified: true
+      qualifier_cat: relative_period_attribute
+      all_qualifiers: true
+      uncounted: true
+      number: singular
+- id: arithmetic/dated-account-activity-deictic
+  template: dated-account-activity
+  arguments:
+    period_tokens:
+    - slot: period
+      cat: reporting_time_marker
+- id: arithmetic/dated-account-activity-current
+  template: dated-account-activity
+  arguments:
+    period_tokens:
+    - lit: this
+      consume_skipped: true
+    - slot: period
+      cat: reporting_period_unit
+      uncounted: true
+      bare: true
+      number: singular
+- id: arithmetic/dated-account-activity-relative
+  template: dated-account-activity
+  arguments:
+    period_tokens:
+    - lit: during
+      consume_skipped: true
+    - slot: period
+      cat: reporting_period_unit
+      qualified: true
+      qualifier_cat: relative_period_attribute
+      all_qualifiers: true
+      uncounted: true
+      number: singular
+ask_variants:
+- id: ask/opening-account-stock-deictic
+  template: opening-account-stock
+  arguments:
+    period_tokens:
+    - slot: period
+      cat: reporting_time_marker
+- id: ask/opening-account-stock-current
+  template: opening-account-stock
+  arguments:
+    period_tokens:
+    - lit: this
+      consume_skipped: true
+    - slot: period
+      cat: reporting_period_unit
+      uncounted: true
+      bare: true
+      number: singular
+- id: ask/opening-account-stock-relative
+  template: opening-account-stock
+  arguments:
+    period_tokens:
+    - slot: period
+      cat: reporting_period_unit
+      qualified: true
+      qualifier_cat: relative_period_attribute
+      all_qualifiers: true
+      uncounted: true
+      number: singular
+- id: ask/opening-account-progress-deictic
+  template: opening-account-progress
+  arguments:
+    period_tokens:
+    - slot: period
+      cat: reporting_time_marker
+- id: ask/opening-account-progress-current
+  template: opening-account-progress
+  arguments:
+    period_tokens:
+    - lit: this
+      consume_skipped: true
+    - slot: period
+      cat: reporting_period_unit
+      uncounted: true
+      bare: true
+      number: singular
+- id: ask/opening-account-progress-relative
+  template: opening-account-progress
+  arguments:
+    period_tokens:
+    - slot: period
+      cat: reporting_period_unit
+      qualified: true
+      qualifier_cat: relative_period_attribute
+      all_qualifiers: true
+      uncounted: true
+      number: singular

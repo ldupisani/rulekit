@@ -612,6 +612,12 @@ families. Later less-specific references may describe the one established
 population, while an extra or contradictory modifier declines. Nominal
 compounds retain both the modifier's head and its own qualifiers.
 
+`activity_account_evidence` extends `batch_evidence` with `reporting_period`
+and `prior_period`, each retaining its full structured reference. Keep these
+separate from the measured activity duration and from continuation/correction
+markers. A qualified period preserves its grain and relative offset; its head
+alone cannot distinguish this week from the previous week.
+
 Three scoped aggregation facts preserve information that ordinary quantities
 cannot express on their own:
 

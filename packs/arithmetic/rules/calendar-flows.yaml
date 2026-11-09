@@ -1,0 +1,377 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/qualitative-location-flow-context
+  match:
+    sentence:
+    - lit: there
+      consume_skipped: true
+    - slot: be
+      cat: copula
+    - slot: degree
+      cat: flow_intensity_adverb
+    - slot: flow
+      cat: quantity_flow_noun
+      uncounted: true
+      qualified: true
+      qualifier_cat: qualitative_flow_attribute
+    - lit: on
+      consume_skipped: true
+    - slot: who
+      type: entity
+      common_noun_cat: quantity_location
+      referential: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: calendar-quantity-context
+    entity: '{who}'
+    measure: ''
+    value: '0'
+    position: '0'
+    container: '{flow}'
+  consumes:
+  - be
+  satisfies:
+    be:
+    - subject
+  where: []
+  description: Preserve the location, item, named days and comparison or approximation in a complete finite 
+    calendar account.
+- id: arithmetic/maximum-day-postposed-count
+  match:
+    sentence:
+    - lit: during
+      consume_skipped: true
+    - lit: the
+      consume_skipped: true
+    - slot: week
+      cat: calendar_week_unit
+      uncounted: true
+      bare: true
+    - lit: ','
+      consume_skipped: true
+    - slot: most
+      cat: flow_maximum_quantifier
+    - slot: item
+      cat: flowing_countable
+      uncounted: true
+      bare: true
+      number: plural
+    - slot: act
+      cat: quantity_flow_action
+      finite_form: true
+    - slot: it
+      cat: nonpersonal_actor_anaphor
+    - lit: on
+      consume_skipped: true
+    - slot: day
+      cat: named_weekday
+    - lit: '-'
+      consume_skipped: true
+    - slot: amount
+      type: number
+      integer: true
+      value_min: 0
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: calendar-quantity-direct
+    entity: ''
+    measure: '{item}'
+    value: amount
+    position: '{amount.span_start}'
+    marker: '{day}'
+    attribute: maximum
+    verb: '{act}'
+  consumes:
+  - act
+  - amount
+  satisfies:
+    most:
+    - collection
+    act:
+    - subject
+    it:
+    - refers
+    amount:
+    - quantifies
+  where: []
+  description: Preserve the location, item, named days and comparison or approximation in a complete finite 
+    calendar account.
+- id: arithmetic/elliptic-relative-day-quantities
+  match:
+    sentence:
+    - lit: on
+      consume_skipped: true
+    - slot: day
+      cat: named_weekday
+    - lit: ','
+      consume_skipped: true
+    - slot: fraction
+      type: fraction
+    - slot: less
+      cat: less_dir
+    - lit: than
+      consume_skipped: true
+    - lit: on
+      consume_skipped: true
+    - slot: base
+      cat: named_weekday
+    - lit: ','
+      consume_skipped: true
+    - lit: and
+      consume_skipped: true
+    - lit: on
+      consume_skipped: true
+    - slot: day2
+      cat: named_weekday
+    - lit: ','
+      consume_skipped: true
+    - slot: offset
+      type: number
+    - slot: more
+      cat: more_dir
+    - slot: item
+      cat: flowing_countable
+      uncounted: true
+      bare: true
+      number: plural
+    - lit: than
+      consume_skipped: true
+    - lit: on
+      consume_skipped: true
+    - slot: base2
+      cat: named_weekday
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: calendar-quantity-relative
+    entity: ''
+    measure: '{item}'
+    value: fraction
+    position: '{fraction.span_start}'
+    marker: '{day}'
+    acquisition: '{base}'
+    sign: '-1'
+    attribute: fraction
+  - fact: batch_evidence
+    kind: calendar-quantity-relative
+    entity: ''
+    measure: '{item}'
+    value: offset
+    position: '{offset.span_start}'
+    marker: '{day2}'
+    acquisition: '{base2}'
+    sign: '1'
+    attribute: offset
+  consumes:
+  - fraction
+  - less
+  - offset
+  - more
+  satisfies:
+    fraction:
+    - quantifies
+    offset:
+    - quantifies
+    less:
+    - standard
+    more:
+    - standard
+  where: []
+  description: Preserve the location, item, named days and comparison or approximation in a complete finite 
+    calendar account.
+- id: arithmetic/paired-day-count
+  match:
+    sentence:
+    - lit: on
+      consume_skipped: true
+    - slot: first
+      cat: named_weekday
+    - lit: and
+      consume_skipped: true
+    - slot: last
+      cat: named_weekday
+    - lit: ','
+      consume_skipped: true
+    - lit: it
+      consume_skipped: true
+    - slot: be
+      cat: copula
+    - opt:
+      - slot: approx
+        cat: approximation_marker
+    - slot: amount
+      cat: flowing_countable
+      counted: true
+      bare: true
+    - slot: each
+      cat: distributive_quantifier
+    - slot: day
+      cat: calendar_day_unit
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: calendar-quantity-group
+    entity: ''
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+    marker: '{first}'
+    container: '{last}'
+    attribute: '{approx.optional}'
+  consumes:
+  - be
+  - amount
+  satisfies:
+    be:
+    - subject
+    each:
+    - collection
+    approx:
+    - object
+  where: []
+  description: Preserve the location, item, named days and comparison or approximation in a complete finite 
+    calendar account.
+- id: arithmetic/calendar-group-daily-quantity
+  match:
+    sentence:
+    - lit: on
+      consume_skipped: true
+    - lit: the
+      consume_skipped: true
+    - slot: period
+      cat: timeperiod
+      uncounted: true
+      bare: true
+    - lit: ','
+      consume_skipped: true
+    - slot: flow
+      cat: quantity_flow_noun
+      uncounted: true
+      bare: true
+    - slot: drop
+      cat: calendar_drop_action
+      finite_form: true
+    - lit: to
+      consume_skipped: true
+    - slot: amount
+      cat: flowing_countable
+      counted: true
+      bare: true
+    - lit: per
+      consume_skipped: true
+    - slot: day
+      cat: duration_measure
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: calendar-quantity-period
+    entity: ''
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+    marker: '{period}'
+    container: '{day}'
+    verb: ''
+  consumes:
+  - drop
+  - amount
+  satisfies:
+    drop:
+    - subject
+  where: []
+  description: Preserve the location, item, named days and comparison or approximation in a complete finite 
+    calendar account.
+- id: arithmetic/dated-location-throughput
+  match:
+    sentence:
+    - lit: on
+      consume_skipped: true
+    - slot: day
+      cat: named_weekday
+    - lit: ','
+      consume_skipped: true
+    - slot: amount
+      cat: flowing_countable
+      counted: true
+      bare: true
+    - slot: act
+      cat: quantity_flow_action
+      finite_form: true
+    - slot: who
+      type: entity
+      common_noun_cat: quantity_location
+      referential: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: calendar-quantity-direct
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+    marker: '{day}'
+    verb: '{act}'
+  consumes:
+  - amount
+  - act
+  satisfies:
+    act:
+    - subject
+  where: []
+  description: Preserve the location, item, named days and comparison or approximation in a complete finite 
+    calendar account.
+asks:
+- id: ask/inclusive-calendar-location-count
+  match:
+    question:
+    - lit: how
+      consume_skipped: true
+    - lit: many
+      consume_skipped: true
+    - slot: unit
+      cat: flowing_countable
+      uncounted: true
+      bare: true
+      number: plural
+    - slot: act
+      cat: quantity_flow_action
+      finite_form: true
+    - lit: down
+      consume_skipped: true
+    - slot: who
+      type: entity
+      common_noun_cat: quantity_location
+      referential: true
+    - lit: from
+      consume_skipped: true
+    - slot: first
+      cat: named_weekday
+    - lit: through
+      consume_skipped: true
+    - slot: last
+      cat: named_weekday
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: calendar-resource-total
+    operation: days
+    entity: '{who}'
+    measure: '{unit}'
+    verb: '{act}'
+    first: '{first}'
+    last: '{last}'
+  satisfies:
+    act:
+    - subject

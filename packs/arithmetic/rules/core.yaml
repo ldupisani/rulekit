@@ -7066,6 +7066,7 @@ asks:
     where:
       - bound_requires_category: {bound: p, slot: agg, cat: prepositional_group_total_marker}
       - number_compatible: [who, aux]
+    satisfies: {p: [object]}
     resolves:
       consumer: combined
       holders: "{who.group_members}"

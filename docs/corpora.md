@@ -27,6 +27,32 @@ The judging and split enforcement live in
 [the bench](../src/rulekit/harness/bench.py) and
 [the firewall](../src/rulekit/harness/firewall.py).
 
+## Approved DEV gold exceptions
+
+These are explicit, item-specific exceptions approved by the project owner.
+The corpus gold, raw scores, snapshot outcomes and `diff` exit status remain
+unchanged. Report the disagreement and its approval separately; an exception
+does not waive regressions or new wrong answers on other items.
+
+| Project / slice | Item ID | Published gold | Accepted answer | Approval |
+| --- | --- | --- | --- | --- |
+| GSM8K / `dev-train` | `fe6df6166d8c` | $41 | $574 | Project owner, 2026-11-05 |
+
+For this repeated pill-cost item, the published calculation finds the daily
+cost but omits the stated 14-day duration. The daily cost is
+`4 × $1.50 + 5 × ($1.50 + $5.50) = $41`; the full-period cost is
+`14 × $41 = $574`. The approved interpretation repeats the stated composition
+and prices each day, recorded in the answer as
+`repeated-partition-composition`.
+
+This approval permits retaining $574 despite this item's raw `DECL→WRONG`
+transition. It does not reclassify the raw benchmark outcome as correct or
+authorize exceptions on protected TEST. The calculation uses the general
+[partition account](../src/rulekit/kernel/consumers/partitioned_account.py),
+with invented repeated-price and scope boundaries in the
+[resource composition tests](../tests/test_resource_batch_compositions.py).
+No item-specific solver or judging override is applied.
+
 ## Typed gold
 
 The harness supports typed expected answers in addition to ordinary numeric

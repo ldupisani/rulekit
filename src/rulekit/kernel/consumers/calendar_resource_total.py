@@ -23,6 +23,9 @@ from ..resource_equations import resource_residual
 
 @consumer("calendar-resource-total")
 def consume(ctx):
+    if ctx.query.get("operation") == "days":
+        from ..calendar_amounts import explicit_calendar_total
+        return explicit_calendar_total(ctx)
     rows = list(ctx.store.by_kind(BatchEvidence))
     rates = list(ctx.store.by_kind(Rate))
     operands = []

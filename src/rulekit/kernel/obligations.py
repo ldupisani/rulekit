@@ -855,13 +855,17 @@ def _infinitive_licenses_count_homograph(reading: Reading, unit: Unit, reg: Regi
             and is_bare_verb_form(unit.features.get("fold", ""), lemma))
 
 
-def _copular_progressive_licenses_verb(
+def _governed_participle_licenses_verb(
     reading: Reading, unit: Unit, reg: Registry
 ) -> bool:
-    """Resolve a noun/verb ``-ing`` homograph after a copular auxiliary."""
+    """Resolve a verbal -ing complement after its declared governor.
+
+    Copular progressives and continuation predicates license an existing
+    verb sense. An intervening determiner keeps a gerund nominal.
+    """
 
     fold = unit.features.get("fold", "")
-    lemma = unit.features.get("lemma", fold)
+    lemma = reg.verb_lemmas.get(fold, unit.features.get("lemma", fold))
     if not fold.endswith("ing") or fold == lemma:
         return False
     index = reading.units.index(unit)
@@ -870,9 +874,11 @@ def _copular_progressive_licenses_verb(
             continue
         previous_fold = previous.features.get("fold", "")
         previous_lemma = previous.features.get("lemma", previous_fold)
-        return reg.word_in_category(
-            previous_fold, "copula"
-        ) or reg.word_in_category(previous_lemma, "copula")
+        return any(
+            reg.word_in_category(word, category)
+            for word in (previous_fold, previous_lemma)
+            for category in ("copula", "activity_continuation_action")
+        )
     return False
 
 
@@ -1047,7 +1053,7 @@ def disambiguate(reading: Reading, reg: Registry) -> Reading:
         if "noun" in senses and "verb" in senses and _infinitive_licenses_count_homograph(reading, u, reg):
             options.append(["verb"])
             continue
-        if "verb" in senses and _copular_progressive_licenses_verb(
+        if "verb" in senses and _governed_participle_licenses_verb(
             reading, u, reg
         ):
             options.append(["verb"])

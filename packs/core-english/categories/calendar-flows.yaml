@@ -1,0 +1,46 @@
+format: rulekit/categories@1
+categories:
+  quantity_flow_noun:
+    parent: noun
+  flowing_countable:
+    parent: noun
+    includes:
+    - vehicle
+    - person
+    - inventory_item
+  quantity_flow_action:
+    parent: verb
+  flow_maximum_quantifier:
+    parent: quantifier
+  flow_intensity_adverb:
+    parent: adverb
+  calendar_drop_action:
+    parent: verb
+  qualitative_flow_attribute:
+    parent: adjective
+members:
+  quantity_flow_noun:
+  - traffic
+  quantity_flow_action:
+  - pass
+  - passes
+  - passed
+  - travel
+  - travels
+  - traveled
+  flow_maximum_quantifier:
+  - most
+  flow_intensity_adverb:
+  - very
+  calendar_drop_action:
+  - drop
+  - drops
+  - dropped
+  qualitative_flow_attribute:
+  - little
+context_synonyms:
+  site-throughput:
+    gate: flowing_countable
+    forms:
+    - pass
+    - travel

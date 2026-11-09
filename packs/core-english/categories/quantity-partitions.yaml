@@ -1,0 +1,48 @@
+format: rulekit/categories@1
+categories:
+  partition_count_unit:
+    parent: noun
+    includes:
+    - ownable_quantity_object
+    - transaction_count_unit
+  transaction_count_unit:
+    parent: noun
+  allocation_section:
+    parent: noun
+  partition_output_verb:
+    parent: verb
+  partition_consumption_verb:
+    parent: verb
+  complementary_partition_attribute:
+    parent: adjective
+  scoped_quantity_predicate:
+    parent: verb
+members:
+  transaction_count_unit:
+  - sale
+  allocation_section:
+  - section
+  - department
+  partition_output_verb:
+  - make
+  - made
+  - makes
+  partition_consumption_verb:
+  - take
+  - takes
+  - took
+  - use
+  - uses
+  - used
+  - consume
+  - consumed
+  complementary_partition_attribute:
+  - other
+  - remaining
+  scoped_quantity_predicate:
+  - make
+  - made
+  - makes
+  - have
+  - has
+  - had

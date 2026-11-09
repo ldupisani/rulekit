@@ -42,6 +42,9 @@ for word in ("longer", "shorter"):
     CORE_MEMBERSHIPS[word] = tuple(sorted(
         (*CORE_MEMBERSHIPS[word], "text_length_comparative")
     ))
+CORE_MEMBERSHIPS["longer"] = tuple(sorted(
+    (*CORE_MEMBERSHIPS["longer"], "activity_continuation_marker")
+))
 for word in MOVED_WORDS - {"wider"}:
     CORE_MEMBERSHIPS[word] = tuple(sorted(
         (*CORE_MEMBERSHIPS[word], "higher" if word in MORE else "lower")
@@ -155,16 +158,16 @@ def test_g5r_unlocks_exactly_the_preregistered_rule() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 850
-    assert sum(item.supported for item in availability.values()) == 752
-    assert sum(not item.supported for item in availability.values()) == 98
+    assert len(availability) == 915
+    assert sum(item.supported for item in availability.values()) == 814
+    assert sum(not item.supported for item in availability.values()) == 101
     assert availability[
         "arithmetic/anchored-relation-postfix-dimension"
     ].supported
     assert availability[
         "arithmetic/anchored-relation-conjoined-anchor"
     ].supported
-    assert len(exploration_status(project)["fillers"]) == 2609
+    assert len(exploration_status(project)["fillers"]) == 2628
 
 
 @pytest.mark.parametrize("comparative", sorted(MOVED_WORDS))

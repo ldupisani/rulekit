@@ -1,9 +1,12 @@
 """Source completeness is shared without merging consumer evidence policies."""
 
 from types import SimpleNamespace
+from dataclasses import replace
 
-from rulekit.kernel.model import Unit
-from rulekit.kernel.source_coverage import uncovered_units, uncovered_document_units
+from rulekit.kernel.model import Unit, EventTime, Provenance
+from rulekit.kernel.source_coverage import (
+    uncovered_units, uncovered_document_units, covered_temporal_annotation,
+)
 
 
 def unit(uid, sense, **features):
@@ -41,3 +44,22 @@ def test_a_fold_footprint_must_be_passed_explicitly():
     reading = SimpleNamespace(units=[amount, condition])
     assert uncovered_units(reading) == (amount, condition)
     assert uncovered_units(reading, {amount.uid}) == (condition,)
+
+
+def test_temporal_metadata_needs_the_consumed_predicate_entity_and_period():
+    predicate = unit(3, "verb", lemma="produce", pattern_consumed=True)
+    reading = SimpleNamespace(sentence_index=2, units=[predicate])
+    event = EventTime(
+        provenance=Provenance("fold", 2), event="s2:u3", entity="workshop",
+        verb="produce", marker="today", offset=0,
+    )
+    args = ([reading], "workshop", {(2, "today")})
+    assert covered_temporal_annotation(event, *args)
+    for field, value in (
+        ("entity", "factory"), ("marker", "yesterday"),
+        ("verb", "destroy"), ("event", "s2:u4"),
+        ("provenance", Provenance("fold", 1)),
+    ):
+        assert not covered_temporal_annotation(replace(event, **{field: value}), *args)
+    predicate.features.pop("pattern_consumed")
+    assert not covered_temporal_annotation(event, *args)

@@ -1,0 +1,95 @@
+format: rulekit/categories@1
+categories:
+  exact_quantity_attribute:
+    parent: adjective
+  functional_state_action:
+    parent: verb
+  maintenance_action:
+    parent: verb
+  material_sufficiency_attribute:
+    parent: adjective
+  object_condition_belief:
+    parent: verb
+  quantity_counting_action:
+    parent: verb
+  quantity_plan_commitment:
+    parent: verb
+  quantity_supply_action:
+    parent: verb
+  recipient_service_action:
+    parent: verb
+  resource_application:
+    parent: noun
+  stock_limit_attribute:
+    parent: adjective
+  stock_resource_noun:
+    parent: noun
+  transport_capacity_action:
+    parent: verb
+  transport_predicate:
+    parent: transport_capacity_action
+    selectional_roles:
+      actor: motion_participant
+      theme: countable_event_object
+members:
+  exact_quantity_attribute:
+  - exact
+  functional_state_action:
+  - work
+  - works
+  - worked
+  maintenance_action:
+  - fix
+  - fixes
+  - fixed
+  - fixing
+  material_sufficiency_attribute:
+  - enough
+  object_condition_belief:
+  - think
+  - thinks
+  - thought
+  quantity_counting_action:
+  - count
+  - counts
+  - counted
+  quantity_plan_commitment:
+  - agreed
+  - agree
+  - agrees
+  - decides
+  - decide
+  - decided
+  quantity_supply_action:
+  - bring
+  - brings
+  - brought
+  - take
+  - takes
+  - took
+  recipient_service_action:
+  - serve
+  - serves
+  - served
+  resource_application:
+  - makeup
+  - meal
+  - painting
+  stock_limit_attribute:
+  - limited
+  stock_resource_noun:
+  - stock
+  transport_capacity_action:
+  - take
+  - takes
+  - carry
+  - carries
+  transport_predicate:
+  - transport
+attribute_compatibility:
+  exact_quantity_attribute:
+  - allocation_amount_noun
+  material_sufficiency_attribute:
+  - material_resource
+  stock_limit_attribute:
+  - stock_resource_noun

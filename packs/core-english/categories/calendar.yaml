@@ -1,13 +1,25 @@
 format: rulekit/categories@1
 categories:
-  named_season: {parent: timeperiod}
-  period_boundary_noun: {parent: noun}
+  named_season:
+    parent: timeperiod
+  period_boundary_noun:
+    parent: noun
+  period_end_boundary_noun:
+    parent: period_boundary_noun
   same_day_transaction_marker:
     parent: time
   transaction_sequence_adverb:
     parent: adverb
   prior_period_attribute:
     parent: adjective
+  calendar_day_unit:
+    parent: duration_measure
+    attrs:
+      calendar_day_unit: 1
+  calendar_week_unit:
+    parent: duration_measure
+    attrs:
+      calendar_week_unit: 1
   calendar_year_unit:
     parent: duration_measure
     attrs:
@@ -44,9 +56,41 @@ categories:
     parent: preposition
   plan_noun:
     parent: noun
+  period_start_boundary_noun:
+    parent: period_boundary_noun
+  relative_period_attribute:
+    parent: adjective
+  past_relative_period_attribute:
+    parent: relative_period_attribute
+    attrs:
+      relative_period_offset: -1
+  current_relative_period_attribute:
+    parent: relative_period_attribute
+    attrs:
+      relative_period_offset: 0
+  future_relative_period_attribute:
+    parent: relative_period_attribute
+    attrs:
+      relative_period_offset: 1
+  reporting_period_unit:
+    parent: duration_measure
+    includes:
+    - calendar_span_unit
+  reporting_time_marker:
+    parent: day_deictic_marker
 members:
-  named_season: [spring, summer, autumn, fall, winter]
-  period_boundary_noun: [start, beginning, end]
+  named_season:
+  - spring
+  - summer
+  - autumn
+  - fall
+  - winter
+  period_boundary_noun:
+  - start
+  - beginning
+  - end
+  period_end_boundary_noun:
+  - end
   same_day_transaction_marker:
   - today
   transaction_sequence_adverb:
@@ -59,6 +103,10 @@ members:
   - year
   calendar_month_unit:
   - month
+  calendar_day_unit:
+  - day
+  calendar_week_unit:
+  - week
   retrospective_period_marker:
   - before
   retrospective_window_preposition:
@@ -114,3 +162,23 @@ members:
   - about
   plan_noun:
   - plan
+  period_start_boundary_noun:
+  - start
+  - beginning
+  past_relative_period_attribute:
+  - last
+  - previous
+  current_relative_period_attribute:
+  - current
+  future_relative_period_attribute:
+  - next
+  reporting_period_unit:
+  - second
+  - minute
+  - hour
+  reporting_time_marker:
+  - today
+  - yesterday
+attribute_compatibility:
+  relative_period_attribute:
+  - duration_measure

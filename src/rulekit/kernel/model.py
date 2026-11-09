@@ -1501,6 +1501,28 @@ class BatchEvidence(Fact):
 
 
 @dataclass(frozen=True)
+class ActivityAccountEvidence(BatchEvidence):
+    """Account activity with independently preserved reporting-period scope.
+
+    A period's head and full reference remain separate from its duration:
+    the current week is an accounting scope, not seven days of work. The
+    inherited marker remains available for continuation/correction roles.
+    """
+
+    reporting_period: str = ""
+    prior_period: str = ""
+    reporting_period_ref: ReferenceIdentity | None = field(
+        default=None, metadata={"reference_for": "reporting_period"})
+    prior_period_ref: ReferenceIdentity | None = field(
+        default=None, metadata={"reference_for": "prior_period"})
+
+    def value_part(self):
+        return (*super().value_part(), self.reporting_period, self.prior_period,
+                self.reporting_period_ref.key() if self.reporting_period_ref else None,
+                self.prior_period_ref.key() if self.prior_period_ref else None)
+
+
+@dataclass(frozen=True)
 class AccountEntry(Fact):
     """Source-local liability evidence, distinct from spendable cash.
 

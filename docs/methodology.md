@@ -65,6 +65,11 @@ registry provenance are known. A partial run cannot stand in for a complete
 slice. Do not present a broad run followed by repairs as an uninterrupted
 full-suite pass; report the actual checks performed.
 
+Explicitly approved DEV gold discrepancies are recorded in the
+[corpus reference](corpora.md#approved-dev-gold-exceptions). Keep their raw
+outcomes visible alongside the approval; they do not silently become passing
+scores or relax the gate for unrelated items.
+
 ```sh
 uv run pytest -q tests/test_composed_question_families.py
 uv run rulekit --project projects/curated bench --slice suite

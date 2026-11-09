@@ -922,6 +922,62 @@ Cross-domain examples, equivalent and conflicting quotes, scoped dependencies,
 fraction bases and dimensional boundaries are exercised by
 [generalised composition tests](../tests/test_generalised_compositions.py).
 
+## Partitions, quantity plans and finite calendar accounts
+
+Named stock and output partitions share the same checked allocation balance.
+Each share preserves its holder, item, label and original-stock or remainder
+basis. A per-package classification scales only through a matching purchase;
+repeated populations preserve their stated duration. Exhaustive partition
+prices can value each part separately, including an explicitly relative price.
+Unknown classifications, overlapping labels, incompatible currencies,
+overspending and fractional discrete counts decline.
+
+Quantity plans compose connected ratios between **(unit, resource)** nodes.
+Physical conversions join only the same resource; equal dimensions do not
+identify different substances. Callers retain the distinction between capacity,
+required supplies and actual use. Supply capacity needs an explicit exact-use
+statement before answering an actual recipient count. Scheduled carrying
+capacity projects through complete periods. Maintenance requirements can use
+inherited component counts, plus a separately stated allowance for the rest of
+the object. Scoped container comparisons additionally preserve ordinal identity,
+apply resource-per-size limits, and round down to whole members before a stated
+within-group removal. They report the proportional filling and stocking default.
+Container populations retain their ordinary `Quantity` representation and are
+validated locally by the capacity consumer. The specialized grammar does not
+take ownership of unrelated holding statements or unscoped resource amounts.
+
+Reporting accounts reconstruct an opening count from a closing count, timed
+activity and adjustments. Accounts can represent inventory, a container, a
+project or a text product. Category attributes declare which activities add or
+remove physical stock. Inspection, repair, cleaning and sorting instead record
+completed work: their questions and closing observations must explicitly name
+that activity. Removing an object does not reverse work already completed.
+
+Actor, account, activity, resource, reporting scope and chronology must agree.
+Reporting periods include hours, days, weeks, months and years, with current and
+relative references normalized independently of elapsed work. A reporting week
+does not assert a week of work. Earlier periods must have the same grain unless
+dates or containment are established; a previous day is not automatically the
+previous week. Durations use declared exact conversions, including calendar
+months per year, without inventing month lengths. Known reporting windows bound
+the stated working time. Text-specific activities and accounts remain vocabulary
+subcategories of this general infrastructure.
+
+Approximate finite calendar accounts
+sum a complete inclusive day window, using anchored relative daily counts and
+declared calendar groups. Missing or duplicate days, dependency cycles and
+contradictory maximum-day claims decline. Approximate inputs produce a reported
+estimate.
+
+Implementation: [partitions](../src/rulekit/kernel/consumers/partitioned_account.py),
+[quantity ratios](../src/rulekit/kernel/quantity_ratios.py),
+[quantity plans](../src/rulekit/kernel/consumers/unit_plan.py),
+[scoped capacities](../src/rulekit/kernel/consumers/scoped_capacity_balance.py),
+[reporting accounts](../src/rulekit/kernel/consumers/activity_account.py), and
+[calendar quantities](../src/rulekit/kernel/calendar_amounts.py).
+Invented examples, alternative wording and refusal boundaries live in
+[resource composition tests](../tests/test_resource_batch_compositions.py).
+
 ## Answer assumptions
 
 An answer can carry structured default assumptions alongside its value and
@@ -955,6 +1011,9 @@ The implemented defaults include:
 | Closed accounts and dependencies | Savings accounts have no unstated opening resources or cash flows; financed balances and production profits use the stated charges; quota chains use complete intermediate requirements; source contributions exhaust the target; bounded carrier sequences use one whole carrier per event. |
 | Journey and work schedules | Return legs share the stated one-way distance or duration; a working-day set can supply one weekly schedule; unqualified work extents can use the question's reporting period. Separate attendance schedules are treated as nonoverlapping. |
 | Personal name components | The declared prefix and capitalization layout determine the remaining name component. |
+| Resource and service capacities | Containers use the same filled proportion and stock to the resource-per-size limit; ordinary objects use inherited component counts; planned capacity uses all stated supply and complete schedule periods. |
+| Repeated partitions and resumed work | Periods repeat the stated composition and prices; the stated work rate applies to all working intervals. An additive continuation duration and completion of a required correction are reported when used. |
+| Approximate calendar counts | The total is an estimate based on the stated approximate daily amounts. |
 
 The additional service, payment-policy and participation grammar uses the
 existing weighted account, installment balance and completion-rate consumers.

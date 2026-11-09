@@ -23,6 +23,12 @@ categories:
     - edible_quantity_object
     - quantity_container
     notes: Countable members of a scoped population, including people, products and containers.
+  inventory_classification_attribute:
+    parent: adjective
+  rarity_attribute:
+    parent: inventory_classification_attribute
+  integrity_attribute:
+    parent: inventory_classification_attribute
 members:
   ordered_assessment:
   - grade
@@ -42,6 +48,14 @@ members:
   - receives
   population_cohort:
   - batch
+  rarity_attribute:
+  - common
+  - uncommon
+  - rare
+  integrity_attribute:
+  - defective
 attribute_compatibility:
   assessment_descriptor:
   - ordered_assessment
+  inventory_classification_attribute:
+  - inventory_item

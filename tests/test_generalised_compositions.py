@@ -119,6 +119,17 @@ def test_fraction_basis_controls_the_remaining_amount():
         opening.allocate(0.5, FractionBasis.OPENING, source="test")
 
 
+def test_explicit_and_fractional_allocations_share_one_checked_balance():
+    ledger = FractionalAllocation(20, ArithmeticLog())
+    assert ledger.allocate_amount(3, source="test") == 3
+    assert ledger.allocate(0.5, FractionBasis.REMAINDER, source="test") == 8.5
+    assert ledger.balance == 8.5
+    for amount in (-1, 9, float("inf"), float("nan")):
+        with pytest.raises(ValueError):
+            ledger.allocate_amount(amount, source="test")
+        assert ledger.balance == 8.5
+
+
 @pytest.mark.parametrize(
     "num,den,amount,expected", [(3, 2, 10, 15), (0, 2, 10, 0), (3, 0, 10, None)]
 )

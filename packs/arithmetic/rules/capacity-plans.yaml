@@ -1,0 +1,338 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/relative-holder-capacity
+  match:
+    sentence:
+    - slot: left
+      type: entity
+      common_noun_cat: capacity_holder
+      referential: true
+      at_start: true
+    - slot: be
+      cat: copula
+    - slot: factor
+      type: multiplier
+    - lit: the
+      consume_skipped: true
+    - slot: size
+      cat: size_property_noun
+      uncounted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: right
+      type: entity
+      common_noun_cat: capacity_holder
+      referential: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: capacity-scope-ratio
+    entity: '{left}'
+    measure: '{left}'
+    value: factor
+    position: '{factor.span_start}'
+    container: '{right}'
+  consumes:
+  - be
+  - factor
+  satisfies:
+    be:
+    - subject
+    factor:
+    - quantifies
+  where: []
+  description: Preserve the holder population, ordinal scope and measured resource constraint before comparing
+    whole-member capacities.
+- id: arithmetic/measured-resource-in-scoped-holder
+  match:
+    sentence:
+    - lit: there
+      consume_skipped: true
+    - slot: be
+      cat: copula
+    - slot: amount
+      cat: measure_unit
+      counted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: resource
+      cat: material_resource
+      uncounted: true
+      bare: true
+    - lit: in
+      consume_skipped: true
+    - slot: scope
+      qualified: true
+      qualifier_cat: holder_ordinal
+      cat: capacity_holder
+      uncounted: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: capacity-resource
+    entity: '{scope}'
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+    attribute: '{resource}'
+  consumes:
+  - be
+  - amount
+  satisfies:
+    be:
+    - subject
+  where: []
+  description: Preserve the holder population, ordinal scope and measured resource constraint before comparing
+    whole-member capacities.
+- id: arithmetic/adopted-resource-per-extent-specification
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+      at_start: true
+    - slot: follow
+      cat: specification_follow_action
+      finite_form: true
+    - lit: the
+      consume_skipped: true
+    - slot: rule
+      cat: specification_noun
+      uncounted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: amount
+      cat: measure_unit
+      counted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: resource
+      cat: material_resource
+      uncounted: true
+      bare: true
+    - lit: per
+      consume_skipped: true
+    - slot: unit
+      cat: measure_unit
+      uncounted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: item
+      cat: capacity_subject
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: capacity-specification
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+    container: '{unit}'
+    attribute: '{resource}'
+    acquisition: '{item}'
+  consumes:
+  - follow
+  - amount
+  satisfies:
+    follow:
+    - subject
+  where: []
+  description: Preserve the holder population, ordinal scope and measured resource constraint before comparing
+    whole-member capacities.
+- id: arithmetic/scoped-member-measured-sizes
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+      at_start: true
+    - slot: keep
+      cat: retention_verb
+      finite_form: true
+    - slot: item
+      cat: capacity_subject
+      qualified: true
+      attributive_counted: true
+      qualifier_cat: measure_unit
+    - lit: in
+      consume_skipped: true
+    - slot: scope
+      type: entity
+      common_noun_cat: capacity_holder
+      referential: true
+    - lit: and
+      consume_skipped: true
+    - slot: item2
+      cat: capacity_subject
+      qualified: true
+      attributive_counted: true
+      qualifier_cat: measure_unit
+    - lit: in
+      consume_skipped: true
+    - slot: scope2
+      type: entity
+      common_noun_cat: capacity_holder
+      referential: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: capacity-member-size
+    entity: '{who}'
+    measure: '{item}'
+    value: item
+    position: '{item.span_start}'
+    container: '{scope}'
+    attribute: '{item.qualifier}'
+    acquisition: '{item.qualifier}'
+  - fact: batch_evidence
+    kind: capacity-member-size
+    entity: '{who}'
+    measure: '{item2}'
+    value: item2
+    position: '{item2.span_start}'
+    container: '{scope2}'
+    attribute: '{item2.qualifier}'
+    acquisition: '{item2.qualifier}'
+  consumes:
+  - keep
+  - item
+  - item2
+  satisfies:
+    keep:
+    - subject
+  where:
+  - same_lemma:
+    - item
+    - item2
+  question_assumption: true
+  description: Preserve the holder population, ordinal scope and measured resource constraint before comparing
+    whole-member capacities.
+asks:
+- id: ask/scoped-capacity-population-difference
+  match:
+    question:
+    - lit: how
+      consume_skipped: true
+    - lit: many
+      consume_skipped: true
+    - slot: more
+      cat: more_dir
+    - slot: unit
+      cat: capacity_subject
+      uncounted: true
+      bare: true
+      number: plural
+    - slot: modal
+      cat: future_modal
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+    - slot: have
+      cat: possession_state
+      bare_form: true
+    - lit: in
+      consume_skipped: true
+    - slot: left
+      type: entity
+      common_noun_cat: capacity_holder
+      referential: true
+    - lit: than
+      consume_skipped: true
+    - slot: right
+      type: entity
+      common_noun_cat: capacity_holder
+      referential: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: scoped-capacity-balance
+    entity: '{who}'
+    measure: '{unit}'
+  satisfies:
+    more:
+    - standard
+    have:
+    - subject
+- id: ask/scoped-capacity-after-member-removal
+  match:
+    question:
+    - lit: how
+      consume_skipped: true
+    - lit: many
+      consume_skipped: true
+    - slot: more
+      cat: more_dir
+    - slot: unit
+      cat: capacity_subject
+      uncounted: true
+      bare: true
+      number: plural
+    - slot: modal
+      cat: future_modal
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+    - slot: have
+      cat: possession_state
+      bare_form: true
+    - lit: in
+      consume_skipped: true
+    - slot: left
+      type: entity
+      common_noun_cat: capacity_holder
+      referential: true
+    - lit: than
+      consume_skipped: true
+    - slot: right
+      type: entity
+      common_noun_cat: capacity_holder
+      referential: true
+    - lit: if
+      consume_skipped: true
+    - slot: count
+      type: number
+      value_min: 1
+      value_max: 1
+    - lit: of
+      consume_skipped: true
+    - slot: affected
+      cat: capacity_subject
+      qualified: true
+      uncounted: true
+      number: plural
+    - slot: act
+      cat: member_elimination_action
+      finite_form: true
+    - lit: another
+      consume_skipped: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: scoped-capacity-balance
+    entity: '{who}'
+    measure: '{unit}'
+    loss: '{count.value}'
+  satisfies:
+    more:
+    - standard
+    have:
+    - subject
+    count:
+    - quantifies
+    act:
+    - subject

@@ -27,6 +27,7 @@ entries:
 
     # auxiliaries / question words (structure)
   +: {senses: [operator]}
+  '-': {senses: [punct]}
   3/8th:
     senses:
     - adjective
@@ -1217,10 +1218,12 @@ entries:
   carried:
     senses:
     - verb
+  carries: {senses: [verb], verb: {lemma: carry}}
   carrot:
     senses:
     - noun
     plural: carrots
+  carry: {senses: [verb]}
   cart:
     senses:
     - noun
@@ -1474,12 +1477,18 @@ entries:
   clean:
     senses:
     - verb
+    verb:
+      lemma: clean
+      number: plural
+  cleaned: {senses: [verb], verb: {lemma: clean}}
   cleaner:
     senses:
     - noun
   cleaning:
     senses:
     - verb
+    verb: {lemma: clean}
+  cleans: {senses: [verb], verb: {lemma: clean, number: singular}}
   clearance: {senses: [noun]}
   clerk:
     senses:
@@ -1617,6 +1626,7 @@ entries:
     - verb
     verb:
       lemma: commit
+  common: {senses: [adjective]}
   commuting:
     senses:
     - noun
@@ -1742,9 +1752,10 @@ entries:
   construction:
     senses:
     - noun
-  consume: {senses: [verb]}
+  consume: {senses: [verb], verb: {lemma: consume, number: plural}}
   consumed: {senses: [verb], verb: {lemma: consume}}
   consumes: {senses: [verb], number: singular, verb: {lemma: consume}}
+  consuming: {senses: [verb], verb: {lemma: consume}}
   consumption:
     senses:
     - noun
@@ -1768,6 +1779,11 @@ entries:
   continue:
     senses:
     - verb
+    verb:
+      lemma: continue
+      number: plural
+  continued: {senses: [verb], verb: {lemma: continue}}
+  continues: {senses: [verb], verb: {lemma: continue, number: singular}}
   continuously:
     senses:
     - adverb
@@ -1856,6 +1872,7 @@ entries:
   correctly:
     senses:
     - adverb
+  cosmetic: {senses: [adjective]}
   cost: {senses: [noun, verb], plural: costs}
   costing: {senses: [verb], verb: {lemma: cost}}
   costly:
@@ -2142,6 +2159,7 @@ entries:
     senses:
     - verb
   deep-sea: {senses: [adjective]}
+  defective: {senses: [adjective]}
   degree:
     senses:
     - noun
@@ -2238,6 +2256,7 @@ entries:
     plural: destinations
   destroy: {senses: [verb]}
   destroyed: {senses: [verb], verb: {lemma: destroy}}
+  destroys: {senses: [verb], verb: {lemma: destroy}}
   destruction: {senses: [noun]}
   determine:
     senses:
@@ -2781,6 +2800,8 @@ entries:
   equals:
     senses:
     - verb
+  erase: {senses: [verb]}
+  erased: {senses: [verb], verb: {lemma: erase}}
   eraser:
     senses:
     - noun
@@ -3115,6 +3136,10 @@ entries:
   five-ninths:
     senses:
     - adjective
+  fix: {senses: [verb]}
+  fixed: {senses: [verb], verb: {lemma: fix}}
+  fixes: {senses: [verb], verb: {lemma: fix}}
+  fixing: {senses: [verb], verb: {lemma: fix}}
   flask: {senses: [noun], plural: flasks}
   flea:
     senses:
@@ -3167,6 +3192,7 @@ entries:
     - noun
     plural: folders
   follow: {senses: [verb], number: plural}
+  followed: {senses: [verb], verb: {lemma: follow}}
   following: {senses: [adjective, preposition]}
   follows: {senses: [verb], number: singular, verb: {lemma: follow}}
   fond:
@@ -3432,6 +3458,7 @@ entries:
     - noun
     plural: glass beads
     lexical_phrase: true
+  gloss: {senses: [noun]}
   gluten:
     senses:
     - noun
@@ -3951,6 +3978,7 @@ entries:
   incomes:
     senses:
     - noun
+  incorrectly: {senses: [adverb]}
   increase:
     senses:
     - verb
@@ -3998,9 +4026,10 @@ entries:
     - adjective
   insect: {senses: [noun], plural: insects}
   inside: {senses: [preposition]}
-  inspect: {senses: [verb]}
+  inspect: {senses: [verb], verb: {lemma: inspect, number: plural}}
   inspected: {senses: [verb], verb: {lemma: inspect}}
-  inspects: {senses: [verb], verb: {lemma: inspect}}
+  inspecting: {senses: [verb], verb: {lemma: inspect}}
+  inspects: {senses: [verb], verb: {lemma: inspect, number: singular}}
   install:
     senses:
     - verb
@@ -4043,6 +4072,7 @@ entries:
     - noun
   interview: {senses: [noun], plural: interviews}
   into: {senses: [preposition]}
+  inventory: {senses: [noun]}
   invests:
     senses:
     - verb
@@ -4158,6 +4188,7 @@ entries:
   journey:
     senses:
     - noun
+    plural: journeys
   jug: {senses: [noun], plural: jugs}
   juggle:
     senses:
@@ -4541,6 +4572,8 @@ entries:
     senses:
     - adjective
   lion: {senses: [noun], plural: lions}
+  lip: {senses: [noun], plural: lips}
+  lip gloss: {senses: [noun], lexical_phrase: true}
   list:
     senses:
     - noun
@@ -4667,6 +4700,7 @@ entries:
     senses:
     - noun
     plural: magazines
+  magic: {senses: [adjective]}
   magician:
     senses:
     - noun
@@ -5015,6 +5049,7 @@ entries:
     senses:
     - noun
     plural: mornings
+  most: {senses: [quantifier]}
   mother:
     senses:
     - noun
@@ -5609,6 +5644,7 @@ entries:
     senses:
     - noun
     plural: passengers
+  passes: {senses: [verb], verb: {lemma: pass}}
   past: {senses: [preposition]}
   pastry:
     senses:
@@ -6096,7 +6132,7 @@ entries:
     - verb
     verb:
       lemma: process
-  produce: {senses: [verb]}
+  produce: {senses: [verb], verb: {lemma: produce, number: plural}}
   produced: {senses: [verb], verb: {lemma: produce}}
   produces: {senses: [verb], number: singular, verb: {lemma: produce}}
   producing:
@@ -6337,6 +6373,7 @@ entries:
   randomly:
     senses:
     - manner
+  rare: {senses: [adjective]}
   raspberry:
     senses:
     - noun
@@ -6564,16 +6601,21 @@ entries:
   repair:
     senses:
     - verb
+    verb:
+      lemma: repair
+      number: plural
   repaired:
     senses:
     - verb
     verb:
       lemma: repair
+  repairing: {senses: [verb], verb: {lemma: repair}}
   repairs:
     senses:
     - verb
     verb:
       lemma: repair
+      number: singular
   repay: {senses: [verb]}
   repaying: {senses: [verb], verb: {lemma: repay}}
   repays: {senses: [verb], verb: {lemma: repay}}
@@ -6668,6 +6710,9 @@ entries:
     verb:
       lemma: result
       number: singular
+  resume: {senses: [verb], verb: {lemma: resume, number: plural}}
+  resumed: {senses: [verb], verb: {lemma: resume}}
+  resumes: {senses: [verb], verb: {lemma: resume, number: singular}}
   retailer: {senses: [noun], plural: retailers}
   retain:
     senses:
@@ -7073,6 +7118,7 @@ entries:
     - noun
     plural: seniors
   sent: {senses: [verb], verb: {lemma: send}}
+  sentence: {senses: [noun], plural: sentences}
   separate:
     senses:
     - adjective
@@ -7516,6 +7562,9 @@ entries:
   sorts:
     senses:
     - verb
+    verb:
+      lemma: sort
+      number: singular
   soup:
     senses:
     - noun
@@ -7703,6 +7752,7 @@ entries:
   station:
     senses:
     - noun
+  stationery: {senses: [noun]}
   statistics:
     senses:
     - noun
@@ -7740,6 +7790,7 @@ entries:
     plural: sticks
   sticker: {senses: [noun], plural: stickers}
   still: {senses: [adverb]}
+  stock: {senses: [noun], plural: stocks}
   stole: {senses: [verb], verb: {lemma: steal}}
   stolen: {senses: [verb], verb: {lemma: steal, past_participle: true}}
   stone:
@@ -8421,6 +8472,7 @@ entries:
   transport:
     senses:
     - noun
+    - verb
   trash:
     senses:
     - noun
@@ -8491,6 +8543,7 @@ entries:
     verb:
       lemma: try
   tub: {senses: [noun], plural: tubs}
+  tube: {senses: [noun], plural: tubes}
   tuesday: {senses: [noun]}
   tuition:
     senses:
@@ -8572,7 +8625,14 @@ entries:
   type:
     senses:
     - noun
+    - verb
+    - verb
     plural: types
+    verb:
+      lemma: type
+      number: plural
+  typed: {senses: [verb], verb: {lemma: type}}
+  typing: {senses: [verb], verb: {lemma: type}}
   umbrella:
     senses:
     - noun
@@ -8584,6 +8644,7 @@ entries:
     senses:
     - noun
     plural: uncles
+  uncommon: {senses: [adjective]}
   uncover:
     senses:
     - verb
@@ -8743,6 +8804,7 @@ entries:
   vertically:
     senses:
     - adverb
+  very: {senses: [adverb]}
   vessel: {senses: [noun], plural: vessels}
   vet:
     senses:
@@ -9108,7 +9170,7 @@ entries:
     - noun
     plural: writers
   writes: {senses: [verb], number: singular, verb: {lemma: write}}
-  writing: {senses: [noun]}
+  writing: {senses: [noun, verb], verb: {lemma: write}}
   written:
     senses:
     - verb

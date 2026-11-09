@@ -143,6 +143,10 @@ def consumer(name: str, *, time_scoped: bool = False,
 
 
 from . import (  # noqa: E402,F401  (import registers each handler)
+    partitioned_account as _partitioned_account,
+    unit_plan as _unit_plan,
+    activity_account as _activity_account,
+    scoped_capacity_balance as _scoped_capacity_balance,
     adjusted_unit_rate as _adjusted_unit_rate,
     exchange_valuation as _exchange_valuation,
     calibrated_resource_value as _calibrated_resource_value,

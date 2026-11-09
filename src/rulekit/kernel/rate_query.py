@@ -64,3 +64,35 @@ def collective_rate_subject(ctx, rate):
                         and subject.features.get("lemma") == rate.entity):
                     numbers.add(subject.features.get("number"))
     return numbers == {"plural"}
+
+
+def rate_subject_reference(rate, premises, reg):
+    """Recover a rate's unique source referent without flattening its scope.
+
+    Prefer a bound subject. Some licensed verbs have no subject obligation;
+    there the rate's source must contain exactly one matching referent.
+    """
+    from .reference_identity import reference_from_unit
+    from .model import Unit
+    from .patterns import is_referential_entity
+
+    references = {
+        reference_from_unit(ob.target)
+        for reading in premises if reading.sentence_index == rate.provenance.sentence
+        for unit in reading.units
+        if unit.sense() == "verb" and unit.features.get("lemma") == rate.verb
+        for ob in unit.obligations()
+        if ob.need == "subject" and isinstance(ob.target, Unit)
+    }
+    if not references:
+        references = {
+            reference_from_unit(unit)
+            for reading in premises if reading.sentence_index == rate.provenance.sentence
+            for unit in reading.units
+            if reference_from_unit(unit).head == rate.entity
+            and is_referential_entity(reading, unit, reg)
+        }
+    if len(references) != 1:
+        return None
+    reference, = references
+    return reference if reference.resolved and reference.head == rate.entity else None

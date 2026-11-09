@@ -1,0 +1,39 @@
+format: rulekit/categories@1
+categories:
+  text_output_unit:
+    parent: account_quantity_unit
+  text_creation_action:
+    parent: stock_increase_activity
+    selectional_roles:
+      actor: collection_agent
+      theme: text_output_unit
+  text_correction_action:
+    parent: stock_correction_action
+    selectional_roles:
+      actor: collection_agent
+      theme: text_output_unit
+  text_account:
+    parent: quantity_account
+members:
+  text_output_unit:
+  - sentence
+  - word
+  - page
+  text_creation_action:
+  - type
+  - typed
+  - typing
+  - write
+  - writes
+  - wrote
+  - writing
+  text_correction_action:
+  - erase
+  - erased
+  - delete
+  - deleted
+  text_account:
+  - paper
+  - report
+  - book
+  - file

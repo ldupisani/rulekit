@@ -1186,12 +1186,6 @@ categories:
     notes: >
       Predicative adjectives whose "was ADJECTIVE to VERB" use states a
       successfully realized event amount, rather than bare capacity.
-  relative_period_attribute:
-    parent: adjective
-    notes: >
-      Attributes that turn a duration noun into a discourse-relative
-      period, such as "last week". The duration head remains the period
-      identity; this category licenses the qualifier.
   price_verb:
     parent: quantity_ask_verb
     notes: >
@@ -3268,6 +3262,7 @@ members:
   quantity_anaphor: [amount, distance, number]
   quantity_ask_verb: [enroll, enrolled, enrolling, enrolls, had, has, have, own, owns, take, takes, took]
   quantity_container:
+  - tube
   - aquarium
   - backpack
   - binder
@@ -3330,7 +3325,6 @@ members:
   quantity_topic_preposition: [about]
   realized_ability_adjective: [able]
   relational_marker: [than]
-  relative_period_attribute: [last]
   remainder_collection_noun: [alpaca, apple, apricot, area, ball, bench, bird, book, card, cat, child, coin,
       cookie, cupboard, dog, dollar, drum, egg, envelope, fish, flower, friend, garden, gardener, grape,
       guardian, hamster, key, librarian, litter, marble, pantry, paper, pear, pencil, plum, puzzle, rabbit,
@@ -3477,7 +3471,6 @@ attribute_compatibility:
   quantity_site_preposition: [quantity_site_location]
   quantity_surface_preposition: [quantity_surface_location]
   quantity_topic_preposition: [quantity_topic]
-  relative_period_attribute: [duration_measure]
   remnant_adj: [content_progress_measure, remainder_collection_noun]
   ripeness_attribute: [ripenable_noun]
   size_attribute:

@@ -19,16 +19,16 @@ categories:
     notes: A measured or packaged purchase can have one price for the whole lot.
   purchase_collection_noun:
     parent: noun
-    notes: A collective ask or activity introduction covers every purchased item, by its named category or an
-      explicit generic collection licence.
+    notes: A collective ask or activity introduction covers every purchased item, by its named
+      category or an explicit generic collection licence.
   generic_purchase_collection_noun:
     parent: purchase_collection_noun
-    notes: An unspecified shopping collection; every ledger item must still be an ownable object. This does
-      not assert extra purchases or make its words global synonyms.
+    notes: An unspecified shopping collection; every ledger item must still be an ownable object.
+      This does not assert extra purchases or make its words global synonyms.
   mass_purchase_collection_noun:
     parent: purchase_collection_noun
-    notes: Collection terms usable without a determiner in singular mass form, rather than a plural count
-      form.
+    notes: Collection terms usable without a determiner in singular mass form, rather than a plural
+      count form.
   clothes:
     parent: noun
     notes: Clothing and wearable accessories grouped as one shopping collection.
@@ -61,8 +61,8 @@ categories:
     parent: noun
   charge_record_noun:
     parent: shared_cost_noun
-    notes: A document or account identifying charges in an explicit priced-list and sharing context. These
-      words are not global synonyms and do not imply payment, settlement, or a known balance.
+    notes: A document or account identifying charges in an explicit priced-list and sharing context.
+      These words are not global synonyms and do not imply payment, settlement, or a known balance.
   purchase_context_activity:
     parent: verb
     notes: A stated group activity preceding an explicit itemized acquisition.
@@ -94,15 +94,16 @@ members:
   price_quote_participle: [costing]
   marked_price_participle: [priced, listed]
   sale_offer_participle: [selling]
-  clothes: [beanie, belt, boot, cap, coat, costume, dress, hat, jacket, jeans, leggings, mitten, outfit, pants,
-    scarf, shirt, shoe, shorts, skirt, sock, suit, sunglass, sweater, t-shirt, tie, top, watch]
+  clothes: [beanie, belt, boot, cap, coat, costume, dress, hat, jacket, jeans, leggings, mitten,
+      outfit, pants, scarf, shirt, shoe, shorts, skirt, sock, suit, sunglass, sweater, t-shirt, tie,
+      top, watch]
   generic_purchase_collection_noun: [goods, item, merchandise, stuff, thing]
-  ingredient: [apple, charcuterie, cheddar cheese, cheese, cold cut, cream cheese, sugar, tortilla, vanilla,
-      vegetable, wheat]
+  ingredient: [apple, charcuterie, cheddar cheese, cheese, cold cut, cream cheese, sugar, tortilla,
+      vanilla, vegetable, wheat]
   mass_purchase_collection_noun: [merchandise, stuff]
-  purchase_collection_noun: [clothes, ingredient, treat]
-  purchase_lot_measure: [bottle, box, bunch, carton, gallon, gram, kilogram, pack, packet, pint, pound, quart,
-      sack, tub]
+  purchase_collection_noun: [clothes, ingredient, treat, stationery]
+  purchase_lot_measure: [bottle, box, bunch, carton, gallon, gram, kilogram, pack, packet, pint,
+      pound, quart, sack, tub]
   equal_division_verb:
   - split
   - share
@@ -138,8 +139,8 @@ members:
   - work
   - worked
   - works
-  clothing: [beanie, boot, cap, clothes, coat, costume, dress, jacket, jeans, leggings, mitten, outfit, pants,
-      scarf, shirt, shorts, skirt, sunglass, sweater, t-shirt, tie]
+  clothing: [beanie, boot, cap, clothes, coat, costume, dress, jacket, jeans, leggings, mitten,
+      outfit, pants, scarf, shirt, shorts, skirt, sunglass, sweater, t-shirt, tie]
   purchase_encounter_verb:
   - meet
   - meeting

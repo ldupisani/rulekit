@@ -1,0 +1,29 @@
+format: rulekit/categories@1
+categories:
+  capacity_holder:
+    parent: noun
+    includes:
+    - quantity_container
+    - quantity_location
+  capacity_subject:
+    parent: noun
+    includes:
+    - living_agent
+    - ownable_quantity_object
+    - vehicle
+  specification_follow_action:
+    parent: verb
+  member_elimination_action:
+    parent: verb
+members:
+  specification_follow_action:
+  - follow
+  - follows
+  - followed
+  member_elimination_action:
+  - eat
+  - eats
+  - ate
+  - destroy
+  - destroys
+  - destroyed

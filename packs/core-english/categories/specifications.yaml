@@ -29,8 +29,8 @@ categories:
     parent: verb
   reference_output_activity:
     parent: verb
-    notes: The stated output side of an observed input/output ratio; no ratio is inferred without explicit
-      adoption.
+    notes: The stated output side of an observed input/output ratio; no ratio is inferred without
+      explicit adoption.
   specification_demand_verb:
     parent: verb
   demand_participant:
@@ -61,6 +61,7 @@ members:
   - procedure
   - recipe
   - diet
+  - rule
   specification_requirement_verb:
   - require
   - requires

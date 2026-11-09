@@ -492,6 +492,31 @@ def _nominal_pass(reading: Reading, reg: Registry) -> bool:
             )
             return True
         # noun + noun -> compound, head = the RIGHT noun ("mango trees")
+        # A declared predicate after an auxiliary-supported nominal subject
+        # and before an adjunct is a verb, rather than the subject's head.
+        # Require a compatible actor frame; ordinary nominal compounds and
+        # compounds followed by another noun retain their existing readings.
+        if a.sense() == "noun" and b.sense() == "noun" and i + 2 < len(units):
+            from .patterns import is_bare_verb_form
+            entry = reg.lexicon.get(b.features.get("fold", ""))
+            prior = i - 1
+            while prior >= 0 and (
+                units[prior].sense() == "article"
+                or reg.word_in_category(units[prior].features.get("fold", ""), "possessive_determiner")
+            ):
+                prior -= 1
+            lemma = entry.verb.lemma if entry and entry.verb and entry.verb.lemma else b.features.get("lemma", "")
+            if (entry and "verb" in entry.senses and prior >= 0
+                    and units[prior].sense() in {"modal", "auxiliary"}
+                    and units[i + 2].sense() == "preposition"
+                    and is_bare_verb_form(b.features.get("fold", ""), lemma)
+                    and any(frame.get("actor") and reg.word_in_category(
+                        a.features.get("lemma", ""), frame["actor"])
+                        for _, frame in reg.selectional_frames(lemma))):
+                reading.record("select-auxiliary-supported-predicate", b,
+                    {"senses": ["verb"], "sense": "verb", "lemma": lemma, "ambiguous": False},
+                    "the auxiliary, declared actor frame and following adjunct identify a predicate")
+                return True
         # An income predicate can introduce a service activity rather than a
         # noun modifier. Its declared theme frame supplies the distinction;
         # unrelated product compounds keep their ordinary nominal reading.

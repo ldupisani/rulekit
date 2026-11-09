@@ -51,8 +51,8 @@ categories:
   production_variety_noun: {parent: noun}
   measured_resource_removal_verb:
     parent: verb
-    notes: Licenses a same-sentence elliptical measured removal; this does not give a verb a general loss
-      polarity.
+    notes: Licenses a same-sentence elliptical measured removal; this does not give a verb a general
+      loss polarity.
   spatial_unit_modifier:
     parent: adjective
   precipitation_resource:
@@ -64,6 +64,8 @@ categories:
   storage_container:
     parent: quantity_container
   precipitation_output:
+    parent: material_resource
+  cosmetic_material:
     parent: material_resource
 members:
   divisible_material_whole: [panel, roll, sheet]
@@ -181,6 +183,10 @@ members:
   - cup
   precipitation_output:
   - water
+  cosmetic_material:
+  - makeup
+  - lip gloss
+  - gloss
 attribute_compatibility:
   resource_remnant_attribute: [material_resource]
   rectangular_attribute:

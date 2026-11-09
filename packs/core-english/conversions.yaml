@@ -73,6 +73,9 @@ conversions:
 - from: minute
   to: second
   factor: 60
+- from: minute
+  to: seconds
+  factor: 60
 
 - from: centimeter
   to: meter

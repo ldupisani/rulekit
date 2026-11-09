@@ -30,7 +30,16 @@ def covered_temporal_annotation(fact, premises, entity, periods):
     be consumed by a complete rule, and its period must be preserved by that
     rule's evidence. Callers still audit every numeric operand separately.
     """
-    from .model import VerbalRelation
+    from .model import VerbalRelation, EventTime
+
+    if isinstance(fact, EventTime):
+        if fact.entity != entity or (fact.provenance.sentence, fact.marker) not in periods:
+            return False
+        reading = next((r for r in premises if r.sentence_index == fact.provenance.sentence), None)
+        return reading is not None and any(
+            fact.event == f's{reading.sentence_index}:u{unit.uid}'
+            and unit.features.get('pattern_consumed')
+            and unit.features.get('lemma') == fact.verb for unit in reading.units)
 
     if (not isinstance(fact, VerbalRelation) or not fact.polarity
             or fact.role not in {'temporal-point', 'temporal-duration'}

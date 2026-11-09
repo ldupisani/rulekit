@@ -8,7 +8,8 @@ categories:
     notes: A modifier placed before the cardinal count in a counted noun phrase.
   universal_item_reference:
     parent: pronoun
-    notes: All items in an independently established domain; the consuming rule must establish completeness.
+    notes: All items in an independently established domain; the consuming rule must establish
+      completeness.
   impersonal_subject_pronoun:
     parent: pronoun
   initial_sequence_ordinal:
@@ -53,6 +54,10 @@ categories:
     includes:
     - animal
     - mass_dimension_holder
+  collective_reference_holder:
+    parent: noun
+    includes:
+    - organization
 members:
   nonpersonal_actor_predicate:
   - gain
@@ -110,6 +115,9 @@ members:
   - its
   plural_reflexive_reference:
   - themselves
+  collective_reference_holder:
+  - store
+  - shop
 attribute_compatibility:
   initial_sequence_ordinal: [progress_measure]
   holder_ordinal: [ordinal_quantity_holder, path_checkpoint, local_yield_site, process_part,

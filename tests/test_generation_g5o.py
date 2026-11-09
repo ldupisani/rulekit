@@ -18,6 +18,17 @@ ROOT = Path(__file__).resolve().parents[1]
 CURATED = ROOT / "projects" / "curated"
 
 EXPECTED_OCCURRENCES = {
+    'arithmetic/counted-partition-price': ((7,), 'each'),
+    'arithmetic/material-container-recipient-capacity': ((0,), 'each'),
+    'arithmetic/material-container-service-capacity': ((0,), 'each'),
+    'arithmetic/maximum-day-postposed-count': ((4,), 'most'),
+    'arithmetic/nested-material-container-content': ((0,), 'each'),
+    'arithmetic/nested-supply-exact-service-plan': ((8,), 'each'),
+    'arithmetic/packaged-classified-content': ((0,), 'each'),
+    'arithmetic/paired-day-count': ((9,), 'each'),
+    'arithmetic/per-component-and-remaining-resource-requirement': ((7,), 'each'),
+    'arithmetic/per-component-resource-requirement': ((7,), 'each'),
+    'arithmetic/remaining-partition-relative-unit-price': ((2,), 'each'),
     "arithmetic/average-each-initial-period": ((3,), "each"),
     "arithmetic/partitive-distributed-supplemental-receipt": ((4,), "each"),
     "arithmetic/shared-completion-deadline-single-period": ((1, 0), "each"),
@@ -115,6 +126,7 @@ EXPECTED_OCCURRENCES = {
     "arithmetic/two-per-member-shared-period-rates": ((5,), "each2"),
 }
 EXPECTED_FILLERS = {
+    "most",
     "all",
     "both",
     "double",
@@ -206,9 +218,9 @@ def test_g5o_unlocks_only_the_preregistered_rule() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 850
-    assert sum(item.supported for item in availability.values()) == 752
-    assert sum(not item.supported for item in availability.values()) == 98
+    assert len(availability) == 915
+    assert sum(item.supported for item in availability.values()) == 814
+    assert sum(not item.supported for item in availability.values()) == 101
     assert availability[
         "arithmetic/existential-premise-distributive"
     ].supported
@@ -218,7 +230,7 @@ def test_g5o_unlocks_only_the_preregistered_rule() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 2609
+    assert len(exploration_status(project)["fillers"]) == 2628
 
 
 @pytest.mark.parametrize("quantifier", sorted(EXPECTED_DISTRIBUTIVE_FILLERS))

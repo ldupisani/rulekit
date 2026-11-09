@@ -7,17 +7,28 @@ categories:
   exercise_activity:
     parent: timed_activity_object
   exercise_repetition: {parent: performance_unit}
+  collectible_item:
+    parent: inventory_item
+  product_style_attribute:
+    parent: adjective
 members:
   sport:
-    - softball
-    - basketball
-    - baseball
-    - soccer
-    - volleyball
+  - softball
+  - basketball
+  - baseball
+  - soccer
+  - volleyball
   board_game:
-    - chess
-    - tic-tac-toe
+  - chess
+  - tic-tac-toe
   exercise_activity:
-    - workout
-    - yoga
+  - workout
+  - yoga
   exercise_repetition: [situp, pushup, lap]
+  collectible_item:
+  - card
+  product_style_attribute:
+  - magic
+attribute_compatibility:
+  product_style_attribute:
+  - collectible_item

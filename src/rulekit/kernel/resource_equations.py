@@ -35,6 +35,12 @@ class FractionalAllocation:
             self.log,
             source=source,
         )
+        return self.allocate_amount(amount, source=source)
+
+    def allocate_amount(self, amount, *, source):
+        """Allocate an explicit amount from the same checked balance."""
+        if not isfinite(amount) or amount < 0:
+            raise ValueError("an allocation amount must be finite and nonnegative")
         balance = resource_residual([self.balance], [amount], self.log, source=source)
         if balance < -1e-9:
             raise ValueError("the stated allocations exceed the resource stock")

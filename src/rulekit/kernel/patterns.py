@@ -31,6 +31,7 @@ from .model import (
     ResourceBalance,
     AccountEntry,
     BatchEvidence,
+    ActivityAccountEvidence,
     SpecificationEvidence,
     PopulationEvidence,
     ProportionalBaseEvidence,
@@ -129,6 +130,7 @@ _FACT_CLASSES = {
     "indexed_path_evidence": IndexedPathEvidence,
     "measured_component": MeasuredComponent,
     "batch_evidence": BatchEvidence,
+    "activity_account_evidence": ActivityAccountEvidence,
     "specification_evidence": SpecificationEvidence,
     "population_evidence": PopulationEvidence,
     "proportional_base_evidence": ProportionalBaseEvidence,
@@ -2433,7 +2435,8 @@ def _build_fact(
         # in other fact contracts (for example physics).
         numeric = key in _NUMERIC_FIELDS or (cls is Expenditure and key == "quantity")
         kwargs[key] = _resolve_field(raw, slots, reg, numeric, log, rule_id)
-    if cls in (Expenditure, AccountEntry, BatchEvidence, SpecificationEvidence, PopulationEvidence, RegionEvidence):
+    if cls in (Expenditure, AccountEntry, BatchEvidence, ActivityAccountEvidence,
+               SpecificationEvidence, PopulationEvidence, RegionEvidence):
         # Source positions are identifiers, not arithmetic operands.
         for key in ("position", "event", "lot_position", "quantity_position", "cost_factor_position"):
             if key in kwargs:

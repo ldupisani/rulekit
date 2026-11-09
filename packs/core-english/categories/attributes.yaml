@@ -1,5 +1,6 @@
 format: rulekit/categories@1
 attrs:
+  weekend: {weekday_start: 5, weekday_end: 6}
   monday: {weekday_index: 0}
   tuesday: {weekday_index: 1}
   wednesday: {weekday_index: 2}
@@ -89,10 +90,6 @@ attrs:
     leap_year_days: 31
   year:
     common_year_days: 365
-  day:
-    calendar_day_unit: 1
-  week:
-    calendar_week_unit: 1
 categories:
   preference_attribute:
     parent: adjective

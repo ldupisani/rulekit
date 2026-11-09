@@ -301,7 +301,7 @@ GOLDEN = [
     ('gsm8k', 'What is the speed of an object that took 4 seconds to travel 60 meters?',
      'physics', 'number', 15.0, 'physics'),
     ('gsm8k', 'What is the speed of an object that travels 60 meters in 4 seconds and 3 minutes?',
-     'physics', 'decline', None, "'speed' cannot read the stated '3 minutes'"),
+     'physics', 'decline', None, "two 'time' values stated — 'speed' cannot choose"),
     ('gsm8k', 'What is the speed of an object that travels 60 meters in 4 seconds three times?',
      'physics', 'decline', None, "'speed' cannot read the stated 'three times'"),
     ('gsm8k', 'What is the speed of an object that travels 60 meters in twice 4 seconds?',

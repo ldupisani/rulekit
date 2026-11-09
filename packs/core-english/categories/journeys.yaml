@@ -31,7 +31,8 @@ categories:
     parent: motion_comparison_verb
   vehicle:
     parent: motion_participant
-    notes: Manufactured conveyances, independently classified from their use in a particular journey.
+    notes: Manufactured conveyances, independently classified from their use in a particular
+      journey.
   two_wheeled_vehicle:
     parent: vehicle
     attrs:
@@ -40,6 +41,8 @@ categories:
     parent: vehicle
     attrs:
       wheels: 4
+  transport_operation:
+    parent: scheduled_event
 members:
   cycling_journey_noun: [bike ride]
   distance_separation_adverb: [away]
@@ -51,8 +54,8 @@ members:
   journey_goal_verb: [get]
   journey_mode_list_preposition: [with]
   journey_start_verb: [go, goes, going, went]
-  journey_vehicle: [bicycle, bike, boat, bus, jeep, minibus, minivan, scooter, sedan, subway, suv, taxi,
-      tractor, trailer, train, tricycle, van, wagon, wheelchair]
+  journey_vehicle: [bicycle, bike, boat, bus, jeep, minibus, minivan, scooter, sedan, subway, suv,
+      taxi, tractor, trailer, train, tricycle, van, wagon, wheelchair]
   journey_vehicle_verb: [ride, rides]
   locative_goal_preposition: [to]
   locative_source_preposition: [from]
@@ -62,17 +65,20 @@ members:
   weekly_leisure_period: [weekend]
   working_day_unit: [workday]
   journey: [flight, journey, trip]
-  motion: [bike, biked, bikes, drive, drives, drove, flew, fly, go, goes, gone, jog, jogged, jogs, ran, ride,
-      rides, rode, run, runs, swam, swim, swims, travel, traveled, traveling, travels, walk, walked, walks,
-      went]
-  vehicle: [airplane, bicycle, bike, boat, bus, caboose, car, convertible, coupe, helicopter, jeep, jet,
-      minibus, minivan, rocket, scooter, sedan, skateboard, subway, suv, taxi, tractor, trailer, train,
-      tricycle, truck, van, vehicle, wagon, wheelchair]
+  motion: [bike, biked, bikes, drive, drives, drove, flew, fly, go, goes, gone, jog, jogged, jogs,
+      ran, ride, rides, rode, run, runs, swam, swim, swims, travel, traveled, traveling, travels,
+      walk, walked, walks, went]
+  vehicle: [airplane, bicycle, bike, boat, bus, caboose, car, convertible, coupe, helicopter, jeep,
+      jet, minibus, minivan, rocket, scooter, sedan, skateboard, subway, suv, taxi, tractor, trailer,
+    train, tricycle, truck, van, vehicle, wagon, wheelchair]
   two_wheeled_vehicle:
   - bicycle
   - bike
   - scooter
   four_wheeled_vehicle: [bus, car, jeep, minivan, sedan, suv, taxi, truck, van, wagon]
+  transport_operation:
+  - trip
+  - journey
 attribute_compatibility:
   weekly_leisure_period: [cycling_journey_noun]
 context_synonyms:
@@ -108,6 +114,11 @@ context_synonyms:
     - tyres
     - wheel
     - wheels
+  pedal-cycle:
+    gate: vehicle
+    forms:
+    - bicycle
+    - bike
 attrs:
   boat:
     wheels: 0

@@ -1,0 +1,1263 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/scheduled-unit-count
+  match:
+    sentence:
+    - slot: during
+      cat: temporal_interval_preposition
+      at_start: true
+    - slot: period
+      cat: duration_measure
+      counted: true
+      bare: true
+      value_min: 1
+    - lit: ','
+      consume_skipped: true
+    - slot: there
+      cat: existential
+    - slot: be
+      cat: plural_copula
+    - slot: events
+      cat: scheduled_event
+      counted: true
+      qualified: true
+    - lit: through
+      consume_skipped: true
+    - slot: site
+      type: entity
+      common_noun_cat: quantity_location
+      referential: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: unit-plan-link
+    entity: ''
+    measure: '{events}'
+    value: events
+    position: '{events.span_start}'
+    container: '{period}'
+    attribute: '{events.qualifier}'
+    acquisition: '{events.qualifier}'
+    per_member: period
+  consumes:
+  - period
+  - events
+  - be
+  satisfies:
+    during:
+    - object
+    be:
+    - subject
+  where: []
+  description: Preserve a declared object, resource, application or unit ratio in one quantity plan; the
+    consumer checks identity and actual use versus capacity.
+- id: arithmetic/carrier-per-operation-capacity
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: vehicle
+      referential: true
+      at_start: true
+    - slot: can
+      cat: ability_modal
+    - slot: act
+      cat: transport_capacity_action
+      bare_form: true
+    - lit: up
+      consume_skipped: true
+    - lit: to
+      consume_skipped: true
+    - slot: people
+      cat: allocation_recipient
+      counted: true
+      bare: true
+    - slot: during
+      cat: temporal_interval_preposition
+    - slot: basis
+      cat: scheduled_event
+      counted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: unit-plan-link
+    entity: '{who}'
+    measure: '{people}'
+    value: people
+    position: '{people.span_start}'
+    container: '{basis}'
+    attribute: '{who}'
+    acquisition: '{who}'
+    per_member: basis
+    marker: capacity
+  consumes:
+  - act
+  - people
+  - basis
+  satisfies:
+    act:
+    - subject
+    during:
+    - object
+  where: []
+  description: Preserve a declared object, resource, application or unit ratio in one quantity plan; the
+    consumer checks identity and actual use versus capacity.
+- id: arithmetic/material-container-service-capacity
+  match:
+    sentence:
+    - slot: each
+      cat: distributive_quantifier
+      at_start: true
+    - slot: package
+      cat: quantity_container
+      uncounted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: resource
+      cat: material_resource
+      uncounted: true
+      bare: true
+    - slot: modal
+      cat: future_modal
+    - slot: hold
+      cat: content_holding_verb
+      bare_form: true
+    - slot: content
+      cat: material_resource
+      uncounted: true
+      qualified: true
+      qualifier_cat: material_sufficiency_attribute
+    - lit: for
+      consume_skipped: true
+    - slot: service
+      cat: resource_application
+      possessed: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: unit-plan-link
+    entity: ''
+    measure: '{service.owner}'
+    value: service
+    position: '{service.span_start}'
+    container: '{package}'
+    attribute: '{service}'
+    acquisition: '{resource}'
+    marker: capacity
+  consumes:
+  - hold
+  - service
+  satisfies:
+    each:
+    - collection
+    hold:
+    - subject
+  where:
+  - same_lemma:
+    - resource
+    - content
+  - bound_requires_type:
+      bound: service
+      slot: service
+      type: counted
+  generation: reader-only
+  description: A quantified recipient owner scopes a service capacity. Standalone generation does not yet
+    realize counted possessive owners.
+- id: arithmetic/material-container-recipient-capacity
+  match:
+    sentence:
+    - slot: each
+      cat: distributive_quantifier
+      at_start: true
+    - slot: package
+      cat: quantity_container
+      uncounted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: resource
+      cat: material_resource
+      uncounted: true
+      bare: true
+    - slot: serve
+      cat: recipient_service_action
+      finite_form: true
+    - slot: people
+      cat: allocation_recipient
+      counted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: unit-plan-link
+    entity: ''
+    measure: '{people}'
+    value: people
+    position: '{people.span_start}'
+    container: '{package}'
+    attribute: '{resource}'
+    acquisition: '{resource}'
+    marker: capacity
+  consumes:
+  - serve
+  - people
+  satisfies:
+    each:
+    - collection
+    serve:
+    - subject
+  where: []
+  description: Preserve a declared object, resource, application or unit ratio in one quantity plan; the
+    consumer checks identity and actual use versus capacity.
+- id: arithmetic/nested-supply-exact-service-plan
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+      at_start: true
+    - slot: decide
+      cat: quantity_plan_commitment
+      finite_form: true
+    - lit: to
+      consume_skipped: true
+    - slot: bring
+      cat: quantity_supply_action
+      bare_form: true
+    - slot: amount
+      cat: quantity_container
+      counted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: resource
+      cat: material_resource
+      uncounted: true
+      bare: true
+    - lit: ','
+      consume_skipped: true
+    - slot: each
+      cat: distributive_quantifier
+    - lit: of
+      consume_skipped: true
+    - lit: which
+      consume_skipped: true
+    - slot: hold
+      cat: content_holding_verb
+      finite_form: true
+    - slot: inner
+      cat: quantity_container
+      counted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: content
+      cat: material_resource
+      uncounted: true
+      bare: true
+    - lit: ','
+      consume_skipped: true
+    - lit: and
+      consume_skipped: true
+    - lit: this
+      consume_skipped: true
+    - slot: modal
+      cat: future_modal
+    - slot: be
+      cat: planning_state_auxiliary
+      bare_form: true
+    - slot: amount_noun
+      cat: allocation_amount_noun
+      uncounted: true
+      qualified: true
+      qualifier_cat: exact_quantity_attribute
+    - slot: she
+      cat: clause_subject_personal_pronoun
+    - slot: need
+      cat: direct_quantity_goal_predicate
+      finite_form: true
+    - lit: for
+      consume_skipped: true
+    - slot: everyone
+      cat: universal_person_reference
+    - slot: poss
+      cat: possessive_clitic
+    - slot: service
+      cat: resource_application
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: unit-plan-anchor
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+    attribute: '{resource}'
+  - fact: batch_evidence
+    kind: unit-plan-link
+    entity: ''
+    measure: '{inner}'
+    value: inner
+    position: '{inner.span_start}'
+    container: '{amount}'
+    attribute: '{content}'
+    acquisition: '{resource}'
+  - fact: batch_evidence
+    kind: unit-plan-exact
+    entity: '{who}'
+    measure: '{service}'
+    value: '0'
+    position: '0'
+  consumes:
+  - decide
+  - bring
+  - amount
+  - hold
+  - inner
+  - be
+  - need
+  satisfies:
+    decide:
+    - subject
+    bring:
+    - subject
+    each:
+    - collection
+    hold:
+    - subject
+    be:
+    - subject
+    need:
+    - subject
+    everyone:
+    - refers
+  where:
+  - same_lemma:
+    - resource
+    - content
+  references:
+    she: who
+  bindings:
+    poss:
+      owner: everyone
+      owned: service
+  description: Preserve a declared object, resource, application or unit ratio in one quantity plan; the
+    consumer checks identity and actual use versus capacity.
+- id: arithmetic/role-and-service-commitment
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+      at_start: true
+    - slot: be
+      cat: copula
+    - slot: role
+      type: entity
+      common_noun_cat: person
+      referential: true
+    - lit: and
+      consume_skipped: true
+    - slot: agree
+      cat: quantity_plan_commitment
+      finite_form: true
+    - lit: to
+      consume_skipped: true
+    - slot: do
+      cat: auxiliary
+    - lit: some
+      consume_skipped: true
+    - slot: service
+      cat: resource_application
+      uncounted: true
+      bare: true
+    - lit: for
+      consume_skipped: true
+    - slot: owner
+      cat: possessive_determiner
+    - slot: event
+      type: entity
+      common_noun_cat: duration_holder
+      referential: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: unit-plan-context
+    entity: '{who}'
+    measure: '{service}'
+    value: '0'
+    position: '0'
+    container: '{event}'
+  consumes:
+  - be
+  - agree
+  - do
+  satisfies:
+    be:
+    - subject
+    agree:
+    - subject
+    do:
+    - subject
+    owner:
+    - refers
+  where: []
+  description: Preserve a declared object, resource, application or unit ratio in one quantity plan; the
+    consumer checks identity and actual use versus capacity.
+- id: arithmetic/limited-resource-counting-context
+  match:
+    sentence:
+    - lit: the
+      consume_skipped: true
+    - lit: only
+      consume_skipped: true
+    - slot: service
+      cat: resource_application
+      uncounted: true
+      bare: true
+    - slot: she
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+    - slot: have
+      cat: possession_state
+      finite_form: true
+    - slot: stock
+      cat: stock_resource_noun
+      uncounted: true
+      qualified: true
+      qualifier_cat: stock_limit_attribute
+    - lit: of
+      consume_skipped: true
+    - slot: be
+      cat: copula
+    - slot: resource
+      cat: material_resource
+      uncounted: true
+      bare: true
+    - lit: so
+      consume_skipped: true
+    - slot: again
+      cat: clause_subject_personal_pronoun
+    - slot: count
+      cat: quantity_counting_action
+      finite_form: true
+    - lit: how
+      consume_skipped: true
+    - lit: many
+      consume_skipped: true
+    - slot: package
+      cat: quantity_container
+      uncounted: true
+      bare: true
+      number: plural
+    - slot: she2
+      cat: clause_subject_personal_pronoun
+    - slot: need
+      cat: direct_quantity_goal_predicate
+      finite_form: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: unit-plan-context
+    entity: '{she}'
+    measure: '{service}'
+    value: '0'
+    position: '0'
+    container: '{resource}'
+    attribute: limited-resource
+  consumes:
+  - have
+  - be
+  - count
+  - need
+  satisfies:
+    have:
+    - subject
+    be:
+    - subject
+    count:
+    - subject
+    need:
+    - subject
+  where: []
+  references:
+    again: she
+    she2: she
+  description: Preserve a declared object, resource, application or unit ratio in one quantity plan; the
+    consumer checks identity and actual use versus capacity.
+- id: arithmetic/discovered-object-resource-assessment
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+      at_start: true
+    - slot: found
+      cat: discovery_action
+      finite_form: true
+    - slot: object
+      type: entity
+      common_noun_cat: component_bearing_object
+      referential: true
+    - lit: in
+      consume_skipped: true
+    - slot: site
+      type: entity
+      common_noun_cat: quantity_location
+      referential: true
+    - lit: and
+      consume_skipped: true
+    - slot: think
+      cat: object_condition_belief
+      finite_form: true
+    - slot: it
+      cat: nonpersonal_actor_anaphor
+    - lit: just
+      consume_skipped: true
+    - slot: need
+      cat: direct_quantity_goal_predicate
+      finite_form: true
+    - lit: some
+      consume_skipped: true
+    - slot: resource
+      cat: material_resource
+      uncounted: true
+      bare: true
+    - lit: to
+      consume_skipped: true
+    - slot: work
+      cat: functional_state_action
+      bare_form: true
+    - lit: well
+      consume_skipped: true
+    - lit: again
+      consume_skipped: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: unit-plan-object
+    entity: '{who}'
+    measure: '{object}'
+    value: '0'
+    position: '0'
+    container: '{object}'
+    attribute: '{resource}'
+  consumes:
+  - found
+  - think
+  - need
+  - work
+  satisfies:
+    found:
+    - subject
+    think:
+    - subject
+    need:
+    - subject
+    work:
+    - subject
+  where: []
+  references:
+    it: object
+  description: Preserve a declared object, resource, application or unit ratio in one quantity plan; the
+    consumer checks identity and actual use versus capacity.
+- id: arithmetic/per-component-and-remaining-resource-requirement
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+      at_start: true
+    - slot: need
+      cat: direct_quantity_goal_predicate
+      finite_form: true
+    - slot: amount
+      cat: measure_unit
+      counted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: resource
+      cat: material_resource
+      uncounted: true
+      bare: true
+    - lit: to
+      consume_skipped: true
+    - slot: fix
+      cat: maintenance_action
+      bare_form: true
+    - slot: each
+      cat: distributive_quantifier
+    - slot: part
+      cat: countable_component
+      uncounted: true
+      bare: true
+    - lit: and
+      consume_skipped: true
+    - slot: modal
+      cat: future_modal
+    - slot: need2
+      cat: direct_quantity_goal_predicate
+      bare_form: true
+    - lit: another
+      consume_skipped: true
+    - slot: extra
+      cat: measure_unit
+      counted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: resource2
+      cat: material_resource
+      uncounted: true
+      bare: true
+    - lit: to
+      consume_skipped: true
+    - slot: fix2
+      cat: maintenance_action
+      bare_form: true
+    - lit: the
+      consume_skipped: true
+    - slot: rest
+      cat: partition_remnant
+      uncounted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: object
+      type: entity
+      common_noun_cat: component_bearing_object
+      referential: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: unit-plan-link
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+    container: '{part}'
+    attribute: '{resource}'
+    verb: '{fix}'
+  - fact: batch_evidence
+    kind: unit-plan-supplement
+    entity: '{who}'
+    measure: '{extra}'
+    value: extra
+    position: '{extra.span_start}'
+    attribute: '{resource2}'
+    container: '{object}'
+    verb: '{fix2}'
+  consumes:
+  - need
+  - amount
+  - fix
+  - need2
+  - extra
+  - fix2
+  satisfies:
+    need:
+    - subject
+    fix:
+    - subject
+    each:
+    - collection
+    need2:
+    - subject
+    fix2:
+    - subject
+  where:
+  - same_lemma:
+    - resource
+    - resource2
+  - same_lemma:
+    - fix
+    - fix2
+  description: Preserve a declared object, resource, application or unit ratio in one quantity plan; the
+    consumer checks identity and actual use versus capacity.
+- id: arithmetic/planned-material-supply
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+      at_start: true
+    - slot: decide
+      cat: quantity_plan_commitment
+      finite_form: true
+    - lit: to
+      consume_skipped: true
+    - slot: bring
+      cat: quantity_supply_action
+      bare_form: true
+    - slot: amount
+      cat: quantity_container
+      counted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: resource
+      cat: material_resource
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: unit-plan-anchor
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+    attribute: '{resource}'
+  consumes:
+  - decide
+  - bring
+  - amount
+  satisfies:
+    decide:
+    - subject
+    bring:
+    - subject
+  where: []
+  description: Preserve a declared object, resource, application or unit ratio in one quantity plan; the
+    consumer checks identity and actual use versus capacity.
+- id: arithmetic/nested-material-container-content
+  match:
+    sentence:
+    - slot: each
+      cat: distributive_quantifier
+      at_start: true
+    - slot: outer
+      cat: quantity_container
+      uncounted: true
+      bare: true
+    - slot: hold
+      cat: content_holding_verb
+      finite_form: true
+    - slot: inner
+      cat: quantity_container
+      counted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: resource
+      cat: material_resource
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: unit-plan-link
+    entity: ''
+    measure: '{inner}'
+    value: inner
+    position: '{inner.span_start}'
+    container: '{outer}'
+    attribute: '{resource}'
+    acquisition: '{resource}'
+  consumes:
+  - hold
+  - inner
+  satisfies:
+    each:
+    - collection
+    hold:
+    - subject
+  where:
+  - number_compatible:
+    - outer
+    - hold
+  description: Preserve a declared object, resource, application or unit ratio in one quantity plan; the
+    consumer checks identity and actual use versus capacity.
+- id: arithmetic/active-object-maintenance-context
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+      at_start: true
+    - slot: be
+      cat: copula
+    - slot: fix
+      cat: maintenance_action
+      present_participle: true
+    - slot: object
+      type: entity
+      common_noun_cat: component_bearing_object
+      referential: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: unit-plan-object
+    entity: '{who}'
+    measure: '{object}'
+    value: '0'
+    position: '0'
+    container: '{object}'
+    verb: '{fix}'
+  consumes:
+  - be
+  - fix
+  satisfies:
+    be:
+    - subject
+    fix:
+    - subject
+  where: []
+  description: Preserve a declared object, resource, application or unit ratio in one quantity plan; the
+    consumer checks identity and actual use versus capacity.
+- id: arithmetic/per-component-resource-requirement
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+      at_start: true
+    - slot: need
+      cat: direct_quantity_goal_predicate
+      finite_form: true
+    - slot: amount
+      cat: measure_unit
+      counted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: resource
+      cat: material_resource
+      uncounted: true
+      bare: true
+    - lit: to
+      consume_skipped: true
+    - slot: fix
+      cat: maintenance_action
+      bare_form: true
+    - slot: each
+      cat: distributive_quantifier
+    - slot: part
+      cat: countable_component
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: unit-plan-link
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+    container: '{part}'
+    attribute: '{resource}'
+    verb: '{fix}'
+  consumes:
+  - need
+  - amount
+  - fix
+  satisfies:
+    need:
+    - subject
+    fix:
+    - subject
+    each:
+    - collection
+  where: []
+  description: Preserve a declared object, resource, application or unit ratio in one quantity plan; the
+    consumer checks identity and actual use versus capacity.
+- id: arithmetic/remaining-object-resource-requirement
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+      at_start: true
+    - slot: need
+      cat: direct_quantity_goal_predicate
+      finite_form: true
+    - slot: extra
+      cat: measure_unit
+      counted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: resource
+      cat: material_resource
+      uncounted: true
+      bare: true
+    - lit: to
+      consume_skipped: true
+    - slot: fix
+      cat: maintenance_action
+      bare_form: true
+    - lit: the
+      consume_skipped: true
+    - slot: rest
+      cat: partition_remnant
+      uncounted: true
+      bare: true
+    - lit: of
+      consume_skipped: true
+    - slot: object
+      type: entity
+      common_noun_cat: component_bearing_object
+      referential: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: unit-plan-supplement
+    entity: '{who}'
+    measure: '{extra}'
+    value: extra
+    position: '{extra.span_start}'
+    attribute: '{resource}'
+    container: '{object}'
+    verb: '{fix}'
+  consumes:
+  - need
+  - extra
+  - fix
+  satisfies:
+    need:
+    - subject
+    fix:
+    - subject
+  where: []
+  description: Preserve a declared object, resource, application or unit ratio in one quantity plan; the
+    consumer checks identity and actual use versus capacity.
+- id: arithmetic/carrier-scheduled-event-rate
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: vehicle
+      referential: true
+      at_start: true
+    - slot: make
+      cat: partition_output_verb
+      finite_form: true
+    - slot: amount
+      cat: scheduled_event
+      counted: true
+      bare: true
+    - lit: per
+      consume_skipped: true
+    - slot: period
+      cat: duration_measure
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: unit-plan-link
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+    container: '{period}'
+    attribute: '{who}'
+    acquisition: '{who}'
+  consumes:
+  - make
+  - amount
+  satisfies:
+    make:
+    - subject
+  where: []
+  description: Preserve a declared object, resource, application or unit ratio in one quantity plan; the
+    consumer checks identity and actual use versus capacity.
+- id: arithmetic/carrier-per-event-capacity
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: vehicle
+      referential: true
+      at_start: true
+    - slot: can
+      cat: ability_modal
+    - slot: act
+      cat: transport_capacity_action
+      bare_form: true
+    - slot: people
+      cat: allocation_recipient
+      counted: true
+      bare: true
+    - lit: per
+      consume_skipped: true
+    - slot: basis
+      cat: scheduled_event
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: unit-plan-link
+    entity: '{who}'
+    measure: '{people}'
+    value: people
+    position: '{people.span_start}'
+    container: '{basis}'
+    attribute: '{who}'
+    acquisition: '{who}'
+    marker: capacity
+  consumes:
+  - act
+  - people
+  satisfies:
+    act:
+    - subject
+  where: []
+  description: Preserve a declared object, resource, application or unit ratio in one quantity plan; the
+    consumer checks identity and actual use versus capacity.
+asks:
+- id: ask/scheduled-carrier-capacity
+  match:
+    question:
+    - lit: how
+      consume_skipped: true
+    - lit: many
+      consume_skipped: true
+    - slot: unit
+      cat: allocation_recipient
+      uncounted: true
+      bare: true
+      number: plural
+    - slot: can
+      cat: ability_modal
+    - slot: who
+      type: entity
+      common_noun_cat: vehicle
+      referential: true
+    - slot: act
+      cat: transport_capacity_action
+      bare_form: true
+    - lit: in
+      consume_skipped: true
+    - slot: span
+      cat: duration_measure
+      counted: true
+      bare: true
+      value_min: 1
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: unit-plan
+    entity: '{who}'
+    measure: '{unit}'
+    resource: '{who}'
+    basis_resource: '{who}'
+    span_unit: '{span}'
+    span_value: '{span.value}'
+    mode: capacity
+  satisfies:
+    act:
+    - subject
+  disambiguates:
+  - act
+- id: ask/material-service-recipient-count
+  match:
+    question:
+    - lit: how
+      consume_skipped: true
+    - lit: many
+      consume_skipped: true
+    - slot: unit
+      cat: allocation_recipient
+      uncounted: true
+      bare: true
+      number: plural
+    - slot: be
+      cat: copula
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+    - slot: act
+      cat: component_depiction_activity
+      present_participle: true
+    - lit: with
+      consume_skipped: true
+    - slot: service
+      cat: resource_application
+      uncounted: true
+      bare: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: unit-plan
+    entity: '{who}'
+    measure: '{unit}'
+    resource: '{service}'
+    mode: exact
+  satisfies:
+    be:
+    - subject
+    act:
+    - subject
+  disambiguates:
+  - act
+- id: ask/total-resource-object-requirement
+  match:
+    question:
+    - lit: how
+      consume_skipped: true
+    - slot: amount_query
+      cat: mass_amount_interrogative
+    - slot: resource
+      cat: material_resource
+      uncounted: true
+      bare: true
+    - slot: aux
+      cat: auxiliary
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+    - slot: need
+      cat: direct_quantity_goal_predicate
+      bare_form: true
+    - slot: link
+      cat: group_total_preposition
+    - slot: total
+      cat: group_total_marker
+    - lit: to
+      consume_skipped: true
+    - slot: fix
+      cat: maintenance_action
+      bare_form: true
+    - slot: object
+      type: entity
+      common_noun_cat: component_bearing_object
+      referential: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: unit-plan
+    entity: '{who}'
+    resource: '{resource}'
+    scope: '{object}'
+    verb: '{fix}'
+    mode: requirement
+  satisfies:
+    need:
+    - subject
+    fix:
+    - subject
+    link:
+    - object
+- id: ask/supplied-recipient-capacity
+  match:
+    question:
+    - lit: how
+      consume_skipped: true
+    - lit: many
+      consume_skipped: true
+    - slot: unit
+      cat: allocation_recipient
+      uncounted: true
+      bare: true
+      number: plural
+    - slot: can
+      cat: ability_modal
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+    - slot: serve
+      cat: recipient_service_action
+      bare_form: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: unit-plan
+    entity: '{who}'
+    measure: '{unit}'
+    mode: capacity
+  satisfies:
+    serve:
+    - subject
+- id: ask/total-measured-resource-object-requirement
+  match:
+    question:
+    - lit: how
+      consume_skipped: true
+    - lit: many
+      consume_skipped: true
+    - slot: unit
+      cat: measure_unit
+      uncounted: true
+      bare: true
+      number: plural
+    - lit: of
+      consume_skipped: true
+    - slot: resource
+      cat: material_resource
+      uncounted: true
+      bare: true
+    - slot: aux
+      cat: auxiliary
+    - slot: who
+      type: entity
+      common_noun_cat: collection_agent
+      referential: true
+    - slot: need
+      cat: direct_quantity_goal_predicate
+      bare_form: true
+    - slot: link
+      cat: group_total_preposition
+    - slot: total
+      cat: group_total_marker
+    - lit: to
+      consume_skipped: true
+    - slot: fix
+      cat: maintenance_action
+      bare_form: true
+    - slot: object
+      type: entity
+      common_noun_cat: component_bearing_object
+      referential: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: unit-plan
+    entity: '{who}'
+    resource: '{resource}'
+    scope: '{object}'
+    verb: '{fix}'
+    mode: requirement
+    measure: '{unit}'
+  satisfies:
+    need:
+    - subject
+    fix:
+    - subject
+    link:
+    - object
+  disambiguates: []

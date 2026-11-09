@@ -1,0 +1,152 @@
+format: rulekit/categories@1
+categories:
+  stock_correction_action:
+    parent: verb
+  activity_continuation_action:
+    parent: verb
+  activity_continuation_marker:
+    parent: comparative
+  stock_start_action:
+    parent: verb
+  activity_pause_action:
+    parent: verb
+  activity_pause_noun:
+    parent: noun
+  interruption_event:
+    parent: noun
+  past_obligation_auxiliary:
+    parent: verb
+  stock_removal_action:
+    parent: stock_correction_action
+    selectional_roles:
+      actor: collection_agent
+      theme: account_quantity_unit
+  incorrect_output_modifier:
+    parent: adverb
+  production_creation_source:
+    parent: noun
+    includes:
+    - production_quantity_participant
+    - quantity_source
+  production_creation_action:
+    parent: stock_increase_activity
+    selectional_roles:
+      actor: production_creation_source
+      theme: account_quantity_unit
+  quantity_account:
+    parent: noun
+    includes:
+    - quantity_container
+    - quantity_location
+  work_account:
+    parent: quantity_account
+  inventory_account:
+    parent: quantity_account
+  account_quantity_unit:
+    parent: noun
+    includes:
+    - ownable_quantity_object
+  service_quantity_unit:
+    parent: account_quantity_unit
+  quantity_account_activity:
+    parent: quantity_event_verb
+  stock_increase_activity:
+    parent: quantity_account_activity
+    attrs:
+      account_stock_effect: 1
+  stock_decrease_activity:
+    parent: quantity_account_activity
+    attrs:
+      account_stock_effect: -1
+  stock_collection_activity:
+    parent: stock_increase_activity
+  progress_account_activity:
+    parent: quantity_account_activity
+members:
+  stock_correction_action:
+  - erase
+  - erased
+  - delete
+  - deleted
+  - remove
+  - removed
+  activity_continuation_action:
+  - continue
+  - continued
+  - continues
+  - resume
+  - resumes
+  - resumed
+  activity_continuation_marker:
+  - longer
+  - more
+  stock_start_action:
+  - start
+  - begin
+  activity_pause_action:
+  - take
+  - took
+  - takes
+  activity_pause_noun:
+  - break
+  - rest
+  interruption_event:
+  - meeting
+  - break
+  past_obligation_auxiliary:
+  - had
+  stock_removal_action:
+  - remove
+  - removed
+  incorrect_output_modifier:
+  - incorrectly
+  production_creation_action:
+  - produce
+  - produced
+  work_account:
+  - project
+  - task
+  - job
+  - batch
+  - record
+  inventory_account:
+  - collection
+  - inventory
+  - stock
+  service_quantity_unit:
+  - part
+  - task
+  - room
+  - job
+  - check
+  stock_collection_activity:
+  - collect
+  - collected
+  - collecting
+  - collects
+  stock_decrease_activity:
+  - consume
+  - consumed
+  - consumes
+  - consuming
+  - discard
+  - discarded
+  - discarding
+  - discards
+  progress_account_activity:
+  - inspect
+  - inspected
+  - inspects
+  - inspecting
+  - repair
+  - repaired
+  - repairs
+  - repairing
+  - clean
+  - cleaned
+  - cleans
+  - cleaning
+  - sort
+  - sorted
+  - sorts
+  - sorting
