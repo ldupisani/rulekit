@@ -105,11 +105,14 @@ rules:
   match:
     sentence:
     - opt:
-      - lit: because of
-        consume_skipped: true
+      - {slot: reason_marker, cat: explicit_cause_preposition}
+      - opt: [{lit: both}]
       - slot: cause
         type: noun
         uncounted: true
+      - opt:
+        - {lit: and}
+        - {slot: other_cause, type: noun, uncounted: true}
       - lit: ','
         consume_skipped: true
     - slot: group
@@ -133,6 +136,7 @@ rules:
   emits:
   - fact: batch_evidence
     kind: available-capacity-exclusion
+    attribution: {predicate: unavailable, subject: group, reason: [cause, cause], reason_entities: [cause, other_cause]}
     entity: ''
     measure: '{group}'
     value: 1
@@ -142,6 +146,7 @@ rules:
   - be
   - group
   satisfies:
+    reason_marker: [object]
     be:
     - subject
   disambiguates:
@@ -153,11 +158,14 @@ rules:
   match:
     sentence:
     - opt:
-      - lit: because of
-        consume_skipped: true
+      - {slot: reason_marker, cat: explicit_cause_preposition}
+      - opt: [{lit: both}]
       - slot: cause
         type: noun
         uncounted: true
+      - opt:
+        - {lit: and}
+        - {slot: other_cause, type: noun, uncounted: true}
       - lit: ','
         consume_skipped: true
     - slot: group
@@ -180,6 +188,7 @@ rules:
   emits:
   - fact: batch_evidence
     kind: available-capacity-exclusion
+    attribution: {predicate: unavailable, subject: group, reason: [cause, cause], reason_entities: [cause, other_cause]}
     entity: ''
     measure: '{group}'
     value: group
@@ -188,6 +197,7 @@ rules:
   - be
   - group
   satisfies:
+    reason_marker: [object]
     be:
     - subject
   disambiguates:
@@ -311,3 +321,17 @@ asks:
   satisfies:
     be:
     - subject
+- id: ask/excluded-grouped-units
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: unit, cat: reservable_capacity_unit, uncounted: true, bare: true}
+    - {slot: be, cat: copula}
+    - {slot: unavailable, cat: unavailability_descriptor}
+    - opt:
+      - {slot: marker, cat: explicit_cause_preposition}
+      - {slot: reason, type: noun, uncounted: true}
+    - {lit: '?', consume_skipped: true}
+  resolves: {consumer: grouped-availability, mode: unavailable, measure: '{unit}', reason: '{reason.optional}'}
+  satisfies: {be: [subject], marker: [anchor, object]}

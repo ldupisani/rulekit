@@ -92,11 +92,11 @@ rules:
   phase: read
   match:
     sentence:
+    - opt:
+      - {slot: owner, cat: possessive_determiner}
     - slot: who
       type: entity
-      common_noun_cat: living_agent
       referential: true
-      bare: true
     - slot: spill
       cat: content_spill_verb
       finite_form: true
@@ -118,6 +118,7 @@ rules:
       consume_skipped: true
   emits:
   - fact: measured_content_change
+    attribution: {predicate: spill, actor: who, subject: content}
     container: '{container}'
     content: '{content}'
     operation: remove_fraction
@@ -168,6 +169,7 @@ rules:
       consume_skipped: true
   emits:
   - fact: measured_content_change
+    attribution: {predicate: loss, subject: content}
     container: '{container}'
     content: '{content}'
     operation: remove_fraction
@@ -185,6 +187,47 @@ rules:
     - owner
     - owned
   description: An explicit fraction of current contents is lost from the named container.
+- id: arithmetic/measured-container-opening
+  phase: read
+  match:
+    sentence:
+    - {slot: container, cat: volumetric_container, uncounted: true, number: singular, at_start: true}
+    - {slot: hold, cat: container_content_state_verb, finite_form: true}
+    - {slot: volume, cat: volume_measure, counted: true, bare: true}
+    - opt:
+      - {lit: of}
+      - {slot: content, cat: material_resource, uncounted: true, bare: true}
+    - {lit: '.', consume_skipped: true}
+  emits:
+  - fact: batch_evidence
+    kind: content-opening-amount
+    entity: ''
+    measure: '{volume}'
+    value: volume
+    position: '{volume.span_start}'
+    container: '{container}'
+    attribute: '{content.optional}'
+  consumes: [hold, volume]
+  satisfies: {hold: [subject]}
+- id: arithmetic/container-disturbance-observation
+  match:
+    sentence:
+    - {slot: actor, type: entity, referential: true, at_start: true}
+    - {slot: disturb, cat: container_overturn_verb, finite_form: true}
+    - {slot: particle, cat: overturn_result_particle}
+    - {slot: container, cat: volumetric_container, uncounted: true, number: singular}
+    - {lit: '.', consume_skipped: true}
+  emits:
+  - fact: batch_evidence
+    kind: content-container-disturbance
+    entity: '{actor}'
+    measure: ''
+    value: 0
+    position: '{disturb.span_start}'
+    container: '{container}'
+    attribution: {predicate: disturb, actor: actor, subject: container}
+  consumes: [disturb]
+  satisfies: {disturb: [subject, dobj], particle: [anchor, object]}
 asks:
 - id: ask/container-content-cubic-amount
   match:
@@ -220,6 +263,21 @@ asks:
   satisfies:
     be:
     - subject
+- id: ask/remaining-measured-container-amount
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: unit, cat: volume_measure, uncounted: true, bare: true}
+    - opt:
+      - {lit: of}
+      - {slot: content, cat: material_resource, uncounted: true, bare: true}
+    - {slot: remain, cat: inventory_remainder_verb, finite_form: true}
+    - {lit: in}
+    - {slot: container, cat: volumetric_container, uncounted: true, number: singular}
+    - {lit: '?', consume_skipped: true}
+  resolves: {consumer: container-content-state, container: '{container}', content: '{content.optional}', unit: '{unit}'}
+  satisfies: {remain: [subject]}
 templates:
   fractional-fill:
     parameters:
@@ -283,6 +341,22 @@ templates:
         contents.
   contextual-spill:
     parameters:
+      opener:
+      - {lit: while, at_start: true}
+      - {slot: absent, type: entity, common_noun_cat: living_agent, referential: true, bare: true}
+      - {slot: clitic, cat: contracted_copula_clitic}
+      - {slot: gone, cat: temporary_departure_verb}
+      - {lit: ',', consume_skipped: true}
+      actor:
+      - {slot: owner, cat: possessive_determiner}
+      - {slot: agent, type: entity, referential: true}
+      effect: {slot: spill, cat: content_spill_verb, finite_form: true}
+      tail: []
+      content_prefix: []
+      content_bare: true
+      connector: {lit: in}
+      references: {}
+      attribution: {predicate: spill, actor: agent, subject: content}
       cause:
       - slot: cause_action
         cat: container_disturbance_action
@@ -320,45 +394,30 @@ templates:
       phase: read
       match:
         sentence:
-        - lit: while
-          at_start: true
-        - slot: absent
-          type: entity
-          common_noun_cat: living_agent
-          referential: true
-          bare: true
-        - slot: clitic
-          cat: contracted_copula_clitic
-        - slot: gone
-          cat: temporary_departure_verb
-        - lit: ','
-          consume_skipped: true
-        - slot: owner
-          cat: possessive_determiner
-        - slot: agent
-          type: entity
-          common_noun_cat: living_agent
-          referential: true
+        - parameter: opener
+        - parameter: actor
         - parameter: cause
-        - slot: spill
-          cat: content_spill_verb
-          finite_form: true
+        - parameter: effect
         - slot: share
           type: fraction
           fraction_within_whole: true
         - opt:
           - lit: of
+        - parameter: content_prefix
         - slot: content
           cat: material_resource
           uncounted: true
-          bare: true
-        - lit: in
+          bare: {parameter: content_bare}
+        - parameter: connector
         - parameter: location
+        - parameter: tail
         - lit: .
           consume_skipped: true
       where: {parameter: cause_constraints}
+      references: {parameter: references}
       emits:
       - fact: measured_content_change
+        attribution: {parameter: attribution}
         container: {parameter: container}
         content: '{content}'
         operation: remove_fraction
@@ -368,6 +427,76 @@ templates:
       satisfies: {parameter: obligations}
       description: Apply the explicit spill fraction to current contents. A preceding disturbance supplies
         context and can identify the container.
+  measured-content-transfer:
+    parameters:
+      opener:
+      - opt:
+        - {slot: owner, cat: possessive_determiner}
+      - {slot: actor, type: entity, referential: true}
+      - {slot: action, cat: content_spill_verb, finite_form: true}
+      location: {lit: from}
+      ending: []
+      operation: remove_quantity
+      attribution: {predicate: action, actor: actor, subject: content}
+      obligations: {action: [subject]}
+    rule:
+      phase: read
+      match:
+        sentence:
+        - parameter: opener
+        - {slot: volume, cat: volume_measure, counted: true, bare: true}
+        - {lit: of}
+        - {slot: content, cat: material_resource, uncounted: true, bare: true}
+        - parameter: location
+        - {slot: container, cat: volumetric_container, uncounted: true, number: singular}
+        - parameter: ending
+        - {lit: '.', consume_skipped: true}
+      emits:
+      - fact: measured_content_change
+        attribution: {parameter: attribution}
+        container: '{container}'
+        content: '{content}'
+        operation: {parameter: operation}
+        measure: '{volume}'
+        value: volume
+      consumes: [action, volume]
+      satisfies: {parameter: obligations}
+      description: Record one measured transfer of material into or out of its stated container.
+  intransitive-content-loss:
+    parameters:
+      opener: []
+      start: true
+      location:
+      - {lit: in}
+      - {slot: container, cat: volumetric_container, uncounted: true, number: singular}
+      ending: []
+      attribution: {predicate: loss, subject: content}
+      constraints: []
+      obligations: {loss: [subject, dobj]}
+    rule:
+      phase: read
+      match:
+        sentence:
+        - parameter: opener
+        - {slot: share, type: fraction, fraction_within_whole: true, at_start: {parameter: start}}
+        - opt:
+          - {lit: of}
+        - {slot: content, cat: material_resource, uncounted: true, bare: true}
+        - parameter: location
+        - {slot: loss, cat: content_spill_verb, finite_form: true}
+        - parameter: ending
+        - {lit: '.', consume_skipped: true}
+      where: {parameter: constraints}
+      emits:
+      - fact: measured_content_change
+        attribution: {parameter: attribution}
+        container: '{container}'
+        content: '{content}'
+        operation: remove_fraction
+        value: share
+      consumes: [share, loss]
+      satisfies: {parameter: obligations}
+      description: Apply a stated loss fraction to the contents of its explicitly linked container.
   container-content-scaling:
     parameters:
       opener:
@@ -418,6 +547,7 @@ templates:
           consume_skipped: true
       emits:
       - fact: measured_content_change
+        attribution: {predicate: scale, actor: who, subject: content}
         container: '{container}'
         content: '{content}'
         operation: multiply_total
@@ -554,6 +684,157 @@ variants:
     - gone
     - spill
     - share
+- id: arithmetic/explicit-result-content-spill
+  template: contextual-spill
+  arguments:
+    opener: []
+    actor:
+    - opt:
+      - {slot: agent_owner, cat: possessive_determiner, at_start: true}
+    - {slot: agent, type: entity, referential: true}
+    cause:
+    - {slot: cause_action, cat: container_disturbance_action, finite_form: true}
+    - {slot: cause_container, cat: volumetric_container, uncounted: true, number: singular}
+    - opt:
+      - {slot: result_particle, cat: overturn_result_particle}
+    - {lit: ',', consume_skipped: true}
+    effect: {slot: spill, cat: content_spill_verb, present_participle: true}
+    location: {slot: object, cat: measured_object_reference_form, number: singular}
+    attribution:
+      predicate: spill
+      actor: agent
+      subject: content
+      reason: [agent, cause_container]
+      reason_tail: result_particle
+      reason_actor: agent
+      reason_predicate: cause_action
+    cause_constraints:
+    - category_requires_bound: {slot: cause_action, cat: container_overturn_verb, bound: result_particle}
+    - bound_requires_category: {bound: result_particle, slot: cause_action, cat: container_overturn_verb}
+    obligations: {cause_action: [subject], result_particle: [object], spill: [subject], object: [refers]}
+    consumes: [cause_action, spill, share]
+- id: arithmetic/explicit-result-spill-of-possessed-content
+  template: contextual-spill
+  arguments:
+    opener: []
+    actor:
+    - opt:
+      - {slot: agent_owner, cat: possessive_determiner, at_start: true}
+    - {slot: agent, type: entity, referential: true}
+    cause:
+    - {slot: cause_action, cat: container_disturbance_action, finite_form: true}
+    - {slot: cause_container, cat: volumetric_container, uncounted: true, number: singular}
+    - opt:
+      - {slot: result_particle, cat: overturn_result_particle}
+    - {lit: ',', consume_skipped: true}
+    effect: {slot: spill, cat: content_spill_verb, present_participle: true}
+    location: []
+    connector: []
+    content_bare: false
+    content_prefix:
+    - {slot: owner_of_content, cat: possessive_determiner}
+    references: {owner_of_content: cause_container}
+    attribution:
+      predicate: spill
+      actor: agent
+      subject: content
+      reason: [agent, cause_container]
+      reason_tail: result_particle
+      reason_actor: agent
+      reason_predicate: cause_action
+    cause_constraints:
+    - category_requires_bound: {slot: cause_action, cat: container_overturn_verb, bound: result_particle}
+    - bound_requires_category: {bound: result_particle, slot: cause_action, cat: container_overturn_verb}
+    obligations: {cause_action: [subject], result_particle: [object], spill: [subject]}
+    consumes: [cause_action, spill, share]
+- id: arithmetic/unattributed-fractional-content-loss
+  template: intransitive-content-loss
+- id: arithmetic/fractional-content-loss-with-cause-clause
+  template: intransitive-content-loss
+  arguments:
+    location:
+    - opt:
+      - {lit: in}
+      - {slot: source, cat: volumetric_container, uncounted: true, number: singular}
+    ending:
+    - {lit: because}
+    - opt:
+      - {slot: reason_owner, cat: possessive_determiner}
+    - {slot: reason_actor, type: entity, referential: true}
+    - {slot: reason_action, cat: container_overturn_verb, finite_form: true}
+    - {slot: container, cat: volumetric_container, uncounted: true, number: singular}
+    - {slot: result, cat: overturn_result_particle}
+    attribution:
+      predicate: loss
+      subject: content
+      reason: [reason_actor, result]
+      reason_actor: reason_actor
+      reason_predicate: reason_action
+    constraints:
+    - same_lemma: [source, container]
+    obligations: {loss: [subject, dobj], reason_action: [subject], result: [object]}
+- id: arithmetic/measured-content-spill
+  template: measured-content-transfer
+- id: arithmetic/measured-content-pour
+  template: measured-content-transfer
+  arguments:
+    opener:
+    - {slot: actor, type: entity, referential: true, at_start: true}
+    - {slot: action, cat: content_addition_verb, finite_form: true}
+    location:
+    - opt:
+      - {lit: back}
+    - {lit: into}
+    operation: add_quantity
+- id: arithmetic/measured-content-causative-loss
+  template: measured-content-transfer
+  arguments:
+    opener:
+    - {slot: reason, type: noun, uncounted: true, at_start: true}
+    - {slot: action, cat: causative_result_verb, finite_form: true}
+    ending:
+    - {slot: to, cat: infinitival_marker}
+    - {slot: loss, cat: content_loss_verb, bare_form: true}
+    - opt:
+      - {lit: out}
+    attribution: {predicate: loss, subject: content, reason: [reason, reason], reason_entities: [reason]}
+    obligations: {action: [subject], to: [object], loss: [subject, dobj]}
+- id: arithmetic/fractional-content-loss-after-event
+  template: intransitive-content-loss
+  arguments:
+    location:
+    - opt:
+      - {lit: in}
+      - {slot: source, cat: volumetric_container, uncounted: true, number: singular}
+    ending:
+    - {lit: after}
+    - opt:
+      - {slot: reason_owner, cat: possessive_determiner}
+    - {slot: reason_actor, type: entity, referential: true}
+    - {slot: reason_action, cat: container_overturn_verb, finite_form: true}
+    - {slot: container, cat: volumetric_container, uncounted: true, number: singular}
+    - {slot: result, cat: overturn_result_particle}
+    attribution: {predicate: loss, subject: content}
+    constraints:
+    - same_lemma: [source, container]
+    obligations: {loss: [subject, dobj], reason_action: [subject], result: [object]}
+- id: arithmetic/fractional-content-loss-as-stated-result
+  template: intransitive-content-loss
+  arguments:
+    start: false
+    opener:
+    - opt:
+      - {slot: reason_owner, cat: possessive_determiner}
+    - {slot: reason_actor, type: entity, referential: true}
+    - {slot: reason_action, cat: container_overturn_verb, finite_form: true}
+    - {slot: container, cat: volumetric_container, uncounted: true, number: singular}
+    - {slot: result, cat: overturn_result_particle}
+    - {lit: ',', consume_skipped: true}
+    - {lit: so}
+    location: []
+    attribution: {predicate: loss, subject: content, reason: [reason_actor, result],
+                  reason_actor: reason_actor, reason_predicate: reason_action}
+    obligations: {loss: [subject, dobj], reason_action: [subject, dobj], result: [object]}
 - id: arithmetic/container-content-scale
   template: container-content-scaling
 - id: arithmetic/container-content-scale-after-return

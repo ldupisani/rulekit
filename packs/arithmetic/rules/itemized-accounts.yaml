@@ -89,6 +89,44 @@ rules:
   satisfies:
     order:
     - subject
+- id: arithmetic/billed-service-charge
+  match:
+    sentence:
+    - {slot: service, cat: billable_service, uncounted: true, at_start: true}
+    - {slot: cost, cat: price_verb, finite_form: true}
+    - {slot: amount, cat: currency_unit, counted: true}
+    - {lit: '.', consume_skipped: true}
+  emits:
+  - fact: batch_evidence
+    kind: account-base-charge
+    entity: '{service}'
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+  consumes: [cost, amount]
+  satisfies: {cost: [subject, dobj]}
+- id: arithmetic/itemized-supplementary-charge
+  match:
+    sentence:
+    - {slot: who, type: entity, referential: true, at_start: true}
+    - {slot: add, cat: collection_addition_quantity_verb, finite_form: true}
+    - {slot: amount, cat: currency_unit, counted: true}
+    - {slot: fee, cat: surcharge_noun, uncounted: true, qualified: true, qualifier_cat: surcharge_type}
+    - opt:
+      - {slot: marker, cat: explicit_cause_preposition}
+      - {slot: reason, type: noun, uncounted: true}
+    - {lit: '.', consume_skipped: true}
+  emits:
+  - fact: batch_evidence
+    kind: account-additional-charge
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+    container: '{fee.qualifier}'
+    attribution: {predicate: add, actor: who, subject: fee, reason: [reason, reason], reason_entities: [reason]}
+  consumes: [add, amount]
+  satisfies: {add: [subject, dobj], marker: [anchor, object]}
 asks:
 - id: ask/equal-itemized-bill-group
   match:
@@ -234,6 +272,30 @@ asks:
     pay:
     - subject
 
+- id: ask/itemized-charge-total
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - {slot: be, cat: copula}
+    - {slot: account, cat: shared_cost_noun, uncounted: true}
+    - {lit: '?', consume_skipped: true}
+  resolves: {consumer: itemized-charge-total}
+  satisfies: {be: [subject]}
+- id: ask/itemized-charge-subtotal
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - {lit: of}
+    - {slot: account, cat: shared_cost_noun, uncounted: true}
+    - {slot: be, cat: copula}
+    - {slot: attributed, cat: attribution_descriptor}
+    - {lit: to}
+    - {slot: charge, cat: surcharge_type, uncounted: true}
+    - {lit: '?', consume_skipped: true}
+  resolves: {consumer: itemized-charge-total, charge: '{charge}'}
+  satisfies: {be: [subject]}
 templates:
   itemized-price-quote:
     parameters:

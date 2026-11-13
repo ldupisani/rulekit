@@ -5,6 +5,7 @@ from math import isclose, isfinite
 
 from . import consumer
 from ..answer import Answer, AnswerProof, ProofStep, SemanticNode
+from ..composition_evidence import closed_evidence, finish_batch_answer
 from ..evaluate import evaluate
 from ..model import BatchEvidence, Quantity
 from ..numeric_evidence import audit_numeric_mentions
@@ -13,6 +14,38 @@ from ..source_coverage import uncovered_units
 
 
 ACQUIRED_BATCH_KINDS = frozenset({"acquisition", "acquired-discard", "acquired-classify", "batch-discard", "batch-classify"})
+
+
+@consumer("overlapping-batch-outcomes", applicable=lambda store: any(
+    row.kind == "overlap-classification" for row in store.by_kind(BatchEvidence)
+))
+def overlapping(ctx):
+    rows = list(ctx.store.by_kind(BatchEvidence))
+    classifications = [r for r in rows if r.kind == "overlap-classification"]
+    policies = [r for r in rows if r.kind == "overlap-removal-policy"]
+    if len(classifications) != 1 or len(policies) != 1 or len(rows) != 2:
+        return Answer("decline", None, "one classified batch and one exhaustive removal policy are required")
+    batch, policy = classifications[0], policies[0]
+    operands = [batch.value, batch.per_member, batch.subtotal, batch.content_count]
+    classes = {batch.attribute, batch.marker}
+    if (
+        batch.measure != policy.measure or ctx.query.get("item", batch.measure) != batch.measure
+        or policy.verb != ctx.query.get("verb", policy.verb)
+        or classes != {policy.attribute, policy.marker} or len(classes) != 2
+        or any(r.provenance.assumption for r in rows)
+        or any(not isfinite(value) or value < 0 or not float(value).is_integer() for value in operands)
+        or not closed_evidence(ctx, rows, [(batch, operands)])
+        or batch.content_count > min(batch.per_member, batch.subtotal)
+    ):
+        return Answer("decline", None, "the classes, intersection and removal policy must describe the same batch")
+    removed = resource_residual([batch.per_member, batch.subtotal], [batch.content_count],
+                                ctx.log, source="overlapping-class-union")
+    if removed > batch.value:
+        return Answer("decline", None, "the union cannot exceed the batch population")
+    value = removed if ctx.query["mode"] == "discarded" else resource_residual(
+        [batch.value], [removed], ctx.log, source="overlapping-class-complement",
+    )
+    return finish_batch_answer(ctx, rows, value, "count both classes and subtract their shared members once")
 
 
 @consumer("batch-outcomes")
@@ -211,6 +244,13 @@ def _acquired_batches(ctx):
     asked_quality = quality(ctx.query["attribute"]) if ctx.query.get("attribute") else None
     if ctx.query.get("attribute") and asked_quality is None:
         return decline("the requested quality is not a declared batch classification")
+    requested_batch = None
+    if batch := ctx.query.get("batch"):
+        requested_batch = ctx.reg.attrs.get(batch, {}).get("batch_index")
+        if requested_batch == -1:
+            requested_batch = len(batches)
+        if requested_batch is None or not 1 <= requested_batch <= len(batches):
+            return decline("the requested batch must identify an observed acquisition")
     completion = ctx.query.get("completion_attribute")
     completion_index = None
     if completion:
@@ -258,11 +298,18 @@ def _acquired_batches(ctx):
                 return decline("removal and classification describe different qualities")
             removed_sign = removal_quality[1]
             removed = positive if removed_sign == 1 else acquired.value - positive
+        if requested_batch is not None and index + 1 != requested_batch:
+            continue
         if ctx.query["mode"] == "acquired":
             if ctx.query.get("verb") != acquired.acquisition or asked_quality:
                 return decline("the requested acquisition needs matching event and class evidence")
             value = acquired.value
         elif ctx.query["mode"] == "discarded":
+            if ctx.query.get("stated_reason") == "true" and (
+                outcome.provenance.attribution is None
+                or outcome.provenance.attribution.reason_span is None
+            ):
+                return decline("the selected disposal needs an explicitly stated reason")
             if ctx.query.get("disposal_verb") and outcome.verb != ctx.query["disposal_verb"]:
                 return decline("the requested disposal event does not match every batch")
             if asked_quality:

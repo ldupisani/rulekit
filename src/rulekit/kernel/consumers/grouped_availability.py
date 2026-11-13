@@ -8,7 +8,7 @@ from .indexed_path import ordinal_index
 from ..answer import Answer
 from ..evaluate import evaluate
 from ..model import BatchEvidence
-from ..reference_identity import reference_from_unit
+from ..reference_identity import constrains, reference_from_unit
 
 
 @consumer("grouped-availability")
@@ -112,7 +112,13 @@ def consume(ctx):
             return decline(
                 "the reservation purpose must identify the requested site and unit"
             )
-    if not vacancies and ctx.query.get("vacant") != "true":
+    unavailable = ctx.query.get("mode") == "unavailable"
+    reason = ctx.query_reference("reason")
+    if reason is not None:
+        attribution = exclusion.provenance.attribution
+        if attribution is None or not any(constrains(reason, cause) for cause in attribution.reason_entities):
+            return decline("the requested cause must be linked to the excluded group")
+    if not unavailable and not vacancies and ctx.query.get("vacant") != "true":
         return decline(
             "available assignments need explicit evidence that the other units are unoccupied"
         )
@@ -121,7 +127,7 @@ def consume(ctx):
             "every capacity, exclusion and occupancy condition must belong to the same site"
         )
     value = evaluate(
-        "(groups - unavailable) * each",
+        "unavailable * each" if unavailable else "(groups - unavailable) * each",
         dict(
             groups=structure.value,
             unavailable=exclusion.value,
@@ -134,5 +140,6 @@ def consume(ctx):
         ctx,
         rows,
         value,
+        "count the units in the identified excluded groups" if unavailable else
         "count the units in eligible groups, using the explicit absence of other occupants",
     )

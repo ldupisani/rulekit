@@ -87,7 +87,10 @@ def test_measurement_templates_preserve_operation_and_context_boundaries(rules, 
     scaling = rules["measured-content-multiply-total"]
     causative = rules["measured-content-causative-multiply-total"]
     addition = rules["measured-content-add-quantity"]
-    assert scaling.emits == causative.emits
+    assert scaling.emits[0].fact == causative.emits[0].fact
+    assert scaling.emits[0].fields == causative.emits[0].fields
+    assert scaling.emits[0].attribution.reason is None
+    assert causative.emits[0].attribution.reason == ("actor", "content")
     assert scaling.where == causative.where
     assert scaling.generation_context == causative.generation_context == addition.generation_context
     assert [r.emits[0].fields["operation"] for r in (direct, scaling, addition)] == [

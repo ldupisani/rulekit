@@ -482,6 +482,30 @@ rules:
   - number_compatible:
     - who
     - verb
+- id: arithmetic/mixture-causal-separation-with-retention
+  match:
+    sentence:
+    - {slot: cause, type: noun, uncounted: true, at_start: true}
+    - {slot: remove, cat: solvent_removal_verb, finite_form: true}
+    - {lit: all}
+    - {slot: component, cat: mixture_component, uncounted: true}
+    - {lit: from}
+    - {slot: source, cat: mixture_substance, uncounted: true}
+    - {lit: ',', consume_skipped: true}
+    - {slot: retain, cat: mixture_retention_verb, present_participle: true}
+    - {lit: all}
+    - {slot: retained, cat: mixture_component, uncounted: true}
+    - {lit: '.', consume_skipped: true}
+  emits:
+  - fact: mixture_evidence
+    kind: recover
+    source: '{source}'
+    component: '{component}'
+    retained: '{retained}'
+    value: 0
+    attribution: {predicate: remove, subject: component, reason: [cause, cause], reason_entities: [cause]}
+  consumes: [remove, retain]
+  satisfies: {remove: [subject, dobj], retain: [subject, dobj]}
 - id: arithmetic/mixture-selective-removal
   phase: read
   match:
@@ -1418,3 +1442,16 @@ asks:
     source: '{source}'
     entity: '{holder}'
     required_dimension: count
+- id: ask/mixture-explicitly-retained-component
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: unit, cat: mixture_measure, uncounted: true}
+    - {lit: of}
+    - {slot: component, cat: mixture_component, uncounted: true}
+    - {slot: be, cat: past_copula}
+    - {slot: retain, cat: mixture_retention_verb, past_participle: true}
+    - {lit: '?', consume_skipped: true}
+  resolves: {consumer: mixture-component, result: recovered-amount, component: '{component}', target_measure: '{unit}'}
+  satisfies: {be: [subject], retain: [subject, dobj]}

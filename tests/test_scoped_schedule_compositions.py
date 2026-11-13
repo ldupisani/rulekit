@@ -263,6 +263,55 @@ def test_daily_shortfalls_do_not_require_an_intention_or_limited_ability_clause(
     number(reg, text, 44)
 
 
+@pytest.mark.parametrize('goal,observations,period,item,expected', [
+    ('daily goal is 20 pages',
+     'On Monday, Nora did 7 pages because she felt ill. Nora did 9 pages on Tuesday.',
+    'the day', 'pages', 13),
+    ('hourly quota is 20 tasks',
+     'During the first hour, Nora did 7 tasks because she felt ill. During the second hour, Nora did 9 tasks.',
+    'the hour when', 'tasks', 13),
+    ('goal is 30 pages per week',
+     'In the first week, Nora did 12 pages because she felt ill. In the second week, Nora did 18 pages.',
+    'the first week', 'pages', 18),
+    ('monthly target is 20 tasks',
+     'In the previous month, Nora did 7 tasks because she felt ill. In the current month, Nora did 9 tasks.',
+    'the previous month when', 'tasks', 13),
+    ('monthly target is 20 tasks',
+     'In March, Nora did 7 tasks because she felt ill. In April, Nora did 9 tasks.',
+    'the month', 'tasks', 13),
+    ('monthly target is 20 tasks',
+     'In March, Nora did 7 tasks because she felt ill. In April, Nora did 9 tasks because she felt ill.',
+     'March when', 'tasks', 13),
+    ('annual goal is 40 pages',
+     'In the first year, Nora did 42 pages because she felt ill.',
+    'the year', 'pages', 0),
+])
+def test_condition_shortfall_uses_the_observed_goal_period(reg, goal, observations, period, item, expected):
+    text = f"Nora's {goal}. {observations} How many of the missed {item} were from {period} Nora felt ill?"
+    number(reg, text, expected)
+
+
+@pytest.mark.parametrize('goal,observations,period,state', [
+    ('weekly goal is 20 pages', 'On Monday, Nora did 7 pages.', 'day', 'ill'),
+    ('weekly goal is 20 pages', 'On Monday, Nora did 7 pages because she felt ill.', 'week', 'ill'),
+    ('weekly goal is 20 pages', 'In the first week, Nora did 7 pages.', 'week', 'ill'),
+    ('goal is 20 pages', 'On Monday, Nora did 7 pages because she felt ill.', 'day', 'ill'),
+    ('goal is 20 pages per hour', 'In the first hour, Nora did 7 pages because she felt ill.', 'second hour', 'ill'),
+    ('goal is 20 pages per hour', 'In the first hour, Nora did 7 pages because she felt ill.', 'hour', 'sick'),
+    ('weekly goal is 20 pages', 'Nora did 7 pages by Tuesday.', 'week', 'ill'),
+    ('weekly goal is 20 pages per day', 'On Monday, Nora did 7 pages because she felt ill.', 'day', 'ill'),
+    ('goal is 20 pages per hour',
+     'In the first hour, Nora did 7 pages because she felt ill. In the first hour, Nora did 2 pages.',
+     'hour', 'ill'),
+    ('goal is 20 pages per hour',
+     'In the first hour, Nora did 7 pages because she felt ill. In the second hour, Nora did 2 pages because she felt ill.',
+     'hour', 'ill'),
+])
+def test_condition_shortfall_requires_a_matching_goal_and_unique_period(reg, goal, observations, period, state):
+    text = f"Nora's {goal}. {observations} How many of the missed pages were from the {period} Nora felt {state}?"
+    assert not solve(text, reg).answer.committed
+
+
 def test_completed_work_can_clear_earlier_arrears_without_prepaying_a_future_minimum(reg):
     number(reg, shortfall().replace('9 situps', '35 situps'), 20)
 

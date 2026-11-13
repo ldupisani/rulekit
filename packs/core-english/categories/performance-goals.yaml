@@ -7,38 +7,46 @@ categories:
   performance_goal_context:
     parent: noun
     includes: [activity_context, exercise_activity]
-  daily_goal_descriptor: {parent: adjective, attrs: {goal_cycle_days: 1}}
-  daily_recurrence_unit: {parent: duration_measure}
+  goal_recurrence_descriptor: {parent: adjective}
+  daily_goal_descriptor: {parent: goal_recurrence_descriptor}
+  weekly_goal_descriptor: {parent: goal_recurrence_descriptor}
+  hourly_goal_descriptor: {parent: goal_recurrence_descriptor}
+  monthly_goal_descriptor: {parent: goal_recurrence_descriptor}
+  annual_goal_descriptor: {parent: goal_recurrence_descriptor}
+  performance_observation_period:
+    parent: noun
+    includes: [named_calendar_period, reporting_period_unit]
   minimum_goal_descriptor: {parent: adjective}
   bare_performance_auxiliary: {parent: auxiliary}
   achievement_capacity_adjective: {parent: adjective}
   compensation_verb: {parent: verb}
   goal_attainment_verb: {parent: verb}
   omitted_performance_unit: {parent: pronoun}
-  weekly_goal_descriptor:
-    parent: adjective
-    attrs:
-      goal_cycle_days: 7
-  weekday_cycle_period:
-    parent: duration_measure
+  uncompleted_performance_participle: {parent: verb}
+  observed_condition_verb: {parent: verb}
+  observed_condition_adjective: {parent: adjective}
 members:
+  observed_condition_verb: [feel, felt, feels]
+  observed_condition_adjective: [ill, sick]
   performance_goal_noun: [goal, quota, target]
   performance_unit: [page, task, exercise]
   daily_goal_descriptor: [daily]
-  daily_recurrence_unit: [day]
+  weekly_goal_descriptor: [weekly]
+  hourly_goal_descriptor: [hourly]
+  monthly_goal_descriptor: [monthly]
+  annual_goal_descriptor: [annual]
   minimum_goal_descriptor: [minimum]
   bare_performance_auxiliary: [do]
   achievement_capacity_adjective: [able]
   compensation_verb: [make up]
   goal_attainment_verb: [meet, reach]
   omitted_performance_unit: [ones]
-  weekly_goal_descriptor:
-  - weekly
-  weekday_cycle_period:
-  - week
+  uncompleted_performance_participle: [missed]
 attribute_compatibility:
-  daily_goal_descriptor: [performance_goal_noun]
+  daily_goal_descriptor: [performance_goal_noun, calendar_day_unit]
+  weekly_goal_descriptor: [performance_goal_noun, calendar_week_unit]
+  hourly_goal_descriptor: [performance_goal_noun, clock_hour_unit]
+  monthly_goal_descriptor: [performance_goal_noun, calendar_month_unit]
+  annual_goal_descriptor: [performance_goal_noun, calendar_year_unit]
   minimum_goal_descriptor: [performance_goal_noun]
   performance_goal_context: [performance_goal_noun]
-  weekly_goal_descriptor:
-  - performance_goal_noun

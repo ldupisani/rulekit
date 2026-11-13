@@ -99,6 +99,21 @@ def test_successive_process_rates(reg, subject, measure, verb, bare, compact, ra
           f'How many seconds does it take to {bare} entirely?', 11)
 
 
+@pytest.mark.parametrize('story,activity,completion', [
+    ('A file of 120 megabytes downloads at 6 megabytes per second for its first 30 megabytes, '
+     'and then 15 megabytes per second thereafter. A router reboot paused the transfer for 7 seconds. ',
+     'downloading', 'download'),
+    ('A tank of 120 liters fills at 6 liters per second for its first 30 liters, '
+     'and then 15 liters per second thereafter. A pump failure paused the transfer for 7 seconds. ',
+     'filling', 'fill'),
+])
+def test_time_spent_on_a_process_excludes_its_pause(reg, story, activity, completion):
+    for emphasis in ('actively ', 'actually ', ''):
+        check(reg, story + f'How many seconds were spent {emphasis}{activity}?', 11)
+    check(reg, story + f'How many seconds does it take to {completion} entirely?', 18)
+    assert not solve(story + f'How many seconds were spent continuously {activity}?', reg).answer.committed
+
+
 @pytest.mark.parametrize('frame,first,remainder', [
     ('the rate of', '130 megabytes', '15 megabytes'),
     ('the rate of', '30 megabytes', '15 liters'),

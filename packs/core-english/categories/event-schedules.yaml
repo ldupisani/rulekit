@@ -9,7 +9,9 @@ categories:
   event_duration_verb: {parent: verb}
   attendance_observation_verb: {parent: verb}
   group_affiliation_preposition: {parent: preposition}
+  scheduled_cancellation_verb: {parent: verb}
 members:
+  scheduled_cancellation_verb: [cancel, cancels, canceled, cancelled]
   scheduled_activity_group: [class, club, band]
   schedule_separation_descriptor: [different, separate]
   scheduled_event: [game, match, lesson, session, meeting, show, fight, race, contest]

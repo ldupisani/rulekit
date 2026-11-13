@@ -19,6 +19,8 @@ categories:
     parent: noun
   elapsed_duration_verb:
     parent: verb
+  active_duration_adverb:
+    parent: adverb
   instrument_performance_verb:
     parent: timed_activity_verb
     selectional_roles:
@@ -51,6 +53,7 @@ members:
   elapsed_duration_verb:
   - take
   - takes
+  active_duration_adverb: [actively, actually]
   instrument_performance_verb:
   - play
   - plays

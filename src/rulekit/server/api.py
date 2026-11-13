@@ -288,6 +288,8 @@ def _fact_json(
     }
     if fact.provenance.assumption:
         payload["scope"] = "question-assumption"
+    if fact.provenance.attribution is not None:
+        payload["attribution"] = _jsonable(vars(fact.provenance.attribution))
     source_ref = _identifier_source_json(
         source_index, fact.provenance.source
     )

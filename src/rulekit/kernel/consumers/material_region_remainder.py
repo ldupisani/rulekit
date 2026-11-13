@@ -11,6 +11,7 @@ from ..dimensions import conversion_factor
 from ..resource_equations import resource_residual
 from ..source_coverage import uncovered_document_units
 from ..properties import evaluate_property
+from ..reference_identity import constrains
 from ...data.properties import PropertyError
 
 
@@ -148,9 +149,22 @@ def consume(ctx):
                               ctx.log, source="measured-resource-remainder")
     if not isfinite(value) or value < 0:
         return decline("the removals exceed the measured stock")
+    if reason := ctx.query_reference("reason"):
+        selected = []
+        for key, group in groups.items():
+            if key == opening_key:
+                continue
+            attribution = group[0].provenance.attribution
+            if attribution is None:
+                return decline("the removals need an explicit purpose or cause scope")
+            if any(constrains(reason, ref) for ref in attribution.reason_entities):
+                selected.append(values[key])
+        if not selected:
+            return decline("no measured removal has the requested cause")
+        value = resource_residual(selected, [], ctx.log, source="cause-specific-resource-removal")
     ctx.log.consumed_component_keys.update(r.key() for r in rows)
-    detail = (f"opening {quantity} minus explicit removals; "
-              f"input measurements normalized to {unit}")
+    detail = (f"select measured removals with the stated cause in {unit}s" if reason else
+              f"opening {quantity} minus explicit removals; input measurements normalized to {unit}")
     if opening[0].shape:
         detail += "; geometric accounting does not construct a packing layout"
     return Answer("number", value, detail)

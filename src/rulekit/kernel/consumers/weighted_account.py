@@ -5,14 +5,44 @@ from math import isfinite
 
 from . import consumer
 from ..answer import Answer, AnswerAssumption
+from ..composition_evidence import closed_evidence, finish_batch_answer
 from ..model import BatchEvidence, EarningRate, Quantity
 from ..evaluate import evaluate
 from ..numeric_evidence import audit_numeric_mentions
 from ..predicate_compatibility import predicates_compatible
 from ..rate_calculation import convert_units
+from ..resource_equations import resource_residual
 from ..reference_bindings import anaphoric_forms_agree, referenced_forms_agree
-from ..reference_identity import reference_from_unit
+from ..reference_identity import constrains, flat_reference, reference_from_unit
 from ..source_coverage import uncovered_document_units, covered_temporal_annotation
+
+
+@consumer("itemized-charge-total", applicable=lambda store: any(
+    row.kind == "account-base-charge" for row in store.by_kind(BatchEvidence)
+))
+def itemized_charges(ctx):
+    rows = list(ctx.store.by_kind(BatchEvidence))
+    base = [r for r in rows if r.kind == "account-base-charge"]
+    supplements = [r for r in rows if r.kind == "account-additional-charge"]
+    if (
+        len(base) != 1 or not supplements or len(rows) != 1 + len(supplements)
+        or len({row.entity_ref for row in supplements}) != 1
+        or any(row.provenance.assumption or row.provenance.sentence <= base[0].provenance.sentence
+               for row in supplements)
+        or base[0].provenance.assumption
+        or not closed_evidence(ctx, rows, [(row, [row.value]) for row in rows])
+    ):
+        return Answer("decline", None, "one base charge and its stated supplements are required")
+    scope = ctx.query_reference("charge")
+    selected = rows if scope is None else [
+        row for row in supplements if constrains(scope, row.container_ref or flat_reference(row.container))
+    ]
+    amounts = [convert_units(row.value, row.measure, base[0].measure, ctx.reg, ctx.log,
+                             source="itemized-charge-unit") for row in selected]
+    if not amounts or any(amount is None for amount in amounts):
+        return Answer("decline", None, "the charge must identify stated entries in compatible currency")
+    return finish_batch_answer(ctx, rows, resource_residual(amounts, [], ctx.log,
+                               source="itemized-charge-sum"), "sum the explicitly stated charges")
 
 
 @consumer("weighted-account-total")
@@ -63,6 +93,8 @@ def consume(ctx):
     amounts = []
     assumptions = []
     requested_measure = ctx.query.get("measure")
+    receipt = ctx.query_reference("receipt")
+    reason = ctx.query_reference("reason")
     for row in rows:
         if (
             not isfinite(row.value)
@@ -149,8 +181,8 @@ def consume(ctx):
             quote.entity != actor.head
             or quote.basis != "service"
             or quote.provenance.assumption
-            or quote.per != ctx.query["item"]
-            or quote.verb != ctx.query["verb"]
+            or quote.per != ctx.query.get("item", quote.per)
+            or quote.verb != ctx.query.get("verb", quote.verb)
             or not isfinite(quote.value)
             or quote.value < 0
         ):
@@ -180,7 +212,8 @@ def consume(ctx):
                 ctx.log,
                 source="service-earned-subtotal",
             )
-            amounts.append((value, quote.measure))
+            if receipt is None:
+                amounts.append((value, quote.measure))
         work_count = evaluate(
             " + ".join(str(row.value) for row in work), {}, ctx.log,
             source="completed-service-population",
@@ -188,6 +221,8 @@ def consume(ctx):
         for row in rows:
             if row.kind not in {"account-unit-supplement", "account-client-supplement"}:
                 continue
+            if receipt is not None:
+                return decline("the receipt type needs to be stated for every supplement")
             if row.kind == "account-unit-supplement":
                 if row.container != quote.per or row.container_ref is None or row.container_ref.described:
                     return decline("the supplement must name the completed service unit")
@@ -276,7 +311,20 @@ def consume(ctx):
             ctx.log,
             source="explicit-component-product",
         )
+        attribution = row.provenance.attribution
+        if receipt is not None:
+            if attribution is None or attribution.subject is None or not attribution.subject.resolved:
+                return decline("the receipt type needs to be stated for every supplement")
+            if not constrains(receipt, attribution.subject):
+                continue
+            if reason is not None:
+                if not attribution.reason_entities:
+                    return decline("the requested receipts need an explicit cause")
+                if not any(constrains(reason, cause) for cause in attribution.reason_entities):
+                    continue
         amounts.append((value, row.measure))
+    if not amounts:
+        return decline("no amounts match the requested receipt and cause")
     if uncovered_document_units(
         ctx.premises, ctx.question, ctx.match.consumed
     ) or audit_numeric_mentions(

@@ -20,6 +20,8 @@ categories:
     parent: duration_measure
     attrs:
       calendar_week_unit: 1
+  clock_hour_unit:
+    parent: duration_measure
   calendar_year_unit:
     parent: duration_measure
     attrs:
@@ -107,6 +109,8 @@ members:
   - day
   calendar_week_unit:
   - week
+  clock_hour_unit:
+  - hour
   retrospective_period_marker:
   - before
   retrospective_window_preposition:

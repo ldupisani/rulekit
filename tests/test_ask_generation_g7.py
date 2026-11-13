@@ -63,7 +63,7 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
     assert any("antecedent discourse group" in blocker for blocker in contextual.blockers)
     # The reusable physics pack adds the independently generatable
     # ask/physics-quantity surface to curated.
-    assert sum(item.supported for item in availability.values()) == 462
+    assert sum(item.supported for item in availability.values()) == 489
     assert availability["ask/how-many-of-collection-are-label"].supported
     assert availability["ask/how-many-of-collection-are-label"].supported_modes == (
         "ask_only",
@@ -87,11 +87,12 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
     assert availability["ask/measured-content-in-container-unit"].blockers == (
         "ask requires generated premise evidence; standalone realization is disabled",
     )
-    assert len(availability) == 507
+    assert len(availability) == 535
     assert {
         item.id for item in availability.values() if not item.supported
     } == {'ask/available-unit-assignments-with-vacancy',
           'ask/container-content-cubic-amount',
+          'ask/actor-attributed-cubic-loss',
           'ask/chem-cost-of-moles',
           'ask/measured-remainder-after-production-varieties',
           'ask/process-part-remainder-numeric-index',
@@ -161,6 +162,7 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
                    "no project-backed ask filler exists for collection",
                ) for ask_id in unfilled_collections)
     unfilled_powered_units = {
+        'ask/actor-attributed-cubic-loss',
         'ask/container-content-cubic-amount',
         'ask/measured-remainder-area-how-much-active-qualified-unit',
         'ask/measured-remainder-area-length_unit-how-many-units-elided-qualified-unit',

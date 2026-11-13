@@ -4,6 +4,7 @@ from collections import Counter, defaultdict
 from math import isfinite
 from . import consumer
 from .ordered_sequence import affine_terms_from_first
+from .indexed_path import ordinal_index
 from ..answer import Answer
 from ..model import BatchEvidence
 from ..evaluate import evaluate
@@ -35,7 +36,14 @@ def consume(ctx):
         return decline("one initial event and one recurrence are required")
     first = by["event-seed"][0]
     step = by["event-step"][0]
-    count = float(ctx.query["count"])
+    term = ctx.query.get("index")
+    if term is not None:
+        ordinal = ordinal_index(term, ctx.reg)
+        if ordinal is None or ordinal < 1 or not step.marker.strip():
+            return decline("one identified event in an explicit projection is required")
+        count = ordinal - 1
+    else:
+        count = float(ctx.query["count"])
     if (
         any(b.provenance.assumption for b in rows)
         or first.provenance.sentence >= step.provenance.sentence
@@ -58,7 +66,8 @@ def consume(ctx):
     expected = defaultdict(Counter)
     expected[first.provenance.sentence][first.value] += 1
     expected[step.provenance.sentence][step.value] += 1
-    expected[ctx.question.sentence_index][count] += 1
+    if term is None:
+        expected[ctx.question.sentence_index][count] += 1
     # Nominal references retain their source numeric representation for the
     # audit; they are not recurrence operands or additional events.
     for reference in references:
@@ -89,13 +98,15 @@ def consume(ctx):
     projected = bool(step.marker.strip())
     if terms is None or (not projected and any(not float(v).is_integer() for v in terms)):
         return decline("the recurrence must produce finite whole-number event results")
-    value = evaluate(
+    value = terms[-1] if term is not None else evaluate(
         " + ".join(str(v) for v in terms), {}, ctx.log, source="event-sequence-total"
     )
     ctx.log.consumed_batch_keys.update(b.key() for b in rows)
     return Answer(
         "number",
         value,
-        ("Sum the initial event and every explicitly projected subsequent event without rounding."
+        ("Select the specified event from the explicitly projected progression."
+         if term is not None else
+         "Sum the initial event and every explicitly projected subsequent event without rounding."
          if projected else "Sum the initial event and every explicitly requested subsequent event."),
     )

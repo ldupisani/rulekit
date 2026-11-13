@@ -25,6 +25,7 @@ rules:
   emits:
   - fact: batch_evidence
     kind: event-seed
+    attribution: {predicate: effect, subject: objects, reason: [event, event], reason_entities: [event]}
     entity: '{event}'
     measure: '{objects}'
     value: objects
@@ -62,6 +63,7 @@ rules:
   emits:
   - fact: batch_evidence
     kind: event-seed
+    attribution: {predicate: effect, subject: objects, reason: [event, event], reason_entities: [event]}
     entity: '{event}'
     measure: '{objects}'
     value: objects
@@ -185,6 +187,20 @@ asks:
     - subject
     passive:
     - subject
+- id: ask/projected-event-result-by-ordinal
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: objects, cat: event_result_object, number: plural, uncounted: true, bare: true}
+    - {slot: modal, type: future_modal}
+    - {slot: event, cat: repeating_event, uncounted: true, qualified: true, qualifier_cat: holder_ordinal}
+    - {slot: cause, cat: causation_verb, bare_form: true}
+    - {slot: to, cat: infinitival_marker}
+    - {slot: effect, cat: event_intransitive_effect_verb, bare_form: true}
+    - {lit: '?', consume_skipped: true}
+  resolves: {consumer: event-sequence-total, event: '{event}', item: '{objects}', index: '{event.qualifier}', effect: '{effect}'}
+  satisfies: {cause: [subject], to: [object], effect: [subject]}
 templates:
   event-multiplier-step:
     parameters:

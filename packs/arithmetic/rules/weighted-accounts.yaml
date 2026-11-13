@@ -923,6 +923,22 @@ asks:
   - number_compatible:
     - who
     - aux
+- id: ask/service-receipt-subtotal
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - {lit: did}
+    - {slot: who, type: entity, common_noun_cat: collection_agent, referential: true}
+    - {slot: receive, cat: receive, bare_form: true}
+    - {lit: in}
+    - {slot: receipt, cat: supplemental_receipt_noun, uncounted: true}
+    - opt:
+      - {slot: marker, cat: explicit_cause_preposition}
+      - {slot: reason, type: noun, uncounted: true}
+    - {lit: '?', consume_skipped: true}
+  resolves: {consumer: weighted-account-total, mode: earnings, receipt: '{receipt}', reason: '{reason.optional}'}
+  satisfies: {receive: [subject, dobj], marker: [anchor, object]}
 templates:
   service-unit-quote:
     parameters:
@@ -1164,11 +1180,15 @@ templates:
           cat: supplemental_receipt_noun
           uncounted: true
           bare: true
+        - opt:
+          - {slot: marker, cat: explicit_cause_preposition}
+          - {slot: reason, type: noun, uncounted: true}
         - lit: .
           consume_skipped: true
       emits:
       - fact: batch_evidence
         kind: account-product
+        attribution: {predicate: give, actor: givers, subject: adjustment, reason: [reason, reason], reason_entities: [reason]}
         entity: '{recipient}'
         measure: '{amount}'
         value:

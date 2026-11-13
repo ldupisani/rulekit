@@ -45,7 +45,13 @@ categories:
     parent: batch_disposal_verb
     selectional_roles:
       theme: information_quantity_object
+  inspection_defect_descriptor: {parent: adjective}
+  inspection_defect_noun: {parent: noun}
+  joint_pair_quantifier: {parent: quantifier}
 members:
+  joint_pair_quantifier: [both]
+  inspection_defect_descriptor: [scratched, bent]
+  inspection_defect_noun: [defect]
   batch_acquisition_verb: [collect, collected, collects, download, downloaded,
       downloading, downloads, receive, received, receives]
   batch_additional_marker: [more]

@@ -307,6 +307,8 @@ def _judge(expected: object, result) -> tuple[str, object]:
         # project growing a verdict-producing ask, which pack scoping
         # prevents today — but the judge must not depend on that staying true)
         return "wrong", got
+    if answer.kind == "text":
+        return "wrong", answer.value
     # decline
     if expected == "decline":
         return "correct", None

@@ -12,6 +12,30 @@ from . import ConsumerContext, consumer
 _ACTIVE_CONTAINER = "$active:measured-container$"
 
 
+def _measurement_changes(ctx):
+    from ..model import MeasuredContentChange, Quantity
+    from ..source_coverage import quantity_ledger_source_units
+
+    changes = list(ctx.store.by_kind(MeasuredContentChange))
+    covered = ()
+    if not any(change.operation == "set_total" for change in changes):
+        direct = [quantity for quantity in ctx.store.by_kind(Quantity)
+                  if ctx.reg.word_in_category(quantity.entity, "measurement_container")
+                  and ctx.reg.word_in_category(quantity.verb, "measurement_mass_verb")]
+        if len(direct) == 1 and changes:
+            anchor = direct[0]
+            reading = next((r for r in ctx.premises if r.sentence_index == anchor.provenance.sentence), None)
+            if reading is not None and not anchor.provenance.assumption:
+                covered = quantity_ledger_source_units(reading, [anchor], ctx.reg)
+                if covered:
+                    changes.append(MeasuredContentChange(
+                        provenance=anchor.provenance, container=anchor.entity, content="",
+                        operation="set_total", value=anchor.value, dimension=anchor.measure,
+                        measure=anchor.measure, occurrence=anchor.provenance.sentence,
+                    ))
+    return changes, covered
+
+
 def _dimension_families(word: str | None, ctx: ConsumerContext) -> set[str]:
     """Return the declared dimension families for a noun or unit."""
 
@@ -76,7 +100,7 @@ def measurement_reading(ctx: ConsumerContext):
             f"the asked dimension {dimension!r} names no declared measurement dimension",
         )
 
-    changes = list(ctx.store.by_kind(MeasuredContentChange))
+    changes, direct_coverage = _measurement_changes(ctx)
     captured_by_sentence: dict[int, Counter[float]] = {}
     for change in changes:
         captured_by_sentence.setdefault(
@@ -100,7 +124,7 @@ def measurement_reading(ctx: ConsumerContext):
     anchors = [change for change in changes if change.operation == "set_total"]
     placements = list(ctx.store.by_kind(SpatialPlacement))
 
-    candidates: list[tuple[SpatialPlacement, MeasuredContentChange, set[str]]] = []
+    candidates: list[tuple[SpatialPlacement | None, MeasuredContentChange, set[str]]] = []
     for anchor in anchors:
         anchor_families = (
             _dimension_families(anchor.dimension, ctx)
@@ -109,6 +133,14 @@ def measurement_reading(ctx: ConsumerContext):
         )
         if not anchor_families or anchor.occurrence is None:
             continue
+        if direct_coverage and not instrument and anchor.container == container and not placements:
+            from ..source_coverage import uncovered_units
+
+            if not uncovered_units(ctx.question, ctx.match.consumed) and not any(
+                uncovered_units(reading, direct_coverage if reading.sentence_index == anchor.provenance.sentence else ())
+                for reading in ctx.premises
+            ):
+                candidates.append((None, anchor, anchor_families))
         for placement in placements:
             if (
                 placement.entity == anchor.container
@@ -184,7 +216,7 @@ def measurement_reading(ctx: ConsumerContext):
 
     steps = [f"{total:g} {anchor.measure}"]
     for change in sorted(later, key=lambda item: item.occurrence or -1):
-        if not math.isfinite(change.value) or change.value < 0:
+        if change.provenance.assumption or not math.isfinite(change.value) or change.value < 0:
             return Answer("decline", None, "a measured-content update is invalid")
         if change.operation == "multiply_total":
             if not (_dimension_families(change.dimension, ctx) & families):
@@ -269,7 +301,8 @@ def measurement_reading(ctx: ConsumerContext):
     return Answer(
         "number",
         float(total),
-        f"{anchor.container!r} {placement.relation!r} {placement.reference!r}: "
+        (f"{anchor.container!r} {placement.relation!r} {placement.reference!r}: "
+         if placement is not None else f"stated measurement of {anchor.container!r}: ")
         + " ".join(steps),
     )
 
@@ -292,12 +325,17 @@ def measurement_content_amount(ctx: ConsumerContext):
 
     content = str(ctx.query.get("content", "")).strip()
     container = str(ctx.query.get("container", "")).strip()
+    changes, _ = _measurement_changes(ctx)
+    if not container and ctx.query.get("direct") == "true":
+        candidates = [change.container for change in changes
+                      if change.operation == "set_total" and not change.content]
+        if len(candidates) == 1:
+            container = candidates[0]
     if not content or not container:
         return Answer(
             "decline", None, "a content amount needs one content and container"
         )
 
-    changes = list(ctx.store.by_kind(MeasuredContentChange))
     anchors = [
         change
         for change in changes
@@ -320,19 +358,20 @@ def measurement_content_amount(ctx: ConsumerContext):
         and anchor.occurrence is not None
         and placement.occurrence <= anchor.occurrence
     ]
-    if len(placements) != 1:
+    if len(placements) != 1 and (anchor.content or placements):
         return Answer(
             "decline",
             None,
             "the content anchor needs one prior container/instrument placement",
         )
-    placement = placements[0]
+    placement = placements[0] if placements else None
 
     anchor_families = _dimension_families(anchor.measure, ctx)
     tares = [
         quantity
         for quantity in ctx.store.by_kind(Quantity)
         if quantity.entity == container
+        and bool(anchor.content)
         and ctx.reg.word_in_category(quantity.verb, "measurement_mass_verb")
         and (_dimension_families(quantity.measure, ctx) & anchor_families)
     ]
@@ -352,9 +391,10 @@ def measurement_content_amount(ctx: ConsumerContext):
         replace(
             ctx,
             query={
-                "instrument": placement.reference,
+                "instrument": placement.reference if placement else "",
+                "container": container,
                 "dimension": anchor.dimension or "",
-                "relation": placement.relation,
+                "relation": placement.relation if placement else "",
                 "_additional_measured_values": tuple(
                     (tare.provenance.sentence, tare.value) for tare in tares
                 ),

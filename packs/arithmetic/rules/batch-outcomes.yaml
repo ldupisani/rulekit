@@ -75,6 +75,65 @@ variants:
       bare: true
       agreement: accomplishment
 rules:
+  - id: arithmetic/removal-policy-for-either-classification
+    match:
+      sentence:
+      - {slot: inspector, type: entity, referential: true, at_start: true}
+      - {slot: discard, cat: batch_disposal_verb, finite_form: true}
+      - {lit: every}
+      - {slot: item, type: noun, number: singular, uncounted: true}
+      - {lit: that}
+      - {slot: be, cat: singular_copula}
+      - {slot: first, cat: inspection_defect_descriptor}
+      - {lit: or}
+      - {slot: second, cat: inspection_defect_descriptor}
+      - {lit: '.', consume_skipped: true}
+    emits:
+    - fact: batch_evidence
+      kind: overlap-removal-policy
+      entity: '{inspector}'
+      measure: '{item}'
+      value: 0
+      position: '{discard.span_start}'
+      verb: '{discard}'
+      attribute: '{first}'
+      marker: '{second}'
+      attribution: {predicate: discard, actor: inspector, subject: item, reason: [first, second], reason_entities: [first, second]}
+    consumes: [discard, be]
+    satisfies: {discard: [subject, dobj], be: [subject]}
+  - id: arithmetic/classification-counts-with-shared-members
+    match:
+      sentence:
+      - {lit: of, at_start: true}
+      - {slot: population, type: counted}
+      - {lit: ',', consume_skipped: true}
+      - {slot: a, type: number, standalone: true}
+      - {slot: be1, cat: copula}
+      - {slot: first, cat: inspection_defect_descriptor}
+      - {lit: ',', consume_skipped: true}
+      - {slot: b, type: number, standalone: true}
+      - {slot: be2, cat: copula}
+      - {slot: second, cat: inspection_defect_descriptor}
+      - {lit: ',', consume_skipped: true}
+      - {lit: and}
+      - {slot: shared, type: number, standalone: true}
+      - {slot: be3, cat: copula}
+      - {slot: both, cat: joint_pair_quantifier}
+      - {lit: '.', consume_skipped: true}
+    emits:
+    - fact: batch_evidence
+      kind: overlap-classification
+      entity: ''
+      measure: '{population}'
+      value: population
+      position: '{population.span_start}'
+      per_member: a
+      subtotal: b
+      content_count: shared
+      attribute: '{first}'
+      marker: '{second}'
+    consumes: [population, a, b, shared, be1, be2, be3]
+    satisfies: {a: [quantifies], b: [quantifies], shared: [quantifies], be1: [subject], be2: [subject], be3: [subject], both: [collection]}
   - id: arithmetic/loaded-collection-population
     phase: read
     description: Loading a counted collection establishes its population, not ownership or successful outcomes.
@@ -129,3 +188,27 @@ ask_variants:
         - {slot: item, cat: ownable_quantity_object, number: plural, uncounted: true}
       negation: [{lit: not}]
       mode: complement
+asks:
+- id: ask/overlap-removal-remainder
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: item, type: noun, number: plural, uncounted: true}
+    - {slot: remain, cat: inventory_remainder_verb, finite_form: true}
+    - {lit: '?', consume_skipped: true}
+  resolves: {consumer: overlapping-batch-outcomes, mode: remaining, item: '{item}'}
+  satisfies: {remain: [subject]}
+- id: ask/overlap-removal-total
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: be, cat: copula}
+    - {slot: discard, cat: batch_disposal_verb, past_participle: true}
+    - {lit: for}
+    - {lit: either}
+    - {slot: defect, cat: inspection_defect_noun, uncounted: true}
+    - {lit: '?', consume_skipped: true}
+  resolves: {consumer: overlapping-batch-outcomes, mode: discarded, verb: '{discard}'}
+  satisfies: {be: [subject], discard: [subject, dobj]}

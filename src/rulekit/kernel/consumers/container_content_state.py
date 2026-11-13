@@ -4,6 +4,7 @@ from collections import Counter, defaultdict
 from math import isfinite
 from . import consumer
 from ..affine_graph import AffineError, dependency_graph
+from ..composition_evidence import finish_batch_answer
 from ..answer import (
     Answer,
     AnswerAssumption,
@@ -17,7 +18,9 @@ from ..model import BatchEvidence, MeasuredContentChange, ContainerContent
 from ..numeric_evidence import audit_numeric_mentions
 from ..properties import Measurement, evaluate_property
 from ...data.properties import PropertyError
-from ..reference_identity import reference_from_unit, constrains
+from ..reference_identity import (
+    ReferenceIdentity, attributed_occurrences, constrains, distinct_references, reference_from_unit,
+)
 from ..source_coverage import uncovered_document_units
 
 
@@ -58,17 +61,19 @@ def consume(ctx):
     ):
         return decline("an additional content stream lies outside the changes")
     contexts = [r for r in rows if r.kind == "content-container-context"]
-    openings = [r for r in rows if r.kind == "content-opening-fraction"]
+    openings = [r for r in rows if r.kind in {"content-opening-fraction", "content-opening-amount"}]
+    measured = len(openings) == 1 and openings[0].kind == "content-opening-amount"
     dimensions = [r for r in rows if r.kind == "content-container-dimension"]
     axes = {_axis(ctx.reg, r.marker): r for r in dimensions}
     transitions = [r for r in rows if r.kind == "content-container-transition"]
+    disturbances = [r for r in rows if r.kind == "content-container-disturbance"]
     if (
         len(contexts) > 1
         or len(openings) != 1
-        or len(dimensions) != 3
+        or len(dimensions) != (0 if measured else 3)
         or not changes
         or len(rows)
-        != len(contexts) + len(openings) + len(dimensions) + len(transitions)
+        != len(contexts) + len(openings) + len(dimensions) + len(transitions) + len(disturbances)
         or len(ctx.store.facts) != len(rows) + len(changes) + len(mirrors)
         or ctx.store.collisions
         or ctx.store.quarantined
@@ -78,11 +83,15 @@ def consume(ctx):
         )
     opening = openings[0]
     context = contexts[0] if contexts else None
-    container = reference_from_unit(ctx.match.slots["container"])
     identity = opening.container_ref or (context.container_ref if context else None)
+    container = ctx.query_reference("container") or (ReferenceIdentity(identity.head) if identity else None)
+    materials = {c.content for c in changes}
+    content = ctx.query.get("content") or opening.attribute or (next(iter(materials)) if len(materials) == 1 else None)
     if (
         identity is None
         or not constrains(container, identity)
+        or any(r.container_ref is None or not r.container_ref.resolved
+               or not distinct_references(identity, r.container_ref) for r in disturbances)
         or context is not None
         and (
             opening.entity_ref != context.entity_ref
@@ -104,14 +113,16 @@ def consume(ctx):
             )
             for r in dimensions
         )
-        or set(axes) != AXIS_CATEGORIES.keys()
+        or not measured and set(axes) != AXIS_CATEGORIES.keys()
+        or opening.attribute and opening.attribute != content
         or any(
-            c.container != container.head or c.content != ctx.query["content"]
+            c.container != container.head or c.content != content
             for c in changes
         )
         or any(c.provenance.sentence <= opening.provenance.sentence for c in changes)
         or any(not isfinite(r.value) or r.value <= 0 for r in dimensions)
-        or not 0 <= opening.value <= 1
+        or not isfinite(opening.value) or opening.value < 0
+        or not measured and opening.value > 1
     ):
         return decline(
             "all dimensions and ordered changes must belong to the same container and contents"
@@ -125,7 +136,7 @@ def consume(ctx):
         reading = next(
             r for r in ctx.premises if r.sentence_index == change.provenance.sentence
         )
-        targets = [
+        targets = {
             reference_from_unit(u)
             for u in reading.units
             if u.sense() == "noun"
@@ -133,28 +144,31 @@ def consume(ctx):
             and ctx.reg.word_in_category(
                 u.features.get("lemma", ""), "volumetric_container"
             )
-        ]
+        }
         if not targets:
-            targets = [
+            targets = {
                 ref
                 for u in reading.units
                 if u.sense() == "pronoun"
                 and (ref := reference_from_unit(u)).head == change.container
-            ]
+            }
+        target = next(iter(targets)) if len(targets) == 1 else None
         if (
-            len(targets) != 1
-            or not targets[0].resolved
+            target is None
+            or not target.resolved
             or not (
-                constrains(identity, targets[0]) or constrains(targets[0], identity)
+                constrains(identity, target) or constrains(target, identity)
             )
         ):
             return decline("each content change needs the same identified container")
         container_refs.extend(targets)
     expected = defaultdict(Counter)
+    if measured:
+        expected[opening.provenance.sentence][opening.value] += 1
     for row in dimensions:
         expected[row.provenance.sentence][row.value] += 1
     for change in changes:
-        if change.operation == "remove_fraction" or change.explicit_factor:
+        if change.operation in {"remove_fraction", "remove_quantity", "add_quantity"} or change.explicit_factor:
             expected[change.provenance.sentence][change.value] += 1
     if uncovered_document_units(
         ctx.premises, ctx.question, ctx.match.consumed
@@ -166,6 +180,22 @@ def consume(ctx):
     ):
         return decline(
             "every container dimension, fill, spill and subsequent change must be read"
+        )
+    if measured:
+        unit = ctx.query.get("unit") or opening.measure
+        factor = conversion_factor(ctx.reg, opening.measure, unit, category="volume_measure")
+        if factor is None:
+            return decline("the opening and requested units must measure compatible volumes")
+        amount = evaluate("opening * factor", {"opening": opening.value, "factor": factor},
+                          ctx.log, source="content-opening-amount")
+        outcome = _apply_changes(ctx, amount, changes, unit=unit, capacity=amount)
+        if isinstance(outcome, Answer):
+            return outcome
+        amount, selected = outcome
+        return finish_batch_answer(
+            ctx, rows, amount,
+            "apply the stated changes in order and select losses by their recorded attribution"
+            if selected else f"apply the stated changes to the opening amount in {unit}s",
         )
     descriptors = {q for ref in container_refs for q in ref.qualifiers}
     explicit = bool(descriptors) and all(
@@ -225,7 +255,7 @@ def consume(ctx):
             "volume",
             measurements,
             ctx.log,
-            output_unit=ctx.query["unit"],
+            output_unit=ctx.query.get("unit") or ctx.reg.formula_units.get("length"),
         ).value
     except (AffineError, PropertyError) as error:
         return decline(str(error))
@@ -235,33 +265,16 @@ def consume(ctx):
         ctx.log,
         source="fractional-capacity-fill",
     )
-    for change in sorted(
-        changes, key=lambda c: (c.provenance.sentence, c.occurrence or 0)
-    ):
-        if not isfinite(change.value) or change.value < 0:
-            return decline("content changes must be finite and nonnegative")
-        if change.operation == "remove_fraction" and change.value <= 1:
-            amount = evaluate(
-                "amount * (1 - share)",
-                {"amount": amount, "share": change.value},
-                ctx.log,
-                source="spill-current-contents",
-            )
-        elif change.operation == "multiply_total":
-            amount = evaluate(
-                "amount * factor",
-                {"amount": amount, "factor": change.value},
-                ctx.log,
-                source="scale-current-contents",
-            )
-        else:
-            return decline("the content operation needs an explicitly supported scope")
-        if amount > capacity:
-            return decline(
-                "the resulting contents exceed capacity; overflow behavior is unspecified"
-            )
+    outcome = _apply_changes(ctx, amount, changes, capacity=capacity)
+    if isinstance(outcome, Answer):
+        return outcome
+    amount, selected = outcome
     ctx.log.consumed_batch_keys.update(r.key() for r in rows)
-    reason = "calculate the stated shape’s capacity, fill the stated fraction, then apply each change to current contents"
+    reason = (
+        "apply the stated changes in order and select losses by their recorded attribution"
+        if selected else
+        "calculate the stated shape’s capacity, fill the stated fraction, then apply each change to current contents"
+    )
     if not explicit:
         reason += "; interpreting the complete length, width and height as a rectangular prism"
     return Answer(
@@ -280,3 +293,64 @@ def consume(ctx):
             )
         ),
     )
+
+
+def _apply_changes(ctx, amount, changes, *, unit=None, capacity=None):
+    def decline(reason):
+        return Answer("decline", None, reason)
+
+    loss_events = [c for c in changes if c.operation in {"remove_fraction", "remove_quantity"}]
+    actor_query = ctx.query_reference("actor")
+    reason_query = ctx.query_reference("reason")
+    selected = None
+    if actor_query is not None:
+        predicate = ctx.query.get("predicate")
+        loss_events = [
+            change for change in loss_events
+            if change.provenance.attribution is None
+            or change.provenance.attribution.predicate == predicate
+        ]
+        matches = attributed_occurrences(actor_query, [c.provenance.attribution for c in loss_events])
+        if matches is None:
+            return decline("the requested actor must uniquely identify one participant")
+        selected = {loss_events[index].key() for index in matches}
+    elif reason_query is not None:
+        causes = [c.provenance.attribution.reason_entities if c.provenance.attribution else ()
+                  for c in loss_events]
+        if any(not refs or any(not ref.resolved for ref in refs) for refs in causes):
+            return decline("the relevant loss events need explicitly identified causes")
+        selected = {c.key() for c, refs in zip(loss_events, causes, strict=True)
+                    if any(constrains(reason_query, ref) for ref in refs)}
+    if selected == set():
+        return decline("no measured losses have the requested attribution")
+
+    losses = []
+    for change in sorted(changes, key=lambda c: (c.provenance.sentence, c.occurrence or 0)):
+        if change.provenance.assumption or not isfinite(change.value) or change.value < 0:
+            return decline("content changes must be actual, finite and nonnegative")
+        previous = amount
+        if change.operation == "remove_fraction" and change.value <= 1:
+            amount = evaluate("amount * (1 - share)", {"amount": amount, "share": change.value},
+                              ctx.log, source="spill-current-contents")
+        elif change.operation == "multiply_total":
+            amount = evaluate("amount * factor", {"amount": amount, "factor": change.value},
+                              ctx.log, source="scale-current-contents")
+        elif change.operation in {"remove_quantity", "add_quantity"} and unit and change.measure:
+            factor = conversion_factor(ctx.reg, change.measure, unit, category="volume_measure")
+            if factor is None:
+                return decline("each change needs a compatible volume unit")
+            expression = "amount - value * factor" if change.operation == "remove_quantity" else "amount + value * factor"
+            amount = evaluate(expression, {"amount": amount, "value": change.value, "factor": factor},
+                              ctx.log, source="measured-content-change")
+        else:
+            return decline("the content operation needs an explicitly supported scope")
+        if not isfinite(amount) or amount < 0:
+            return decline("a content change cannot leave a negative or non-finite amount")
+        if capacity is not None and amount > capacity:
+            return decline("the resulting contents exceed capacity; overflow behavior is unspecified")
+        if selected is not None and change.key() in selected:
+            losses.append(evaluate("before - after", {"before": previous, "after": amount},
+                                   ctx.log, source="attributed-content-loss"))
+    if selected is not None:
+        amount = float(len(losses)) if ctx.query.get("mode") == "event-count" else sum(losses)
+    return amount, selected is not None

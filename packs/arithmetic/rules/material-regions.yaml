@@ -702,7 +702,53 @@ asks:
   satisfies: {be: [subject]}
   disambiguates: [amount_word, remaining, power]
   resolves: {consumer: material-region-remainder, material: '{material}', unit: '{unit}', quantity: area}
+- id: ask/cause-specific-measured-removal
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - {slot: be, cat: past_copula}
+    - {slot: verb, cat: measured_resource_removal_verb, past_participle: true}
+    - {slot: marker, cat: explicit_cause_preposition}
+    - {slot: reason, type: noun, uncounted: true}
+    - {lit: '?', consume_skipped: true}
+  resolves: {consumer: material-region-remainder, material: '', quantity: inferred, reason: '{reason}'}
+  satisfies: {be: [subject], verb: [subject, dobj], marker: [anchor, object]}
 templates:
+  measured-removal-with-context:
+    parameters:
+      unit: length_unit
+      basis: length
+      adjunct:
+      - {slot: marker, cat: explicit_cause_preposition}
+      - {slot: explanation, type: noun, uncounted: true}
+      attribution: {predicate: remove, actor: who, subject: material, reason: [explanation, explanation],
+                    reason_entities: [explanation]}
+    rule:
+      match:
+        sentence:
+        - {slot: who, type: entity, common_noun_cat: resource_user, referential: true, at_start: true}
+        - {slot: remove, cat: measured_resource_removal_verb, finite_form: true}
+        - {slot: amount, cat: {parameter: unit}, counted: true}
+        - opt:
+          - {lit: of}
+          - {slot: material, cat: material_resource, uncounted: true, bare: true}
+        - {parameter: adjunct}
+        - {lit: '.', consume_skipped: true}
+      emits:
+      - fact: region_evidence
+        stage: removal
+        material: '{material.optional}'
+        entity: '{who}'
+        shape: ''
+        dimension: ''
+        value: amount
+        unit: '{amount}'
+        position: '{amount.uid}'
+        quantity: {parameter: basis}
+        attribution: {parameter: attribution}
+      consumes: [remove, amount]
+      satisfies: {remove: [subject], marker: [object, anchor]}
   measured-stock:
     parameters:
       prefix: []
@@ -756,6 +802,15 @@ templates:
         unit: {parameter: unit}
         quantity: {parameter: quantity}
 variants:
+- id: arithmetic/measured-length-removal-with-cause
+  template: measured-removal-with-context
+- id: arithmetic/measured-length-removal-with-purpose
+  template: measured-removal-with-context
+  arguments:
+    adjunct:
+    - {slot: marker, cat: purpose_preposition}
+    - {slot: purpose, type: noun, uncounted: true}
+    attribution: {predicate: remove, actor: who, subject: material}
 - id: arithmetic/measured-stock-2d
   template: measured-stock
   arguments:

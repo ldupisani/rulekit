@@ -35,7 +35,6 @@ entries:
   # Phase B reader 48 buyer morphology: plural class plus bare intransitive
   # event. Pack-scoped so it cannot alter any standard benchmark registry.
   sophist: {senses: [noun], plural: sophists}
-  reason: {senses: [verb], verb: {lemma: reason}}
   # Phase B reader 49: overt productive passive morphology for the measured
   # past-passive existential. Bare `establish` remains outside this form claim.
   established: {senses: [verb], verb: {lemma: establish}}

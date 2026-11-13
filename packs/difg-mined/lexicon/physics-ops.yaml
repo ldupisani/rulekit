@@ -29,6 +29,5 @@ entries:
   # 9+2, folio 2. The unknown-word guard is what these lift — gated on all six.
   reversibly: {senses: [adverb]}
   isothermally: {senses: [adverb]}
-  heat: {senses: [noun]}
   blackbody: {senses: [adjective]}
   radiation: {senses: [noun]}

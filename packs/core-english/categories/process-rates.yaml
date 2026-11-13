@@ -15,12 +15,12 @@ categories:
   digital_extent_measure:
     parent: progress_measure
   digital_transfer_process:
-    parent: progressive_process_verb
+    parent: transfer_process_verb
     selectional_roles:
       actor: information_quantity_object
       theme: digital_extent_measure
   fluid_transfer_process:
-    parent: progressive_process_verb
+    parent: transfer_process_verb
     selectional_roles:
       actor: measurement_container
       theme: volume_measure
@@ -29,7 +29,14 @@ categories:
     selectional_roles:
       actor: motion_participant
       theme: length_measure
+  process_pause_verb: {parent: verb}
+  process_pause_reference: {parent: noun}
+  interruption_source_device: {parent: noun}
+  transfer_process_verb: {parent: progressive_process_verb}
 members:
+  process_pause_verb: [pause, paused, pauses, delay, delayed, delays]
+  process_pause_reference: [transfer]
+  interruption_source_device: [router, pump]
   progress_measure:
   - megabyte
   - kilobyte
@@ -58,9 +65,12 @@ members:
   digital_transfer_process:
   - download
   - downloads
+  - downloading
   fluid_transfer_process:
   - fill
   - fills
+  - filling
   motion_process:
   - travel
   - travels
+  - traveling

@@ -250,6 +250,7 @@ from . import (  # noqa: E402,F401  (import registers each handler)
     marginal_discount as _marginal_discount,
     nested_distribution as _nested_distribution,
     event_sequence as _event_sequence,
+    event_attribution as _event_attribution,
     budget_allocation as _budget_allocation,
     comparative_budget as _comparative_budget,
     discounted_total as _discounted_total,

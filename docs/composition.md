@@ -568,6 +568,13 @@ exceed that quota. Cumulative progress “by” a named day is distinct from wor
 done “on” that day; overlapping cumulative and daily observations cannot be
 added. The remaining quota is capped at zero when it is already met.
 
+A question about missed work in the period when a condition occurred uses an
+explicit target and one completed observation at the same cadence. The
+observation retains its period and the condition stated as its reason. A
+weekday, named month, or an ordinal or relative period can identify the
+observation. If several periods match the condition, the question must select
+one. The result is the shortfall for that period, capped at zero.
+
 Implementation: [performance goals](../packs/arithmetic/rules/performance-goals.yaml)
 and [carried shortfalls](../src/rulekit/kernel/consumers/recurring_goal_shortfall.py).
 

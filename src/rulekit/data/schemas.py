@@ -1644,6 +1644,19 @@ class WherePredicate(StrictModel):
         return self
 
 
+class AttributionSlots(StrictModel):
+    """Optional roles attached to the occurrence of a stated effect."""
+
+    predicate: str
+    actor: str | None = None
+    subject: str | None = None
+    reason: tuple[str, str] | None = None
+    reason_tail: str | None = None
+    reason_actor: str | None = None
+    reason_predicate: str | None = None
+    reason_entities: list[str] = Field(default_factory=list)
+
+
 class FactEmit(StrictModel):
     fact: Literal[
         "batch_evidence", "activity_account_evidence", "region_evidence", "specification_evidence", "population_evidence", "mixture_evidence", "proportional_base_evidence",
@@ -1705,6 +1718,7 @@ class FactEmit(StrictModel):
     # ``{verb.surface}``; it belongs to Provenance rather than the emitted
     # Fact's semantic fields and therefore never changes fact identity.
     temporal_perspective: str | None = None
+    attribution: AttributionSlots | None = None
     # Optional evidence-shape metadata for a stated per-member quantity or
     # temporal rate. This distinguishes a class quota from a specific
     # instance without inventing additional holding facts.
@@ -1841,6 +1855,19 @@ class PatternRule(StrictModel):
         if self.independent_clause and (self.phase != 'read' or 'sentence' not in self.match or not self.emits):
             raise ValueError('independent_clause requires a fact-emitting read-phase sentence rule')
         _validate_sense_selection(self.disambiguates, _declared_match_tokens(self.match))
+        declared = _declared_match_tokens(self.match)
+        for emission in self.emits:
+            roles = emission.attribution
+            if roles is None:
+                continue
+            if self.phase != "read" or "sentence" not in self.match or emission.each or emission.options_from:
+                raise ValueError("attribution requires an ordinary sentence emission")
+            slots = (roles.predicate, roles.actor, roles.subject, roles.reason_tail, roles.reason_actor,
+                     roles.reason_predicate, *(roles.reason or ()), *roles.reason_entities)
+            if any(name is not None and (name not in declared or declared[name].span) for name in slots):
+                raise ValueError("attribution must name declared single-unit slots")
+            if (roles.reason_tail or roles.reason_actor or roles.reason_predicate or roles.reason_entities) and not roles.reason:
+                raise ValueError("attribution reason roles need a reason span")
         if self.disambiguates and (self.phase != 'read' or 'sentence' not in self.match):
             raise ValueError('sense selection requires a read-phase sentence rule')
         if self.references and (self.phase != "read" or "sentence" not in self.match):

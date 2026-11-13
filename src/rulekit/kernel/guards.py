@@ -170,6 +170,10 @@ def check(
         return None
     if proposed.kind == "verdict":
         return _check_verdict(premises, consumed_uids, reg, clause_split)
+    if proposed.kind == "text":
+        # Text lookups have their own occurrence and coverage checks. Retain
+        # the truth-scope guard, independently of numeric operand accounting.
+        return _check_verdict(premises, consumed_uids, reg, clause_split)
     if proposed.kind == "witnesses":
         for reading in premises + ([question] if question is not None else []):
             if reading.unknown_words():

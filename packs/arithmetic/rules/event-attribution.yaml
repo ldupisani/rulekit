@@ -1,0 +1,157 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/handled-count-event
+  match:
+    sentence:
+    - {slot: actor, cat: material_handling_device, uncounted: true, referential: true, at_start: true}
+    - {slot: verb, cat: drop_quantity_verb, finite_form: true}
+    - {slot: object, cat: droppable_quantity_object, counted: true, bare: true}
+    - {lit: '.', consume_skipped: true}
+  emits:
+  - fact: quantity
+    entity: '{actor}'
+    measure: '{object}'
+    value: object
+    verb: '{verb}'
+    attribution: {predicate: verb, actor: actor, subject: object}
+  consumes: [verb, object]
+  satisfies: {verb: [subject, dobj]}
+asks:
+- id: ask/effect-reason-infinitive
+  match:
+    question:
+    - {lit: what, at_start: true}
+    - {slot: cause, cat: causative_result_verb, finite_form: true}
+    - {slot: subject, type: noun, uncounted: true}
+    - {slot: to, cat: infinitival_marker}
+    - {slot: action, cat: verb, bare_form: true}
+    - {lit: '?', consume_skipped: true}
+  resolves: {consumer: event-attribution, role: reason, subject: '{subject}', predicate: '{action}'}
+  satisfies: {cause: [subject], to: [object], action: [subject]}
+- id: ask/effect-reason-state
+  match:
+    question:
+    - {lit: why, at_start: true}
+    - {slot: be, cat: copula}
+    - {slot: subject, type: entity, referential: true}
+    - {slot: state, cat: unavailability_descriptor}
+    - {lit: '?', consume_skipped: true}
+  resolves: {consumer: event-attribution, role: reason, subject: '{subject}', predicate: '{state}'}
+  satisfies: {be: [subject]}
+- id: ask/effect-actor
+  match:
+    question:
+    - {lit: who, at_start: true}
+    - {slot: action, cat: verb, finite_form: true}
+    - opt:
+      - {slot: amount, cat: allocation_amount_noun, uncounted: true}
+      - {lit: of}
+    - {slot: subject, type: noun, uncounted: true}
+    - opt:
+      - {slot: holder_marker, cat: event_holder_preposition}
+      - {slot: holder, cat: volumetric_container, uncounted: true}
+    - {lit: '?', consume_skipped: true}
+  resolves: {consumer: event-attribution, role: actor, predicate: '{action}', subject: '{subject}', holder: '{holder.optional}', holder_marker: '{holder_marker.optional}'}
+  satisfies: {action: [subject]}
+- id: ask/effect-classified-actor
+  match:
+    question:
+    - {lit: which, at_start: true}
+    - {slot: class, cat: membership_collection_noun, uncounted: true}
+    - {slot: action, cat: verb, finite_form: true}
+    - {slot: subject, type: noun, uncounted: true}
+    - {lit: '?', consume_skipped: true}
+  resolves: {consumer: event-attribution, role: actor, predicate: '{action}', subject: '{subject}', actor_class: '{class}'}
+  satisfies: {action: [subject]}
+- id: ask/actor-attributed-cubic-loss
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: unit, cat: length_unit, uncounted: true, qualified: true, qualifier_cat: volume_unit_modifier, all_qualifiers: true}
+    - {lit: of}
+    - {slot: content, cat: material_resource, uncounted: true}
+    - {slot: aux, cat: do_support_auxiliary}
+    - {slot: actor, type: entity, referential: true}
+    - {slot: action, cat: content_spill_verb, bare_form: true}
+    - {lit: '?', consume_skipped: true}
+  resolves: {consumer: container-content-state, mode: loss, content: '{content}', unit: '{unit}', actor: '{actor}', predicate: '{action}'}
+  satisfies: {action: [subject]}
+- id: ask/actor-effect-reason
+  match:
+    question:
+    - {lit: why, at_start: true}
+    - {slot: aux, cat: do_support_auxiliary}
+    - {slot: actor, type: entity, referential: true}
+    - {slot: action, cat: verb, bare_form: true}
+    - {slot: subject, type: noun, uncounted: true}
+    - {lit: '?', consume_skipped: true}
+  resolves: {consumer: event-attribution, role: reason, actor: '{actor}', predicate: '{action}', subject: '{subject}'}
+  satisfies: {action: [subject]}
+- id: ask/actor-attributed-measured-loss
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: unit, cat: volume_measure, uncounted: true, bare: true}
+    - opt:
+      - {lit: of}
+      - {slot: content, cat: material_resource, uncounted: true}
+    - {slot: aux, cat: do_support_auxiliary}
+    - {slot: actor, type: entity, referential: true}
+    - {slot: action, cat: content_spill_verb, bare_form: true}
+    - {lit: '?', consume_skipped: true}
+  resolves: {consumer: container-content-state, mode: loss, content: '{content.optional}', unit: '{unit}', actor: '{actor}', predicate: '{action}'}
+  satisfies: {action: [subject]}
+- id: ask/cause-attributed-measured-loss
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: unit, cat: volume_measure, uncounted: true, bare: true}
+    - opt:
+      - {lit: of}
+      - {slot: content, cat: material_resource, uncounted: true}
+    - {slot: be, cat: past_copula}
+    - {slot: lost, cat: content_loss_result_verb}
+    - {slot: marker, cat: cause_preposition}
+    - {slot: reason, type: noun, uncounted: true}
+    - {lit: '?', consume_skipped: true}
+  resolves: {consumer: container-content-state, mode: loss, content: '{content.optional}', unit: '{unit}', reason: '{reason}'}
+  satisfies: {be: [subject], lost: [subject, dobj], marker: [anchor, object]}
+- id: ask/attributed-quantity-event-count
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: subject, cat: droppable_quantity_object, uncounted: true, bare: true}
+    - {lit: did}
+    - {slot: actor, cat: material_handling_device, uncounted: true, referential: true}
+    - {slot: verb, cat: drop_quantity_verb, bare_form: true}
+    - {lit: '?', consume_skipped: true}
+  resolves: {consumer: event-attribution, role: count, subject: '{subject}', predicate: '{verb}', actor: '{actor}'}
+  satisfies: {verb: [subject, dobj]}
+- id: ask/all-attributed-quantity-events
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: subject, cat: droppable_quantity_object, uncounted: true, bare: true}
+    - {slot: be, cat: past_copula}
+    - {slot: verb, cat: drop_quantity_verb, past_participle: true}
+    - {lit: '?', consume_skipped: true}
+  resolves: {consumer: event-attribution, role: count, subject: '{subject}', predicate: '{verb}'}
+  satisfies: {be: [subject], verb: [subject, dobj]}
+- id: ask/actor-attributed-loss-occurrences
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {lit: times}
+    - {lit: did}
+    - {slot: actor, type: entity, referential: true}
+    - {slot: action, cat: content_spill_verb, bare_form: true}
+    - {slot: content, cat: material_resource, uncounted: true}
+    - {lit: '?', consume_skipped: true}
+  resolves: {consumer: container-content-state, mode: event-count, content: '{content}', actor: '{actor}', predicate: '{action}'}
+  satisfies: {action: [subject, dobj]}

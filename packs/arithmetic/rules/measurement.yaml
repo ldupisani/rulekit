@@ -49,6 +49,7 @@ templates:
 
   multiply-total:
     parameters:
+      attribution: {predicate: factor, subject: dimension}
       effect:
         - {slot: factor, cat: intrinsic_quantity_scaling_verb, bare_form: true}
         - {slot: dimension, cat: mass_dimension_noun, referential: true}
@@ -89,6 +90,7 @@ templates:
       consumes: [factor]
       emits:
         - fact: measured_content_change
+          attribution: {parameter: attribution}
           container: $active:measured-container$
           content: '{content}'
           operation: multiply_total
@@ -136,6 +138,12 @@ variants:
       This states one scaling event, including when a repetition adverb marks it as another step. The active container must
       still be uniquely established.
     arguments:
+      attribution:
+        predicate: factor
+        subject: dimension
+        reason: [actor, content]
+        reason_actor: actor
+        reason_predicate: verb
       effect:
         - {slot: cause, cat: causative_result_verb, bare_form: true}
         - {slot: dimension, cat: mass_dimension_noun, referential: true}
@@ -143,6 +151,29 @@ variants:
         - {slot: factor, cat: intrinsic_quantity_scaling_verb, bare_form: true}
 
 rules:
+
+  - id: arithmetic/addition-event-scales-aggregate
+    match:
+      sentence:
+        - {slot: add, cat: collection_addition_quantity_verb, present_participle: true, at_start: true}
+        - {slot: content, cat: measured_content_substance, uncounted: true}
+        - {slot: cause, cat: causative_result_verb, finite_form: true}
+        - {slot: dimension, cat: mass_dimension_noun, referential: true, bare: true}
+        - {slot: to, cat: infinitival_marker}
+        - {slot: factor, cat: intrinsic_quantity_scaling_verb, bare_form: true}
+        - {lit: '.', consume_skipped: true}
+    emits:
+      - fact: measured_content_change
+        container: $active:measured-container$
+        content: '{content}'
+        operation: multiply_total
+        value: attr(factor, scaling_factor)
+        dimension: '{dimension}'
+        attribution: {predicate: factor, subject: dimension, reason: [add, content], reason_predicate: add,
+                      reason_entities: [content]}
+    consumes: [add, cause, factor]
+    satisfies: {add: [subject], cause: [subject, dobj], to: [object], factor: [subject]}
+
 
   - id: arithmetic/measurement-container-on-instrument
     phase: read
@@ -286,3 +317,30 @@ asks:
           bindings: {container: container}
         - rule: arithmetic/measured-content-add-quantity
           bindings: {content: content, support_container: container}
+
+  - id: ask/direct-container-final-mass
+    match:
+      question:
+        - {lit: how, at_start: true}
+        - {lit: much}
+        - {lit: does}
+        - {slot: container, cat: measurement_container, referential: true, uncounted: true}
+        - {slot: weigh, cat: measurement_mass_verb, bare_form: true}
+        - {lit: now}
+        - {lit: '?', consume_skipped: true}
+    resolves: {consumer: measurement-reading, container: '{container}', dimension: weight}
+    satisfies: {weigh: [subject, dobj]}
+
+  - id: ask/direct-content-mass-contribution
+    match:
+      question:
+        - {lit: how, at_start: true}
+        - {lit: much}
+        - {slot: dimension, cat: mass_dimension_noun, uncounted: true}
+        - {lit: did}
+        - {slot: add, cat: collection_addition_quantity_verb, present_participle: true}
+        - {slot: content, cat: measured_content_substance, uncounted: true}
+        - {slot: contribute, cat: contribute, bare_form: true}
+        - {lit: '?', consume_skipped: true}
+    resolves: {consumer: measurement-content-amount, direct: 'true', content: '{content}'}
+    satisfies: {add: [subject], contribute: [subject, dobj]}

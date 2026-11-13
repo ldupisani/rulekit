@@ -541,6 +541,9 @@ categories:
   means_preposition: {parent: circumstantial_preposition}
   manner_preposition: {parent: circumstantial_preposition}
   cause_preposition: {parent: circumstantial_preposition}
+  explicit_cause_preposition: {parent: cause_preposition}
+  event_holder_preposition: {parent: preposition}
+  material_handling_device: {parent: quantity_event_participant}
   purpose_preposition: {parent: circumstantial_preposition}
   instrument_noun:
     parent: noun
@@ -2644,6 +2647,9 @@ members:
   capacity_residual_adverb: [still]
   causative_result_verb: [cause, caused, causes, causing]
   cause_preposition: [because of, due to, from, through]
+  explicit_cause_preposition: [because of, due to]
+  event_holder_preposition: [in, into]
+  material_handling_device: [conveyor, robot]
   change_receipt_verb: [get, receive, take]
   clause_subject_personal_pronoun: [he, it, she, they]
   clause_subject_possessive_determiner: [her, his, its, their]
@@ -2710,8 +2716,8 @@ members:
   discourse_subject_group_pronoun: [they]
   partitive_distributive_quantifier: [each]
   distributive_quantifier: [each, every]
-  drop_quantity_verb: [dropped, drops]
-  droppable_quantity_object: [apple, apricot, badge, bagel, ball, balloon, banana, battery, bead, beanie, beignet,
+  drop_quantity_verb: [drop, dropped, drops]
+  droppable_quantity_object: [parcel, apple, apricot, badge, bagel, ball, balloon, banana, battery, bead, beanie, beignet,
       blanket, bolt, book, boot, bracelet, brochure, brush, cable, cake, candle, candy, cap, card, cellphone,
       charcuterie, charm, cheddar cheese, cheese, clamp, clip, coin, cold cut, cookie, crayon, cream cheese,
       crepe, crown, cupcake, diary, dice, doll, donut, drum, earring, egg, envelope, eraser, folder, football,
@@ -3428,7 +3434,7 @@ members:
   produce: [bake, baked, bakes, brew, build, builds, built, cook, cooks, create, created, creates, draw, made,
       make, makes, paint, painted, paints, sew, sews, write, writes, wrote]
   means_noun: [boat, bus, car, taxi, train, transport, tricycle, van, vehicle, wagon, wheelchair]
-  cause_noun: [accident]
+  cause_noun: [accident, rain, wind, leak, heat]
   cause_compatible_verb: [died, dies]
   bare_entity_reference: [bill, mark]
   duration_holder: [gap, journey, telethon, tour, tournament, trip, tutorial, vacation, video, wedding]

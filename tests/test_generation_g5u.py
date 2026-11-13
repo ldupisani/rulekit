@@ -220,7 +220,7 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
         for word, entry in sorted(project.registry.lexicon.items())
         if "adverb" in entry.senses
     ] == sorted([
-        "afterward", "all-around", "already", "always", "back", "continuously", "correctly", "downhill", "earlier", "exactly", "forever", "forth", "initially", "instead", "later", "normally", "otherwise", "quickly", "separately", "strictly", "incorrectly", "very",
+        "actively", "actually", "afterward", "all-around", "already", "always", "back", "continuously", "correctly", "downhill", "earlier", "exactly", "forever", "forth", "initially", "instead", "later", "normally", "otherwise", "quickly", "separately", "strictly", "incorrectly", "very",
         "again", "ago", "also", "away", "back and forth", "completely", MOVED_WORD, "daily", "down", "entirely", "equally", "far", "finally", "fully", "further", "however", "immediately", "individually",
         "halfway", "just", "next", "off", "once again", "online", "only", "originally", "out", "outside", "recently", "respectively", "safely", "still", "then", "thereafter", "too", "up", "upstairs", "vertically", "yet",
     ])
@@ -273,8 +273,8 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
     project = load_project(CURATED)
     availability = list_rule_availability(project)
 
-    assert len(availability) == 934
-    assert sum(item.supported for item in availability) == 833
+    assert len(availability) == 957
+    assert sum(item.supported for item in availability) == 856
     assert sum(not item.supported for item in availability) == 101
     assert all(
         not item.blockers
@@ -385,7 +385,7 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
             'logic-arithmetic/universal-all-have-quantity-pp-incompatible-item-safety'}
         for item in availability
     )
-    assert len(exploration_status(project)["fillers"]) == 2628
+    assert len(exploration_status(project)["fillers"]) == 2652
 
 
 def test_currently_generates_a_matcher_confirmed_anchor() -> None:
@@ -459,7 +459,7 @@ def test_combined_project_exposes_only_declared_holding_anchor_adverbs() -> None
         for item in exploration_status(project)["fillers"]
     }
 
-    assert len(adverbs) == 61
+    assert len(adverbs) == 63
     holding_anchor_adverbs = {
         word
         for word in adverbs

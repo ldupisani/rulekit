@@ -163,6 +163,24 @@ def fact_references(fact) -> tuple[ReferenceIdentity, ...]:
                  if isinstance(ref := getattr(fact, field, None), ReferenceIdentity))
 
 
+def attributed_occurrences(query: ReferenceIdentity, attributions) -> tuple[int, ...] | None:
+    """Select a participant only when all compatible occurrences can be resolved."""
+    if any(role is None or role.actor is None or not role.actor.resolved for role in attributions):
+        return None
+    actors = [role.actor for role in attributions]
+    same_head = [role for role in attributions if role.actor.head == query.head]
+    if len(same_head) > 1 and any(role.actor_indefinite for role in same_head):
+        return None
+    selected = resolve_reference(query, actors)
+    if selected is None:
+        return None
+    resolved = [resolve_reference(actor, actors) for actor in actors]
+    if any(actor.head == query.head and identity is None
+           for actor, identity in zip(actors, resolved, strict=True)):
+        return None
+    return tuple(index for index, identity in enumerate(resolved) if identity == selected)
+
+
 def reference_pool(store) -> set[ReferenceIdentity]:
     return set(store.references) | {ref for fact in store.facts for ref in fact_references(fact)}
 

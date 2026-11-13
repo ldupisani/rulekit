@@ -22,6 +22,8 @@ categories:
     parent: preposition
   distinct_option_descriptor:
     parent: adjective
+  fault_description: {parent: adjective}
+  technical_fault: {parent: noun}
 members:
   capacity_site:
   - hotel
@@ -45,6 +47,7 @@ members:
   - books
   unavailability_descriptor:
   - unavailable
+  - closed
   uniform_structure_descriptor:
   - identical
   - equal
@@ -61,7 +64,10 @@ members:
   - in
   distinct_option_descriptor:
   - different
+  fault_description: [electrical]
+  technical_fault: [fault]
 attribute_compatibility:
+  fault_description: [technical_fault]
   uniform_structure_descriptor:
   - reservable_capacity_unit
   unavailability_descriptor:

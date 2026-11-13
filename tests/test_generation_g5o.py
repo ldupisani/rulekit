@@ -18,6 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CURATED = ROOT / "projects" / "curated"
 
 EXPECTED_OCCURRENCES = {
+    "arithmetic/classification-counts-with-shared-members": ((14,), "both"),
     "arithmetic/quoted-sale-price-each": ((6,), "each"),
     'arithmetic/counted-partition-price': ((7,), 'each'),
     'arithmetic/material-container-recipient-capacity': ((0,), 'each'),
@@ -219,8 +220,8 @@ def test_g5o_unlocks_only_the_preregistered_rule() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 934
-    assert sum(item.supported for item in availability.values()) == 833
+    assert len(availability) == 957
+    assert sum(item.supported for item in availability.values()) == 856
     assert sum(not item.supported for item in availability.values()) == 101
     assert availability[
         "arithmetic/existential-premise-distributive"
@@ -231,7 +232,7 @@ def test_g5o_unlocks_only_the_preregistered_rule() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 2628
+    assert len(exploration_status(project)["fillers"]) == 2652
 
 
 @pytest.mark.parametrize("quantifier", sorted(EXPECTED_DISTRIBUTIVE_FILLERS))

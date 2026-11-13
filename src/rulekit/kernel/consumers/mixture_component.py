@@ -128,6 +128,9 @@ def mixture_component(ctx: ConsumerContext):
 
         events = sorted((e for e in evidence if e.kind not in {"sample", "share"}),
                         key=lambda e: e.provenance.sentence)
+        if ctx.query.get("result") == "recovered-amount":
+            require(any(e.kind == "recover" and e.retained == target_component for e in events),
+                    "the requested component needs an explicit recovery event")
         require(len({e.provenance.sentence for e in events}) == len(events), "process order is ambiguous")
         additive_volumes = False
         for event in events:

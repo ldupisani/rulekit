@@ -101,7 +101,7 @@ class AnswerAssumption:
 
 @dataclass
 class Answer:
-    kind: str  # "number" | "series" | "witnesses" | "verdict" | "decline"
+    kind: str  # "number" | "series" | "witnesses" | "text" | "verdict" | "decline"
     # A series is an ordered, JSON-native list of labelled records. Keeping
     # the entity and measure beside every value means a multi-answer result
     # can never lose its identity through a positional list such as [25, 20].
@@ -121,7 +121,7 @@ class Answer:
         # committed verdict at a non-verdict gold now scores WRONG there, in
         # the same increment that widened this — the two halves drift apart
         # or land together.
-        return self.kind in ("number", "series", "witnesses") or (
+        return self.kind in ("number", "series", "witnesses", "text") or (
             self.kind == "verdict" and self.value in ("yes", "no")
         )
 

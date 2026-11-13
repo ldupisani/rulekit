@@ -86,9 +86,11 @@ entries:
   acorn: {senses: [noun], plural: acorns}
   across: {senses: [preposition]}
   action: {senses: [noun], plural: actions}
+  actively: {senses: [adverb]}
   activity:
     senses:
     - noun
+  actually: {senses: [adverb]}
   add: {senses: [verb], number: plural}
   added: {senses: [verb], verb: {lemma: add}}
   adding: {senses: [verb], verb: {lemma: add}}
@@ -446,6 +448,7 @@ entries:
     - verb
     verb:
       lemma: attend
+  attributable: {senses: [adjective]}
   auditorium:
     senses:
     - noun
@@ -711,6 +714,7 @@ entries:
     plural: belts
   bench: {senses: [noun], plural: benches}
   beneath: {senses: [preposition]}
+  bent: {senses: [adjective]}
   berry:
     senses:
     - noun
@@ -1124,6 +1128,7 @@ entries:
     - verb
     verb:
       lemma: call
+  callout: {senses: [noun], plural: callouts}
   calls:
     senses:
     - verb
@@ -1152,6 +1157,10 @@ entries:
     senses:
     - noun
   can: {senses: [modal, noun], plural: cans}
+  cancel: {senses: [verb]}
+  canceled: {senses: [verb], verb: {lemma: cancel}}
+  cancelled: {senses: [verb], verb: {lemma: cancel}}
+  cancels: {senses: [verb], verb: {lemma: cancel}}
   candied:
     senses:
     - adjective
@@ -1502,6 +1511,7 @@ entries:
     senses:
     - verb
   clip: {senses: [noun], plural: clips}
+  closed: {senses: [adjective, verb], verb: {lemma: close}}
   closet:
     senses:
     - noun
@@ -1833,6 +1843,7 @@ entries:
   convertibles:
     senses:
     - noun
+  conveyor: {senses: [noun], plural: conveyors}
   cook:
     senses:
     - verb
@@ -2098,6 +2109,7 @@ entries:
     - noun
     - name
     plural: daisies
+  damage: {senses: [noun]}
   dance:
     senses:
     - noun
@@ -2159,6 +2171,7 @@ entries:
     senses:
     - verb
   deep-sea: {senses: [adjective]}
+  defect: {senses: [noun], plural: defects}
   defective: {senses: [adjective]}
   degree:
     senses:
@@ -2173,6 +2186,9 @@ entries:
   degrees:
     senses:
     - noun
+  delay: {senses: [noun, verb], plural: delays}
+  delayed: {senses: [verb], verb: {lemma: delay}}
+  delays: {senses: [verb], verb: {lemma: delay}}
   delegate: {senses: [noun], plural: delegates}
   delete:
     senses:
@@ -2676,6 +2692,7 @@ entries:
   electric:
     senses:
     - adjective
+  electrical: {senses: [adjective]}
   electricity:
     senses:
     - noun
@@ -2975,6 +2992,7 @@ entries:
     verb:
       lemma: fail
   failing: {senses: [preposition]}
+  failure: {senses: [noun], plural: failures}
   fair:
     senses:
     - adjective
@@ -3042,6 +3060,7 @@ entries:
     - verb
     verb:
       lemma: feed
+  feel: {senses: [verb]}
   feels:
     senses:
     - verb
@@ -3050,6 +3069,7 @@ entries:
     - verb
     verb:
       lemma: fall
+  felt: {senses: [verb], verb: {lemma: feel}}
   female:
     senses:
     - noun
@@ -3706,6 +3726,7 @@ entries:
   hearts:
     senses:
     - noun
+  heat: {senses: [noun]}
   heater:
     senses:
     - noun
@@ -3946,6 +3967,7 @@ entries:
     senses:
     - noun
     plural: iguanas
+  ill: {senses: [adjective]}
   image:
     senses:
     - noun
@@ -4029,6 +4051,7 @@ entries:
   inspect: {senses: [verb], verb: {lemma: inspect, number: plural}}
   inspected: {senses: [verb], verb: {lemma: inspect}}
   inspecting: {senses: [verb], verb: {lemma: inspect}}
+  inspector: {senses: [noun], plural: inspectors}
   inspects: {senses: [verb], verb: {lemma: inspect, number: singular}}
   install:
     senses:
@@ -4314,9 +4337,7 @@ entries:
   knock:
     senses:
     - verb
-  knocked:
-    senses:
-    - verb
+  knocked: {senses: [verb], verb: {lemma: knock}}
   knocking:
     senses:
     - verb
@@ -4435,9 +4456,9 @@ entries:
   league:
     senses:
     - noun
-  leak:
-    senses:
-    - verb
+  leak: {senses: [noun, verb], plural: leaks}
+  leaked: {senses: [verb], verb: {lemma: leak}}
+  leaks: {senses: [verb], verb: {lemma: leak}}
   learned:
     senses:
     - verb
@@ -5607,6 +5628,7 @@ entries:
     - noun
   paper: {senses: [noun], plural: papers}
   paperback: {senses: [noun], plural: paperbacks}
+  parcel: {senses: [noun], plural: parcels}
   parent: {senses: [noun], plural: parents}
   park:
     senses:
@@ -5659,6 +5681,9 @@ entries:
     senses:
     - noun
   pattern: {senses: [noun], plural: patterns}
+  pause: {senses: [noun, verb], plural: pauses}
+  paused: {senses: [verb], verb: {lemma: pause}}
+  pauses: {senses: [verb], verb: {lemma: pause}}
   pay:
     senses:
     - verb
@@ -6428,6 +6453,8 @@ entries:
     - verb
     verb:
       lemma: realize
+  reason: {senses: [noun, verb], plural: reasons, verb: {lemma: reason}}
+  reboot: {senses: [noun], plural: reboots}
   receipt: {senses: [noun], plural: receipts}
   receive: {senses: [verb], number: plural, verb: {lemma: receive}}
   received: {senses: [verb], verb: {lemma: receive}}
@@ -6606,6 +6633,8 @@ entries:
   repair:
     senses:
     - verb
+    - noun
+    plural: repairs
     verb:
       lemma: repair
       number: plural
@@ -6862,6 +6891,7 @@ entries:
     - verb
     verb:
       lemma: route
+  router: {senses: [noun], plural: routers}
   routes:
     senses:
     - verb
@@ -7048,6 +7078,7 @@ entries:
     senses:
     - noun
     plural: scrapbooks
+  scratched: {senses: [adjective]}
   sea: {senses: [noun], plural: seas}
   sea star:
     senses:
@@ -7914,6 +7945,7 @@ entries:
     senses:
     - noun
     number: plural
+  sunlight: {senses: [noun]}
   supermarket:
     senses:
     - noun
@@ -8461,6 +8493,8 @@ entries:
   transfer:
     senses:
     - verb
+    - noun
+    plural: transfers
     number: plural
     verb:
       lemma: transfer
@@ -8767,6 +8801,7 @@ entries:
   value-added:
     senses:
     - adjective
+  valve: {senses: [noun], plural: valves}
   vampire:
     senses:
     - noun
@@ -9026,6 +9061,7 @@ entries:
   whole:
     senses:
     - adjective
+  why: {senses: [interrogative]}
   wick:
     senses:
     - noun
@@ -9045,6 +9081,7 @@ entries:
   wind:
     senses:
     - verb
+    - noun
   windfall:
     senses:
     - noun

@@ -641,6 +641,11 @@ cannot express on their own:
 
 Special emission metadata includes `temporal_perspective`,
 `distributive` (quantity/rate), and `container_count` (quantity).
+`attribution` attaches stated roles to the fact's provenance. It names the
+`predicate` slot and can name `actor` and `subject` slots. Two `reason`
+slots delimit an explicit explanation. A bound `reason_tail` can extend the
+span. `reason_actor`, `reason_predicate`, and `reason_entities` identify
+roles inside that span. These roles leave the arithmetic fact's identity intact.
 `each` emits per enumeration segment; `options_from` supports the declared
 exhaustive disjunction form. These are structural contracts, not arbitrary
 looping or templating facilities.

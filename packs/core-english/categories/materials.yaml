@@ -160,7 +160,7 @@ members:
   - holds
   - held
   - having
-  measured_resource_removal_verb: [cut, cuts, cutting, remove, removed, removes, use, used, uses]
+  measured_resource_removal_verb: [cut, cuts, cutting, remove, removed, removes, use, used, uses, discard, discarded, discards]
   precipitation_resource:
   - rain
   - rainwater

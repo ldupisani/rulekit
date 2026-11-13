@@ -1,4 +1,4 @@
-"""Carry unmet recurring minimums through an explicit, gap-free daily history."""
+"""Compute a period's shortfall, or carry daily minimums forward."""
 
 from collections import Counter, defaultdict
 from math import isfinite
@@ -9,7 +9,8 @@ from ..evaluate import evaluate
 from ..model import BatchEvidence
 from ..numeric_evidence import audit_numeric_mentions
 from ..reference_bindings import referenced_forms_agree
-from ..reference_identity import reference_from_unit
+from ..reference_identity import ReferenceIdentity, reference_from_unit
+from ..reporting_periods import reporting_period
 from ..resource_equations import resource_residual
 from ..source_coverage import covered_temporal_annotation, uncovered_document_units
 
@@ -38,7 +39,7 @@ def consume(ctx):
         or ctx.store.quarantined
     ):
         return decline(
-            "one recurring goal and a complete daily performance history are required"
+            "one recurring goal and a performance history are required"
         )
     goal = goals[0]
     actor = reference_from_unit(ctx.match.slots["who"])
@@ -52,7 +53,7 @@ def consume(ctx):
     for fact in annotations:
         if not covered_temporal_annotation(fact, ctx.premises, actor.head, periods):
             return decline(
-                "an additional event lies outside the stated daily performance and make-up plan"
+                "an additional event lies outside the stated performance and make-up plan"
             )
     if (
         any(
@@ -82,34 +83,12 @@ def consume(ctx):
         and ctx.reg.word_in_category(word, "named_weekday")
     }
     cycle = len(calendar_indices)
-    declared = (
-        {
-            ctx.reg.attrs[q]["goal_cycle_days"]
-            for q in goal.container_ref.qualifiers
-            if "goal_cycle_days" in ctx.reg.attrs.get(q, {})
-        }
-        if goal.container_ref
-        else set()
-    )
-    if goal.marker:
-        if ctx.reg.word_in_category(goal.marker, "daily_recurrence_unit"):
-            declared.add(1)
-        elif ctx.reg.word_in_category(goal.marker, "weekday_cycle_period"):
-            declared.add(cycle)
-        else:
-            return decline(
-                "the goal period cannot be determined from this named-day history"
-            )
-    if len(declared) > 1:
-        return decline("the goal states conflicting recurrence periods")
-    cadence = next(iter(declared), 0)
     if goal.container_ref is None or any(
         not any(
             ctx.reg.word_in_category(qualifier, category)
             for category in (
                 "performance_goal_context",
-                "daily_goal_descriptor",
-                "weekly_goal_descriptor",
+                "goal_recurrence_descriptor",
                 "minimum_goal_descriptor",
             )
         )
@@ -118,7 +97,29 @@ def consume(ctx):
         return decline(
             "the goal has an unsupported qualifier or recurrence restriction"
         )
-    if cycle and cadence == cycle:
+    declared = {goal.marker} if goal.marker else set()
+    for qualifier in goal.container_ref.qualifiers:
+        if not ctx.reg.word_in_category(qualifier, "goal_recurrence_descriptor"):
+            continue
+        units = {
+            ctx.reg.plural_to_singular.get(unit, unit)
+            for unit in ctx.reg.cat_members_deep("reporting_period_unit")
+            if ctx.reg.attribute_applies_to(qualifier, unit)
+        }
+        if len(units) != 1:
+            return decline("the goal descriptor needs one declared reporting unit")
+        declared.update(units)
+    if len(declared) > 1:
+        return decline("the goal states conflicting recurrence periods")
+    cadence = next(iter(declared), "")
+    daily = ctx.reg.word_in_category(cadence, "calendar_day_unit")
+    if ctx.query.get("mode") == "condition":
+        return _condition_shortfall(ctx, rows, goal, history, cadence, actor)
+    named_day_history = all(
+        row.acquisition_ref is None or row.acquisition_ref == ReferenceIdentity(row.marker)
+        for row in history
+    )
+    if cycle and ctx.reg.word_in_category(cadence, "calendar_week_unit"):
         if plans or cumulative and (history or len(cumulative) != 1):
             return decline(
                 "a cycle quota cannot add overlapping cumulative progress or daily make-up plans"
@@ -130,7 +131,8 @@ def consume(ctx):
         ]
         asked = ctx.reg.attrs.get(ctx.query.get("day", ""), {}).get("weekday_index")
         if (
-            any(index is None for index in indices)
+            not named_day_history
+            or any(index is None for index in indices)
             or len(set(indices)) != len(indices)
             or indices != sorted(indices)
             or asked is not None
@@ -168,7 +170,7 @@ def consume(ctx):
             value,
             "the remaining cycle quota after stated progress, capped at zero when the goal is met",
         )
-    if cumulative or cadence not in (0, 1):
+    if cumulative or cadence and not daily:
         return decline(
             "daily carryover needs indexed daily work; other quota periods need an explicit compatible scope"
         )
@@ -176,17 +178,11 @@ def consume(ctx):
         ctx.reg.attrs.get(row.marker, {}).get("weekday_index") for row in history
     ]
     asked = ctx.reg.attrs.get(ctx.query["day"], {}).get("weekday_index")
-    calendar_indices = {
-        attributes["weekday_index"]
-        for word, attributes in ctx.reg.attrs.items()
-        if "weekday_index" in attributes
-        and ctx.reg.word_in_category(word, "named_weekday")
-    }
-    cycle = len(calendar_indices)
     if (
         not cycle
         or calendar_indices != set(range(cycle))
         or asked is None
+        or not named_day_history
         or any(index is None for index in indices)
         or len(set(indices)) != len(indices)
         or any(
@@ -252,3 +248,72 @@ def consume(ctx):
             "The unqualified target is a daily minimum, with missed amounts carried forward.",
             (goal.provenance.sentence,)),
     ))
+
+
+def _period_position(reference, cadence, reg):
+    if not reference or not reference.resolved or reference.owner or reference.label:
+        return None
+    if not reference.qualifiers:
+        for unit, names, attribute in (
+            ("calendar_day_unit", "named_weekday", "weekday_index"),
+            ("calendar_month_unit", "named_month", "month_index"),
+        ):
+            if reg.word_in_category(cadence, unit) and reg.word_in_category(reference.head, names):
+                index = reg.attribute_value(reference.head, attribute)
+                return (attribute, index) if index is not None else None
+    if reference.head != cadence or len(reference.qualifiers) != 1:
+        return None
+    (qualifier,) = reference.qualifiers
+    ordinal = reg.attribute_value(qualifier, "ordinal_index")
+    if ordinal is not None and reg.word_in_category(qualifier, "holder_ordinal"):
+        return "ordinal", ordinal
+    relative = reporting_period(reference, reg)
+    if relative is not None:
+        return "relative", relative.offset
+    return None
+
+
+def _condition_shortfall(ctx, rows, goal, history, cadence, actor):
+    def decline(reason):
+        return Answer("decline", None, reason)
+
+    period = ctx.query_reference("period")
+    requested_position = _period_position(period, cadence, ctx.reg)
+    if not cadence or period is None or period.head != cadence and requested_position is None:
+        return decline("the question needs an explicit goal at the requested recurrence")
+    if period.qualifiers and requested_position is None:
+        return decline("the requested period needs a recognized ordinal or relative reference")
+    if not history or any(row.kind == "performance-progress-to-date" for row in rows):
+        return decline("a condition-specific shortfall needs individual period totals")
+
+    observations = {}
+    for row in history:
+        reference = row.acquisition_ref or ReferenceIdentity(row.marker)
+        position = _period_position(reference, cadence, ctx.reg)
+        if position is None or position in observations:
+            return decline("each observation needs a distinct period at the goal recurrence")
+        observations[position] = row
+    if len({position[0] for position in observations}) != 1:
+        return decline("the observed periods need a common frame of reference")
+    matches = [
+        row for position, row in observations.items()
+        if (requested_position is None or position == requested_position)
+        and (attribution := row.provenance.attribution) is not None
+        and attribution.reason_actor == actor
+        and attribution.reason_predicate == ctx.query["condition"]
+        and any(ref.resolved and ref.head == ctx.query["state"]
+                for ref in attribution.reason_entities)
+    ]
+    if len(matches) != 1:
+        return decline("one observed period must match the stated condition")
+    expected = defaultdict(Counter)
+    for row in [goal, *history]:
+        expected[row.provenance.sentence][row.value] += 1
+    if uncovered_document_units(ctx.premises, ctx.question, ctx.match.consumed) or audit_numeric_mentions(
+        (*ctx.premises, ctx.question), expected, missing="missing", duplicate="duplicate",
+    ):
+        return decline("every target, observation and condition must be read")
+    value = max(0, resource_residual([goal.value], [matches[0].value], ctx.log,
+                                     source="condition-specific-shortfall"))
+    ctx.log.consumed_batch_keys.update(row.key() for row in rows)
+    return Answer("number", value, "subtract the observed work in the identified period from its target")

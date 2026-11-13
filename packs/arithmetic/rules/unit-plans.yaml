@@ -693,6 +693,7 @@ rules:
     - work2
   description: Preserve a declared object, resource, application or unit ratio in one quantity plan; the
     consumer checks identity and actual use versus capacity.
+  disambiguates: [work, work2]
 - id: arithmetic/planned-material-supply
   match:
     sentence:
@@ -829,6 +830,7 @@ rules:
   where: []
   description: Preserve a declared object, resource, application or unit ratio in one quantity plan; the
     consumer checks identity and actual use versus capacity.
+  disambiguates: [work]
 - id: arithmetic/per-component-resource-requirement
   match:
     sentence:
@@ -887,6 +889,7 @@ rules:
   where: []
   description: Preserve a declared object, resource, application or unit ratio in one quantity plan; the
     consumer checks identity and actual use versus capacity.
+  disambiguates: [work]
 - id: arithmetic/remaining-object-resource-requirement
   match:
     sentence:
@@ -949,6 +952,7 @@ rules:
   where: []
   description: Preserve a declared object, resource, application or unit ratio in one quantity plan; the
     consumer checks identity and actual use versus capacity.
+  disambiguates: [work]
 - id: arithmetic/carrier-scheduled-event-rate
   match:
     sentence:
@@ -1036,6 +1040,28 @@ rules:
   where: []
   description: Preserve a declared object, resource, application or unit ratio in one quantity plan; the
     consumer checks identity and actual use versus capacity.
+- id: arithmetic/indexed-schedule-cancellation
+  match:
+    sentence:
+    - {slot: cause, cat: cause_noun, uncounted: true, at_start: true}
+    - {slot: cancel, cat: scheduled_cancellation_verb, finite_form: true}
+    - {slot: amount, cat: scheduled_event, counted: true, bare: true}
+    - {lit: on}
+    - {slot: period, cat: duration_measure, uncounted: true, qualified: true, qualifier_cat: holder_ordinal}
+    - {lit: '.', consume_skipped: true}
+  emits:
+  - fact: batch_evidence
+    kind: unit-plan-cancellation
+    entity: ''
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+    container: '{period}'
+    marker: '{period.qualifier}'
+    attribution: {predicate: cancel, subject: amount, reason: [cause, cause], reason_entities: [cause]}
+  consumes: [cancel, amount]
+  satisfies: {cancel: [subject]}
+  disambiguates: [cause]
 asks:
 - id: ask/scheduled-carrier-capacity
   match:
@@ -1081,6 +1107,20 @@ asks:
     - subject
   disambiguates:
   - act
+- id: ask/scheduled-capacity-lost-by-cause
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - {slot: capacity, cat: container_capacity_noun, uncounted: true}
+    - {slot: be, cat: copula}
+    - {slot: loss, cat: content_loss_result_verb}
+    - {slot: marker, cat: explicit_cause_preposition}
+    - {slot: reason, cat: cause_noun, uncounted: true}
+    - {lit: '?', consume_skipped: true}
+  resolves: {consumer: unit-plan, mode: capacity-loss, reason: '{reason}'}
+  satisfies: {be: [subject], loss: [subject, dobj], marker: [object, anchor]}
+  disambiguates: [reason]
 - id: ask/material-service-recipient-count
   match:
     question:
@@ -1179,6 +1219,7 @@ asks:
     - subject
     link:
     - object
+  disambiguates: [work]
 - id: ask/supplied-recipient-capacity
   match:
     question:
@@ -1267,4 +1308,4 @@ asks:
     - subject
     link:
     - object
-  disambiguates: []
+  disambiguates: [work]

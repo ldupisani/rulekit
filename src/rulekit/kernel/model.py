@@ -187,6 +187,22 @@ def _jsonable(value: Any) -> Any:
 
 
 @dataclass(frozen=True)
+class EventAttribution:
+    """An occurrence's stated participant and explanation, with source spans."""
+
+    predicate: str
+    position: int
+    subject: ReferenceIdentity | None = None
+    actor: ReferenceIdentity | None = None
+    actor_span: tuple[int, int] | None = None
+    actor_indefinite: bool = False
+    reason_span: tuple[int, int] | None = None
+    reason_actor: ReferenceIdentity | None = None
+    reason_predicate: str | None = None
+    reason_entities: tuple[ReferenceIdentity, ...] = ()
+
+
+@dataclass(frozen=True)
 class Provenance:
     source: str  # rule id, "fold", or synthesizer name
     sentence: int  # sentence index within the document
@@ -219,6 +235,7 @@ class Provenance:
     # may, however, require evidence from the matching perspective rather
     # than silently treating past, present, and future statements alike.
     temporal_perspective: str | None = field(default=None, repr=False)
+    attribution: EventAttribution | None = field(default=None, repr=False, compare=False)
 
 
 @dataclass(frozen=True)

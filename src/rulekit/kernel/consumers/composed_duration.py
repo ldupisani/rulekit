@@ -12,6 +12,7 @@ from ..evaluate import evaluate
 from ..model import BatchEvidence, Rate
 from ..predicate_compatibility import predicates_compatible
 from ..rate_calculation import apply_rate, convert_duration, rate_operands
+from ..reference_identity import constrains
 
 
 @consumer('scheduled-activity-duration')
@@ -65,12 +66,22 @@ def scheduled(ctx):
 @consumer('bounded-process-duration')
 def bounded(ctx):
     rows = ctx.store.by_kind(BatchEvidence)
-    if len(rows) != 1 or rows[0].kind != 'bounded-process':
+    processes = [row for row in rows if row.kind == 'bounded-process']
+    interruptions = [row for row in rows if row.kind == 'process-interruption']
+    if len(processes) != 1 or len(rows) != 1 + len(interruptions):
         return Answer('decline', None, 'one exhaustive process partition is required')
-    row = rows[0]
-    if (row.verb != ctx.query['verb'] or row.per_member <= 0 or row.content_count <= 0
+    if len(interruptions) > 1:
+        return Answer('decline', None, 'multiple interruptions need evidence of distinct, nonoverlapping pauses')
+    row = processes[0]
+    operands = [(row, [row.value, row.per_member, row.subtotal, row.content_count])]
+    operands.extend((pause, [pause.value]) for pause in interruptions)
+    if (ctx.query.get('verb', row.verb) != row.verb or row.per_member <= 0 or row.content_count <= 0
             or row.subtotal > row.value
-            or not closed_evidence(ctx, rows, [(row, [row.value, row.per_member, row.subtotal, row.content_count])])):
+            or any(pause.provenance.assumption or pause.provenance.sentence <= row.provenance.sentence
+                   or not ctx.reg.word_in_category(row.verb, 'transfer_process_verb')
+                   or pause.entity != ctx.query.get('process', pause.entity)
+                   for pause in interruptions)
+            or not closed_evidence(ctx, rows, operands)):
         return Answer('decline', None, 'positive rates must cover the stated extent without gaps or overlaps')
     value = evaluate('first / rate1 + (total - first) / rate2',
                      dict(first=row.subtotal, rate1=row.per_member,
@@ -78,4 +89,26 @@ def bounded(ctx):
                      ctx.log, source='successive-process-duration')
     value = convert_duration(value, row.container, ctx.query['measure'], ctx.reg, ctx.log,
                              source='process-duration-units')
-    return finish_batch_answer(ctx, rows, value, 'add the elapsed times of the initial segment and exhaustive remainder')
+    if value is None:
+        return Answer('decline', None, 'the requested unit must measure duration')
+    reason = ctx.query_reference('reason')
+    delays = []
+    for pause in interruptions:
+        attribution = pause.provenance.attribution
+        if reason and (attribution is None or not attribution.reason_entities):
+            return Answer('decline', None, 'all interruptions need an explicitly stated cause')
+        if reason and not any(constrains(reason, ref) for ref in attribution.reason_entities):
+            continue
+        duration = convert_duration(pause.value, pause.measure, ctx.query['measure'], ctx.reg, ctx.log,
+                                    source='process-interruption-units')
+        if duration is None:
+            return Answer('decline', None, 'each interruption needs a compatible duration unit')
+        delays.append(duration)
+    mode = ctx.query.get('mode')
+    if mode == 'delay' and not delays:
+        return Answer('decline', None, 'no interruption has the requested cause')
+    if mode == 'delay':
+        value = sum(delays)
+    elif mode != 'active':
+        value += sum(delays)
+    return finish_batch_answer(ctx, rows, value, 'compose the measured progress segments and any requested interruption time')

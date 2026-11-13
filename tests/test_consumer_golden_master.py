@@ -58,6 +58,19 @@ def registries():
 
 # (registry, question, expected consumer, kind, value, reason prefix)
 GOLDEN = [
+    ('curated', 'A repair costs £120. How much is the bill?',
+     'itemized-charge-total', 'decline', None, 'one base charge and its stated supplements are requi'),
+    ('curated', 'A repair costs £120. The shop adds a £30 callout fee. '
+     'How much of the bill is attributable to the delivery?',
+     'itemized-charge-total', 'decline', None, 'the charge must identify stated entries in compatibl'),
+    ('curated', 'Of 80 parts, 10 are scratched, 6 are bent, and 4 are both. How many parts remain?',
+     'overlapping-batch-outcomes', 'decline', None, 'one classified batch and one exhaustive removal poli'),
+    ('curated', 'An inspector discards every part that is scratched or bent. '
+     'Of 80 parts, 10 are scratched, 6 are bent, and 7 are both. How many parts remain?',
+     'overlapping-batch-outcomes', 'decline', None, 'the classes, intersection and removal policy must de'),
+    ('curated', 'An inspector discards every part that is scratched or bent. '
+     'Of 11 parts, 10 are scratched, 6 are bent, and 4 are both. How many parts remain?',
+     'overlapping-batch-outcomes', 'decline', None, 'the union cannot exceed the batch population'),
     ('curated', 'How much to fence a 2 by 3 meter yard at $4 per meter tomorrow?',
      'measure-cost', 'decline', None, 'the costing question has an unread condition'),
     ('curated', 'How long will it take Tova to print 2 books of 24 pages each?',

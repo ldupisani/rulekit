@@ -1,7 +1,9 @@
 """Compose explicitly scoped package, capacity and per-component requirements."""
 
+from collections import Counter
 from dataclasses import replace
 from . import consumer
+from .indexed_path import ordinal_index
 from ..answer import Answer, AnswerAssumption
 from ..model import BatchEvidence
 from ..quantity_ratios import quantity_through_ratios
@@ -19,6 +21,7 @@ KINDS = {
     "unit-plan-anchor",
     "unit-plan-supplement",
     "unit-plan-exact",
+    "unit-plan-cancellation",
 }
 
 
@@ -35,8 +38,10 @@ def consume(ctx):
         r.kind not in KINDS or r.provenance.assumption for r in rows
     ):
         return fail("every fact must belong to one explicit quantity plan")
-    actor = reference_from_unit(ctx.match.slots["who"])
-    if not actor.resolved or any(
+    who = ctx.match.slots.get("who")
+    owners = {r.entity_ref for r in rows if r.entity_ref is not None}
+    actor = reference_from_unit(who) if who is not None else next(iter(owners)) if len(owners) == 1 else None
+    if actor is None or not actor.resolved or any(
         r.entity_ref is not None and r.entity_ref != actor for r in rows
     ):
         return fail("the plan and question must identify the same participant")
@@ -45,6 +50,7 @@ def consume(ctx):
     objects = [r for r in rows if r.kind == "unit-plan-object"]
     extras = [r for r in rows if r.kind == "unit-plan-supplement"]
     exact = [r for r in rows if r.kind == "unit-plan-exact"]
+    cancellations = [r for r in rows if r.kind == "unit-plan-cancellation"]
     if (
         not links
         or len(anchors) + bool(objects) > 1
@@ -55,7 +61,10 @@ def consume(ctx):
             "the plan needs one starting amount and a connected set of unit ratios"
         )
     mode = ctx.query["mode"]
-    if any(r.marker == "capacity" for r in links) and mode != "capacity" and not exact:
+    capacity_mode = mode in {"capacity", "capacity-loss"}
+    if cancellations and not capacity_mode:
+        return fail("only a scheduled capacity can account for cancellations")
+    if any(r.marker == "capacity" for r in links) and not capacity_mode and not exact:
         return fail(
             "capacity is not evidence of actual usage without an explicit exact-demand statement"
         )
@@ -83,11 +92,13 @@ def consume(ctx):
                 (
                     ([r.value] + ([r.per_member] if r.per_member else []))
                     if r.kind
-                    in {"unit-plan-link", "unit-plan-anchor", "unit-plan-supplement"}
+                    in {"unit-plan-link", "unit-plan-anchor", "unit-plan-supplement", "unit-plan-cancellation"}
                     else []
                 ),
             )
         )
+    basis = None
+    periods = None
     if objects:
         obj = objects[0]
         activity = ctx.query.get("verb")
@@ -127,7 +138,7 @@ def consume(ctx):
     elif anchors:
         start = (anchors[0].measure, anchors[0].attribute)
         value = anchors[0].value
-    elif "span_value" in ctx.query and mode == "capacity":
+    elif mode == "capacity-loss" or mode == "capacity" and "span_value" in ctx.query:
         basis = next(
             (
                 r
@@ -138,25 +149,31 @@ def consume(ctx):
         )
         if basis is None:
             return fail("the carrying capacity needs a stated schedule period")
-        duration = convert_exact_duration(
-            float(ctx.query["span_value"]),
-            ctx.query["span_unit"],
-            basis.container,
-            ctx.reg,
-            ctx.log,
-            source="capacity-complete-periods",
-        )
-        if duration is None:
-            return fail(
-                "the capacity horizon and schedule need compatible duration units"
+        if mode == "capacity-loss":
+            if not cancellations:
+                return fail("a lost capacity needs an explicit cancellation")
+            start = (basis.container, basis.acquisition)
+            value = 0.0
+        else:
+            duration = convert_exact_duration(
+                float(ctx.query["span_value"]),
+                ctx.query["span_unit"],
+                basis.container,
+                ctx.reg,
+                ctx.log,
+                source="capacity-complete-periods",
             )
-        periods = duration / (basis.per_member or 1)
-        if periods <= 0 or not float(periods).is_integer():
-            return fail(
-                "the capacity horizon must contain complete stated schedule periods"
-            )
-        start = (basis.container, ctx.query["basis_resource"])
-        value = duration
+            if duration is None:
+                return fail(
+                    "the capacity horizon and schedule need compatible duration units"
+                )
+            periods = duration / (basis.per_member or 1)
+            if periods <= 0 or not float(periods).is_integer():
+                return fail(
+                    "the capacity horizon must contain complete stated schedule periods"
+                )
+            start = (basis.container, ctx.query["basis_resource"])
+            value = duration
     else:
         return fail("a stated starting quantity or capacity horizon is required")
     target = (
@@ -202,6 +219,32 @@ def consume(ctx):
         )
     try:
         result = quantity_through_ratios(value, start, target, ratios, ctx.reg, ctx.log)
+        if cancellations:
+            if basis is None or (basis.per_member or 1) != 1:
+                return fail("each cancellation must identify one complete scheduled period")
+            by_period = Counter()
+            selected = []
+            reason = ctx.query_reference("reason")
+            for row in cancellations:
+                index = ordinal_index(row.marker, ctx.reg)
+                if (row.measure != basis.measure or row.container != basis.container
+                        or index is None or index < 1 or periods is not None and index > periods
+                        or index in by_period
+                        or row.value <= 0 or not float(row.value).is_integer()
+                        or row.provenance.sentence <= basis.provenance.sentence):
+                    return fail("each cancellation must identify counted operations in the schedule")
+                by_period[index] += row.value
+                attribution = row.provenance.attribution
+                if reason is None or attribution is not None and any(
+                    constrains(reason, cause) for cause in attribution.reason_entities
+                ):
+                    selected.append(row.value)
+            if any(count > basis.value for count in by_period.values()) or not selected:
+                return fail("cancellations must fit the schedule and identify the requested cause")
+            loss = quantity_through_ratios(
+                sum(selected), (basis.measure, basis.attribute), target, ratios, ctx.reg, ctx.log,
+            )
+            result = loss if mode == "capacity-loss" else result - loss
     except AffineError as error:
         return fail(str(error))
     for r in extras:

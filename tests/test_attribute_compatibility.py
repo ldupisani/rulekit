@@ -190,7 +190,7 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
         if "noun" in entry.senses and entry.plural is not None
     }
 
-    assert len(adjectives) == 361
+    assert len(adjectives) == 367
     assert adjectives >= {
         "equal", "living", "odd", "square", "rectangular", "separate", "cubic", "uncut",
         "early", "late", "long",
@@ -274,7 +274,7 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
     # Shared vocabulary includes the former alphabetic source dictionaries.
     # Count morphology and justified person/object/location roles expand this
     # domain; descriptor compatibility still follows declared category pairs.
-    assert len(plural_nouns) == 1033
+    assert len(plural_nouns) == 1048
     assert {
         "boy",
         "day",
@@ -304,7 +304,7 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
         registry.attribute_applies_to(attribute, noun)
         for attribute in adjectives
         for noun in plural_nouns
-    ) == 11364
+    ) == 11402
 
 
 def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> None:
@@ -396,7 +396,7 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
 def test_compatibility_rule_remains_supported_after_g5j_expansion() -> None:
     availability = list_rule_availability(load_project(CURATED))
 
-    assert sum(item.supported for item in availability) == 833
+    assert sum(item.supported for item in availability) == 856
     target = next(item for item in availability if item.id == RULE_ID)
     assert target.supported
     assert target.blockers == ()

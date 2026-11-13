@@ -186,6 +186,27 @@ rules:
     content_count: rate2
     container: '{time1}'
     verb: '{verb}'
+- id: arithmetic/measured-process-interruption
+  match:
+    sentence:
+    - opt:
+      - {slot: device, cat: interruption_source_device, uncounted: true}
+    - {slot: cause, type: noun, uncounted: true}
+    - {slot: pause, cat: process_pause_verb, finite_form: true}
+    - {slot: process, cat: process_pause_reference, uncounted: true}
+    - {lit: for}
+    - {slot: duration, cat: duration_measure, counted: true}
+    - {lit: '.', consume_skipped: true}
+  emits:
+  - fact: batch_evidence
+    kind: process-interruption
+    entity: '{process}'
+    measure: '{duration}'
+    value: duration
+    position: '{duration.span_start}'
+    attribution: {predicate: pause, subject: process, reason: [cause, cause], reason_entities: [cause]}
+  consumes: [pause, duration]
+  satisfies: {pause: [subject]}
 asks:
 - id: ask/complete-process-duration
   match:
@@ -251,3 +272,31 @@ asks:
     - refers
     inf:
     - object
+# The spent-time construction selects active duration even without an adverb.
+- id: ask/active-process-duration
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: unit, cat: duration_measure, uncounted: true}
+    - {slot: be, cat: past_copula}
+    - {slot: spent, cat: spend_verb}
+    - opt:
+      - {slot: emphasis, cat: active_duration_adverb}
+    - {slot: verb, cat: progressive_process_verb, present_participle: true}
+    - {lit: '?', consume_skipped: true}
+  resolves: {consumer: bounded-process-duration, measure: '{unit}', verb: '{verb}', mode: active}
+  satisfies: {be: [subject], spent: [subject, dobj], verb: [subject]}
+- id: ask/cause-specific-process-delay
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: unit, cat: duration_measure, uncounted: true}
+    - {lit: did}
+    - {slot: reason, type: noun, uncounted: true}
+    - {slot: pause, cat: process_pause_verb, bare_form: true}
+    - {slot: process, cat: process_pause_reference, uncounted: true}
+    - {lit: '?', consume_skipped: true}
+  resolves: {consumer: bounded-process-duration, measure: '{unit}', mode: delay, reason: '{reason}', process: '{process}'}
+  satisfies: {pause: [subject]}

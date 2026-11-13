@@ -68,6 +68,7 @@ from .model import (
     LocationEvent,
     LocationTransitionAbsence,
     MeasuredContentChange,
+    EventAttribution,
     MixtureEvidence,
     Membership,
     PartitionQuantity,
@@ -2507,6 +2508,42 @@ def _build_fact(
     return fact
 
 
+def _event_attribution(roles, slots, reading, reg) -> EventAttribution | None:
+    predicate = slots.get(roles.predicate)
+    if predicate is None:
+        return None
+    actor = slots.get(roles.actor)
+    subject = slots.get(roles.subject)
+    reason_actor = slots.get(roles.reason_actor)
+    reason_predicate = slots.get(roles.reason_predicate)
+    reason_tail = slots.get(roles.reason_tail)
+    first, last = (slots.get(name) for name in roles.reason) if roles.reason else (None, None)
+    reason_units = [slots[name] for name in roles.reason_entities if name in slots]
+    if first is not None and last is not None:
+        end_units = [last, *reason_units]
+        if reason_tail is not None:
+            end_units.append(reason_tail)
+        reason_span = first.span[0], max(unit.span[1] for unit in end_units)
+    else:
+        reason_span = None
+    actor_indefinite = actor is not None and actor.sense() == "noun" and any(
+        unit.span[1] == actor.span[0] - 1 and reg.word_in_category(_lemma_of(unit), "indefinite_article")
+        for unit in reading.units
+    )
+    return EventAttribution(
+        predicate=_lemma_of(predicate),
+        position=predicate.span[0],
+        actor=reference_from_unit(actor) if actor is not None else None,
+        actor_span=actor.span if actor is not None else None,
+        actor_indefinite=actor_indefinite,
+        subject=reference_from_unit(subject) if subject is not None else None,
+        reason_span=reason_span,
+        reason_actor=reference_from_unit(reason_actor) if reason_actor is not None else None,
+        reason_predicate=_lemma_of(reason_predicate) if reason_predicate is not None else None,
+        reason_entities=tuple(reference_from_unit(unit) for unit in reason_units),
+    )
+
+
 def rule_specificity(rule: PatternRule, reg: Registry) -> tuple[int, int, int]:
     """(required tokens, Σ category gate DEPTHS, where-count). Computed,
     never authored — a narrower category (pet ⊂ animal) scores strictly
@@ -2602,6 +2639,7 @@ def run_rules(
                     provenance,
                     distributive=e.distributive,
                     container_count=e.container_count,
+                    attribution=_event_attribution(e.attribution, effective_slots, reading, reg) if e.attribution else None,
                 )
                 if e.options_from is not None:
                     # Stage 9h: whole-list emission (schemas.FactEmit

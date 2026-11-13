@@ -96,7 +96,15 @@ categories:
     parent: currency_unit
   sale_activity_verb:
     parent: verb
+  billable_service: {parent: noun}
+  surcharge_type: {parent: noun}
+  surcharge_noun: {parent: transaction_adjustment_noun}
+  attribution_descriptor: {parent: adjective}
 members:
+  billable_service: [repair, delivery]
+  surcharge_type: [callout, delivery]
+  surcharge_noun: [fee]
+  attribution_descriptor: [attributable]
   audio_product: [album, cd]
   audiovisual_product: [dvd, film, movie, video]
   commercial_organization: [business, company, empire]
@@ -210,6 +218,7 @@ members:
   sale_activity_verb:
   - selling
 attribute_compatibility:
+  surcharge_type: [surcharge_noun]
   income_modifier: [income_resource_noun]
   account_product_attribute:
   - purchase_item

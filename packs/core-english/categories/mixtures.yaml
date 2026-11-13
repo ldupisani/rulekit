@@ -69,7 +69,9 @@ categories:
     parent: noun
   discrete_mixture_component:
     parent: noun
+  mixture_retention_verb: {parent: verb}
 members:
+  mixture_retention_verb: [leave, leaving, retain, retained]
   aqueous_evaporation_retained_component: [salt, sugar]
   aqueous_mixture: [brine, salt water, saltwater, seawater, sugar water]
   aqueous_solvent: [water]

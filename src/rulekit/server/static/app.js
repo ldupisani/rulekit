@@ -383,6 +383,7 @@ function renderAnswer(t) {
     t.answer.kind === "witnesses" && Array.isArray(t.answer.value);
   const isAnswer =
     t.answer.kind === "number" ||
+    t.answer.kind === "text" ||
     isSeries ||
     isWitnesses ||
     (t.answer.kind === "verdict" && !isUndetermined);
