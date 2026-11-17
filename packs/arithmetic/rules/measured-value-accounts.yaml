@@ -1,5 +1,53 @@
 format: rulekit/rules@1
 rules:
+- id: arithmetic/collection-shopping-purpose
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      type: entity
+      common_noun_cat: intentional_agent
+      referential: true
+      at_start: true
+    - slot: go
+      cat: outing_motion_verb
+      finite_form: true
+    - lit: to
+      consume_skipped: true
+    - slot: site
+      cat: purchase_context_site
+      uncounted: true
+      bare: true
+    - lit: to
+      consume_skipped: true
+    - slot: buy
+      cat: purchase
+      bare_form: true
+    - opt:
+      - {slot: some, cat: indefinite_subset_quantifier}
+    - slot: item
+      cat: purchase_collection_noun
+      uncounted: true
+      bare: true
+    - lit: .
+      consume_skipped: true
+  emits:
+  - {fact: quantity_event_context, entity: '{who}', measure: '{item}', verb: '{buy}', place: ''}
+  consumes:
+  - go
+  - buy
+  satisfies: {}
+  bindings:
+    go:
+      subject: who
+    buy:
+      subject: who
+      dobj: item
+  disambiguates:
+  - go
+  - site
+  - buy
+  - item
 - id: arithmetic/single-product-shopping-purpose
   phase: read
   match:

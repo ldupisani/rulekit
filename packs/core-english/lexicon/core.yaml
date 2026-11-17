@@ -814,6 +814,7 @@ entries:
   bloom:
     senses:
     - verb
+  blowfish: {senses: [noun], plural: blowfish}
   blue: {senses: [adjective]}
   blue-gill:
     senses:
@@ -1522,6 +1523,7 @@ entries:
     number: plural
   clothing: {senses: [noun]}
   clown: {senses: [noun], plural: clowns}
+  clownfish: {senses: [noun], plural: clownfish}
   club:
     senses:
     - noun
@@ -2749,6 +2751,7 @@ entries:
   end:
     senses:
     - noun
+    - verb
     plural: ends
   ended:
     senses:
@@ -3161,6 +3164,8 @@ entries:
   fixes: {senses: [verb], verb: {lemma: fix}}
   fixing: {senses: [verb], verb: {lemma: fix}}
   flask: {senses: [noun], plural: flasks}
+  flavored: {senses: [adjective]}
+  flavoured: {senses: [adjective]}
   flea:
     senses:
     - noun
@@ -3347,6 +3352,7 @@ entries:
     senses:
     - adjective
   fully: {senses: [adverb]}
+  fund: {senses: [verb]}
   fundraiser:
     senses:
     - noun
@@ -4219,6 +4225,8 @@ entries:
   juggling:
     senses:
     - verb
+    - noun
+    verb: {lemma: juggle}
   juice:
     senses:
     - noun
@@ -4359,6 +4367,7 @@ entries:
   kw/h:
     senses:
     - noun
+  label: {senses: [noun], plural: labels}
   lack:
     senses:
     - verb
@@ -4726,6 +4735,8 @@ entries:
     senses:
     - noun
     plural: magicians
+  mail: {senses: [verb]}
+  mail-in: {senses: [adjective]}
   main:
     senses:
     - adjective
@@ -4970,6 +4981,7 @@ entries:
     senses:
     - noun
     plural: minivans
+  mint: {senses: [noun], plural: mints}
   minus:
     senses:
     - operator
@@ -5298,6 +5310,7 @@ entries:
     plural: novels
   november: {senses: [noun]}
   now: {senses: [time]}
+  nugget: {senses: [noun], plural: nuggets}
   number: {senses: [noun], plural: numbers}
   nurse:
     senses:
@@ -5313,6 +5326,7 @@ entries:
   oatmeal:
     senses:
     - noun
+  object: {senses: [noun], plural: objects}
   observe: {senses: [verb]}
   observed: {senses: [verb], verb: {lemma: observe}}
   observes: {senses: [verb], verb: {lemma: observe}}
@@ -6454,6 +6468,7 @@ entries:
     verb:
       lemma: realize
   reason: {senses: [noun, verb], plural: reasons, verb: {lemma: reason}}
+  rebate: {senses: [noun], plural: rebates}
   reboot: {senses: [noun], plural: reboots}
   receipt: {senses: [noun], plural: receipts}
   receive: {senses: [verb], number: plural, verb: {lemma: receive}}
@@ -8191,6 +8206,7 @@ entries:
     - noun
     plural: textbooks
   than: {senses: [particle]}
+  thank you card: {senses: [noun], plural: thank you cards, lexical_phrase: true}
   that: {senses: [complementizer], notes: moved from difg-mined (was mis-lexiconed as article there)}
   the: {senses: [article]}
   theater:

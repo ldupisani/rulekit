@@ -504,6 +504,7 @@ categories:
   temporal_at_point_preposition:
     parent: temporal_point_preposition
     notes: Markers locating an event at one stated temporal reference.
+  imminent_action_marker: {parent: preposition}
   temporal_before_preposition:
     parent: temporal_preposition
     notes: Markers locating an event before a stated temporal reference.
@@ -2782,6 +2783,7 @@ members:
   - hamburger
   - ice cream
   - jellybean
+  - jelly bean
   - lemon
   - loaf
   - lollipop
@@ -3270,6 +3272,7 @@ members:
   quantity_container:
   - tube
   - aquarium
+  - album
   - backpack
   - binder
   - box
@@ -3313,7 +3316,7 @@ members:
       schoolyard, shelter, shoebox, stadium, station, store, storeroom, studio, subdivision, supermarket, tank,
     taxi, theater, thermos, trailer, train, treehouse, truck, university, van, vase, vessel, vial, wardrobe,
       warehouse, well, zoo]
-  quantity_location: [aquarium, area, bag, basket, bench, binder, bowl, box, city, class, classroom, country,
+  quantity_location: [album, aquarium, area, bag, basket, bench, binder, bowl, box, city, class, classroom, country,
       cupboard, farm, forest, garden, jar, kitchen, mall, office, pantry, park, party, post office, school,
       sea, side, storeroom, tree, university, wardrobe, waters, wheel, zoo]
   quantity_location_preposition: [in, into]
@@ -3385,6 +3388,7 @@ members:
   temporal_after_preposition: [after, following]
   temporal_approximate_preposition: [about, around, circa]
   temporal_at_point_preposition: [at]
+  imminent_action_marker: [about]
   temporal_before_preposition: [before]
   temporal_deadline_preposition: [by]
   temporal_duration_preposition: [during, for, throughout]

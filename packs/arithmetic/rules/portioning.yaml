@@ -1,5 +1,41 @@
 format: rulekit/rules@1
 rules:
+- id: arithmetic/named-shared-quantity
+  description: A named group has one shared lot available for later distribution or use.
+  match:
+    sentence:
+    - {slot: people, span: true, enumeration_cat: name, enumeration_min_members: 2, at_start: true}
+    - {slot: action, cat: shared_lot_verb, finite_form: true}
+    - {slot: items, cat: inventory_item, counted: true, class_only: true}
+    - opt:
+      - {slot: from, cat: transaction_supplier_preposition}
+      - {slot: supplier, cat: purchase_context_site, uncounted: true, referential: true}
+    - {lit: '.', consume_skipped: true}
+  consumes: [action, items]
+  satisfies: {action: [subject, dobj], from: [object]}
+  emits:
+  - {fact: batch_evidence, kind: shared-lot, entity: '', measure: '{items}', value: items,
+     attribute: '{items.qualifier}', verb: '{action}', position: '{items.span_start}', members: '{people.members}'}
+- id: arithmetic/distributed-relative-use
+  description: Each listed participant used a stated multiple of the standard participant's amount.
+  match:
+    sentence:
+    - {slot: people, span: true, enumeration_cat: name, enumeration_min_members: 2, at_start: true}
+    - {slot: each, cat: postpositive_distributive_quantifier}
+    - {slot: action, cat: component_depletion_verb, finite_form: true}
+    - {slot: factor, type: multiplier}
+    - {lit: as}
+    - {lit: many}
+    - opt: [{slot: item, cat: inventory_item, uncounted: true, class_only: true}]
+    - {lit: as}
+    - {slot: standard, type: name}
+    - opt: [{slot: repeated, cat: past_factual_auxiliary}]
+    - {lit: '.', consume_skipped: true}
+  consumes: [action, factor, repeated]
+  satisfies: {each: [collection], action: [subject, dobj], repeated: [subject]}
+  emits:
+  - {fact: batch_evidence, kind: shared-lot-relative-use, entity: '{standard}', measure: '{item.optional}',
+     container: '{item.optional}', value: factor, verb: '{action}', position: '{factor.span_start}', members: '{people.members}'}
 - id: arithmetic/named-individual-portions
   phase: read
   description: A named group acquires one divisible whole per person with a common piece count.

@@ -19,6 +19,10 @@ def single_entity_elided_measure(ctx: ConsumerContext):
     from ..answer import Answer
     from ..model import Quantity, Relation
     from ..totals import _entity_total, _verb_total
+    from .portion_remainder import has_shared_lot, relative_use
+
+    if has_shared_lot(ctx.store):
+        return relative_use(ctx)
 
     # mining candidate elided-measure-entity-asks: the question has NO
     # item/measure noun at all ("How many does Tom have?", "How many

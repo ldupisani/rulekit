@@ -9,7 +9,7 @@ categories:
   third_person_possessive_determiner:
     parent: possessive_determiner
 members:
-  kinship_description: [brother, child, grandparent, mom, parent, sister, son, uncle, wife]
+  kinship_description: [aunt, brother, child, cousin, grandmother, grandparent, mom, parent, sister, son, uncle, wife]
   personal_relation_role: [friend, guardian, partner, teacher, student, gardener, librarian, shopper,
       violinist]
   third_person_possessive_determiner: [her, his, its, their]

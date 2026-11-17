@@ -29,6 +29,7 @@ categories:
     parent: purchase_collection_noun
     notes: Collection terms usable without a determiner in singular mass form, rather than a plural
       count form.
+  grocery: {parent: purchase_collection_noun}
   clothes:
     parent: noun
     notes: Clothing and wearable accessories grouped as one shopping collection.
@@ -88,7 +89,7 @@ categories:
   quantity_combination_verb:
     parent: verb
 members:
-  purchase_item: [item]
+  purchase_item: [grocery, item]
   new_purchase_condition: [new]
   price_at_marker: [at]
   price_for_marker: [for]
@@ -102,7 +103,8 @@ members:
   ingredient: [apple, charcuterie, cheddar cheese, cheese, cold cut, cream cheese, sugar, tortilla,
       vanilla, vegetable, wheat]
   mass_purchase_collection_noun: [merchandise, stuff]
-  purchase_collection_noun: [clothes, ingredient, treat, stationery]
+  purchase_collection_noun: [clothes, grocery, ingredient, treat, stationery]
+  grocery: [bread, butter, juice, milk, flour, rice, egg]
   purchase_lot_measure: [bottle, box, bunch, carton, gallon, gram, kilogram, pack, packet, pint,
       pound, quart, sack, tub]
   equal_division_verb:

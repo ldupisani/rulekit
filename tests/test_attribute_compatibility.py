@@ -190,7 +190,7 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
         if "noun" in entry.senses and entry.plural is not None
     }
 
-    assert len(adjectives) == 367
+    assert len(adjectives) == 370
     assert adjectives >= {
         "equal", "living", "odd", "square", "rectangular", "separate", "cubic", "uncut",
         "early", "late", "long",
@@ -274,7 +274,7 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
     # Shared vocabulary includes the former alphabetic source dictionaries.
     # Count morphology and justified person/object/location roles expand this
     # domain; descriptor compatibility still follows declared category pairs.
-    assert len(plural_nouns) == 1048
+    assert len(plural_nouns) == 1055
     assert {
         "boy",
         "day",
@@ -304,7 +304,7 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
         registry.attribute_applies_to(attribute, noun)
         for attribute in adjectives
         for noun in plural_nouns
-    ) == 11402
+    ) == 11675
 
 
 def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> None:
@@ -339,6 +339,9 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
         "arithmetic/holder-content-total-located",
         "arithmetic/holder-content-total-located-trailing",
         "arithmetic/located-quantity-event-context",
+        "arithmetic/nested-attribute-shares",
+        "arithmetic/nested-subset-observed-count",
+        "arithmetic/nested-subset-observed-qualified-count",
         "arithmetic/collection-two-shared-attributes",
         "arithmetic/collection-three-shared-attributes",
         "arithmetic/collection-four-shared-attributes",
@@ -396,7 +399,7 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
 def test_compatibility_rule_remains_supported_after_g5j_expansion() -> None:
     availability = list_rule_availability(load_project(CURATED))
 
-    assert sum(item.supported for item in availability) == 856
+    assert sum(item.supported for item in availability) == 885
     target = next(item for item in availability if item.id == RULE_ID)
     assert target.supported
     assert target.blockers == ()

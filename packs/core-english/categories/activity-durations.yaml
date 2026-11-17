@@ -21,6 +21,9 @@ categories:
     parent: verb
   active_duration_adverb:
     parent: adverb
+  practiced_skill: {parent: noun}
+  skill_performance_verb: {parent: verb}
+  skill_performance_unit: {parent: noun, includes: [inventory_item]}
   instrument_performance_verb:
     parent: timed_activity_verb
     selectional_roles:
@@ -54,6 +57,9 @@ members:
   - take
   - takes
   active_duration_adverb: [actively, actually]
+  practiced_skill: [juggling, writing]
+  skill_performance_verb: [juggle, juggling, read, reading, write, writing]
+  skill_performance_unit: [object]
   instrument_performance_verb:
   - play
   - plays

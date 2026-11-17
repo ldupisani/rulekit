@@ -114,32 +114,16 @@ rules:
   phase: read
   match:
     sentence:
-    - slot: item
-      cat: purchase_item
-      uncounted: true
-      bare: true
-      at_start: true
-    - slot: cost
-      cat: price_verb
-      finite_form: true
-    - slot: amount
-      cat: currency_unit
-      counted: true
-      bare: true
-    - slot: each
-      cat: postpositive_distributive_quantifier
-    - lit: .
-      consume_skipped: true
+    - {slot: item, cat: purchase_item, uncounted: true, class_only: true, at_start: true}
+    - {slot: cost, cat: price_verb, finite_form: true}
+    - {slot: amount, cat: currency_unit, counted: true, bare: true}
+    - {slot: each, cat: postpositive_distributive_quantifier}
+    - {lit: '.', consume_skipped: true}
+  where: [{number_compatible: [item, cost]}]
+  consumes: [cost, amount]
+  satisfies: {cost: [subject], each: [collection]}
   emits:
-  - fact: price
-    item: '{item}'
-    value: amount
-    verb: '{cost}'
-  consumes:
-  - amount
-  satisfies:
-    each:
-    - collection
+  - {fact: price, item: '{item}', qualifier: '{item.qualifier}', measure: '{amount}', value: amount, verb: '{cost}'}
 - id: arithmetic/conditional-marginal-discount-policy
   phase: read
   description: A general discount policy applies only to additional units beyond

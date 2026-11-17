@@ -13,6 +13,16 @@ categories:
     - allocation_storage
   uniform_quantity_attribute: {parent: adjective}
   retention_verb: {parent: verb}
+  local_retention_verb: {parent: verb}
+  population_enclosure:
+    parent: noun
+    includes: [quantity_container]
+  relocatable_population_member:
+    parent: noun
+    includes: [animal, inventory_item]
+  population_entry_verb: {parent: verb}
+  population_join_verb: {parent: verb}
+  collection_location_modifier: {parent: noun}
   recipient_distribution_preposition: {parent: preposition}
   allocation_storage:
     parent: noun
@@ -63,6 +73,11 @@ categories:
   equal_amount_attribute:
     parent: adjective
 members:
+  population_enclosure: [zoo]
+  local_retention_verb: [stay, stayed, stays, remain, remained, remains]
+  population_entry_verb: [go, goes, went, swam, swim, swims]
+  population_join_verb: [join, joined, joins]
+  collection_location_modifier: [display, storage]
   residual_completion_particle: [over]
   uniform_quantity_attribute: [same, equal]
   retention_verb: [keep, keeps, kept, retain, retained, retains]
@@ -152,6 +167,7 @@ members:
   - same
   - equal
 attribute_compatibility:
+  collection_location_modifier: [quantity_container]
   uniform_quantity_attribute: [count_aggregate_noun]
   equal_amount_attribute:
   - allocation_amount_noun

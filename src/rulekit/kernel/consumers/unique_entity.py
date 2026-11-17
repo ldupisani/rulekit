@@ -23,6 +23,12 @@ def unique_entity(ctx: ConsumerContext):
     from ..measures import _measure_substance_guard, _resolve_measure
     from ..totals import _entity_total
 
+    if ctx.query.get("holder"):
+        from .proportional_base import has_nested_subset, nested_subset
+
+        if has_nested_subset(ctx.store):
+            return nested_subset(ctx)
+
     # an ENTITY-LESS ask ("how many balloons are left?") resolves iff
     # exactly one entity holds the measure — definitive-or-decline
     measure = ctx.query["measure"]

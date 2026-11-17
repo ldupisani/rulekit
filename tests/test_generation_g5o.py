@@ -18,6 +18,18 @@ ROOT = Path(__file__).resolve().parents[1]
 CURATED = ROOT / "projects" / "curated"
 
 EXPECTED_OCCURRENCES = {
+    "arithmetic/all-item-requirement-with-counted-exception": ((0,), "quantifier"),
+    "arithmetic/nested-subset-observed-count": ((2, 0), "both"),
+    "arithmetic/nested-subset-observed-elided-count": ((2, 0), "both"),
+    "arithmetic/per-item-class-requirement-with-counted-exception": ((0,), "quantifier"),
+    "arithmetic/per-item-class-requirement-with-elided-exception": ((0,), "quantifier"),
+    "arithmetic/per-item-class-requirement-with-named-exception": ((0,), "quantifier"),
+    "arithmetic/collection-shopping-purpose": ((6, 0), 'some'),
+    "arithmetic/complete-period-collection-deposit": ((2,), 'all'),
+    "arithmetic/distributed-relative-use": ((1,), 'each'),
+    "arithmetic/one-document-per-listed-recipient": ((4,), 'each'),
+    "arithmetic/periodic-capability-increment": ((0,), 'each'),
+    "arithmetic/uncounted-contained-population": ((2,), 'some'),
     "arithmetic/classification-counts-with-shared-members": ((14,), "both"),
     "arithmetic/quoted-sale-price-each": ((6,), "each"),
     'arithmetic/counted-partition-price': ((7,), 'each'),
@@ -220,9 +232,9 @@ def test_g5o_unlocks_only_the_preregistered_rule() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 957
-    assert sum(item.supported for item in availability.values()) == 856
-    assert sum(not item.supported for item in availability.values()) == 101
+    assert len(availability) == 991
+    assert sum(item.supported for item in availability.values()) == 885
+    assert sum(not item.supported for item in availability.values()) == 106
     assert availability[
         "arithmetic/existential-premise-distributive"
     ].supported
@@ -232,7 +244,7 @@ def test_g5o_unlocks_only_the_preregistered_rule() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 2652
+    assert len(exploration_status(project)["fillers"]) == 2663
 
 
 @pytest.mark.parametrize("quantifier", sorted(EXPECTED_DISTRIBUTIVE_FILLERS))

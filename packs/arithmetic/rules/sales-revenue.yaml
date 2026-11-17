@@ -89,6 +89,40 @@ variants:
     - {slot: period, cat: duration_measure, uncounted: true, qualified: true, qualifier_cat:
         sequence_previous_descriptor}
 rules:
+- id: arithmetic/named-sales-purpose-context
+  match:
+    sentence:
+    - {slot: people, span: true, enumeration_cat: name, enumeration_min_members: 2, at_start: true}
+    - {slot: be, cat: plural_copula}
+    - {slot: sell, cat: sale_activity_verb, present_participle: true}
+    - {slot: product, cat: commercial_product, uncounted: true}
+    - {lit: to}
+    - opt: [{slot: help, cat: revenue_purpose_support_verb, bare_form: true}]
+    - {slot: fund, cat: revenue_purpose_verb, bare_form: true}
+    - {slot: owner, cat: group_possessive_determiner}
+    - {slot: purpose, cat: revenue_purpose_noun, uncounted: true}
+    - {lit: '.', consume_skipped: true}
+  consumes: [be, sell, help, fund]
+  satisfies: {be: [subject], sell: [subject], help: [subject], fund: [subject], owner: [refers]}
+  emits:
+  - {fact: batch_evidence, kind: sales-purpose, entity: '', measure: '{product}', attribute: '{product.qualifier}',
+     marker: '{purpose}', container: '{purpose}', members: '{people.members}', value: 0, position: '{sell.span_start}'}
+- id: arithmetic/individual-commercial-count-with-total
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: animate, referential: true, at_start: true}
+    - {slot: sale, cat: sell, finite_form: true}
+    - {slot: product, cat: commercial_product, counted: true, class_only: true}
+    - opt: [{slot: prep, cat: group_total_preposition}]
+    - {slot: total, cat: group_total_marker}
+    - {lit: '.', consume_skipped: true}
+  where:
+  - number_compatible: [who, sale]
+  - bound_requires_category: {bound: prep, slot: total, cat: prepositional_group_total_marker}
+  consumes: [sale, product, total]
+  satisfies: {sale: [subject, dobj], prep: [object]}
+  emits:
+  - {fact: quantity, entity: '{who}', measure: '{product}', measure_qualifier: '{product.qualifier}', value: product, verb: '{sale}'}
 - id: arithmetic/commercial-work-context
   phase: read
   description: A participant makes a declared product and offers that product at a declared location.
@@ -189,6 +223,29 @@ rules:
     measure: '{price1}'
     value: price1
 asks:
+- id: ask/product-sales-revenue-difference
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - {slot: direction, cat: mass_quantity_delta}
+    - opt: [{slot: money, cat: mass_currency_noun, uncounted: true, bare: true}]
+    - {slot: aux, cat: do_support_auxiliary}
+    - {slot: who, type: entity, common_noun_cat: animate, referential: true}
+    - {slot: earn, cat: wage_verb, bare_form: true}
+    - opt:
+      - {lit: for}
+      - {slot: purpose, cat: revenue_purpose_noun, uncounted: true, referential: true, class_only: true}
+    - opt: [{lit: from}]
+    - {slot: sell, cat: sale_activity_verb, present_participle: true}
+    - {slot: product, cat: commercial_product, uncounted: true, number: plural, class_only: true}
+    - {lit: [than, compared to, compared with]}
+    - {slot: other, type: entity, common_noun_cat: animate, referential: true}
+    - {lit: '?', consume_skipped: true}
+  where: [{distinct: [who, other]}, {number_compatible: [who, aux]}]
+  resolves: {consumer: sales-revenue, mode: difference, entity: '{who}', other: '{other}', item: '{product}',
+             qualifier: '{product.qualifier}', direction: '{direction}', purpose: '{purpose.optional}'}
+  satisfies: {earn: [subject], sell: [subject]}
 - id: ask/current-sales-value
   match:
     question:

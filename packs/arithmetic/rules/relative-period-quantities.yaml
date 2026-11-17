@@ -1,5 +1,71 @@
 format: rulekit/rules@1
 rules:
+- id: arithmetic/periodic-relative-collection
+  description: Two successive collection periods are anchored to existing stock and to the preceding collection.
+  match:
+    sentence:
+    - opt:
+      - {slot: on, cat: temporal_on_point_preposition, at_start: true}
+      - {slot: journey, cat: journey, uncounted: true, qualified: true}
+      - {lit: to}
+      - {slot: site, type: entity, referential: true}
+      - {lit: ',', consume_skipped: true}
+    - {slot: who, cat: discourse_subject_group_pronoun}
+    - {slot: collect, cat: collection_recording_verb, finite_form: true}
+    - {slot: share, type: fraction, fraction_within_whole: true}
+    - {lit: as}
+    - {lit: many}
+    - {slot: item, cat: inventory_item, uncounted: true, bare: true}
+    - opt: [{lit: as}]
+    - {slot: owner, cat: discourse_subject_group_pronoun}
+    - {slot: have, cat: possession_state, finite_form: true}
+    - {lit: in}
+    - {slot: holding, cat: quantity_location, possessed: true}
+    - {lit: on}
+    - {slot: first, cat: duration_measure, uncounted: true, qualified: true, qualifier_cat: holder_ordinal, all_qualifiers: true}
+    - {lit: and}
+    - {slot: delta, type: number, standalone: true, integer: true, value_min: 0}
+    - {slot: direction, cat: count_quantity_delta}
+    - {slot: repeated_item, cat: inventory_item, uncounted: true, bare: true}
+    - {lit: than}
+    - {slot: repeat_who, cat: discourse_subject_group_pronoun}
+    - {slot: repeat, cat: collection_recording_verb, finite_form: true}
+    - {lit: on}
+    - {slot: earlier, cat: duration_measure, uncounted: true, qualified: true, qualifier_cat: holder_ordinal, all_qualifiers: true}
+    - {lit: on}
+    - {slot: later, cat: duration_measure, uncounted: true, qualified: true, qualifier_cat: holder_ordinal, all_qualifiers: true}
+    - {lit: '.', consume_skipped: true}
+  where:
+  - same_lemma: [first, earlier, later]
+  - same_lemma: [collect, repeat]
+  - same_lemma: [who, owner, repeat_who]
+  - same_lemma: [item, repeated_item]
+  consumes: [collect, share, have, delta, repeat]
+  satisfies: {on: [object], who: [refers], owner: [refers], repeat_who: [refers],
+              collect: [subject, dobj], have: [subject, dobj], repeat: [subject, dobj], delta: [quantifies]}
+  emits:
+  - {fact: batch_evidence, kind: relative-period-stock-inflow, entity: '{holding.owner}', measure: '{item}',
+     value: delta, fraction: share, sign: sign(direction), attribute: '{earlier.qualifier}',
+     marker: '{first.qualifier}', acquisition: '{later}', container: '{holding}', verb: '{collect}',
+     position: '{share.span_start}'}
+- id: arithmetic/complete-period-collection-deposit
+  description: Deposit the complete proceeds of a preceding collection.
+  question_assumption: true
+  match:
+    sentence:
+    - {slot: who, cat: discourse_subject_group_pronoun, at_start: true}
+    - {slot: add, cat: collection_addition_quantity_verb, finite_form: true}
+    - {slot: all, cat: group_total_quantifier}
+    - {lit: these, consume_skipped: true}
+    - {slot: item, cat: inventory_item, uncounted: true, bare: true}
+    - {lit: to}
+    - {slot: holding, cat: quantity_location, uncounted: true, referential: true}
+    - {lit: '.', consume_skipped: true}
+  consumes: [add, all, item]
+  satisfies: {who: [refers], add: [subject, dobj], all: [collection]}
+  emits:
+  - {fact: batch_evidence, kind: relative-period-deposit, entity: '', measure: '{item}', value: 0,
+     container: '{holding}', verb: '{add}', position: '{add.span_start}'}
 - id: arithmetic/previous-period-relative-count
   phase: read
   match:
@@ -50,6 +116,19 @@ rules:
   - act
   - period
 asks:
+- id: ask/periodic-collection-new-stock
+  match:
+    question:
+    - {slot: command, cat: compute_verb, at_start: true, bare_form: true}
+    - {slot: total, cat: prenominal_group_total_marker}
+    - {slot: number, cat: nominal_count_comparison_head, uncounted: true}
+    - {lit: of}
+    - {slot: item, cat: inventory_item, uncounted: true, bare: true}
+    - {lit: in}
+    - {slot: holding, cat: quantity_location, uncounted: true, referential: true}
+    - {lit: ['.', '?'], consume_skipped: true}
+  resolves: {consumer: dependent-quantity-total, operation: collection-deposit, entity: '{holding}', measure: '{item}'}
+  satisfies: {command: [subject, dobj]}
 - id: ask/relative-window-event-total
   match:
     question:

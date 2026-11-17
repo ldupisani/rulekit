@@ -7,6 +7,8 @@ categories:
     parent: adjective
   portion_acquisition_verb:
     parent: verb
+  shared_lot_verb:
+    parent: verb
   portion_division_verb:
     parent: whole_partition_verb
   portion_unconsumed_attribute:
@@ -25,6 +27,7 @@ categories:
   occasion_product_modifier:
     parent: noun
 members:
+  shared_lot_verb: [bought, buy, buys, got, ordered, order, orders]
   component_depletion_verb: [eat, eats, ate, consume, consumes, consumed, use, uses, used]
   component_residual_attribute: [remaining]
   portion_acquisition_verb:

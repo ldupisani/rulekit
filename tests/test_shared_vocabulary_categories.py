@@ -358,9 +358,13 @@ def test_declared_hyphenated_plural_forms_keep_their_identity(registry, noun, pl
     assert item.features['value'] == 5
 
 
-def test_fraction_compound_does_not_change_a_counted_currency_noun(registry):
+@pytest.mark.parametrize(
+    "text",
+    ["Fia has 3 quarters.", "Fia has three quarters.", "Three quarters of the coins are silver."],
+)
+def test_fraction_compound_does_not_change_a_counted_currency_noun(registry, text):
     from rulekit.kernel.engine import analyze
-    reading = analyze('Fia has 3 quarters.', registry)
+    reading = analyze(text, registry)
     item = next(unit for unit in reading.units if unit.features.get('lemma') == 'quarter')
     assert item.sense() == 'noun'
     assert item.features['value'] == 3

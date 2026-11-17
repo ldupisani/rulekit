@@ -352,16 +352,6 @@ words:
     - attach
     reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
       Re-admit only through the firewall.'
-  rebate:
-    tags:
-    - discount
-    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
-      Re-admit only through the firewall.'
-  rebates:
-    tags:
-    - discount
-    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
-      Re-admit only through the firewall.'
   resident:
     tags:
     - person

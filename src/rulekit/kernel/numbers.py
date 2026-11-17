@@ -71,6 +71,26 @@ def declared_number_features(fold: str, reg: Registry) -> dict:
     return {}
 
 
+def _fractional_coin_partitive(units, index: int, reg: Registry) -> bool:
+    """A denomination can express a share of an explicitly named nonmoney collection."""
+    if index == 0 or index + 3 >= len(units):
+        return False
+    numerator = units[index - 1].features
+    if (numerator.get("value_kind") != "count" or numerator.get("currency")
+            or any(ch.isdigit() for ch in numerator.get("fold", ""))):
+        return False
+    link, determiner = (units[offset].features.get("fold", "") for offset in (index + 1, index + 2))
+    if not reg.word_in_category(link, "partitive") or not reg.word_in_category(determiner, "definite_article"):
+        return False
+    for unit in units[index + 3:]:
+        word = unit.features.get("fold", "")
+        if reg.word_in_category(word, "inventory_item"):
+            return not any(reg.word_in_category(word, cat) for cat in ("coin", "currency", "cashtoken"))
+        if not reg.word_in_category(word, "intrinsic_attribute"):
+            return False
+    return False
+
+
 def annotate_numbers(reading: Reading, reg: Registry) -> Reading:
     units = reading.units
     i = 0
@@ -175,11 +195,13 @@ def annotate_numbers(reading: Reading, reg: Registry) -> Reading:
                     f"word-number {unit.surface!r}",
                 )
         elif declared := declared_number_features(fold, reg):
-            reading.record(
-                "annotate-number", unit,
-                declared,
-                f"{declared['value_kind']} word {unit.surface!r}",
-            )
+            if (fold not in reg.fraction_plurals or not reg.word_in_category(fold, "coin")
+                    or _fractional_coin_partitive(units, i, reg)):
+                reading.record(
+                    "annotate-number", unit,
+                    declared,
+                    f"{declared['value_kind']} word {unit.surface!r}",
+                )
         elif fold in reg.scales and i > 0 and "value" in units[i - 1].features:
             prev = units[i - 1]
             scaled = prev.features["value"] * reg.scales[fold]

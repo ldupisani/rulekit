@@ -7,20 +7,24 @@ from ..composition_evidence import closed_evidence, finish_batch_answer
 from ..affine_graph import AffineGraph, AffineError
 from ..answer import Answer
 from ..evaluate import evaluate
+from .indexed_path import ordinal_index
 from ..model import BatchEvidence, Quantity, CommercialTerm
 from ..learn import _bound
-from ..reference_identity import reference_from_unit
+from ..reference_identity import constrains, reference_from_unit
+from ..resource_equations import resource_residual
 from ..source_coverage import quantity_ledger_source_units
 
 
 @consumer(
     "dependent-quantity-total",
     applicable=lambda store: any(
-        r.kind in {"incremental-ratio", "qualified-pool", "previous-period-relative"}
+        r.kind in {"incremental-ratio", "qualified-pool", "previous-period-relative", "relative-period-stock-inflow"}
         for r in store.by_kind(BatchEvidence)
     ),
 )
 def consume(ctx):
+    if ctx.query["operation"] == "collection-deposit":
+        return _collection_deposit(ctx)
     def decline(reason):
         return Answer("decline", None, reason)
 
@@ -342,3 +346,50 @@ def consume(ctx):
         value,
         "resolve the dependent quantities before totaling or sharing the complete account",
     )
+
+
+def _collection_deposit(ctx):
+    def decline(reason):
+        return Answer("decline", None, reason)
+
+    rows = list(ctx.store.by_kind(BatchEvidence))
+    quantities = list(ctx.store.by_kind(Quantity))
+    inflows = [row for row in rows if row.kind == "relative-period-stock-inflow"]
+    deposits = [row for row in rows if row.kind == "relative-period-deposit"]
+    if len(rows) != 2 or len(inflows) != 1 or len(deposits) != 1 or len(quantities) != 1:
+        return decline("one opening stock, ordered collection and complete deposit are required")
+    opening, inflow, deposit = quantities[0], inflows[0], deposits[0]
+    reference = opening.entity_ref
+    requested = ctx.query_reference()
+    if (reference is None or not reference.resolved or requested is None
+            or inflow.container != reference.head or deposit.container_ref is None
+            or not constrains(requested, reference) or not constrains(deposit.container_ref, reference)
+            or inflow.entity_ref is None or reference.owner is None
+            or not ctx.reg.word_in_category(inflow.entity, "social_group")
+            or inflow.container_ref is None or inflow.container_ref.owner != inflow.entity_ref
+            or inflow.container_ref.qualifiers
+            or inflow.entity not in reference.qualifiers
+            or not opening.is_state or not opening.provenance.sentence < inflow.provenance.sentence < deposit.provenance.sentence
+            or opening.provenance.assumption or inflow.provenance.assumption
+            or any(row.measure != ctx.query["measure"] for row in [opening, *rows])):
+        return decline("the collection and deposit must identify the same group, stock and resource")
+    first_index = ordinal_index(inflow.marker, ctx.reg)
+    previous = ordinal_index(inflow.attribute, ctx.reg)
+    period = inflow.acquisition_ref
+    if (first_index != 1 or previous != first_index or period is None or len(period.qualifiers) != 1
+            or ordinal_index(period.qualifiers[0], ctx.reg) != first_index + 1):
+        return decline("the collection must identify two consecutive periods and their comparison")
+    reading = next(r for r in ctx.premises if r.sentence_index == opening.provenance.sentence)
+    covered = {reading.sentence_index: quantity_ledger_source_units(reading, [opening], ctx.reg)}
+    operands = [(opening, [opening.value]), (inflow, [inflow.fraction, inflow.value])]
+    if not closed_evidence(ctx, [opening, *rows], operands, covered=covered):
+        return decline("every stock count, comparison and deposit condition must be read")
+    first = evaluate("opening * share", dict(opening=opening.value, share=inflow.fraction),
+                     ctx.log, source="collection-share-of-opening")
+    second = evaluate("first + offset", dict(first=first, offset=inflow.sign * inflow.value),
+                      ctx.log, source="adjacent-period-collection")
+    if any(value < 0 or not isfinite(value) or not float(value).is_integer()
+           for value in (opening.value, first, second)):
+        return decline("collected stocks must be nonnegative whole counts")
+    total = resource_residual([opening.value, first, second], [], ctx.log, source="stock-with-collection")
+    return finish_batch_answer(ctx, rows, total, "add both collected amounts to the opening stock")

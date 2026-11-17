@@ -4,17 +4,22 @@ from math import isclose, isfinite
 
 from . import consumer
 from ..answer import Answer, AnswerAssumption
+from ..composition_evidence import closed_evidence, finish_batch_answer
 from ..evaluate import evaluate
 from ..model import BatchEvidence, Quantity
 from ..numeric_evidence import audit_numeric_mentions
 from ..resource_equations import resource_residual
 from ..rate_calculation import convert_units
+from ..reference_identity import constrains
 from ..source_coverage import uncovered_document_units, uncovered_units, quantity_source_units
 
 
 @consumer("uniform-content-distribution", applicable=lambda s: any(
-    r.kind in ("uniform-stock", "allocation-recipients", "measured-holder-total") for r in s.by_kind(BatchEvidence)))
+    r.kind in ("uniform-stock", "allocation-recipients", "measured-holder-total", "equal-contained-types")
+    for r in s.by_kind(BatchEvidence)))
 def consume(ctx):
+    if ctx.query.get("mode") == "relocation":
+        return _relocated_population(ctx)
     if ctx.query.get("mode") == "remaining-holders":
         return _remaining_holders(ctx)
     if ctx.query.get("mode") == "forward":
@@ -195,3 +200,37 @@ def _remaining_holders(ctx):
                       'uniform-remaining-contents',
                       'The question about each remaining holder is interpreted as specifying equal contents.',
                       (ctx.question.sentence_index,)),))
+
+
+def _relocated_population(ctx):
+    def decline(reason):
+        return Answer("decline", None, reason)
+
+    rows = list(ctx.store.by_kind(BatchEvidence))
+    kinds = ("equal-contained-types", "population-relocation-remainder",
+             "population-equal-arrival-and-return", "contained-population-total")
+    groups = [[row for row in rows if row.kind == kind] for kind in kinds]
+    if len(rows) != len(kinds) or any(len(group) != 1 for group in groups):
+        return decline("relocation needs two equal types, a shared total, and their ordered movements")
+    opening, moved, arriving, total = (group[0] for group in groups)
+    target = ctx.query_reference()
+    if (opening.entity_ref != total.entity_ref or target is None or arriving.entity_ref is None
+            or not constrains(target, arriving.entity_ref) or arriving.entity_ref != moved.entity_ref
+            or {opening.measure, opening.attribute} != {moved.measure, arriving.measure}
+            or arriving.attribute != moved.measure or ctx.query["item"] != arriving.measure
+            or ctx.reg.category_term_contains(opening.measure, opening.attribute)
+            or ctx.reg.category_term_contains(opening.attribute, opening.measure)
+            or any(not ctx.reg.category_term_contains(total.measure, item)
+                   for item in (moved.measure, arriving.measure))
+            or not opening.provenance.sentence < moved.provenance.sentence < arriving.provenance.sentence
+            or any(row.provenance.assumption for row in (opening, moved, arriving))
+            or not closed_evidence(ctx, rows, [(moved, [moved.value]), (arriving, [arriving.value]), (total, [total.value])])):
+        return decline("the movements and total must describe distinct types and the same destination")
+    per_type = evaluate("whole / 2", dict(whole=total.value), ctx.log, source="equal-contained-populations")
+    arrival = resource_residual([per_type], [moved.value], ctx.log, source="relocated-from-first-population")
+    count = evaluate("arrival * (1 - fraction)", dict(arrival=arrival, fraction=arriving.value),
+                     ctx.log, source="relocated-population-after-return")
+    if any(v < 0 or not isfinite(v) or not isclose(v, round(v), abs_tol=1e-9, rel_tol=0)
+           for v in (per_type, arrival, count)):
+        return decline("the total and movements must produce nonnegative whole populations")
+    return finish_batch_answer(ctx, rows, round(count), "split the total equally, subtract the retained group, and apply the return share")

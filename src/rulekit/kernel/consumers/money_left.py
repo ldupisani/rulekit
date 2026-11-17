@@ -66,6 +66,9 @@ def money_left(ctx: ConsumerContext):
         return Answer(
             "decline", None, f"no resolvable {singular!r} total for {entity!r}"
         )
+    from ..purchase_totals import has_relative_purchase_prices, relative_purchase_total
+    if has_relative_purchase_prices(ctx.store):
+        return relative_purchase_total(ctx, opening=(base, singular))
     buys_exist = any(
         q.entity == entity and ctx.reg.word_in_category(q.verb, "purchase")
         for q in ctx.store.by_kind(Quantity)

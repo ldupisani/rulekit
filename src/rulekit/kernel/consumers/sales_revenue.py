@@ -3,16 +3,21 @@ from collections import Counter, defaultdict
 from math import isfinite
 from . import consumer
 from .production_profit import compatible_products
+from ..affine_graph import AffineError, AffineGraph
 from ..answer import Answer, AnswerProof, ProofStep, SemanticNode
-from ..model import Atom, CommercialTerm, Membership, Predication, VerbalRelation
+from ..composition_evidence import closed_evidence, finish_batch_answer
+from ..model import Atom, BatchEvidence, CommercialTerm, Membership, Predication, Price, Quantity, Relation, VerbalRelation
 from ..numeric_evidence import audit_numeric_mentions
-from ..source_coverage import membership_source_units, uncovered_units
+from ..pricing import consume_unit_quotes
+from ..source_coverage import membership_source_units, quantity_ledger_source_units, uncovered_units
 from ..evaluate import evaluate
 from ..resource_equations import resource_residual
 
 
 @consumer("sales-revenue")
 def consume(ctx):
+    if ctx.query.get("mode") == "difference":
+        return _product_revenue_difference(ctx)
     def decline(reason):
         return Answer("decline", None, reason)
     terms = list(ctx.store.by_kind(CommercialTerm))
@@ -92,3 +97,74 @@ def consume(ctx):
     node=SemanticNode('sales-revenue',(('entity',scale.entity),('period',scale.period)))
     detail=f'{prior:g} prior revenue × {scale.value:g} = {value:g}'
     return Answer('number',value,detail,proof=AnswerProof(node,(ProofStep('priced-sales-comparison',node,tuple(terms),detail),)))
+
+
+def _product_revenue_difference(ctx):
+    def decline(reason):
+        return Answer("decline", None, reason)
+
+    quantities = list(ctx.store.by_kind(Quantity))
+    counts = [q for q in quantities if q.provenance.source != "synth/relation"]
+    comparisons = list(ctx.store.by_kind(Relation))
+    quotes = list(ctx.store.by_kind(Price))
+    purposes = list(ctx.store.by_kind(BatchEvidence))
+    actors = {ctx.query_reference("entity"), ctx.query_reference("other")}
+    item, qualifier = ctx.query["item"], ctx.query.get("qualifier") or ""
+    if (len(actors) != 2 or not counts or len(quotes) != 1
+            or any(actor is None or not actor.resolved for actor in actors)):
+        return decline("revenue comparison needs two identified sellers, completed sales, and one price")
+    quote = quotes[0]
+    if (quote.item != item or (quote.qualifier or "") != qualifier or quote.per not in (None, item)
+            or not ctx.reg.word_in_category(quote.measure or "", "currency_measure")
+            or quote.provenance.assumption
+            or any(q.entity_ref not in actors or q.measure != item
+                   or (q.measure_qualifier or "") != qualifier or q.provenance.assumption
+                   or not ctx.reg.word_in_category(q.verb, "sell") for q in counts)
+            or len({q.entity_ref for q in counts}) != len(counts)
+            or any(r.subject_ref not in actors or r.standard_ref not in actors
+                   or r.measure != item or (r.measure_qualifier or "") != qualifier
+                   or (r.standard_qualifier or qualifier) != qualifier or r.provenance.assumption
+                   or not ctx.reg.word_in_category(r.verb, "sell") for r in comparisons)):
+        return decline("the sale counts and unit price must refer to the same product")
+    purpose = ctx.query_reference("purpose")
+    if len(purposes) > 1 or (purpose is not None and not purposes) or any(
+        row.kind != "sales-purpose" or set(row.members) != {actor.head for actor in actors}
+        or row.measure != item or row.attribute != qualifier or row.provenance.assumption
+        or purpose is not None and (row.container_ref is None
+                                    or row.container_ref.head != purpose.head
+                                    or row.container_ref.qualifiers != purpose.qualifiers)
+        for row in purposes
+    ):
+        return decline("the stated sales purpose must match the sellers and product")
+    covered = {}
+    for row in counts:
+        if row.provenance.source == "fold":
+            reading = next(r for r in ctx.premises if r.sentence_index == row.provenance.sentence)
+            covered[reading.sentence_index] = quantity_ledger_source_units(reading, [row], ctx.reg)
+    rows = [*quantities, *comparisons, quote, *purposes]
+    operands = [(q, [q.value]) for q in counts] + [(quote, [quote.value])]
+    operands.extend((r, [r.factor] if r.offset == 0 else [abs(r.offset)]) for r in comparisons)
+    if not closed_evidence(ctx, rows, operands, covered=covered):
+        return decline("every sale, comparison and pricing condition must be read")
+    try:
+        graph = AffineGraph(
+            [(q.entity_ref, q.value) for q in counts],
+            [(r.subject_ref, r.standard_ref, r.factor, r.offset) for r in comparisons], ctx.log,
+        )
+        first, second = (graph.value(ctx.query_reference(role)) for role in ("entity", "other"))
+    except AffineError as error:
+        return decline(str(error))
+    if any(q.entity_ref not in actors or q.measure != item or (q.measure_qualifier or "") != qualifier
+           or q.value != (first if q.entity_ref == ctx.query_reference("entity") else second)
+           for q in quantities if q.provenance.source == "synth/relation"):
+        return decline("derived sales counts must agree with the complete comparison")
+    if any(value < 0 or not isfinite(value) or not float(value).is_integer() for value in (first, second)):
+        return decline("sales must be nonnegative whole counts")
+    sign = -1 if ctx.reg.word_in_category(ctx.query["direction"], "less_dir") else 1
+    value = evaluate("(first - second) * price * sign",
+                     dict(first=first, second=second, price=quote.value, sign=sign),
+                     ctx.log, source="same-product-revenue-difference")
+    if value < 0:
+        return decline("the stated comparison direction contradicts the revenue")
+    consume_unit_quotes(quotes, ctx.log)
+    return finish_batch_answer(ctx, rows, value, "multiply the difference in sales counts by the common unit price")

@@ -558,11 +558,16 @@ def test_boundary_mode_survives_retest_and_review_without_counting_coverage(
 def test_gsm8k_generation_fixtures_make_every_premise_rule_available() -> None:
     availability = list_rule_availability(load_project(Path("projects/gsm8k")))
 
-    assert len(availability) == 950
+    assert len(availability) == 984
     blocked = {
         rule.id: rule for rule in availability if not rule.supported
     }
     assert set(blocked) == {
+        "arithmetic/distributed-relative-use",
+        "arithmetic/named-sales-purpose-context",
+        "arithmetic/named-shared-quantity",
+        "arithmetic/one-document-per-listed-recipient",
+        "arithmetic/relative-item-multiple-of-combined-counts",
         "arithmetic/material-container-service-capacity",
         "arithmetic/qualitative-location-flow-context",
         "arithmetic/scheduled-unit-count",

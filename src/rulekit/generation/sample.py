@@ -663,6 +663,8 @@ def _fraction_fillers(reg: Registry) -> list[_Filler]:
             and value != 1
             and plural
             and not any(ch.isspace() for ch in plural)
+            # Coin homographs need an explicit nonmoney partitive.
+            and not reg.word_in_category(plural, "coin")
         )
     ]
     return direct + counted

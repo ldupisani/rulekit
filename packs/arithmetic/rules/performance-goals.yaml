@@ -1,5 +1,65 @@
 format: rulekit/rules@1
 rules:
+- id: arithmetic/practiced-skill-context
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, at_start: true}
+    - {slot: be, cat: copula}
+    - {slot: practice, cat: timed_activity_verb, present_participle: true}
+    - opt: [{slot: owner, cat: possessive_determiner}]
+    - {slot: skill, cat: practiced_skill, uncounted: true}
+    - {lit: '.', consume_skipped: true}
+  where: [{number_compatible: [who, be]}]
+  disambiguates: [skill]
+  references: {owner: who}
+  consumes: [be, practice]
+  satisfies: {be: [subject], practice: [subject, dobj]}
+  emits:
+  - {fact: batch_evidence, kind: periodic-skill-context, entity: '{who}', measure: '', verb: '{practice}',
+     attribute: '{skill}', value: 0, position: '{practice.span_start}'}
+- id: arithmetic/periodic-capability-increment
+  match:
+    sentence:
+    - {slot: each, cat: postpositive_distributive_quantifier, at_start: true}
+    - {slot: period, cat: duration_measure, uncounted: true, bare: true}
+    - opt: [{lit: ',', consume_skipped: true}]
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true}
+    - {slot: can, cat: capacity_modal}
+    - {slot: act, cat: skill_performance_verb, bare_form: true}
+    - {slot: delta, type: number, standalone: true, integer: true, value_min: 0}
+    - {slot: direction, cat: count_quantity_delta}
+    - {slot: item, cat: skill_performance_unit, uncounted: true, bare: true}
+    - {lit: than}
+    - {slot: previous, cat: duration_measure, uncounted: true, bare: true}
+    - {slot: before, cat: temporal_before_preposition}
+    - {lit: '.', consume_skipped: true}
+  where: [{same_lemma: [period, previous]}]
+  consumes: [can, act, delta]
+  satisfies: {each: [collection], act: [subject, dobj], delta: [quantifies], before: [object]}
+  emits:
+  - {fact: batch_evidence, kind: periodic-skill-step, entity: '{who}', measure: '{item}', value: delta,
+     verb: '{act}', marker: '{period}', sign: sign(direction), position: '{delta.span_start}'}
+- id: arithmetic/bounded-capability-start
+  question_assumption: true
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, at_start: true}
+    - {slot: start, cat: initiation_quantity_verb, finite_form: true}
+    - opt: [{lit: out}]
+    - {slot: act, cat: skill_performance_verb, present_participle: true}
+    - {slot: item, cat: skill_performance_unit, counted: true, bare: true}
+    - {lit: and}
+    - {slot: practice, cat: timed_activity_verb, finite_form: true}
+    - {lit: for}
+    - {slot: span, cat: duration_measure, counted: true, bare: true}
+    - {lit: '.', consume_skipped: true}
+  where: [{number_compatible: [who, start]}, {number_compatible: [who, practice]}]
+  disambiguates: [act, practice]
+  consumes: [start, act, item, practice, span]
+  satisfies: {start: [subject], act: [subject, dobj], practice: [subject]}
+  emits:
+  - {fact: batch_evidence, kind: periodic-skill-start, entity: '{who}', measure: '{item}', value: item,
+     verb: '{act}', acquisition: '{practice}', marker: '{span}', subtotal: span, position: '{item.span_start}'}
 - id: arithmetic/owned-performance-goal
   description: A participant's performance target retains its recurrence; a complete named-day make-up frame can
     also supply the daily interpretation.
@@ -359,6 +419,18 @@ ask_variants:
       bare_form: true
     - lit: to
 asks:
+- id: ask/projected-periodic-capability
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: item, cat: skill_performance_unit, uncounted: true, bare: true}
+    - {slot: can, cat: capacity_modal}
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true}
+    - {slot: act, cat: skill_performance_verb, bare_form: true}
+    - {lit: '?', consume_skipped: true}
+  resolves: {consumer: event-sequence-total, mode: capability, entity: '{who}', item: '{item}', effect: '{act}'}
+  satisfies: {act: [subject, dobj]}
 - id: ask/period-shortfall-with-condition
   match:
     question:

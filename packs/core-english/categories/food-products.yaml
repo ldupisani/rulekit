@@ -2,6 +2,16 @@ format: rulekit/categories@1
 categories:
   food_product: {parent: fabrication_product}
   food_material: {parent: material_resource}
+  prepared_food_piece: {parent: edible_quantity_object}
+  food_component_modifier: {parent: noun}
+  flavor_descriptor: {parent: adjective}
+  flavor_source: {parent: noun, includes: [fruit]}
 members:
   food_product: [cookie, cake, bread]
   food_material: [butter]
+  prepared_food_piece: [nugget]
+  food_component_modifier: [chicken, fish]
+  flavor_descriptor: [flavored, flavoured]
+  flavor_source: [coconut, vanilla, chocolate, mint]
+attribute_compatibility:
+  food_component_modifier: [prepared_food_piece]

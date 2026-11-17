@@ -129,6 +129,7 @@ def test_modal_occurrence_and_core_ownership_maps_are_complete() -> None:
         "capacity_modal",
         "named_calendar_period",
         "named_month",
+        "performance_observation_period",
         "temporal_in_point_object",
         "timeperiod",
         "usable_quantity_resource",
@@ -159,6 +160,9 @@ def test_modal_occurrence_and_core_ownership_maps_are_complete() -> None:
         "ordinal_quantity_holder",
         "package_distribution_unit",
         "partition_count_unit",
+        "per_item_plan_member",
+        "per_item_plan_resource",
+        "population_enclosure",
         "population_member",
         "production_creation_source",
         "provision_purpose_noun",
@@ -167,6 +171,8 @@ def test_modal_occurrence_and_core_ownership_maps_are_complete() -> None:
         "quantity_container",
         "quantity_source",
         "rate_population",
+        "relocatable_population_member",
+        "skill_performance_unit",
         "specification_resource",
         "transferable_quantity_object",
         "usable_quantity_resource",
@@ -247,9 +253,9 @@ def test_g5s_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 957
-    assert sum(item.supported for item in availability.values()) == 856
-    assert sum(not item.supported for item in availability.values()) == 101
+    assert len(availability) == 991
+    assert sum(item.supported for item in availability.values()) == 885
+    assert sum(not item.supported for item in availability.values()) == 106
     assert availability["arithmetic/periodic-rate-every-span"].supported
     assert all(availability[rule_id].supported for rule_id in FUTURE_RULES)
     # G5t subsequently supplied the temporal-marker domain for the fourth
@@ -260,7 +266,7 @@ def test_g5s_unlocks_exactly_the_preregistered_frontier() -> None:
     assert availability[
         "arithmetic/anchored-relation-conjoined-anchor"
     ].supported
-    assert len(exploration_status(project)["fillers"]) == 2652
+    assert len(exploration_status(project)["fillers"]) == 2663
 
 
 @pytest.mark.parametrize("modal", sorted(MOVED_WORDS))

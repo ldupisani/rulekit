@@ -31,6 +31,16 @@ categories:
   payment_verb:
     parent: spend_verb
     notes: An actual payment; a purchase alone does not assert payment.
+  dispatchable_document: {parent: noun}
+  document_dispatch_verb: {parent: verb}
+  per_document_resource: {parent: noun}
+  per_item_plan_member: {parent: noun, includes: [inventory_item, dispatchable_document]}
+  per_item_plan_resource: {parent: noun, includes: [inventory_item, per_document_resource]}
+  document_resource_application: {parent: verb}
+  distributive_plan_reference: {parent: pronoun}
+  document_purpose_object: {parent: noun}
+  document_delivery_qualifier: {parent: adjective}
+  bill_service_descriptor: {parent: noun}
   purchase_request:
     parent: verb
     notes: An order is a request, not evidence of settlement or expenditure.
@@ -70,6 +80,14 @@ adposition_roles:
     verb_category: purchase
     allow_name_object: true
 members:
+  dispatchable_document: [application, bill, card, envelope, letter, rebate, thank you card]
+  document_dispatch_verb: [mail, send, sent, sends]
+  per_document_resource: [stamp, label]
+  document_resource_application: [put, place, placed]
+  distributive_plan_reference: [everything]
+  document_purpose_object: [gift, present]
+  document_delivery_qualifier: [mail-in]
+  bill_service_descriptor: [water]
   payment_verb: [paid, pay, paying, pays]
   purchase_request: [order, ordered, ordering, orders]
   resource_account_preposition: [with]
@@ -118,6 +136,8 @@ members:
   - charge
   - charges
 attribute_compatibility:
+  document_delivery_qualifier: [dispatchable_document]
+  bill_service_descriptor: [charge_record_noun]
   transaction_channel_descriptor: [transaction_supplier]
   uniform_price_attribute: [price_anaphor]
   supplemental_amount_attribute:

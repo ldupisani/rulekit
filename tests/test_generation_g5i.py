@@ -95,7 +95,7 @@ def test_g5i_profiles_the_complete_recursive_optional_class() -> None:
     # Service partitives and the payment/deadline paraphrases add flat options.
     # Relative dimensions reuse the same optional comma across four additional layouts.
     # Explicit factors share the ordinary scaling frame's optional sequence and return clauses.
-    assert _optional_profile(project) == (454, 776, 73, 3)
+    assert _optional_profile(project) == (480, 815, 73, 3)
 
 
 def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
@@ -104,9 +104,9 @@ def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
         for item in list_rule_availability(load_project(CURATED))
     }
 
-    assert len(availability) == 957
-    assert sum(item.supported for item in availability.values()) == 856
-    assert sum(not item.supported for item in availability.values()) == 101
+    assert len(availability) == 991
+    assert sum(item.supported for item in availability.values()) == 885
+    assert sum(not item.supported for item in availability.values()) == 106
     assert all(availability[rule_id].supported for rule_id in NEWLY_SUPPORTED)
     assert all(
         "optional groups have no current realizer" not in item.blockers

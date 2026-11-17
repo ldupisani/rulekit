@@ -7903,6 +7903,9 @@ asks:
             - {slot: substance, type: noun, number: singular}
         - {slot: verb, type: verb, finite_form: true}
         - {lit: there}
+        - opt:
+            - {slot: in, cat: contained_population_preposition}
+            - {slot: holder, cat: quantity_container, uncounted: true, referential: true, bare: true}
     where:
       - partitive_compatible: {measure: item, substance: substance}
       # A directional adjunct needs its own event-bearing ask. The bare
@@ -7914,7 +7917,10 @@ asks:
       consumer: unique-entity
       measure: "{item}"
       measure_substance: "{substance}"
+      holder: "{holder}"
+    satisfies: {in: [object]}
     generation:
+      omit_slots: [in, holder]
       slot_categories:
         verb: [plural_copula]
 

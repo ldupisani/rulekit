@@ -1,5 +1,193 @@
 format: rulekit/rules@1
+templates:
+  per-item-exception:
+    parameters:
+      scope:
+      - {slot: quantifier, cat: distributive_plan_reference, at_start: true}
+      scope_ref: ''
+      scope_agreement: [quantifier, need]
+      exception: {slot: exception, cat: per_item_plan_member, uncounted: true, referential: true, number: singular}
+      exception_ref: '{exception}'
+      exception_count: 0
+    rule:
+      description: State an itemwise resource requirement and an override for one item.
+      question_assumption: true
+      match:
+        sentence:
+        - {parameter: scope}
+        - {slot: need, cat: direct_quantity_goal_predicate, finite_form: true}
+        - {slot: base, cat: per_item_plan_resource, counted: true, bare: true, value_min: 0}
+        - {lit: except}
+        - opt: [{lit: for}]
+        - {parameter: exception}
+        - opt: [{lit: ',', consume_skipped: true}]
+        - {lit: which}
+        - {slot: needs, cat: direct_quantity_goal_predicate, finite_form: true}
+        - {slot: override, type: number, integer: true, value_min: 0}
+        - {lit: '.', consume_skipped: true}
+      where:
+      - number_compatible: {parameter: scope_agreement}
+      - number_compatible: [exception, needs]
+      - slot_not_category: {slot: base, cat: mass_quantity_noun}
+      consumes: [need, base, exception, needs, override]
+      satisfies: {quantifier: [collection], need: [subject, dobj], exception: [quantifies],
+                  needs: [subject, dobj], override: [quantifies]}
+      emits:
+      - {fact: batch_evidence, kind: unit-plan-item-exception, entity: '', measure: '{base}',
+         value: base, subtotal: override, attribute: '{override.lemma}', marker: '{override.number}',
+         acquisition: {parameter: scope_ref}, container: {parameter: exception_ref},
+         per_member: {parameter: exception_count}, position: '{base.span_start}'}
+variants:
+- {id: arithmetic/per-item-requirement-with-named-exception, template: per-item-exception}
+- id: arithmetic/per-item-requirement-with-counted-exception
+  template: per-item-exception
+  arguments:
+    exception: {slot: exception, cat: per_item_plan_member, counted: true, class_only: true, value_min: 1, value_max: 1}
+    exception_count: exception
+- id: arithmetic/per-item-class-requirement-with-named-exception
+  template: per-item-exception
+  arguments:
+    scope:
+    - {slot: quantifier, cat: distributive_quantifier, at_start: true}
+    - {slot: item, cat: per_item_plan_member, uncounted: true, bare: true, number: singular}
+    scope_ref: '{item}'
+    scope_agreement: [item, need]
+- id: arithmetic/per-item-class-requirement-with-counted-exception
+  template: per-item-exception
+  arguments:
+    scope:
+    - {slot: quantifier, cat: distributive_quantifier, at_start: true}
+    - {slot: item, cat: per_item_plan_member, uncounted: true, bare: true, number: singular}
+    scope_ref: '{item}'
+    scope_agreement: [item, need]
+    exception: {slot: exception, cat: per_item_plan_member, counted: true, class_only: true, value_min: 1, value_max: 1}
+    exception_count: exception
+- id: arithmetic/per-item-class-requirement-with-elided-exception
+  template: per-item-exception
+  arguments:
+    scope:
+    - {slot: quantifier, cat: distributive_quantifier, at_start: true}
+    - {slot: item, cat: per_item_plan_member, uncounted: true, bare: true, number: singular}
+    scope_ref: '{item}'
+    scope_agreement: [item, need]
+    exception: {slot: exception, type: number, standalone: true, value_min: 1, value_max: 1}
+    exception_ref: '{item}'
+    exception_count: exception
+- id: arithmetic/all-item-requirement-with-counted-exception
+  template: per-item-exception
+  arguments:
+    scope:
+    - {slot: quantifier, cat: group_total_quantifier, at_start: true}
+    - {slot: item, cat: per_item_plan_member, uncounted: true, bare: true, number: plural}
+    scope_ref: '{item}'
+    scope_agreement: [item, need]
+    exception: {slot: exception, cat: per_item_plan_member, counted: true, class_only: true, value_min: 1, value_max: 1}
+    exception_count: exception
 rules:
+- id: arithmetic/dispatch-material-context
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, at_start: true}
+    - {slot: need, cat: infinitival_requirement_predicate, finite_form: true}
+    - {lit: to}
+    - {slot: apply, cat: document_resource_application, bare_form: true}
+    - {slot: material, cat: per_document_resource, uncounted: true, bare: true}
+    - {lit: on}
+    - {slot: documents, cat: dispatchable_document, uncounted: true, bare: true}
+    - {slot: subject, cat: clause_subject_personal_pronoun}
+    - {slot: be, cat: copula}
+    - {slot: imminent, cat: imminent_action_marker}
+    - {slot: dispatch_link, cat: infinitival_marker}
+    - {slot: send, cat: document_dispatch_verb, bare_form: true}
+    - {lit: '.', consume_skipped: true}
+  consumes: [need, apply, be, send]
+  references: {subject: who}
+  satisfies: {need: [subject], apply: [subject, dobj], be: [subject], send: [subject, dobj],
+              imminent: [object], dispatch_link: [object]}
+  emits:
+  - {fact: batch_evidence, kind: unit-plan-dispatch-context, entity: '{who}', measure: '{material}',
+     value: 0, position: '{apply.span_start}'}
+- id: arithmetic/one-document-per-listed-recipient
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, at_start: true}
+    - {slot: have, cat: possession_state, finite_form: true}
+    - {slot: documents, cat: dispatchable_document, uncounted: true, bare: true, number: plural}
+    - {lit: for}
+    - {slot: each, cat: postpositive_distributive_quantifier}
+    - {lit: of}
+    - {slot: owner, cat: possessive_determiner}
+    - {slot: recipients, span: true, enumeration_cat: kinship_description, enumeration_min_members: 2}
+    - opt:
+      - {lit: for}
+      - {slot: gift, cat: document_purpose_object, uncounted: true}
+      - {slot: givers, cat: discourse_subject_group_pronoun}
+      - {slot: sent, cat: document_dispatch_verb, finite_form: true}
+    - {lit: '.', consume_skipped: true}
+  consumes: [have, sent]
+  references: {owner: who}
+  satisfies: {have: [subject, dobj], each: [collection], sent: [subject, dobj], givers: [refers]}
+  emits:
+  - {fact: batch_evidence, kind: unit-plan-dispatch-recipients, entity: '{who}', measure: '{documents}',
+     members: '{recipients.members}', value: 0, position: '{documents.span_start}'}
+- id: arithmetic/separately-required-documents
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, at_start: true}
+    - opt: [{slot: also, cat: additive_discourse_adverb}]
+    - {slot: have, cat: possession_state, finite_form: true}
+    - {lit: to}
+    - {slot: pay, cat: payment_verb, bare_form: true}
+    - {slot: first, cat: dispatchable_document, uncounted: true, referential: true, class_only: true}
+    - {lit: and}
+    - {slot: second, cat: dispatchable_document, uncounted: true, referential: true, class_only: true}
+    - {lit: separately}
+    - {lit: '.', consume_skipped: true}
+  where: [{same_lemma: [first, second]}]
+  consumes: [have, pay]
+  satisfies: {have: [subject, dobj], pay: [subject, dobj]}
+  emits:
+  - {fact: batch_evidence, kind: unit-plan-dispatch-document, entity: '{who}', measure: '{first}',
+     container: '{first}', value: 1, position: '{first.span_start}'}
+  - {fact: batch_evidence, kind: unit-plan-dispatch-document, entity: '{who}', measure: '{second}',
+     container: '{second}', value: 1, position: '{second.span_start}'}
+- id: arithmetic/relative-dispatch-counts
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, at_start: true}
+    - {slot: want, cat: finite_infinitival_goal_predicate, finite_form: true}
+    - {lit: to}
+    - {slot: send, cat: document_dispatch_verb, bare_form: true}
+    - {slot: delta, type: number, standalone: true, integer: true, value_min: 0}
+    - {slot: direction, cat: count_quantity_delta}
+    - {slot: item, cat: dispatchable_document, uncounted: true, class_only: true}
+    - {lit: than}
+    - {slot: subject, cat: clause_subject_personal_pronoun}
+    - {slot: auxiliary, cat: do_support_auxiliary}
+    - {slot: standard, cat: dispatchable_document, uncounted: true, bare: true}
+    - opt: [{lit: ',', consume_skipped: true}]
+    - {lit: and}
+    - {slot: other, cat: clause_subject_personal_pronoun}
+    - {slot: have, cat: possession_state, finite_form: true}
+    - {slot: factor, type: multiplier}
+    - {lit: as}
+    - {lit: many}
+    - {slot: new, cat: dispatchable_document, uncounted: true, class_only: true}
+    - {lit: as}
+    - {slot: old, cat: dispatchable_document, uncounted: true, class_only: true}
+    - {slot: dispatch_link, cat: infinitival_marker}
+    - {slot: mail, cat: document_dispatch_verb, bare_form: true}
+    - {lit: '.', consume_skipped: true}
+  where: [{same_lemma: [item, old]}, {distinct: [item, standard, new]}]
+  references: {subject: who, other: who}
+  consumes: [want, send, delta, auxiliary, have, factor, mail]
+  satisfies: {want: [subject], send: [subject, dobj], delta: [quantifies], have: [subject, dobj],
+              mail: [subject, dobj], dispatch_link: [object]}
+  emits:
+  - {fact: batch_evidence, kind: unit-plan-dispatch-relation, entity: '{who}', measure: '{item}',
+     container: '{standard}', fraction: 1, value: delta, sign: sign(direction), position: '{delta.span_start}'}
+  - {fact: batch_evidence, kind: unit-plan-dispatch-relation, entity: '{who}', measure: '{new}',
+     container: '{old}', fraction: factor, value: 0, position: '{factor.span_start}'}
 - id: arithmetic/scheduled-unit-count
   match:
     sentence:
@@ -1063,6 +1251,39 @@ rules:
   satisfies: {cancel: [subject]}
   disambiguates: [cause]
 asks:
+- id: ask/per-item-resource-requirement
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: resource, cat: per_item_plan_resource, uncounted: true, bare: true, number: plural}
+    - {slot: aux, cat: do_support_auxiliary}
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true}
+    - {slot: need, cat: direct_quantity_goal_predicate, bare_form: true}
+    - opt:
+      - opt: [{slot: prep, cat: group_total_preposition}]
+      - {slot: total, cat: group_total_marker}
+    - {lit: '?', consume_skipped: true}
+  where:
+  - number_compatible: [who, aux]
+  - bound_requires_category: {bound: prep, slot: total, cat: prepositional_group_total_marker}
+  resolves: {consumer: per-item-requirement, entity: '{who}', measure: '{resource}'}
+  satisfies: {need: [subject, dobj], prep: [object]}
+- id: ask/per-item-resource-requirement-passive
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: resource, cat: per_item_plan_resource, uncounted: true, bare: true, number: plural}
+    - {slot: be, cat: plural_copula}
+    - {slot: need, cat: direct_quantity_goal_predicate, past_participle: true}
+    - opt:
+      - opt: [{slot: prep, cat: group_total_preposition}]
+      - {slot: total, cat: group_total_marker}
+    - {lit: '?', consume_skipped: true}
+  where: [{bound_requires_category: {bound: prep, slot: total, cat: prepositional_group_total_marker}}]
+  resolves: {consumer: per-item-requirement, measure: '{resource}'}
+  satisfies: {be: [subject], need: [subject, dobj], prep: [object]}
 - id: ask/scheduled-carrier-capacity
   match:
     question:

@@ -1,7 +1,10 @@
 format: rulekit/categories@1
 categories:
+  stock_loss_time_unit: {parent: noun, includes: [duration_measure, part_of_day]}
   inventory_withdrawal_verb: {parent: verb}
   inventory_remainder_verb: {parent: verb}
+  inventory_result_verb: {parent: verb}
+  collection_recording_verb: {parent: verb}
   inventory_withdrawal_particle_head: {parent: verb}
   inventory_withdrawal_particle: {parent: adverb}
   quantity_source:
@@ -33,6 +36,8 @@ categories:
   occupation_label:
     parent: person
 members:
+  inventory_result_verb: [end]
+  collection_recording_verb: [take, takes, took, collect, collects, collected, record, records, recorded]
   inventory_remainder_verb: [remain, remained, remains]
   inventory_withdrawal_particle: [away]
   inventory_withdrawal_particle_head: [take, takes, took]

@@ -1,5 +1,111 @@
 format: rulekit/rules@1
+asks:
+- id: ask/replenished-inventory-result
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: item, cat: inventory_item, uncounted: true, bare: true}
+    - {slot: aux, type: future_modal}
+    - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true}
+    - {slot: end, cat: inventory_result_verb, bare_form: true}
+    - {lit: up}
+    - {slot: with, cat: quantity_remainder_preposition}
+    - {lit: '?', consume_skipped: true}
+  where: [{number_compatible: [who, aux]}]
+  resolves: {consumer: relative-item-total, mode: replenished, entity: '{who}', measure: '{item}'}
+  satisfies: {end: [subject], with: [object]}
+- id: ask/inventory-count-in-total
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: item, type: plural, bare: true}
+    - {slot: aux, type: future_modal}
+    - {slot: who, type: entity, common_noun_cat: quantity_source, referential: true}
+    - {slot: act, cat: inventory_account_verb, bare_form: true}
+    - {slot: prep, cat: group_total_preposition}
+    - {slot: total, cat: prepositional_group_total_marker}
+    - {lit: '?', consume_skipped: true}
+  where: [{number_compatible: [who, aux]}, {slot_not_category: {slot: who, cat: plural}}]
+  resolves: {consumer: relative-item-total, entity: '{who}', measure: '{item}', verb: '{act}'}
+  satisfies: {act: [subject], prep: [object]}
 rules:
+- id: arithmetic/remaining-relative-receipt
+  description: A receipt scales the recipient's balance after an identified loss.
+  match:
+    sentence:
+    - opt: [{slot: next, cat: narration_sequence_adverb, at_start: true}]
+    - {slot: giver, type: entity, common_noun_cat: allocation_recipient, referential: true}
+    - opt:
+      - {slot: see, cat: inquiry_cognition_verb, finite_form: true}
+      - {slot: seen, cat: animate_object_pronoun}
+      - {lit: and}
+    - {slot: give, cat: contribution_transfer_verb, finite_form: true}
+    - {slot: recipient, cat: animate_object_pronoun}
+    - {slot: factor, type: multiplier}
+    - {slot: amount, cat: allocation_amount_noun, uncounted: true}
+    - opt: [{lit: that}]
+    - {slot: owner, type: entity, common_noun_cat: quantity_holder, referential: true}
+    - {slot: have, cat: possession_state, finite_form: true}
+    - {slot: after, cat: temporal_after_preposition}
+    - {slot: subject, cat: clause_subject_personal_pronoun}
+    - {slot: loss, cat: lose, finite_form: true}
+    - {slot: items, cat: plural_object_pronoun}
+    - {lit: '.', consume_skipped: true}
+  where: [{number_compatible: [giver, give]}, {number_compatible: [owner, have]}]
+  consumes: [see, give, have, loss, factor]
+  satisfies: {see: [subject], give: [subject, dobj], have: [subject, dobj], loss: [subject, dobj],
+              after: [object], items: [refers]}
+  references: {recipient: owner, subject: owner}
+  emits:
+  - {fact: batch_evidence, kind: relative-balance-receipt, entity: '{owner}', measure: '', value: factor,
+     position: '{factor.span_start}', container: '{giver}', marker: '{loss}', verb: '{give}'}
+- id: arithmetic/partitive-stock-loss
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true, at_start: true}
+    - {slot: lose, cat: lose, finite_form: true}
+    - {slot: share, type: fraction, fraction_within_whole: true}
+    - {lit: of}
+    - {slot: items, cat: plural_object_pronoun}
+    - {slot: period, cat: stock_loss_time_unit, counted: true, value_min: 1, value_max: 1, bare: true}
+    - {lit: '.', consume_skipped: true}
+  where: [{number_compatible: [who, lose]}]
+  consumes: [lose, share, period]
+  satisfies: {lose: [subject, dobj], items: [refers]}
+  emits:
+  - {fact: batch_evidence, kind: partitive-stock-loss, entity: '{who}', measure: '', value: share,
+     position: '{share.span_start}', marker: '{period}', verb: '{lose}'}
+- id: arithmetic/relative-item-multiple-of-combined-counts
+  description: A complete inventory includes a count scaled from explicitly combined item classes.
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: quantity_source, referential: true, at_start: true}
+    - {slot: act, cat: inventory_account_verb, finite_form: true}
+    - {slot: first, cat: inventory_item, counted: true, bare: true}
+    - {lit: ',', consume_skipped: true}
+    - {slot: second, cat: inventory_item, counted: true, bare: true}
+    - opt: [{lit: ',', consume_skipped: true}]
+    - {lit: and}
+    - {slot: factor, type: multiplier}
+    - {lit: as}
+    - {lit: many}
+    - {slot: third, cat: inventory_item, uncounted: true, bare: true}
+    - {lit: as}
+    - {slot: standards, span: true, enumeration_cat: inventory_item, enumeration_min_members: 2}
+    - {slot: combined, cat: group_total_marker}
+    - {lit: '.', consume_skipped: true}
+  where: [{number_compatible: [who, act]}]
+  consumes: [act, first, second, factor, combined]
+  satisfies: {act: [subject]}
+  emits:
+  - {fact: batch_evidence, kind: item-amount, entity: '{who}', measure: '{first}', value: first,
+     position: '{first.span_start}', verb: '{act}'}
+  - {fact: batch_evidence, kind: item-amount, entity: '{who}', measure: '{second}', value: second,
+     position: '{second.span_start}', verb: '{act}'}
+  - {fact: batch_evidence, kind: item-relation, entity: '{who}', measure: '{third}', value: 0,
+     position: '{factor.span_start}', members: '{standards.members}', fraction: factor, verb: '{act}'}
 - id: arithmetic/relative-item-difference
   phase: read
   match:

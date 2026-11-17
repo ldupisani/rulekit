@@ -5,6 +5,7 @@ from dataclasses import replace
 from math import isclose, isfinite
 from . import consumer
 from ..answer import Answer, AnswerAssumption, AnswerProof, ProofStep, SemanticNode
+from ..composition_evidence import closed_evidence, finish_batch_answer
 from ..model import BatchEvidence, FractionQuantity
 from ..numeric_evidence import audit_numeric_mentions
 from ..source_coverage import uncovered_document_units
@@ -15,6 +16,10 @@ from ..reference_identity import ReferenceIdentity, reference_from_unit, constra
 
 def has_portions(store):
     return any(f.kind == "component-population" for f in store.by_kind(BatchEvidence))
+
+
+def has_shared_lot(store):
+    return any(f.kind == "shared-lot-relative-use" for f in store.by_kind(BatchEvidence))
 
 
 def individual_stock_view(ctx):
@@ -286,4 +291,55 @@ def consume(ctx):
         assumptions=(AnswerAssumption("equal-component-sizes",
             "Pieces within each whole are treated as equal portions when converting a whole's fraction into a piece count.",
             (population.provenance.sentence,)),),
+    )
+
+
+def relative_use(ctx):
+    def decline(reason):
+        return Answer("decline", None, reason)
+
+    aux = ctx.match.slots.get("aux")
+    if aux is None or not ctx.reg.word_in_category(aux.surface.casefold(), "do_support_auxiliary"):
+        return decline("the use question needs an actual participant event")
+    rows = list(ctx.store.by_kind(BatchEvidence))
+    lots = [r for r in rows if r.kind == "shared-lot"]
+    comparisons = [r for r in rows if r.kind == "shared-lot-relative-use"]
+    if len(lots) != 1 or not comparisons or len(rows) != 1 + len(comparisons):
+        return decline("relative use needs one shared lot and its participant comparisons")
+    lot = lots[0]
+    standard = comparisons[0].entity
+    weights = {standard: 1.0}
+    asked = ctx.query["entity"]
+    for row in comparisons:
+        if (row.entity != standard or row.verb != ctx.query["verb"]
+                or row.measure and row.measure != lot.measure
+                or row.container_ref and row.container_ref.qualifiers
+                   and row.container_ref.qualifiers != ((lot.attribute,) if lot.attribute else ())
+                or row.provenance.sentence <= lot.provenance.sentence
+                or row.value <= 0 or any(member in weights for member in row.members)
+                or len(set(row.members)) != len(row.members)):
+            return decline("participant comparisons must describe distinct users of the same lot")
+        weights.update((member, row.value) for member in row.members)
+    if (set(weights) != set(lot.members) or len(weights) != len(lot.members) or asked not in weights
+            or ctx.query.get("measure") not in ("", None, lot.measure)
+            or ctx.query.get("measure_qualifier") not in ("", None, lot.attribute)
+            or any(row.provenance.assumption for row in rows)
+            or ctx.reg.word_in_category(ctx.query["verb"], "eating_quantity_verb")
+               and not ctx.reg.word_in_category(lot.measure, "edible_quantity_object")
+            or not closed_evidence(ctx, rows, [(row, [row.value]) for row in rows])):
+        return decline("the shared lot and all its participants must be fully established")
+    base = evaluate("total / weights", dict(total=lot.value, weights=sum(weights.values())),
+                    ctx.log, source="exhaustive-relative-shares")
+    if not isfinite(base) or any(not isclose(base * weight, round(base * weight), abs_tol=1e-9, rel_tol=0)
+           for weight in weights.values()):
+        return decline("the relative shares must be whole individual counts")
+    value = evaluate("base * share", dict(base=base, share=weights[asked]),
+                     ctx.log, source="participant-relative-share")
+    return finish_batch_answer(
+        ctx, rows, round(value), "divide the shared count by the sum of the participants' relative shares",
+        assumptions=(AnswerAssumption(
+            "shared-lot-fully-used",
+            "The named participants used the entire shared lot.",
+            (lot.provenance.sentence,),
+        ),),
     )

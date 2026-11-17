@@ -1,5 +1,93 @@
 format: rulekit/rules@1
 rules:
+- id: arithmetic/equal-contained-population-types
+  match:
+    sentence:
+    - {slot: source, cat: population_enclosure, uncounted: true, referential: true, at_start: true}
+    - {slot: hold, cat: container_content_state_verb, finite_form: true}
+    - {slot: equal, cat: nominal_count_comparison_head, uncounted: true, qualified: true, qualifier_cat: equal_amount_attribute, all_qualifiers: true}
+    - {lit: of}
+    - {slot: first, cat: relocatable_population_member, uncounted: true, bare: true}
+    - {lit: and}
+    - {slot: second, cat: relocatable_population_member, uncounted: true, bare: true}
+    - {lit: '.', consume_skipped: true}
+  where: [{distinct: [first, second]}, {number_compatible: [source, hold]}]
+  consumes: [hold]
+  satisfies: {hold: [subject, dobj]}
+  emits:
+  - {fact: batch_evidence, kind: equal-contained-types, entity: '{source}', measure: '{first}',
+     attribute: '{second}', value: 0, position: '{equal.span_start}'}
+- id: arithmetic/retained-count-and-remaining-movement
+  match:
+    sentence:
+    - {slot: kept, type: number, standalone: true, integer: true, value_min: 0, at_start: true}
+    - {lit: of}
+    - {slot: item, cat: relocatable_population_member, uncounted: true, bare: true}
+    - {slot: stay, cat: local_retention_verb, finite_form: true}
+    - {lit: in}
+    - {slot: owner, cat: group_possessive_determiner}
+    - opt: [{lit: own}]
+    - {slot: origin, cat: quantity_container, uncounted: true, bare: true}
+    - opt: [{lit: ',', consume_skipped: true}]
+    - {lit: and}
+    - {slot: rest, cat: relocatable_population_member, uncounted: true, qualified: true, qualifier_cat: remaining_quantity_descriptor, all_qualifiers: true}
+    - {slot: move, cat: population_entry_verb, finite_form: true}
+    - {slot: into, cat: spatial_goal_preposition}
+    - {slot: target, cat: quantity_container, uncounted: true, referential: true}
+    - {lit: '.', consume_skipped: true}
+  where: [{same_lemma: [item, rest]}]
+  consumes: [kept, stay, move]
+  satisfies: {kept: [quantifies], stay: [subject], move: [subject], owner: [refers], into: [object]}
+  emits:
+  - {fact: batch_evidence, kind: population-relocation-remainder, entity: '{target}', measure: '{item}',
+     value: kept, position: '{kept.span_start}'}
+- id: arithmetic/equal-population-arrival-with-return-share
+  match:
+    sentence:
+    - {slot: equal, cat: nominal_count_comparison_head, uncounted: true, qualified: true, qualifier_cat: equal_amount_attribute, all_qualifiers: true, at_start: true}
+    - {lit: of}
+    - {slot: item, cat: relocatable_population_member, uncounted: true, bare: true}
+    - {slot: join, cat: population_join_verb, finite_form: true}
+    - {slot: standard, cat: relocatable_population_member, uncounted: true, bare: true}
+    - {lit: in}
+    - {slot: target, cat: quantity_container, uncounted: true, referential: true}
+    - opt: [{lit: ',', consume_skipped: true}]
+    - {slot: but, cat: contrastive_conjunction}
+    - opt: [{slot: then, cat: narration_sequence_adverb}]
+    - {slot: fraction, type: fraction, fraction_within_whole: true}
+    - {lit: of}
+    - {lit: these, consume_skipped: true}
+    - {slot: repeated, cat: relocatable_population_member, uncounted: true, bare: true}
+    - {slot: move, cat: population_entry_verb, finite_form: true}
+    - {lit: back}
+    - {slot: into, cat: spatial_goal_preposition}
+    - {slot: owner, cat: group_possessive_determiner}
+    - opt: [{lit: own}]
+    - {slot: origin, cat: quantity_container, uncounted: true, bare: true}
+    - {lit: '.', consume_skipped: true}
+  where: [{same_lemma: [item, repeated]}, {distinct: [item, standard]}]
+  consumes: [join, move, fraction]
+  satisfies: {join: [subject, dobj], move: [subject], owner: [refers], into: [object]}
+  emits:
+  - {fact: batch_evidence, kind: population-equal-arrival-and-return, entity: '{target}', measure: '{item}',
+     attribute: '{standard}', value: fraction, position: '{fraction.span_start}'}
+- id: arithmetic/combined-contained-population
+  question_assumption: true
+  match:
+    sentence:
+    - {slot: source, cat: population_enclosure, uncounted: true, referential: true, at_start: true}
+    - {slot: hold, cat: container_content_state_verb, finite_form: true}
+    - {slot: combined, cat: prenominal_group_total_marker}
+    - {slot: total, cat: aggregate}
+    - {lit: of}
+    - {slot: item, cat: relocatable_population_member, counted: true, bare: true}
+    - {lit: '.', consume_skipped: true}
+  where: [{number_compatible: [source, hold]}]
+  consumes: [hold, item]
+  satisfies: {hold: [subject, dobj]}
+  emits:
+  - {fact: batch_evidence, kind: contained-population-total, entity: '{source}', measure: '{item}',
+     value: item, position: '{item.span_start}'}
 - id: arithmetic/uniform-container-stock
   description: A counted collection of containers explicitly has equal, unstated contents.
   match:
@@ -113,6 +201,20 @@ rules:
     transfer:
     - subject
 asks:
+- id: ask/relocated-population-count
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: item, cat: relocatable_population_member, uncounted: true, bare: true}
+    - {slot: be, cat: plural_copula}
+    - opt: [{lit: now}]
+    - {lit: in}
+    - {slot: target, cat: quantity_container, uncounted: true, referential: true,
+       qualified: true, qualifier_cat: collection_location_modifier, all_qualifiers: true}
+    - {lit: '?', consume_skipped: true}
+  resolves: {consumer: uniform-content-distribution, mode: relocation, entity: '{target}', item: '{item}'}
+  satisfies: {be: [subject]}
 - id: ask/uniform-container-content-after-distribution
   match:
     question:

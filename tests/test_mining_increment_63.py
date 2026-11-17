@@ -1,10 +1,9 @@
 """Plural spelled fraction words ("two thirds", "three fifths"): pack-data
 only change to packs/core-english/numbers.yaml's `fractions` table, adding
 the plural spelling beside each existing singular (halves, thirds, fourths,
-fifths, sixths, sevenths, eighths, ninths, tenths). `quarters` is
-deliberately withheld — `quarter` already carries a coin/currency sense in
-the lexicon, so its plural is excluded from this tight morphological
-family. No kernel code changes: numbers.py's existing word-count x
+fifths, sixths, sevenths, eighths, ninths, tenths). `quarters` also carries a
+coin sense. The reader licenses its fraction reading in a definite partitive
+that names a nonmoney collection. The existing word-count x
 word-fraction merge (`annotate_numbers`) already reads any `fold` present
 in `reg.fractions`, so "two thirds" is read as 2/3 the same way "two
 fifths" already was; the increment-28 fraction-partition machinery and the

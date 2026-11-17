@@ -1,6 +1,9 @@
 format: rulekit/categories@1
 categories:
   commercial_product: {parent: ownable_quantity_object}
+  revenue_purpose_verb: {parent: verb}
+  revenue_purpose_support_verb: {parent: verb}
+  revenue_purpose_noun: {parent: noun, includes: [account_activity]}
   commercial_product_family:
     parent: commercial_product
     notes: >
@@ -101,6 +104,9 @@ categories:
   surcharge_noun: {parent: transaction_adjustment_noun}
   attribution_descriptor: {parent: adjective}
 members:
+  revenue_purpose_verb: [fund]
+  revenue_purpose_support_verb: [help]
+  commercial_product: [bar, notebook, pen, pencil]
   billable_service: [repair, delivery]
   surcharge_type: [callout, delivery]
   surcharge_noun: [fee]

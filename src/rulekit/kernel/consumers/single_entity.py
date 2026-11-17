@@ -32,7 +32,9 @@ def single_entity(ctx: ConsumerContext):
     entity, measure = ctx.query["entity"], ctx.query["measure"]
     from ..model import BatchEvidence
     if ctx.store.by_kind(BatchEvidence):
-        from .portion_remainder import individual_stock_view
+        from .portion_remainder import has_shared_lot, individual_stock_view, relative_use
+        if has_shared_lot(ctx.store):
+            return relative_use(ctx)
         projection = individual_stock_view(ctx)
         if projection is not None:
             from dataclasses import replace

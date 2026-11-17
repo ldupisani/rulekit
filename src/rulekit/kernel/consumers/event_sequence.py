@@ -6,18 +6,22 @@ from . import consumer
 from .ordered_sequence import affine_terms_from_first
 from .indexed_path import ordinal_index
 from ..answer import Answer
+from ..composition_evidence import closed_evidence, finish_batch_answer
 from ..model import BatchEvidence
 from ..evaluate import evaluate
 from ..numeric_evidence import audit_numeric_mentions
 from ..source_coverage import uncovered_document_units
 from ..predicate_compatibility import predicates_compatible
+from ..rate_calculation import convert_exact_duration
 
 
 @consumer(
     "event-sequence-total",
-    applicable=lambda s: any(b.kind == "event-seed" for b in s.by_kind(BatchEvidence)),
+    applicable=lambda s: any(b.kind in {"event-seed", "periodic-skill-step"} for b in s.by_kind(BatchEvidence)),
 )
 def consume(ctx):
+    if ctx.query.get("mode") == "capability":
+        return _periodic_capability(ctx)
     def decline(reason):
         return Answer("decline", None, reason)
 
@@ -110,3 +114,34 @@ def consume(ctx):
          "Sum the initial event and every explicitly projected subsequent event without rounding."
          if projected else "Sum the initial event and every explicitly requested subsequent event."),
     )
+
+
+def _periodic_capability(ctx):
+    def decline(reason):
+        return Answer("decline", None, reason)
+
+    rows = list(ctx.store.by_kind(BatchEvidence))
+    starts = [row for row in rows if row.kind == "periodic-skill-start"]
+    increments = [row for row in rows if row.kind == "periodic-skill-step"]
+    contexts = [row for row in rows if row.kind == "periodic-skill-context"]
+    if len(starts) != 1 or len(increments) != 1 or len(contexts) > 1 or len(rows) != 2 + len(contexts):
+        return decline("a capability projection needs one start and one recurrence")
+    start, step = starts[0], increments[0]
+    actor = ctx.query_reference()
+    if (actor is None or not actor.resolved or any(row.entity_ref != actor for row in rows)
+            or any((row.verb, row.measure) != (ctx.query["effect"], ctx.query["item"]) for row in (start, step))
+            or step.provenance.assumption or any(row.provenance.assumption for row in contexts)
+            or any(ctx.reg.verb_lemmas.get(row.attribute, row.attribute) != start.verb
+                   or row.verb != start.acquisition for row in contexts)
+            or not closed_evidence(ctx, rows, [(start, [start.value, start.subtotal]), (step, [step.value])])):
+        return decline("the task, participant, starting count and training duration must agree")
+    periods = convert_exact_duration(start.subtotal, start.marker, step.marker, ctx.reg, ctx.log,
+                                     source="capability-completed-periods")
+    if periods is None or periods < 0 or not float(periods).is_integer():
+        return decline("the training span needs a whole number of recurrence periods")
+    value = evaluate("start + periods * delta",
+                     dict(start=start.value, periods=periods, delta=step.sign * step.value),
+                     ctx.log, source="periodic-capability")
+    if value < 0 or not isfinite(value) or not float(value).is_integer():
+        return decline("the projected capability must be a nonnegative whole count")
+    return finish_batch_answer(ctx, rows, value, "apply one stated change per completed period after the starting count")

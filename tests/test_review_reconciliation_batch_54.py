@@ -139,11 +139,24 @@ def test_reviewed_answerable_seed_now_uses_direct_relevant_evidence(project) -> 
     assert item not in {"amounts", "numbers"}
     assert candidate.question == f"What is the average amount of {item}?"
     assert candidate.answer["committed"] is True
-    assert [premise["target_rule"] for premise in candidate.premises] == [
-        "arithmetic/group-total-of",
-        "arithmetic/times-as-many-possessive-standard",
-    ]
-    total = candidate.premises[0]["facts"][0]["fields"]
-    assert total["measure"] == measure
-    assert candidate.answer["value"] == total["value"] / 2
+    assert len(candidate.premises) == 2
+    assert candidate.minimal
     assert all(not premise["deficiencies"] for premise in candidate.premises)
+
+    # Both a total plus a relation and two distinct holdings can establish
+    # the average. The eligible rule catalog can change the seeded search.
+    evidence = [
+        [fact for fact in premise["facts"] if fact["fields"].get("measure") == measure]
+        for premise in candidate.premises
+    ]
+    assert all(len(facts) == 1 for facts in evidence)
+    (first,), (second,) = evidence
+    if first["type"] == second["type"] == "Quantity":
+        assert first["fields"]["entity_ref"] != second["fields"]["entity_ref"]
+        total = first["fields"]["value"] + second["fields"]["value"]
+    else:
+        by_type = {fact["type"]: fact["fields"] for fact in (first, second)}
+        assert by_type.keys() == {"GroupTotal", "Relation"}
+        assert by_type["Relation"]["subject_ref"] != by_type["Relation"]["standard_ref"]
+        total = by_type["GroupTotal"]["value"]
+    assert candidate.answer["value"] == total / 2

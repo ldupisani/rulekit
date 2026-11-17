@@ -76,6 +76,9 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
     }
 
     assert occurrences == {
+        "arithmetic/equal-population-arrival-with-return-share": ((9, 0), 'then', ((9,),)),
+        "arithmetic/remaining-relative-receipt": ((0, 0), 'next', ((0,),)),
+        "arithmetic/separately-required-documents": ((1, 0), 'also', ((1,),)),
         'arithmetic/qualitative-location-flow-context': ((2,), 'degree', ()),
         'arithmetic/required-account-correction': ((8,), 'quality', ()),
         'arithmetic/affine-recipient-transfer': ((2, 0), 'then', ((2,),)),
@@ -273,14 +276,19 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
     project = load_project(CURATED)
     availability = list_rule_availability(project)
 
-    assert len(availability) == 957
-    assert sum(item.supported for item in availability) == 856
-    assert sum(not item.supported for item in availability) == 101
+    assert len(availability) == 991
+    assert sum(item.supported for item in availability) == 885
+    assert sum(not item.supported for item in availability) == 106
     assert all(
         not item.blockers
         or item.id
         in {
             "arithmetic/material-container-service-capacity",
+            "arithmetic/distributed-relative-use",
+            "arithmetic/named-sales-purpose-context",
+            "arithmetic/named-shared-quantity",
+            "arithmetic/one-document-per-listed-recipient",
+            "arithmetic/relative-item-multiple-of-combined-counts",
             "arithmetic/qualitative-location-flow-context",
             "arithmetic/scheduled-unit-count",
             "arithmetic/affine-recipient-transfer",
@@ -385,7 +393,7 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
             'logic-arithmetic/universal-all-have-quantity-pp-incompatible-item-safety'}
         for item in availability
     )
-    assert len(exploration_status(project)["fillers"]) == 2652
+    assert len(exploration_status(project)["fillers"]) == 2663
 
 
 def test_currently_generates_a_matcher_confirmed_anchor() -> None:

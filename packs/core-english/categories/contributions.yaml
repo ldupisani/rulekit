@@ -73,6 +73,6 @@ attribute_compatibility:
   mass_quantity_attribute: [mass_unit]
   volume_quantity_attribute: [volume_measure]
   currency_quantity_attribute: [currency_measure]
-  remaining_quantity_descriptor: [quantity_attribute, quantity_change_nominal]
+  remaining_quantity_descriptor: [quantity_attribute, quantity_change_nominal, relocatable_population_member]
   quantity_attribute:
   - quantity_change_nominal

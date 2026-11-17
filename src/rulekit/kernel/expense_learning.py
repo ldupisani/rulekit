@@ -73,15 +73,24 @@ def _relative_purchase_price(reading, index, reg):
     from .patterns import is_finite_verb_form
 
     units = reading.units
-    if index + 2 >= len(units) or units[index].sense() not in {"complementizer", "wh_which"}:
+    if index + 1 >= len(units):
         return None
-    verb, factor = units[index + 1:index + 3]
-    if (verb.sense() != "verb" or not reg.word_in_category(_lemma(verb), "price_verb")
-            or not is_finite_verb_form(verb.features.get("fold", ""), _lemma(verb), reg)
-            or factor.features.get("value_kind") not in {"fraction", "multiplier"}
-            or factor.features.get("requires_count")):
+    marker = units[index]
+    if marker.sense() in {"complementizer", "wh_which"}:
+        verb = units[index + 1]
+        if (verb.sense() != "verb" or not reg.word_in_category(_lemma(verb), "price_verb")
+                or not is_finite_verb_form(verb.features.get("fold", ""), _lemma(verb), reg)):
+            return None
+        index += 1
+    elif not reg.word_in_category(_lemma(marker), "transaction_price_preposition"):
         return None
-    index += 3
+    index += 1
+    if index >= len(units):
+        return None
+    factor = units[index]
+    if factor.features.get("value_kind") not in {"fraction", "multiplier"} or factor.features.get("requires_count"):
+        return None
+    index += 1
     while index < len(units) and units[index].sense() == "article":
         index += 1
     if index >= len(units) or not reg.word_in_category(_lemma(units[index]), "price_anaphor"):
@@ -124,7 +133,7 @@ def _transaction_tail(reading, verb, index, reg, *, priced=False, counted=None):
             fields["channel"] = _lemma(marker)
             index += 1
             continue
-        if marker.sense() in ("punct", "conjunction"):
+        if marker.sense() in ("punct", "conjunction") or units[index - 1].surface.endswith(","):
             break
         if marker.sense() != "preposition":
             return None

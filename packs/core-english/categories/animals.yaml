@@ -55,7 +55,7 @@ members:
   bird: [bluebird, chicken, crow, duck, hen, jay, kingfisher, parrot, pelican, penguin, pigeon,
       robin, rooster, seagull, sparrow]
   insect: [ant, bee, beetle, butterfly, grasshopper]
-  fish: [angelfish, blue-gill, goldfish, guppy, pufferfish, salmon, shark, swordfish]
+  fish: [angelfish, blowfish, blue-gill, clownfish, goldfish, guppy, pufferfish, salmon, shark, swordfish]
   quadruped: [bear, camel, cat, cow, dog, elephant, fox, frog, goat, horse, koala, lion, pig, rabbit,
     turtle]
   legless_animal:

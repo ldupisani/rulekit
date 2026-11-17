@@ -110,7 +110,7 @@ def residual_purchase_unit_price(ctx):
                        if background else ())))
 
 
-def relative_purchase_total(ctx, *, collection=None):
+def relative_purchase_total(ctx, *, collection=None, opening=None):
     from .answer import Answer
     from .learn import _lemma
     from .numeric_evidence import audit_numeric_mentions
@@ -138,8 +138,6 @@ def relative_purchase_total(ctx, *, collection=None):
                 or tail[1].features.get("qualifier") or tail[1].features.get("owner")
                 or any(not purchase_collection_contains(_lemma(tail[1]), e.item, ctx.reg) for e in expenses)):
             return Answer("decline", None, "the purchase ask has an unsupported or mismatched scope")
-    if ctx.store.by_kind(ResourceAccountingIssue):
-        return Answer("decline", None, "a purchase or resource event is incomplete or nonactual")
     resolved, error = resolve_expenditure_prices(expenses, ctx.log)
     if error:
         return Answer("decline", None, error)
@@ -150,11 +148,44 @@ def relative_purchase_total(ctx, *, collection=None):
     expected = {}
     for expense in expenses:
         expected.setdefault(expense.provenance.sentence, Counter()).update(expenditure_mentions(expense).values())
+    anchor = None
+    if opening is not None:
+        from .model import Quantity
+
+        balance, currency = opening
+        anchors = [q for q in ctx.store.by_kind(Quantity)
+                   if q.entity == ctx.query["entity"] and q.measure == currency and q.is_state]
+        if (len(anchors) != 1 or anchors[0].value != balance or anchors[0].provenance.assumption
+                or any(q.entity == anchors[0].entity and q.measure == currency and q is not anchors[0]
+                       for q in ctx.store.by_kind(Quantity))
+                or any(e.measure != currency for e in resolved)):
+            return Answer("decline", None, "relative purchase costs need one stated opening amount in the same currency")
+        anchor = anchors[0]
+        expected.setdefault(anchor.provenance.sentence, Counter()).update([balance])
+    for issue in ctx.store.by_kind(ResourceAccountingIssue):
+        if anchor is not None and issue.reason == "additional-change" and issue.provenance.sentence == anchor.provenance.sentence:
+            from .learn import _bound
+
+            reading = next(r for r in ctx.premises if r.sentence_index == issue.provenance.sentence)
+            unit = next((u for u in reading.units if u.uid == issue.position), None)
+            amount = _bound(unit, "dobj") if unit is not None else None
+            if (amount is not None and _lemma(unit) == anchor.verb and _lemma(amount) == anchor.measure
+                    and amount.features.get("value") == anchor.value):
+                continue
+        return Answer("decline", None, "a purchase or resource event is incomplete or nonactual")
     error = audit_numeric_mentions(ctx.premises, expected,
                                    missing="a stated value lies outside the complete purchase total",
                                    duplicate="purchase evidence repeats a numeric mention")
     if error:
         return Answer("decline", None, error)
-    value = resource_residual([e.value for e in resolved], [], ctx.log, source="purchase-lot-total")
+    costs = [e.value for e in resolved]
+    if opening is not None:
+        value = resource_residual([balance], costs, ctx.log, source="relative-purchase-remainder")
+        if value < 0:
+            return Answer("decline", None, "purchase costs exceed the stated opening amount")
+    else:
+        value = resource_residual(costs, [], ctx.log, source="purchase-lot-total")
     ctx.log.consumed_expenditure_keys.update(e.key() for e in expenses)
-    return Answer("number", value, "sum of complete purchase costs; relative prices refer to whole purchased lots")
+    reason = ("subtract complete purchase costs from the stated opening amount" if opening is not None
+              else "sum of complete purchase costs; relative prices refer to whole purchased lots")
+    return Answer("number", value, reason)

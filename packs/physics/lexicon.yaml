@@ -11,7 +11,6 @@ entries:
   meter_per_second: {senses: [noun], plural: [m/s]}
   momentum: {senses: [noun]}
   moving: {senses: [verb], verb: {lemma: move}}
-  object: {senses: [noun], plural: objects}
   power: {senses: [noun]}
   potential: {senses: [adjective]}
   speed: {senses: [noun], plural: speeds}
