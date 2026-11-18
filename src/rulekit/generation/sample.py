@@ -3006,11 +3006,13 @@ def _allowed_fillers(
     holder_compatibility_memo = {}
     lexical_holder_domains = {}
 
-    def lexical_holder_domain(name, *, measure_categories=()):
+    def lexical_holder_domain(
+        name, *, measure_categories=(), require_holder_boundary=False
+    ):
         # These existential checks use lexical identities and name eligibility,
         # never amounts, owners or modifiers. Keep the full realization domain
         # elsewhere; repeated counts must not multiply this compatibility join.
-        key = (name, measure_categories)
+        key = (name, measure_categories, require_holder_boundary)
         if key not in lexical_holder_domains:
             unique = {}
             for candidate in candidate_domain(tokens_by_slot[name]):
@@ -3021,7 +3023,13 @@ def _allowed_fillers(
                              tuple(_filler_in_category(candidate, category, reg)
                                    for category in measure_categories))
                 unique.setdefault(signature, candidate)
-            lexical_holder_domains[key] = list(unique.values())
+            candidates = list(unique.values())
+            if require_holder_boundary:
+                # A strict lexical holder needs a measure with a declared
+                # relationship. Eliminate impossible measures once per slot.
+                candidates = [candidate for candidate in candidates
+                              if reg.measure_has_holder_boundary(candidate.identity)]
+            lexical_holder_domains[key] = candidates
         return lexical_holder_domains[key]
 
     def compatible(filler: _Filler) -> bool:
@@ -3618,15 +3626,11 @@ def _allowed_fillers(
                     and not any(
                         compatible_with_any_attribute(candidate, filler)
                         for candidate in lexical_holder_domain(
-                            measure_name, measure_categories=proper_name_measure_categories)
-                        if _outside_categories(
-                            candidate, absent_categories, reg
-                        )
-                        and _outside_slot_categories(
-                            candidate,
                             measure_name,
-                            slot_category_exclusions,
-                            reg,
+                            measure_categories=proper_name_measure_categories,
+                            require_holder_boundary=not when_declared and not (
+                                allow_proper_name and filler.kind == "name"
+                            ),
                         )
                     )
                 ):

@@ -498,6 +498,86 @@ GOLDEN = [
 ]
 
 
+_ROOM_DEMAND = "Nora is booking rooms for a group of 11 guests. "
+_ROOM_FITTINGS = (
+    "Each room has two beds, which can fit two guests each, "
+    "and a couch, which can fit one guest. "
+)
+_ROOM_ASK = "How many rooms does Nora need to book?"
+_ATTENDANCE_PLAN = (
+    "24 benches with a capacity of 3 people each were placed for the meeting of a school, "
+    "whose number of members was the same as the benches' capacity. "
+)
+_ATTENDANCE_ASK = "How many members attended the meeting?"
+_OFFER_BASE = "The warehouse offers 24 bottles of juice for $12. "
+_OFFER_COMPARISON = "The shop offers 8 bottles of juice for $6. "
+_OFFER_ASK = "How much more does each bottle cost at the shop, in cents?"
+
+GOLDEN += [
+    (
+        "curated",
+        "Nora needs to prepare notebooks for three groups with 4 children each and a class "
+        "with 5 children. How many muffins does Nora need to prepare?",
+        "cohort-capacity", "decline", None, "all groups and the requested output must belong to t",
+    ),
+    (
+        "curated", _ROOM_DEMAND.replace("11 guests", "11.5 guests") + _ROOM_FITTINGS + _ROOM_ASK,
+        "cohort-capacity", "decline", None, "all stated counts are required and must be whole",
+    ),
+    (
+        "curated", _ROOM_DEMAND + _ROOM_FITTINGS.replace("fit two guests", "fit zero guests")
+        .replace("fit one guest", "fit zero guests") + _ROOM_ASK,
+        "cohort-capacity", "decline", None, "each unit must provide some usable capacity",
+    ),
+    (
+        "curated", _ATTENDANCE_PLAN + _ATTENDANCE_ASK,
+        "cohort-capacity", "decline", None, "one capacity and one occupied share are required",
+    ),
+    (
+        "curated", _ROOM_DEMAND + "How many notebooks does Nora need to prepare?",
+        "cohort-capacity", "decline", None, "one complete plan must specify the separate recipien",
+    ),
+    (
+        "curated", _ROOM_DEMAND + _ROOM_ASK,
+        "cohort-capacity", "decline", None, "one reservation demand and one per-unit capacity are",
+    ),
+    (
+        "curated", _ATTENDANCE_PLAN + "One quarter of the benches were not occupied, and the rest "
+        "each had four people. " + _ATTENDANCE_ASK,
+        "cohort-capacity", "decline", None, "the capacity, occupants and membership must belong t",
+    ),
+    (
+        "curated", _ROOM_DEMAND + _ROOM_FITTINGS + _ROOM_ASK.replace("rooms", "seats"),
+        "cohort-capacity", "decline", None, "the demand, room or vehicle capacity and question mu",
+    ),
+    (
+        "curated", _ATTENDANCE_PLAN + "One fifth of the benches were not occupied, and the rest "
+        "each had two people. " + _ATTENDANCE_ASK,
+        "cohort-capacity", "decline", None, "the occupied share must give a whole number of units",
+    ),
+    (
+        "curated", _OFFER_BASE + _OFFER_COMPARISON.replace("juice", "milk") + _OFFER_ASK,
+        "packaged-unit-price", "decline", None, "both offers must name the same goods and complete pr",
+    ),
+    (
+        "curated", _OFFER_BASE + _OFFER_COMPARISON.replace("$6", "£6") + _OFFER_ASK,
+        "packaged-unit-price", "decline", None, "both prices must convert to the requested currency u",
+    ),
+    (
+        "curated", _OFFER_BASE + _OFFER_COMPARISON + _OFFER_ASK.replace("shop", "market"),
+        "packaged-unit-price", "decline", None, "one seller must be identified by the question",
+    ),
+    (
+        "curated", _OFFER_BASE + _OFFER_COMPARISON + _OFFER_ASK.replace("shop", "warehouse"),
+        "packaged-unit-price", "decline", None, "the named offer does not have the higher unit price",
+    ),
+    (
+        "curated", _OFFER_BASE + _OFFER_ASK,
+        "packaged-unit-price", "decline", None, "two comparable offers need explicit counts in the re",
+    ),
+]
+
+
 def _reason_prefix(reason: str) -> str:
     return (reason or "").split(":")[0].split(" but ")[0].strip()[:52]
 

@@ -1,5 +1,8 @@
 format: rulekit/categories@1
 categories:
+  event_horizon_preposition: {parent: preposition}
+  event_time_preposition: {parent: preposition}
+  event_date_anchor: {parent: duration_measure}
   named_season:
     parent: timeperiod
   period_boundary_noun:
@@ -80,7 +83,12 @@ categories:
     - calendar_span_unit
   reporting_time_marker:
     parent: day_deictic_marker
+attrs:
+  month: {undated_budget_weeks: 4}
 members:
+  event_horizon_preposition: [before, from]
+  event_time_preposition: [at, on]
+  event_date_anchor: [day]
   named_season:
   - spring
   - summer

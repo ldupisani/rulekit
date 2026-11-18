@@ -288,7 +288,7 @@ def test_random_ask_generation_prefers_the_least_human_validated_target(
     assert candidate.target_ask == "ask/how-old-is"
 
 
-def test_designer_exposes_attention_archive_and_evidence_routes(curated) -> None:
+def test_designer_exposes_attention_archive_and_evidence_routes() -> None:
     router = build_router(ServerState(CURATED))
     routes = {(route.path, frozenset(route.methods)) for route in router.routes}
     assert ("/api/generation/review-evidence", frozenset({"GET"})) in routes
@@ -297,7 +297,7 @@ def test_designer_exposes_attention_archive_and_evidence_routes(curated) -> None
     assert '"Needs attention"' in script
     assert '"Validated coverage"' in script
     assert '"Evidence archive"' in script
-    assert 'evidenceGroup?.replay_status === "regressed"' in script
+    assert '"Current regression"' in script
     markup = Path("src/rulekit/server/static/index.html").read_text()
     assert 'value="validated_premises"' in markup
     assert 'value="least_validated_rule"' in markup

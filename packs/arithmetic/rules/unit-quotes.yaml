@@ -1,6 +1,7 @@
 format: rulekit/rules@1
 rules:
   - id: arithmetic/generic-unit-quote-collection
+    independent_clause: true
     phase: read
     description: A postpositive per-item quantifier refers to the explicitly stated plural goods class.
     match:
@@ -13,3 +14,91 @@ rules:
     satisfies: {each: [collection]}
     emits:
       - {fact: price, item: '{item}', value: price, measure: '{price}', verb: '{be}'}
+  - id: arithmetic/count-packaged-offer
+    description: A supplier quotes a complete lot price for a stated count of the same packaged goods.
+    match:
+      sentence:
+      - opt: [{slot: scale, cat: seller_scale_attribute, at_start: true}]
+      - {slot: seller, cat: packaged_offer_supplier, uncounted: true}
+      - opt: [{slot: be, cat: copula}]
+      - {slot: offer, cat: offer_action}
+      - {slot: count, cat: offer_count_unit, counted: true, bare: true, value_positive: true}
+      - {lit: of}
+      - {slot: goods, cat: purchase_item, uncounted: true, class_only: true}
+      - {lit: for}
+      - {slot: price, cat: currency_unit, counted: true, bare: true, value_min: 0}
+      - opt:
+        - opt: [{lit: per}]
+        - {slot: lot, cat: offer_purchase_lot, uncounted: true, bare: true, number: singular}
+      - {lit: '.', consume_skipped: true}
+    disambiguates: [scale]
+    consumes: [be, offer, count, price]
+    satisfies: {be: [subject], offer: [subject, dobj]}
+    emits:
+    - {fact: batch_evidence, kind: packaged-offer, entity: '{seller}', measure: '{price}',
+       acquisition: '{goods}', container: '{count}', value: price, per_member: count, position: '{price.span_start}'}
+  - id: arithmetic/packaged-offer-with-stated-lot-count
+    description: A quoted offer identifies its goods and count in two coordinated clauses.
+    match:
+      sentence:
+      - {slot: seller, cat: packaged_offer_supplier, uncounted: true, referential: true, at_start: true}
+      - opt: [{slot: be, cat: copula}]
+      - {slot: offer, cat: offer_action}
+      - {slot: goods, cat: purchase_item, uncounted: true, class_only: true,
+         qualified: true, qualifier_cat: uniform_quantity_attribute}
+      - {lit: for}
+      - {slot: price, cat: currency_unit, counted: true, bare: true, value_min: 0}
+      - {lit: and}
+      - {slot: it, cat: commercial_object_anaphor}
+      - opt: [{slot: only, cat: restrictive_focus_adverb}]
+      - {slot: has, cat: plain_have_state, finite_form: true}
+      - {slot: count, cat: offer_count_unit, counted: true, bare: true, value_positive: true}
+      - {lit: '.', consume_skipped: true}
+    references: {it: seller}
+    consumes: [be, offer, price, has, count]
+    satisfies: {be: [subject], offer: [subject, dobj], has: [subject, dobj]}
+    emits:
+    - {fact: batch_evidence, kind: packaged-offer, entity: '{seller}', measure: '{price}', marker: same,
+       acquisition: '{goods}', container: '{count}', value: price, per_member: count, position: '{price.span_start}'}
+asks:
+  - id: ask/relative-packaged-unit-price
+    match:
+      question:
+      - {lit: how, at_start: true}
+      - {slot: much, cat: mass_amount_interrogative}
+      - {lit: more}
+      - {slot: price_level, cat: retail_price_level}
+      - opt: [{lit: ',', consume_skipped: true}]
+      - {lit: per}
+      - {slot: unit, cat: offer_count_unit, uncounted: true, bare: true}
+      - opt: [{lit: ',', consume_skipped: true}]
+      - {slot: in, cat: preposition}
+      - {slot: currency, cat: currency_unit, uncounted: true, bare: true}
+      - opt: [{lit: ',', consume_skipped: true}]
+      - {slot: be, cat: singular_copula}
+      - {slot: quote, cat: quoted_offer_noun, uncounted: true, referential: true}
+      - {lit: at}
+      - {slot: seller, cat: packaged_offer_supplier, uncounted: true, referential: true}
+      - {lit: '?', consume_skipped: true}
+    resolves: {consumer: packaged-unit-price, target: '{seller}', measure: '{currency}', unit: '{unit}'}
+    disambiguates: [much, unit]
+    satisfies: {in: [object], be: [subject]}
+  - id: ask/packaged-unit-price-cost-difference
+    match:
+      question:
+      - {lit: how, at_start: true}
+      - {slot: much, cat: mass_amount_interrogative}
+      - {lit: more}
+      - {slot: aux, cat: do_support_auxiliary}
+      - {slot: each, cat: distributive_quantifier}
+      - {slot: unit, cat: offer_count_unit, uncounted: true, bare: true, number: singular}
+      - {slot: cost, cat: price_verb, bare_form: true}
+      - {lit: at}
+      - {slot: seller, cat: packaged_offer_supplier, uncounted: true}
+      - opt: [{lit: ',', consume_skipped: true}]
+      - {slot: in, cat: preposition}
+      - {slot: currency, cat: currency_unit, uncounted: true, bare: true}
+      - {lit: '?', consume_skipped: true}
+    resolves: {consumer: packaged-unit-price, target: '{seller}', measure: '{currency}', unit: '{unit}'}
+    disambiguates: [much, unit, cost, seller]
+    satisfies: {each: [collection], cost: [subject], in: [object]}

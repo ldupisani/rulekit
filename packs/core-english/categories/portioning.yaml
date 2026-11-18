@@ -42,6 +42,10 @@ members:
   portion_division_verb:
   - cut
   - sliced
+  - divide
+  - divided
+  - partition
+  - partitioned
   portion_unconsumed_attribute:
   - uneaten
   portion_size_descriptor:

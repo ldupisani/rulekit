@@ -207,6 +207,83 @@ rules:
     attribution: {predicate: pause, subject: process, reason: [cause, cause], reason_entities: [cause]}
   consumes: [pause, duration]
   satisfies: {pause: [subject]}
+- id: arithmetic/member-rated-capacity-work
+  description: A named group works toward a stated capacity at a rate per participant.
+  match:
+    sentence:
+    - {slot: members, span: true, enumeration_cat: name, enumeration_min_members: 2, at_start: true}
+    - {slot: be, cat: plural_copula}
+    - {slot: act, cat: batch_loading_activity, present_participle: true}
+    - opt: [{lit: up}]
+    - {slot: target, cat: progress_target_container, uncounted: true}
+    - {lit: with}
+    - {slot: capacity, cat: container_capacity_noun}
+    - {lit: of}
+    - {slot: total, cat: progress_load_unit, counted: true, class_only: true}
+    - {lit: at}
+    - opt:
+      - {slot: rate, cat: rate_frame_noun}
+      - {lit: of}
+    - {slot: amount, cat: progress_load_unit, counted: true, class_only: true}
+    - {lit: per}
+    - {slot: period, cat: duration_measure, uncounted: true, bare: true}
+    - {lit: per}
+    - {slot: participant, cat: allocation_recipient, uncounted: true, bare: true, number: singular}
+    - {lit: '.', consume_skipped: true}
+  where: [{same_lemma: [total, amount]}]
+  disambiguates: [act]
+  consumes: [be, act, total, amount]
+  satisfies: {be: [subject], act: [subject, dobj]}
+  emits:
+  - {fact: batch_evidence, kind: crew-process-target, entity: '{target}', measure: '{total}',
+     value: total, per_member: amount, container: '{period}', members: '{members.members}',
+     verb: '{act}', position: '{target.span_start}'}
+- id: arithmetic/member-rated-workforce-expansion
+  description: The original crew continues and additional participants join at the same individual rate.
+  match:
+    sentence:
+    - {slot: group, cat: discourse_subject_group_pronoun, at_start: true}
+    - {slot: act, cat: crew_activity, finite_form: true}
+    - {lit: for}
+    - {slot: span, cat: duration_measure, counted: true, bare: true}
+    - {lit: and}
+    - {slot: be, cat: plural_copula}
+    - opt: [{lit: then}]
+    - {slot: join, cat: crew_joining_verb, past_participle: true}
+    - {lit: by}
+    - {slot: others, cat: allocation_recipient, counted: true, class_only: true}
+    - {lit: who}
+    - opt: [{slot: also, cat: additive_discourse_adverb}]
+    - {slot: continue, cat: crew_activity, finite_form: true}
+    - {lit: at}
+    - {slot: rate, cat: rate_frame_noun, qualified: true, qualifier_cat: uniform_quantity_attribute}
+    - {lit: '.', consume_skipped: true}
+  where: [{same_lemma: [act, continue]}]
+  disambiguates: [act, continue]
+  consumes: [act, span, be, join, others, continue]
+  satisfies: {group: [refers], act: [subject], be: [subject], join: [subject], continue: [subject]}
+  emits:
+  - {fact: batch_evidence, kind: crew-process-expansion, entity: '', measure: '{span}', value: span,
+     per_member: others, marker: '{group.surface}', position: '{span.span_start}'}
+- id: arithmetic/elapsed-crew-expansion
+  description: Additional participants join the ongoing process after an explicitly elapsed interval.
+  match:
+    sentence:
+    - {lit: after, at_start: true}
+    - {slot: span, cat: duration_measure, counted: true, bare: true}
+    - opt: [{lit: ',', consume_skipped: true}]
+    - {slot: others, cat: allocation_recipient, counted: true, class_only: true}
+    - {slot: join, cat: crew_joining_verb, finite_form: true}
+    - {slot: group, cat: discourse_referential_group_pronoun}
+    - {lit: at}
+    - {slot: rate, cat: rate_frame_noun, qualified: true, qualifier_cat: uniform_quantity_attribute}
+    - {lit: '.', consume_skipped: true}
+  where: [{number_compatible: [others, join]}]
+  consumes: [span, others, join]
+  satisfies: {group: [refers], join: [subject, dobj]}
+  emits:
+  - {fact: batch_evidence, kind: crew-process-expansion, entity: '', measure: '{span}', value: span,
+     per_member: others, marker: '{group.surface}', position: '{span.span_start}'}
 asks:
 - id: ask/complete-process-duration
   match:
@@ -300,3 +377,17 @@ asks:
     - {lit: '?', consume_skipped: true}
   resolves: {consumer: bounded-process-duration, measure: '{unit}', mode: delay, reason: '{reason}', process: '{process}'}
   satisfies: {pause: [subject]}
+- id: ask/targeted-process-duration
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: unit, cat: duration_measure, uncounted: true, bare: true}
+    - {slot: aux, cat: do_support_auxiliary}
+    - {slot: act, cat: batch_loading_activity, present_participle: true}
+    - opt: [{lit: up}]
+    - {slot: target, cat: progress_target_container, uncounted: true, referential: true}
+    - {slot: take, cat: elapsed_duration_verb, bare_form: true}
+    - {lit: '?', consume_skipped: true}
+  resolves: {consumer: bounded-process-duration, mode: crew, measure: '{unit}', verb: '{act}', process: '{target}'}
+  satisfies: {act: [subject, dobj], take: [subject]}

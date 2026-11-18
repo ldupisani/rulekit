@@ -1,0 +1,36 @@
+format: rulekit/categories@1
+categories:
+  indexed_material_form:
+    parent: noun
+  material_forming_verb:
+    parent: verb
+  relative_extent_noun:
+    parent: noun
+  relative_extent_adjective:
+    parent: adjective
+  recurring_event_source:
+    parent: noun
+    includes: [animal, intentional_agent, production_device]
+  recurring_event_verb:
+    parent: verb
+  recurring_event_count:
+    parent: noun
+  event_frequency_modifier:
+    parent: adverb
+  event_frequency_noun:
+    parent: noun
+  event_count_output_verb:
+    parent: verb
+  posture_activity:
+    parent: verb
+members:
+  indexed_material_form: [ball, roll, piece]
+  material_forming_verb: [wind, winding, roll, wrap, wrapping, make, making]
+  relative_extent_noun: [size, length]
+  relative_extent_adjective: [long, large, big]
+  recurring_event_verb: [meow, meowing, meowed, meows, jump, jumped, jumps]
+  recurring_event_count: [meow, jump]
+  event_frequency_modifier: [frequently]
+  event_frequency_noun: [frequency, rate]
+  event_count_output_verb: [make, makes, made, produce, produces, produced]
+  posture_activity: [sat, sit]

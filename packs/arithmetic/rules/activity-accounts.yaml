@@ -11,7 +11,7 @@ rules:
       enumeration_min_members: 2
       at_start: true
     - slot: act
-      cat: possession_state
+      cat: activity_account_participation
       finite_form: true
     - slot: activity
       cat: account_activity
@@ -24,9 +24,16 @@ rules:
         uncounted: true
     - lit: .
       consume_skipped: true
+  where:
+  - verb_role_compatible:
+      verb: act
+      roles: [activity]
+      verb_cat: dining_account_participation_action
+      role_cat: dining_account_activity
   emits:
   - fact: batch_evidence
     kind: named-cost-account
+    verb: '{act}'
     entity: ''
     measure: '{activity}'
     value: 0
@@ -37,54 +44,6 @@ rules:
     - subject
   consumes:
   - act
-  description: Preserve a named activity scope and explicit unit quotes; counts and prices do not assert payment.
-- id: arithmetic/declared-package-unit-quote
-  phase: read
-  match:
-    sentence:
-    - lit:
-      - a
-      - an
-      at_start: true
-      consume_skipped: true
-    - slot: package
-      cat: purchase_count_measure
-      uncounted: true
-      bare: true
-      number: singular
-    - lit: of
-    - slot: item
-      cat: purchase_item
-      uncounted: true
-      bare: true
-    - slot: cost
-      cat: price_verb
-      finite_form: true
-    - slot: amount
-      cat: currency_unit
-      counted: true
-      bare: true
-    - opt:
-      - slot: each
-        cat: postpositive_distributive_quantifier
-    - lit: .
-      consume_skipped: true
-  emits:
-  - fact: price
-    item: '{item}'
-    value: amount
-    measure: '{amount}'
-    per: '{package}'
-    verb: buy
-  independent_clause: true
-  consumes:
-  - cost
-  - amount
-  satisfies:
-    cost:
-    - subject
-    each:
-    - collection
   description: Preserve a named activity scope and explicit unit quotes; counts and prices do not assert payment.
 asks:
 - id: ask/named-activity-cost
@@ -113,3 +72,64 @@ asks:
     - refers
     cost:
     - subject
+- id: ask/named-activity-cost-what
+  match:
+    question:
+    - {lit: what, at_start: true}
+    - slot: aux
+      type: auxiliary
+    - slot: owner
+      cat: group_possessive_determiner
+    - slot: activity
+      cat: account_activity
+      uncounted: true
+    - slot: cost
+      cat: price_verb
+      bare_form: true
+    - lit: '?'
+      consume_skipped: true
+  resolves:
+    consumer: named-activity-cost
+    activity: '{activity}'
+  satisfies:
+    owner:
+    - refers
+    cost:
+    - subject
+templates:
+  package-unit-quote:
+    parameters:
+      basis: []
+      consumes: [cost, amount]
+    rule:
+      phase: read
+      description: State a price for one serving or package of an item.
+      independent_clause: true
+      match:
+        sentence:
+        - {parameter: basis}
+        - {lit: of}
+        - {slot: item, cat: purchase_item, uncounted: true, bare: true}
+        - {slot: cost, cat: price_verb, finite_form: true}
+        - {slot: amount, cat: currency_unit, counted: true, bare: true}
+        - opt: [{slot: each, cat: postpositive_distributive_quantifier}]
+        - {lit: '.', consume_skipped: true}
+      where: [{number_compatible: [package, cost]}]
+      emits:
+      - {fact: price, item: '{item}', value: amount, measure: '{amount}', per: '{package}', verb: buy}
+      consumes: {parameter: consumes}
+      satisfies: {cost: [subject], each: [collection]}
+variants:
+- id: arithmetic/declared-package-unit-quote
+  template: package-unit-quote
+  arguments:
+    basis:
+    - {lit: [a, an], at_start: true, consume_skipped: true}
+    - {slot: package, cat: purchase_count_measure, uncounted: true, bare: true, number: singular}
+- id: arithmetic/counted-single-package-unit-quote
+  template: package-unit-quote
+  arguments:
+    basis:
+    - {slot: package, cat: purchase_count_measure, counted: true, value_min: 1, value_max: 1,
+       at_start: true, bare: true, number: singular}
+    consumes: [package, cost, amount]

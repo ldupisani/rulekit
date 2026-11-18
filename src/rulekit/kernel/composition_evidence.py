@@ -12,7 +12,7 @@ from .model import BatchEvidence
 from .numeric_evidence import audit_numeric_mentions
 
 
-def closed_evidence(ctx, rows, operands, *, additional_kinds=(), covered=None):
+def closed_evidence(ctx, rows, operands, *, additional_kinds=(), covered=None, question_values=()):
     if (
         ctx.store.collisions
         or ctx.store.quarantined
@@ -26,6 +26,8 @@ def closed_evidence(ctx, rows, operands, *, additional_kinds=(), covered=None):
         expected[row.provenance.sentence].update(values)
     if "span_value" in ctx.query:
         expected[ctx.question.sentence_index].update([float(ctx.query["span_value"])])
+    if question_values:
+        expected[ctx.question.sentence_index].update(question_values)
     covered = covered or {}
     from .source_coverage import uncovered_units
 

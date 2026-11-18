@@ -44,6 +44,7 @@ members:
   reservation_verb:
   - book
   - booked
+  - booking
   - books
   unavailability_descriptor:
   - unavailable

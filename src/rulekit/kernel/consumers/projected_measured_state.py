@@ -8,6 +8,7 @@ from ..evaluate import evaluate
 from ..model import BatchEvidence
 from ..numeric_evidence import audit_numeric_mentions
 from ..rate_calculation import convert_duration, convert_units
+from ..reference_bindings import referenced_forms_agree
 from ..reference_identity import reference_from_unit
 from ..source_coverage import uncovered_document_units
 
@@ -34,19 +35,22 @@ def consume(ctx):
     opening, rate = openings[0], rates[0]
     who = reference_from_unit(ctx.match.slots["who"])
     if (
-        opening.entity_ref != who
+        not who.resolved
+        or not referenced_forms_agree((*ctx.premises, ctx.question), who, ctx.reg)
+        or opening.entity_ref != who
         or rate.entity_ref != who
         or opening.container_ref != rate.container_ref
         or rate.container_ref != reference_from_unit(ctx.match.slots["event"])
         or opening.provenance.sentence >= rate.provenance.sentence
         or any(
-            r.provenance.assumption or not isfinite(r.value) or r.value < 0
+            not isfinite(r.value) or r.value < 0
             for r in rows
         )
+        or opening.provenance.assumption
         or opening.per_member < 0
     ):
         return decline(
-            "the observed state and planned rate must identify the same participant and deadline"
+            "the observed state and stated rate must identify the same participant and deadline"
         )
     periods = convert_duration(
         opening.per_member,
@@ -99,5 +103,6 @@ def consume(ctx):
     return Answer(
         "number",
         value,
-        "project the stated rate over the explicit time to the event; this is a planned outcome",
+        "project the stated rate over the explicit time to the event"
+        + (" under the question's condition" if rate.provenance.assumption else ""),
     )

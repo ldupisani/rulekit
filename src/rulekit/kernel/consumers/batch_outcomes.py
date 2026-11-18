@@ -48,7 +48,13 @@ def overlapping(ctx):
     return finish_batch_answer(ctx, rows, value, "count both classes and subtract their shared members once")
 
 
-@consumer("batch-outcomes")
+@consumer(
+    "batch-outcomes",
+    applicable=lambda store: not store.by_kind(BatchEvidence) or any(
+        row.kind in ACQUIRED_BATCH_KINDS or row.kind in {"share", "population"}
+        for row in store.by_kind(BatchEvidence)
+    ),
+)
 def consume(ctx):
     if ctx.query.get("scope") == "acquired":
         return _acquired_batches(ctx)

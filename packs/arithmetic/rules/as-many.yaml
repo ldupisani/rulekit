@@ -117,6 +117,39 @@ templates:
           measure_qualifier: {parameter: layout.measure_qualifier}
           standard_qualifier: {parameter: layout.standard_qualifier}
 
+rules:
+  - id: arithmetic/affine-count-before-multiplicative-standard
+    description: An offset states the item before its multiplied comparison standard.
+    match:
+      sentence:
+      - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true, at_start: true}
+      - {slot: verb, cat: possession_state, finite_form: true}
+      - {slot: n, type: number, standalone: true, integer: true, value_min: 0}
+      - {slot: dir, cat: count_quantity_delta}
+      - {slot: item, type: plural, uncounted: true, bare: true}
+      - {lit: than}
+      - {slot: k, type: nonunit_multiplier}
+      - {lit: as}
+      - {lit: many}
+      - {lit: as}
+      - {slot: std, type: entity, common_noun_cat: quantity_holder, referential: true}
+      - opt: [{slot: echo, cat: possession_state, finite_form: true}]
+      - {lit: '.', consume_skipped: true}
+    where:
+    - number_compatible: [who, verb]
+    - number_compatible: [std, echo]
+    - same_lemma: [verb, echo]
+    - distinct: [who, std]
+    - category_nonoverlap: [who, std]
+    - slot_not_category: {slot: item, cat: many_incompatible_noun}
+    - slot_not_category: {slot: item, cat: bare_possession_incompatible_noun}
+    - measure_holder_compatible: {measure: item, holders: [who, std], allow_proper_name: true, when_declared: true}
+    consumes: [n, verb, echo]
+    satisfies: {n: [quantifies], verb: [subject, dobj], echo: [subject, dobj]}
+    emits:
+    - {fact: relation, subject: '{who}', standard: '{std}', measure: '{item}', factor: k,
+       offset: 'n * sign(dir)', verb: '{verb}', subject_label: '{who.label}', standard_label: '{std.label}'}
+
 variants:
   # Two holders, one item. Each variant changes only its ratio/offset syntax
   # and the acceptance boundaries established for that older form.

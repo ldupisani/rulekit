@@ -30,6 +30,19 @@ asks:
   where: [{number_compatible: [who, aux]}, {slot_not_category: {slot: who, cat: plural}}]
   resolves: {consumer: relative-item-total, entity: '{who}', measure: '{item}', verb: '{act}'}
   satisfies: {act: [subject], prep: [object]}
+- id: ask/relative-production-count
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: item, type: plural, bare: true}
+    - {slot: aux, type: auxiliary}
+    - {slot: who, type: entity, common_noun_cat: quantity_source, referential: true}
+    - {slot: act, cat: inventory_production_action, bare_form: true}
+    - {lit: '?', consume_skipped: true}
+  where: [{number_compatible: [who, aux]}]
+  resolves: {consumer: relative-item-total, entity: '{who}', measure: '{item}', verb: '{act}'}
+  satisfies: {act: [subject]}
 rules:
 - id: arithmetic/remaining-relative-receipt
   description: A receipt scales the recipient's balance after an identified loss.
@@ -318,3 +331,79 @@ rules:
     - subject
   description: A complete source clause preserves absolute and cross-item relative counts; no detached comparison
     edge changes another comparison family.
+
+# These clause linkers are grammatical literals because the premise generator
+# does not realize particle-category slots.
+variants:
+- id: arithmetic/continued-relative-item-difference
+  description: An omitted count standard can refer to one prior absolute count from the same source and activity.
+  template: continued-item-comparison
+  arguments:
+    difference:
+    - {slot: delta, type: number, value_min: 0}
+    - {slot: direction, cat: count_quantity_delta}
+    - {slot: second, cat: inventory_item, uncounted: true, bare: true}
+    suffix: []
+    consumes: [act, delta]
+    satisfies: {act: [subject], delta: [quantifies]}
+    emits:
+    - {fact: batch_evidence, kind: item-relation, entity: '{who}', measure: '{second}', value: delta,
+       position: '{delta.span_start}', sign: sign(direction), fraction: 1, verb: '{act}'}
+- id: arithmetic/continued-relative-item-multiple
+  description: A separate clause compares two explicitly named item classes of the same source.
+  template: continued-item-comparison
+  arguments:
+    difference: []
+    suffix:
+    - {slot: factor, type: multiplier}
+    - {lit: as}
+    - {lit: many}
+    - {slot: third, cat: inventory_item, uncounted: true, bare: true}
+    - {lit: [as, than]}
+    - {slot: standard, cat: inventory_item, uncounted: true, bare: true}
+    consumes: [act, factor]
+    satisfies: {act: [subject]}
+    emits:
+    - {fact: batch_evidence, kind: item-relation, entity: '{who}', measure: '{third}', value: 0,
+       position: '{factor.span_start}', container: '{standard}', fraction: factor, verb: '{act}'}
+- id: arithmetic/continued-relative-item-difference-and-multiple
+  description: A continued list can give an implicit difference standard and an explicit multiplier standard.
+  template: continued-item-comparison
+  arguments:
+    difference:
+    - {slot: delta, type: number, value_min: 0}
+    - {slot: direction, cat: count_quantity_delta}
+    - {slot: second, cat: inventory_item, uncounted: true, bare: true}
+    suffix:
+    - {lit: [',', and], consume_skipped: true}
+    - {slot: factor, type: multiplier}
+    - {lit: as}
+    - {lit: many}
+    - {slot: third, cat: inventory_item, uncounted: true, bare: true}
+    - {lit: [as, than]}
+    - {slot: standard, cat: inventory_item, uncounted: true, bare: true}
+    consumes: [act, delta, factor]
+    satisfies: {act: [subject], delta: [quantifies]}
+    emits:
+    - {fact: batch_evidence, kind: item-relation, entity: '{who}', measure: '{second}', value: delta,
+       position: '{delta.span_start}', sign: sign(direction), fraction: 1, verb: '{act}'}
+    - {fact: batch_evidence, kind: item-relation, entity: '{who}', measure: '{third}', value: 0,
+       position: '{factor.span_start}', container: '{standard}', fraction: factor, verb: '{act}'}
+templates:
+  continued-item-comparison:
+    parameters: {difference: [], suffix: [], consumes: [], satisfies: {}, emits: []}
+    rule:
+      phase: read
+      match:
+        sentence:
+        - {slot: who, type: entity, common_noun_cat: quantity_source, referential: true, bare: true, at_start: true}
+        - {slot: act, cat: inventory_production_action, finite_form: true}
+        - {parameter: difference}
+        - {parameter: suffix}
+        - {lit: '.', consume_skipped: true}
+      where:
+      - {number_compatible: [who, act]}
+      - {absent: {cat: indefinite_article}}
+      consumes: {parameter: consumes}
+      satisfies: {parameter: satisfies}
+      emits: {parameter: emits}

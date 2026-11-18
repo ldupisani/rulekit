@@ -1657,7 +1657,7 @@ categories:
     parent: verb
     notes: Predicates whose complement states a resulting aggregate reading.
   causative_result_verb:
-    parent: verb
+    parent: specification_infinitive_cause
     notes: Causatives taking a result subject followed by an infinitive.
   event_repetition_adverb:
     parent: adverb
@@ -3023,6 +3023,7 @@ members:
   - bed
   - beignet
   - bicycle
+  - bike
   - binder
   - blanket
   - boat

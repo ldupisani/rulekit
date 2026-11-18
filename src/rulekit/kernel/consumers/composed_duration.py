@@ -12,6 +12,7 @@ from ..evaluate import evaluate
 from ..model import BatchEvidence, Rate
 from ..predicate_compatibility import predicates_compatible
 from ..rate_calculation import apply_rate, convert_duration, rate_operands
+from ..reference_bindings import anaphoric_forms_agree
 from ..reference_identity import constrains
 
 
@@ -65,6 +66,8 @@ def scheduled(ctx):
 
 @consumer('bounded-process-duration')
 def bounded(ctx):
+    if ctx.query.get('mode') == 'crew':
+        return _crew_process_duration(ctx)
     rows = ctx.store.by_kind(BatchEvidence)
     processes = [row for row in rows if row.kind == 'bounded-process']
     interruptions = [row for row in rows if row.kind == 'process-interruption']
@@ -83,10 +86,7 @@ def bounded(ctx):
                    for pause in interruptions)
             or not closed_evidence(ctx, rows, operands)):
         return Answer('decline', None, 'positive rates must cover the stated extent without gaps or overlaps')
-    value = evaluate('first / rate1 + (total - first) / rate2',
-                     dict(first=row.subtotal, rate1=row.per_member,
-                          total=row.value, rate2=row.content_count),
-                     ctx.log, source='successive-process-duration')
+    value = _successive_duration(ctx, row.value, row.subtotal, row.per_member, row.content_count)
     value = convert_duration(value, row.container, ctx.query['measure'], ctx.reg, ctx.log,
                              source='process-duration-units')
     if value is None:
@@ -112,3 +112,49 @@ def bounded(ctx):
     elif mode != 'active':
         value += sum(delays)
     return finish_batch_answer(ctx, rows, value, 'compose the measured progress segments and any requested interruption time')
+
+
+def _successive_duration(ctx, total, first, rate1, rate2):
+    return evaluate(
+        'first / rate1 + (total - first) / rate2',
+        dict(first=first, rate1=rate1, total=total, rate2=rate2),
+        ctx.log, source='successive-process-duration',
+    )
+
+
+def _crew_process_duration(ctx):
+    rows = list(ctx.store.by_kind(BatchEvidence))
+    targets = [row for row in rows if row.kind == 'crew-process-target']
+    expansions = [row for row in rows if row.kind == 'crew-process-expansion']
+    if len(rows) != 2 or len(targets) != 1 or len(expansions) != 1:
+        return Answer('decline', None, 'the process needs one stated target and one crew change')
+    target, expansion = targets[0], expansions[0]
+    process = ctx.query_reference('process')
+    count = len(target.members)
+    if (
+        process is None or target.entity_ref is None or not constrains(process, target.entity_ref)
+        or target.verb != ctx.query['verb']
+        or count < 2 or len(set(target.members)) != count
+        or not anaphoric_forms_agree([expansion.marker], 'plural', ctx.reg)
+        or expansion.provenance.sentence <= target.provenance.sentence
+        or any(row.provenance.assumption for row in rows)
+        or not float(expansion.per_member).is_integer() or expansion.per_member <= 0
+        or target.per_member <= 0 or target.value <= 0
+        or not closed_evidence(
+            ctx, rows, [(target, [target.value, target.per_member]), (expansion, [expansion.value, expansion.per_member])]
+        )
+    ):
+        return Answer('decline', None, 'the rate and joining participants must describe the same complete process')
+    span = convert_duration(expansion.value, expansion.measure, target.container, ctx.reg, ctx.log,
+                            source='crew-phase-duration')
+    if span is None or span <= 0:
+        return Answer('decline', None, 'the crew change needs a compatible elapsed duration')
+    opening_rate = target.per_member * count
+    final_rate = target.per_member * (count + expansion.per_member)
+    first = span * opening_rate
+    if first >= target.value:
+        return Answer('decline', None, 'the stated crew change must precede completion')
+    value = _successive_duration(ctx, target.value, first, opening_rate, final_rate)
+    value = convert_duration(value, target.container, ctx.query['measure'], ctx.reg, ctx.log,
+                             source='crew-completion-units')
+    return finish_batch_answer(ctx, rows, value, 'apply the individual rate to the crew in each phase')

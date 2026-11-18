@@ -91,6 +91,10 @@ def test_recorded_inbox_and_ask_selector_skip_replay(monkeypatch, tmp_path):
         verified = await get(application, "/api/generation/history?view=attention")
         assert [row["id"] for row in verified["reviews"]] == ["recorded", "current"]
         assert calls == ["evidence", "evidence", "current"]
+        assert verified["reviews"][0]["attention_reasons"] == recorded["reviews"][0]["attention_reasons"]
+        assert verified["reviews"][1]["attention_reasons"] == [
+            {"code": "regressed", "source": "current_replay", "detail": "changed"}
+        ]
         assert await get(application, "/api/generation/exploration") == exploration
         workbench = await get(application, "/api/generation/exploration?view=workbench")
         assert "signature_counts" not in workbench["rules"][0]

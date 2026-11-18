@@ -1,0 +1,192 @@
+format: rulekit/rules@1
+templates:
+  indexed-relative-observation:
+    parameters:
+      head:
+      - {slot: item, cat: indexed_material_form, uncounted: true, qualified: true, qualifier_cat: holder_ordinal, referential: true}
+      - {slot: verb, cat: singular_copula}
+      ratio:
+      - {slot: factor, type: fraction, fraction_positive: true}
+      - {slot: extent, cat: relative_extent_noun, uncounted: true, bare: true}
+      - {lit: of}
+      standard: {slot: standard, cat: indexed_material_form, uncounted: true, qualified: true,
+                 qualifier_cat: holder_ordinal, referential: true}
+      kind: ordinal-material-relation
+    rule:
+      match:
+        sentence:
+        - opt: [{lit: and, at_start: true}]
+        - {parameter: head}
+        - {parameter: ratio}
+        - {parameter: standard}
+        - {lit: '.', consume_skipped: true}
+      where: [{same_lemma: [item, standard]}]
+      consumes: [verb, factor]
+      satisfies: {verb: [subject], factor: [quantifies]}
+      emits:
+      - {fact: batch_evidence, kind: {parameter: kind}, entity: '{item}', measure: '', container: '{standard}',
+         value: factor, verb: '{verb}', attribute: '{extent}', position: '{factor.span_start}'}
+variants:
+- {id: arithmetic/ordinal-relative-material-extent, template: indexed-relative-observation}
+- id: arithmetic/ordinal-relative-material-dimension
+  template: indexed-relative-observation
+  arguments:
+    ratio:
+    - {slot: factor, type: multiplier}
+    - {lit: as}
+    - {slot: extent, cat: relative_extent_adjective}
+    - {lit: as}
+- id: arithmetic/ordinal-relative-event-rate
+  template: indexed-relative-observation
+  arguments:
+    head:
+    - {slot: item, cat: recurring_event_source, uncounted: true, qualified: true, qualifier_cat: holder_ordinal, referential: true}
+    - {slot: verb, cat: recurring_event_verb, finite_form: true}
+    ratio:
+    - {slot: factor, type: multiplier}
+    - {lit: as}
+    - {slot: extent, cat: event_frequency_modifier}
+    - {lit: as}
+    standard: {slot: standard, cat: recurring_event_source, uncounted: true, qualified: true,
+               qualifier_cat: holder_ordinal, referential: true}
+    kind: ordinal-event-relation
+- id: arithmetic/ordinal-fractional-event-rate
+  template: indexed-relative-observation
+  arguments:
+    head:
+    - {slot: item, cat: recurring_event_source, uncounted: true, qualified: true, qualifier_cat: holder_ordinal, referential: true}
+    - {slot: verb, cat: recurring_event_verb, finite_form: true}
+    ratio:
+    - {lit: at}
+    - {slot: factor, type: fraction, fraction_positive: true}
+    - {slot: extent, cat: event_frequency_noun, uncounted: true, bare: true}
+    - {lit: of}
+    standard: {slot: standard, cat: recurring_event_source, uncounted: true, qualified: true,
+               qualifier_cat: holder_ordinal, referential: true}
+    kind: ordinal-event-relation
+
+rules:
+- id: arithmetic/formed-material-context
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, at_start: true}
+    - {slot: be, cat: copula}
+    - {slot: act, cat: material_forming_verb, present_participle: true}
+    - {slot: form, cat: indexed_material_form, uncounted: true, bare: true, number: plural}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    - opt:
+      - {lit: for}
+      - opt: [{slot: owner, cat: possessive_determiner}]
+      - {slot: beneficiary, cat: living_agent, uncounted: true}
+      - {slot: inf, cat: infinitival_marker}
+      - {slot: purpose, cat: recurring_activity_verb, bare_form: true}
+      - {slot: with, cat: preposition}
+    - {lit: '.', consume_skipped: true}
+  consumes: [be, act, purpose]
+  satisfies: {be: [subject], act: [subject, dobj], inf: [object], purpose: [subject], with: [object]}
+  emits:
+  - {fact: batch_evidence, kind: ordinal-material-context, entity: '{who}', measure: '{material}',
+     container: '{form}', value: 0, position: '{form.span_start}'}
+- id: arithmetic/ordinal-material-use
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, at_start: true}
+    - {slot: act, cat: measured_resource_removal_verb, finite_form: true}
+    - {slot: amount, cat: length_measure, counted: true, bare: true}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    - {lit: for}
+    - {slot: item, cat: indexed_material_form, uncounted: true, qualified: true, qualifier_cat: holder_ordinal, referential: true}
+    - {lit: '.', consume_skipped: true}
+  consumes: [act, amount]
+  satisfies: {act: [subject, dobj]}
+  emits:
+  - {fact: batch_evidence, kind: ordinal-material-anchor, entity: '{item}', acquisition: '{who}',
+     measure: '{material}', container: '{amount}', value: amount, verb: '{act}', position: '{amount.span_start}'}
+- id: arithmetic/recurring-event-group-context
+  match:
+    sentence:
+    - {slot: group, cat: recurring_event_source, counted: true, bare: true, at_start: true}
+    - opt:
+      - {slot: posture, cat: posture_activity, finite_form: true}
+      - {lit: on}
+      - {slot: site, type: noun, uncounted: true, referential: true}
+      - {lit: ',', consume_skipped: true}
+    - opt: [{slot: be, cat: plural_copula}]
+    - {slot: verb, cat: recurring_event_verb, present_participle: true}
+    - opt:
+      - {lit: at}
+      - {slot: focus, type: noun, uncounted: true, referential: true}
+    - {lit: '.', consume_skipped: true}
+  consumes: [group, posture, be, verb]
+  satisfies: {posture: [subject], be: [subject], verb: [subject]}
+  emits:
+  - {fact: batch_evidence, kind: ordinal-event-context, entity: '{group}', value: group,
+     measure: '{group}', verb: '{verb}', position: '{group.span_start}'}
+- id: arithmetic/ordinal-event-rate
+  match:
+    sentence:
+    - {slot: item, cat: recurring_event_source, uncounted: true, qualified: true, qualifier_cat: holder_ordinal, referential: true, at_start: true}
+    - {slot: verb, cat: recurring_event_verb, finite_form: true}
+    - {slot: amount, type: multiplier}
+    - {lit: per}
+    - {slot: time, cat: duration_measure, uncounted: true, bare: true}
+    - {lit: '.', consume_skipped: true}
+  consumes: [verb, amount]
+  satisfies: {verb: [subject]}
+  emits:
+  - {fact: batch_evidence, kind: ordinal-event-anchor, entity: '{item}', measure: '', container: '{time}',
+     value: amount, verb: '{verb}', position: '{amount.span_start}'}
+asks:
+- id: ask/ordinal-material-amount
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: unit, cat: length_measure, uncounted: true, bare: true}
+    - {lit: of}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    - {slot: aux, cat: do_support_auxiliary}
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true}
+    - {slot: act, cat: measured_resource_removal_verb, bare_form: true}
+    - {lit: for}
+    - {slot: item, cat: indexed_material_form, uncounted: true, qualified: true, qualifier_cat: holder_ordinal, referential: true}
+    - {lit: '?', consume_skipped: true}
+  resolves: {consumer: ordered-measurement, mode: material, entity: '{who}', unit: '{unit}',
+             measure: '{material}', target: '{item}', verb: '{act}'}
+  satisfies: {act: [subject, dobj]}
+- id: ask/combined-ordinal-event-count
+  match:
+    question:
+    - {lit: what, at_start: true}
+    - {slot: be, cat: singular_copula}
+    - opt: [{slot: combined, cat: prenominal_group_total_marker}]
+    - opt: [{slot: total, cat: group_total_marker}]
+    - {slot: number, cat: nominal_count_comparison_head, uncounted: true, bare: true}
+    - {lit: of}
+    - {slot: events, cat: recurring_event_count, uncounted: true, bare: true, number: plural}
+    - {slot: group, cat: recurring_event_source, counted: true, bare: true}
+    - {slot: verb, cat: event_count_output_verb, finite_form: true}
+    - {lit: in}
+    - {slot: span, cat: duration_measure, counted: true, bare: true}
+    - {lit: '?', consume_skipped: true}
+  resolves: {consumer: ordered-measurement, mode: event, measure: '{events}', group: '{group}',
+             count: '{group.value}', span_unit: '{span}', span_value: '{span.value}'}
+  satisfies: {be: [subject], verb: [subject, dobj]}
+- id: ask/ordinal-event-count
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: events, cat: recurring_event_count, uncounted: true, bare: true, number: plural}
+    - {slot: aux, cat: do_support_auxiliary}
+    - {slot: group, cat: recurring_event_source, counted: true, bare: true}
+    - {slot: verb, cat: event_count_output_verb, bare_form: true}
+    - {lit: in}
+    - {slot: span, cat: duration_measure, counted: true, bare: true}
+    - {lit: '?', consume_skipped: true}
+  where: [{number_compatible: [group, aux]}]
+  resolves: {consumer: ordered-measurement, mode: event, measure: '{events}', group: '{group}',
+             count: '{group.value}', span_unit: '{span}', span_value: '{span.value}'}
+  satisfies: {verb: [subject, dobj]}

@@ -47,6 +47,8 @@ categories:
   uniform_price_attribute:
     parent: adjective
     notes: Explicit equality of the individual prices in one purchased lot.
+  activity_account_participation:
+    parent: verb
   account_activity:
     parent: noun
     notes: A shared activity with explicitly quoted item costs; no payment is inferred.
@@ -80,6 +82,7 @@ adposition_roles:
     verb_category: purchase
     allow_name_object: true
 members:
+  activity_account_participation: [have, has, had, buy, buys, bought, share, shares, shared]
   dispatchable_document: [application, bill, card, envelope, letter, rebate, thank you card]
   document_dispatch_verb: [mail, send, sent, sends]
   per_document_resource: [stamp, label]

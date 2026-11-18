@@ -165,3 +165,18 @@ def test_unresolved_pronoun_target_cannot_license_a_reference(reg):
         )
         is None
     )
+
+
+def test_explicit_link_refines_only_the_exact_local_owner_placeholder(reg):
+    from rulekit.kernel.reference_identity import ReferenceIdentity
+
+    target = unit(0, "Aven", "name")
+    poss = unit(1, "her", "pronoun", obligations=[Obligation("pronoun", "refers")])
+    local = ReferenceIdentity("her", utterance_anchor=(3, poss.uid))
+    noun = unit(2, "nickname", "noun", owner="her", owner_resolved=True,
+                owner_ref_uid=poss.uid, owner_reference=local.to_dict())
+    slots = {"who": target, "poss": poss, "attribute": noun}
+    projected = project_references({"poss": "who"}, slots, reg, sentence_index=3)
+    assert projected is not None
+    assert reference_from_unit(projected["attribute"]).owner == reference_from_unit(target)
+    assert project_references({"poss": "who"}, slots, reg, sentence_index=4) is None

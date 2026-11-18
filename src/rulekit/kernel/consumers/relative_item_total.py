@@ -10,7 +10,7 @@ from ..model import BatchEvidence, Quantity
 from ..numeric_evidence import audit_numeric_mentions
 from ..reference_identity import ReferenceIdentity
 from ..resource_equations import resource_residual
-from ..source_coverage import quantity_ledger_source_units, uncovered_document_units
+from ..source_coverage import quantity_ledger_source_units, uncovered_units
 
 
 @consumer(
@@ -36,18 +36,19 @@ def consume(ctx):
         return decline(
             "the relative inventory does not establish the requested additional scope"
         )
+    quantities = list(ctx.store.by_kind(Quantity))
     if (
-        not known
+        not (known or quantities)
         or not pending
         or len(rows) != len(known) + len(pending)
-        or len(rows) != len(ctx.store.facts)
+        or len(rows) + len(quantities) != len(ctx.store.facts)
         or ctx.store.collisions
         or ctx.store.quarantined
         or any(
             r.entity_ref != who
             or r.verb != ctx.query["verb"]
             or r.provenance.assumption
-            for r in rows
+            for r in [*rows, *quantities]
         )
     ):
         return decline(
@@ -55,24 +56,49 @@ def consume(ctx):
         )
     expected = defaultdict(Counter)
     amounts = {}
-    for row in known:
+    covered = defaultdict(set)
+    for reading in ctx.premises:
+        local = [q for q in quantities if q.provenance.sentence == reading.sentence_index]
+        if not local:
+            continue
+        footprint = quantity_ledger_source_units(reading, local, ctx.reg)
+        if not footprint or any(
+            q.time or q.owner or q.label or q.qualifier or q.measure_qualifier
+            or q.content_ref or not ctx.reg.word_in_category(q.measure, "inventory_item")
+            for q in local
+        ):
+            return decline("absolute item counts must be plain counts for this source and activity")
+        covered[reading.sentence_index].update(footprint)
+    for row in [*known, *quantities]:
         if row.measure in amounts:
             return decline("an item has competing absolute counts")
         amounts[row.measure] = row.value
         expected[row.provenance.sentence][row.value] += 1
+    standards = {}
+    for row in pending:
+        if row.members or row.container:
+            standards[row] = row.members or (row.container,)
+            continue
+        candidates = [
+            base.measure for base in [*known, *quantities]
+            if base.provenance.sentence < row.provenance.sentence
+        ]
+        if len(candidates) != 1:
+            return decline("the unstated comparison standard needs one prior absolute item count")
+        standards[row] = tuple(candidates)
     while pending:
-        ready = [r for r in pending if set(r.members or (r.container,)) <= amounts.keys()]
+        ready = [r for r in pending if set(standards[r]) <= amounts.keys()]
         if not ready:
             return decline(
                 "the item comparisons contain a cycle or an unknown standard"
             )
         for row in ready:
-            standards = row.members or (row.container,)
-            if row.measure in amounts or len(set(standards)) != len(standards):
+            against = standards[row]
+            if row.measure in amounts or len(set(against)) != len(against):
                 return decline("an item has competing comparison counts")
             base = resource_residual(
-                [amounts[item] for item in standards], [], ctx.log, source="combined-inventory-standard",
-            ) if row.members else amounts[row.container]
+                [amounts[item] for item in against], [], ctx.log, source="combined-inventory-standard",
+            ) if row.members else amounts[against[0]]
             amounts[row.measure] = evaluate(
                 "base * factor + delta * sign",
                 {
@@ -93,7 +119,8 @@ def consume(ctx):
             not isfinite(v) or v < 0 or not float(v).is_integer()
             for v in amounts.values()
         )
-        or uncovered_document_units(ctx.premises, ctx.question, ctx.match.consumed)
+        or any(uncovered_units(reading, covered[reading.sentence_index]) for reading in ctx.premises)
+        or uncovered_units(ctx.question, ctx.match.consumed)
         or audit_numeric_mentions(
             (*ctx.premises, ctx.question),
             expected,

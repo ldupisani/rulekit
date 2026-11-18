@@ -117,7 +117,7 @@ def _satisfy_pattern_obligations(
             )
     references = getattr(result.match.rule, "references", {})
     if references:
-        projected = project_references(references, result.match.slots, reg)
+        projected = project_references(references, result.match.slots, reg, sentence_index=reading.sentence_index)
         if projected is None:
             return
         for slot, unit in result.match.slots.items():
@@ -370,7 +370,18 @@ def _measured_actor_candidates(readings, reading, reg, pronoun):
               and any(u.features.get("value_kind") == "count"
                       and reg.word_in_category(u.features.get("lemma", ""), "mass_unit")
                       for u in reading.units))
-    if not (state or change):
+    owned_measurement = (
+        reg.word_in_category(pronoun.features.get("lemma", ""), "third_person_animate_possessive_determiner")
+        and any(
+            u.features.get("owner_ref_uid") == pronoun.uid
+            and reg.word_in_category(u.features.get("lemma", ""), "mass_dimension_noun")
+            for u in reading.units
+        )
+    )
+    if reg.word_in_category(pronoun.features.get("lemma", ""), "possessive_determiner"):
+        if not owned_measurement:
+            return {}
+    elif not (state or change):
         return {}
     mentions, measured = {}, set()
     for prior in readings:
@@ -543,7 +554,7 @@ def _prior_nonpersonal_actor_candidates(readings, reading, unit, reg):
                 predicate.sense() == "verb"
                 and any(reg.word_in_category(predicate.features.get("lemma", ""), category)
                         for category in ("resource_usage_verb", "retention_verb", "allocation_transfer_verb",
-                                         "nonpersonal_actor_predicate"))
+                                         "nonpersonal_actor_predicate", "inventory_production_action"))
                 and any(ob.need == "subject" and ob.target is unit for ob in predicate.obligations())
                 for predicate in reading.units)
                 or reg.word_in_category(unit.features.get('lemma', ''), 'possessive_determiner')
@@ -1030,7 +1041,7 @@ def _bind_discourse(
                     candidates = _animate_candidates(
                         readings, reading.sentence_index, reg, unit
                     )
-                    if not candidates and not reg.word_in_category(lemma, "possessive_determiner"):
+                    if not candidates:
                         candidates = _measured_actor_candidates(readings, reading, reg, unit)
                     # Do not preempt a construction-local link or choose
                     # among current participants. Possessive determiners

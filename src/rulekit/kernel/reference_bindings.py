@@ -41,7 +41,9 @@ def _referent_number(unit: Unit) -> str | None:
     return "singular" if unit.sense() == "name" else unit.features.get("number")
 
 
-def project_references(bindings: dict[str, str], slots: dict, reg: Registry) -> dict | None:
+def project_references(
+    bindings: dict[str, str], slots: dict, reg: Registry, *, sentence_index: int | None = None,
+) -> dict | None:
     """Return validated copies, or None for absent, unknown or conflicting links."""
     if not bindings:
         return slots
@@ -94,7 +96,10 @@ def project_references(bindings: dict[str, str], slots: dict, reg: Registry) -> 
             continue
         old = reference_from_unit(unit).owner
         if unit.features.get("owner_resolved") and old != owner:
-            return None
+            # The exact local placeholder can be refined by this construction.
+            # An earlier anchor or another resolved owner still conflicts.
+            if old is None or old.utterance_anchor != (sentence_index, unit.features["owner_ref_uid"]):
+                return None
         projected[name] = Unit(unit.uid, unit.words, {
             **unit.features, "owner": owner.head, "owner_resolved": True,
             "owner_reference": owner.to_dict(),

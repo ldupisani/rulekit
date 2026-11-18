@@ -55,15 +55,25 @@ members:
   - other
   measurement_change_verb:
   - lose
+  - loses
+  - losing
+  - lost
   - gain
+  - gains
+  - gained
   - increase
   - increased
   - increases
   measured_increase_verb:
   - gain
+  - gains
+  - gained
   - gaining
   measured_decrease_verb:
   - lose
+  - loses
+  - losing
+  - lost
   valuation_descriptor:
   - worth
   measurement_origin_participle:

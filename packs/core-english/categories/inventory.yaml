@@ -13,6 +13,7 @@ categories:
     - quantity_holder
     - quantity_site_location
     - transaction_supplier
+    - collection_agent
   inventory_item:
     parent: noun
     includes:
@@ -23,6 +24,12 @@ categories:
     parent: verb
   inventory_account_verb:
     parent: verb
+  inventory_production_site:
+    parent: quantity_source
+  inventory_production_action:
+    parent: inventory_account_verb
+  inventory_cultivation_action:
+    parent: inventory_production_action
   stock_section:
     parent: noun
   stock_section_attribute:
@@ -36,6 +43,9 @@ categories:
   occupation_label:
     parent: person
 members:
+  inventory_production_site: [farm, garden, orchard, factory, workshop]
+  inventory_production_action: [produce, produces, produced]
+  inventory_cultivation_action: [grow, grows, grew]
   inventory_result_verb: [end]
   collection_recording_verb: [take, takes, took, collect, collects, collected, record, records, recorded]
   inventory_remainder_verb: [remain, remained, remains]

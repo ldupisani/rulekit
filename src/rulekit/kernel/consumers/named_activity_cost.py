@@ -111,6 +111,16 @@ def consume(ctx):
         return decline("all stated prices must be used, in one explicit currency")
     for p in prices:
         expected[p.provenance.sentence][p.value] += 1
+        if p.per:
+            quote = next(r for r in ctx.premises if r.sentence_index == p.provenance.sentence)
+            # A stated single package is the denominator of this unit quote.
+            expected[p.provenance.sentence].update(
+                unit.features["value"] for unit in quote.units
+                if unit.features.get("pattern_consumed")
+                and unit.features.get("lemma") == p.per
+                and unit.features.get("value_kind") == "count"
+                and unit.features.get("value") == 1
+            )
     if (
         any(uncovered_units(r, covered[r.sentence_index]) for r in ctx.premises)
         or uncovered_units(ctx.question, ctx.match.consumed)

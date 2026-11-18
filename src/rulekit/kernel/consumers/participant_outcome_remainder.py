@@ -9,7 +9,7 @@ from ..evaluate import evaluate
 from ..model import BatchEvidence, GroupTotal
 from ..numeric_evidence import audit_numeric_mentions
 from ..rate_calculation import convert_units
-from ..reference_identity import reference_from_unit
+from ..reference_identity import ReferenceIdentity, reference_from_unit
 from ..resource_equations import resource_residual
 from ..source_coverage import uncovered_document_units
 
@@ -48,6 +48,11 @@ def consume(ctx):
         or any(m.value != whole.value or m.measure != whole.measure for m in mirrors)
     ):
         return decline("the requested participants and measured outcome must agree")
+    if any(
+        row.attribute and not ctx.reg.word_in_category(row.measure or whole.measure, "mass_unit")
+        for row in rows
+    ):
+        return decline("the named property requires a mass unit")
     expected = defaultdict(Counter)
     expected[whole.provenance.sentence].update([whole.value, whole.per_member])
     expected[rest.provenance.sentence][rest.value] += 1
@@ -68,9 +73,15 @@ def consume(ctx):
             return decline("participant quantities need compatible units")
         values[row.entity_ref] = value
         expected[row.provenance.sentence][row.value] += 1
+    # A substantivized ordinal refers to a member of the same already scoped group.
+    standards = {
+        row: ReferenceIdentity(group.head, qualifiers=(row.marker,))
+        if row.marker else row.container_ref
+        for row in links
+    }
     pending = list(links)
     while pending:
-        ready = [r for r in pending if r.container_ref in values]
+        ready = [r for r in pending if standards[r] in values]
         if not ready:
             return decline("member comparisons contain an unresolved standard or cycle")
         for row in ready:
@@ -88,7 +99,7 @@ def consume(ctx):
                 return decline("the comparison needs compatible units")
             values[row.entity_ref] = evaluate(
                 "base + sign * offset",
-                {"base": values[row.container_ref], "sign": row.sign, "offset": offset},
+                {"base": values[standards[row]], "sign": row.sign, "offset": offset},
                 ctx.log,
                 source="partition-relative-member",
             )

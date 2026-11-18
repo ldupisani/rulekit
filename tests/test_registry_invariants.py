@@ -97,6 +97,47 @@ def test_member_lacks_root_sense(tmp_path):
         compile_registry([load_pack(root)])
 
 
+def test_partitive_witnesses_preserve_both_partial_binding_domains(tmp_path):
+    root = _pack(
+        tmp_path,
+        lex="""format: rulekit/lexicon@1
+entries:
+  bag: {senses: [noun], plural: bags}
+  box: {senses: [noun]}
+  nut: {senses: [noun], plural: nuts}
+  seed: {senses: [noun]}
+  drop: {senses: [noun]}
+""",
+        cats="""format: rulekit/categories@1
+categories:
+  container: {parent: noun}
+  carrier: {parent: container}
+  solid: {parent: noun}
+  liquid: {parent: noun}
+  vessel: {parent: noun}
+members:
+  carrier: [bag, box]
+  solid: [nut, seed]
+  liquid: [drop]
+partitive_measure_compatibility:
+  container: [solid]
+  vessel: [liquid]
+""",
+    )
+    reg = compile_registry([load_pack(root)])
+    witnesses = reg.partitive_witnesses
+    assert len(witnesses) < len(reg.lexicon)
+    for term in [*reg.lexicon, "bags", "nuts", "unknown"]:
+        assert any(reg.partitive_applies_to(term, w) for w in witnesses) == any(
+            reg.partitive_applies_to(term, w) for w in reg.lexicon
+        )
+        assert any(reg.partitive_applies_to(w, term) for w in witnesses) == any(
+            reg.partitive_applies_to(w, term) for w in reg.lexicon
+        )
+    assert reg.partitive_applies_to("bags", "nuts")
+    assert not any(reg.partitive_applies_to(w, "drop") for w in witnesses)
+
+
 def test_aggregate_sense_can_root_a_semantic_subset(tmp_path):
     root = _pack(
         tmp_path,

@@ -747,6 +747,8 @@ def _count_pass(reading: Reading, reg: Registry) -> bool:
             if (
                 b.features.get("qualifier") is not None
                 and b.features.get("qualifier_joined_left_by_hyphen")
+                # An internal hyphen in the noun phrase may belong to a later modifier.
+                and b.words[0].before == "-"
             ):
                 _merge(
                     reading,

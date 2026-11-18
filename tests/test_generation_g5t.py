@@ -210,9 +210,9 @@ def test_g5t_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 991
-    assert sum(item.supported for item in availability.values()) == 885
-    assert sum(not item.supported for item in availability.values()) == 106
+    assert len(availability) == 1033
+    assert sum(item.supported for item in availability.values()) == 925
+    assert sum(not item.supported for item in availability.values()) == 108
     assert availability[TARGET_RULE].supported
     # G5u subsequently supplied the loaded direct-adverb domain.
     assert availability[
@@ -223,7 +223,7 @@ def test_g5t_unlocks_exactly_the_preregistered_frontier() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 2663
+    assert len(exploration_status(project)["fillers"]) == 2684
 
 
 @pytest.mark.parametrize("marker", sorted(MOVED_WORDS))

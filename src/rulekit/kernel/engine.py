@@ -82,6 +82,7 @@ def analyze(
         assumption=assumption,
         contractions=reg.contractions,
         currency_symbols=tuple(reg.currencies),
+        initialisms=reg.category_members.get("dotted_initialism", ()),
     )
     annotate_numbers(reading, reg)
     annotate_senses(reading, reg)
@@ -796,7 +797,11 @@ def _split_question_scoped(
     premise recovery remain asserted: they describe source-text boundaries,
     not a hypothetical context.
     """
-    sentences = split_sentences(text, reg.category_members.get("person_title", ()) if reg else ())
+    sentences = split_sentences(
+        text,
+        reg.category_members.get("person_title", ()) if reg else (),
+        reg.category_members.get("dotted_initialism", ()) if reg else (),
+    )
     if not sentences:
         return [], None
     last = sentences[-1]
@@ -827,7 +832,7 @@ def _split_question_scoped(
     if marker is not None:
         detached = premises[-1][0][len(marker):].strip()
         detached = detached.rstrip(".").strip()
-        if detached and _is_declared_question_assumption(detached + ".", reg):
+        if detached and _is_declared_question_assumption(detached + ".", reg, probe_references=True):
             premises[-1] = (detached + ".", True)
     if reg is not None:
         clause, last = _split_leading_clause(last, reg)

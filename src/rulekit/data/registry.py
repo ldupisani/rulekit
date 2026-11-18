@@ -15,8 +15,9 @@ from __future__ import annotations
 
 import hashlib
 import re
-from math import isfinite
 from dataclasses import dataclass, field
+from functools import cached_property
+from math import isfinite
 from types import MappingProxyType
 from typing import Mapping
 
@@ -612,6 +613,26 @@ class Registry:
 
     def partitive_applies_to(self, measure: str, substance: str) -> bool:
         return bool(self.partitive_compatibility_pairs(measure, substance))
+
+    @cached_property
+    def partitive_witnesses(self) -> tuple[str, ...]:
+        """One lexical witness per inhabited category on either side of a partitive.
+
+        Compatibility is declared between noun categories. To test whether a
+        partial binding can have *any* partner, a member of each category is
+        sufficient. Fully bound pairs still need their exact compatibility check.
+        """
+        categories = set(self.partitive_measure_compatibility)
+        for substances in self.partitive_measure_compatibility.values():
+            categories.update(substances)
+        witnesses = set()
+        for category in categories:
+            for word in self.lexicon:
+                lemma = self.plural_to_singular.get(word, word)
+                if self.word_in_category(lemma, category):
+                    witnesses.add(word)
+                    break
+        return tuple(sorted(witnesses))
 
 
 def _freeze(d: dict) -> Mapping:

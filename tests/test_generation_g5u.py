@@ -76,6 +76,10 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
     }
 
     assert occurrences == {
+        "arithmetic/current-dimension-amount": ((2, 0), "now", ((2,),)),
+        "arithmetic/member-rated-workforce-expansion": ((11, 0), "also", ((11,),)),
+        "arithmetic/ordinal-relative-event-rate": ((5,), "extent", ()),
+        "arithmetic/packaged-offer-with-stated-lot-count": ((8, 0), "only", ((8,),)),
         "arithmetic/equal-population-arrival-with-return-share": ((9, 0), 'then', ((9,),)),
         "arithmetic/remaining-relative-receipt": ((0, 0), 'next', ((0,),)),
         "arithmetic/separately-required-documents": ((1, 0), 'also', ((1,),)),
@@ -204,6 +208,7 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
     assert set(project.registry.lexicon[MOVED_WORD].senses) == {"adverb"}
     assert project.registry.word_categories.get(MOVED_WORD, ()) == (
         "current_holding_anchor_adverb",
+        "current_snapshot_adverb",
     )
     assert project.registry.word_categories.get("then", ()) == (
         "conditional_consequent_marker",
@@ -225,7 +230,7 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
     ] == sorted([
         "actively", "actually", "afterward", "all-around", "already", "always", "back", "continuously", "correctly", "downhill", "earlier", "exactly", "forever", "forth", "initially", "instead", "later", "normally", "otherwise", "quickly", "separately", "strictly", "incorrectly", "very",
         "again", "ago", "also", "away", "back and forth", "completely", MOVED_WORD, "daily", "down", "entirely", "equally", "far", "finally", "fully", "further", "however", "immediately", "individually",
-        "halfway", "just", "next", "off", "once again", "online", "only", "originally", "out", "outside", "recently", "respectively", "safely", "still", "then", "thereafter", "too", "up", "upstairs", "vertically", "yet",
+        "frequently", "halfway", "just", "next", "off", "once again", "online", "only", "originally", "out", "outside", "recently", "respectively", "safely", "still", "then", "thereafter", "too", "up", "upstairs", "vertically", "yet",
     ])
 
 
@@ -276,13 +281,15 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
     project = load_project(CURATED)
     availability = list_rule_availability(project)
 
-    assert len(availability) == 991
-    assert sum(item.supported for item in availability) == 885
-    assert sum(not item.supported for item in availability) == 106
+    assert len(availability) == 1033
+    assert sum(item.supported for item in availability) == 925
+    assert sum(not item.supported for item in availability) == 108
     assert all(
         not item.blockers
         or item.id
         in {
+            "arithmetic/event-capacity-matching-membership",
+            "arithmetic/member-rated-capacity-work",
             "arithmetic/material-container-service-capacity",
             "arithmetic/distributed-relative-use",
             "arithmetic/named-sales-purpose-context",
@@ -393,7 +400,7 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
             'logic-arithmetic/universal-all-have-quantity-pp-incompatible-item-safety'}
         for item in availability
     )
-    assert len(exploration_status(project)["fillers"]) == 2663
+    assert len(exploration_status(project)["fillers"]) == 2684
 
 
 def test_currently_generates_a_matcher_confirmed_anchor() -> None:
@@ -467,7 +474,7 @@ def test_combined_project_exposes_only_declared_holding_anchor_adverbs() -> None
         for item in exploration_status(project)["fillers"]
     }
 
-    assert len(adverbs) == 63
+    assert len(adverbs) == 64
     holding_anchor_adverbs = {
         word
         for word in adverbs

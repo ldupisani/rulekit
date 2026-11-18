@@ -1,0 +1,34 @@
+format: rulekit/categories@1
+categories:
+  measured_change_verb: {parent: verb}
+  copular_infinitive: {parent: verb}
+  current_snapshot_adverb: {parent: adverb}
+  projection_window_preposition: {parent: preposition}
+  projected_dimension_noun: {parent: noun}
+  projected_dimension_adjective: {parent: adjective}
+  employment_context: {parent: noun}
+  activity_onset_verb: {parent: verb}
+  savings_retention_verb: {parent: verb}
+  retained_balance_verb: {parent: verb}
+  projected_purchase_verb: {parent: verb}
+  elapsed_auxiliary_clitic: {parent: possessive}
+members:
+  copular_infinitive: [be]
+  current_snapshot_adverb: [currently]
+  projection_window_preposition: [after, in]
+  measured_change_verb: [grow, grows, growing, grew]
+  projected_dimension_noun: [height, length, width]
+  projected_dimension_adjective: [tall, long, wide]
+  employment_context: [job, work]
+  activity_onset_verb: [start, started, starts]
+  savings_retention_verb: [save, saved, saves]
+  retained_balance_verb: [left]
+  projected_purchase_verb: [buy, buys, bought, purchase, purchases, purchased]
+  elapsed_auxiliary_clitic: ["'s"]
+attrs:
+  height: {projection_axis: 1}
+  tall: {projection_axis: 1}
+  length: {projection_axis: 2}
+  long: {projection_axis: 2}
+  width: {projection_axis: 3}
+  wide: {projection_axis: 3}

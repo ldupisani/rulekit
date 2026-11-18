@@ -513,14 +513,14 @@ def _ask_filler_satisfies_known_where(
             if measure is not None and substance is None:
                 if not any(
                     reg.partitive_applies_to(measure.identity, word)
-                    for word in reg.lexicon
+                    for word in reg.partitive_witnesses
                 ):
                     return False
                 continue
             if substance is not None and measure is None:
                 if not any(
                     reg.partitive_applies_to(word, substance.identity)
-                    for word in reg.lexicon
+                    for word in reg.partitive_witnesses
                 ):
                     return False
                 continue

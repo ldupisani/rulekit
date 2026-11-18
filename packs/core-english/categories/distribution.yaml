@@ -11,6 +11,8 @@ categories:
     - production_device
     - computing_device
     - allocation_storage
+  group_serving_distributor: {parent: quantifier}
+  removal_destination_noun: {parent: noun}
   uniform_quantity_attribute: {parent: adjective}
   retention_verb: {parent: verb}
   local_retention_verb: {parent: verb}
@@ -50,6 +52,7 @@ categories:
     - organization
     - production_device
     - computing_device
+    - inventory_production_site
     - animal
   nonpersonal_actor_anaphor:
     parent: pronoun
@@ -73,6 +76,8 @@ categories:
   equal_amount_attribute:
     parent: adjective
 members:
+  removal_destination_noun: [home]
+  group_serving_distributor: [all, each]
   population_enclosure: [zoo]
   local_retention_verb: [stay, stayed, stays, remain, remained, remains]
   population_entry_verb: [go, goes, went, swam, swim, swims]

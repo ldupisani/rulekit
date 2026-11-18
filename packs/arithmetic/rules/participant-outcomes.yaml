@@ -23,7 +23,7 @@ rules:
     - opt:
       - lit: of
       - slot: property
-        cat: mass_measure
+        cat: mass_dimension_noun
         uncounted: true
     - lit: .
       consume_skipped: true
@@ -35,6 +35,7 @@ rules:
     value: amount
     position: '{amount.span_start}'
     per_member: group
+    attribute: '{property.optional}'
     verb: '{act}'
   consumes:
   - group
@@ -62,6 +63,9 @@ rules:
       cat: resource_measure_unit
       counted: true
       bare: true
+    - opt:
+      - {lit: of}
+      - {slot: property, cat: mass_dimension_noun, uncounted: true, bare: true}
     - lit: .
       consume_skipped: true
   emits:
@@ -71,6 +75,7 @@ rules:
     measure: '{amount}'
     value: amount
     position: '{amount.span_start}'
+    attribute: '{property.optional}'
     verb: '{act}'
   consumes:
   - act
@@ -125,6 +130,49 @@ rules:
     act:
       subject: who
   description: Close a measured participant partition using ordinal member identities and an explicitly equal remainder.
+- id: arithmetic/measured-participant-ordinal-standard
+  phase: read
+  match:
+    sentence:
+    - slot: who
+      cat: person
+      uncounted: true
+      qualified: true
+      qualifier_cat: holder_ordinal
+      all_qualifiers: true
+      at_start: true
+    - slot: act
+      cat: measured_outcome_predicate
+      finite_form: true
+    - slot: amount
+      cat: resource_measure_unit
+      counted: true
+      bare: true
+    - slot: direction
+      cat: mass_quantity_delta
+    - lit: than
+    - {lit: the, consume_skipped: true}
+    - {slot: other, cat: holder_ordinal}
+    - lit: .
+      consume_skipped: true
+  emits:
+  - fact: batch_evidence
+    kind: participant-relation
+    entity: '{who}'
+    measure: '{amount}'
+    value: amount
+    position: '{amount.span_start}'
+    verb: '{act}'
+    marker: '{other}'
+    sign: sign(direction)
+  consumes:
+  - act
+  - amount
+  satisfies: {direction: [standard]}
+  bindings:
+    act:
+      subject: who
+  description: Close a measured participant partition using ordinal member identities and an explicitly equal remainder.
 - id: arithmetic/equal-remaining-participant-outcomes
   phase: read
   match:
@@ -148,6 +196,9 @@ rules:
       qualifier_cat: equal_amount_attribute
       all_qualifiers: true
       number: singular
+    - opt:
+      - {lit: of}
+      - {slot: property, cat: mass_dimension_noun, uncounted: true, bare: true}
     - lit: .
       consume_skipped: true
   emits:
@@ -157,6 +208,7 @@ rules:
     measure: ''
     value: group
     position: '{group.span_start}'
+    attribute: '{property.optional}'
     verb: '{act}'
   consumes:
   - group

@@ -63,7 +63,7 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
     assert any("antecedent discourse group" in blocker for blocker in contextual.blockers)
     # The reusable physics pack adds the independently generatable
     # ask/physics-quantity surface to curated.
-    assert sum(item.supported for item in availability.values()) == 497
+    assert sum(item.supported for item in availability.values()) == 515
     assert availability["ask/how-many-of-collection-are-label"].supported
     assert availability["ask/how-many-of-collection-are-label"].supported_modes == (
         "ask_only",
@@ -87,7 +87,7 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
     assert availability["ask/measured-content-in-container-unit"].blockers == (
         "ask requires generated premise evidence; standalone realization is disabled",
     )
-    assert len(availability) == 543
+    assert len(availability) == 561
     assert {
         item.id for item in availability.values() if not item.supported
     } == {'ask/available-unit-assignments-with-vacancy',
@@ -624,7 +624,7 @@ def test_answerable_scenario_uses_one_generated_removal_minimal_premise(
     candidate = generate_ask_scenario(
         curated,
         ask_id="ask/how-old-is",
-        seed=81,
+        seed=42,
         scenario_mode="answerable",
         locked_bindings={"verb": "is", "who": "Cato"},
     )
@@ -682,7 +682,7 @@ def test_random_answerable_mode_skips_unsupported_scenario_contracts(
     monkeypatch.setattr(ask_generation, "ask_review_target_counts", lambda *a, **k: counts)
     candidate = generate_ask_scenario(
         curated,
-        seed=2,
+        seed=42,
         scenario_mode="answerable",
     )
 

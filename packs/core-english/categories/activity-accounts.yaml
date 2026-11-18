@@ -82,7 +82,11 @@ members:
   - more
   stock_start_action:
   - start
+  - starts
+  - started
   - begin
+  - begins
+  - began
   activity_pause_action:
   - take
   - took

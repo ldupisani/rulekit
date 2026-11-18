@@ -14,11 +14,14 @@ categories:
     parent: purchase_context_activity
   dining_account_activity:
     parent: account_activity
+  dining_account_participation_action:
+    parent: activity_account_participation
   food:
     parent: material_resource
     includes:
     - edible_quantity_object
 members:
+  dining_account_participation_action: [eat, eats, ate]
   dining_venue:
   - chain
   - restaurant

@@ -625,3 +625,176 @@ def test_unknown_class_membership_cannot_be_excluded(reg):
         "How many flowers did the garden produce?",
         reg,
     ).answer.committed
+
+
+@pytest.mark.parametrize(
+    "old,new",
+    [
+        ("18 kilograms.", "18 kilograms of weight."),
+        ("same amount.", "same amount of weight."),
+        ("than the first person", "than the first"),
+    ],
+)
+def test_measured_partition_property_and_ordinal_ellipsis(reg, old, new):
+    number(reg, outcomes().replace(old, new), 28)
+
+
+def test_measured_partition_cannot_attach_weight_to_a_nonmass_measure(reg):
+    text = outcomes().replace("18 kilograms.", "18 liters of weight.")
+    assert not solve(text, reg).answer.committed
+
+
+@pytest.mark.parametrize(
+    "old,new",
+    [
+        ("had lunch", "ate lunch"),
+        ("had lunch", "shared lunch"),
+        ("had lunch", "bought lunch"),
+        ("eggs cost", "eggs are"),
+        ("How much did", "What did"),
+        ("A slice", "One slice"),
+        ("lunch", "meeting"),
+    ],
+)
+def test_named_activity_cost_wording(reg, old, new):
+    number(reg, breakfast().replace(old, new), 26)
+
+
+def test_a_multiunit_quote_is_not_a_single_unit_quote(reg):
+    assert not solve(breakfast().replace("A slice of bread", "Two slices of bread"), reg).answer.committed
+
+
+@pytest.mark.parametrize(
+    "text,value",
+    [
+        ("A garden produced 30 roses. It produced 6 fewer tulips and twice as many lilies as tulips. "
+         "How many flowers did the garden produce?", 102),
+        ("A gardener grew 30 roses, 6 fewer tulips and twice as many lilies as tulips. "
+         "How many flowers did the gardener grow?", 102),
+        ("A factory produced 20 shirts and 4 fewer coats. It produced twice as many pants as coats. "
+         "How many clothes did the factory produce?", 68),
+    ],
+)
+def test_continued_relative_inventory(reg, text, value):
+    number(reg, text, value)
+
+
+@pytest.mark.parametrize(
+    "opening",
+    [
+        "A factory produced 20 shirts and 16 coats.",
+        "A factory produced 20 shirts. A workshop produced 16 coats.",
+    ],
+)
+def test_continued_inventory_requires_a_unique_source_and_difference_standard(reg, opening):
+    assert not solve(
+        f"{opening} It produced 4 fewer pants. How many clothes did the factory produce?", reg
+    ).answer.committed
+
+
+@pytest.mark.parametrize(
+    "old,new",
+    [
+        ("weighs 75 kg at", "weighs in at 75 kg,"),
+        ("weeks from", "weeks before"),
+        ("He is on a plan that allows him to lose", "He is on a plan and loses"),
+        ("He is on a plan that allows him to lose", "He loses"),
+        ("He is on a plan that allows him to lose", "If he loses"),
+        ("He is on a plan that allows him to lose", "He is on a plan that makes him lose"),
+        ("allows him to", "causes him to"),
+        ("is on a plan that allows him to lose", "goes on a plan that results in him losing"),
+        ("He is on a plan that allows him to lose", "Through exercise he loses"),
+        ("He is on a plan that allows him to lose", "By restricting his diet he loses"),
+        ("How much will he weigh", "What will his weight be"),
+    ],
+)
+def test_measured_deadline_forecast_wording(reg, old, new):
+    number(reg, forecast().replace(old, new), 65)
+
+
+@pytest.mark.parametrize(
+    "old,new",
+    [
+        ("weeks from", "weeks after"),
+        ("until the day of the race", "until the day of the game"),
+        ("allows him to lose", "makes him to lose"),
+        ("on the day of the race?", "on the week of the race?"),
+    ],
+)
+def test_measurement_deadline_and_causative_boundaries(reg, old, new):
+    assert not solve(forecast().replace(old, new), reg).answer.committed
+
+
+@pytest.mark.parametrize(
+    "old,new",
+    [
+        ("her 15 classmates", "15 classmates"),
+        ("her 15 classmates", "15 of her classmates"),
+        ("were cut into", "were divided into"),
+        ("were cut into", "were partitioned into"),
+        ("all had 1 piece", "each had 1 slice"),
+        ("are left?", "remain?"),
+        ("had 4 cookie pies", "starts with 4 cookie pies"),
+        ("had 4 cookie pies to share", "had 4 cookie pies. She shared them"),
+    ],
+)
+def test_shared_stock_roster_partition_and_remainder_wording(reg, old, new):
+    number(reg, pieces().replace(old, new), 7)
+
+
+def test_owner_can_take_the_unallocated_units_with_stated_assumption(reg):
+    text = pieces().replace("are left?", "can Nora take home?")
+    result = number(reg, text, 7)
+    assert [a.id for a in result.answer.assumptions] == ["stock-holder-keeps-unallocated-units"]
+    assert not solve(text.replace("can Nora", "can Iris"), reg).answer.committed
+
+
+def test_split_roster_requires_one_compatible_opening_stock(reg):
+    text = pieces().replace(
+        "had 4 cookie pies to share", "had 4 cookie pies and 4 cakes. She shared them"
+    )
+    assert not solve(text, reg).answer.committed
+
+
+def test_continued_inventory_cannot_reuse_a_different_indefinite_source(reg):
+    text = (
+        "A factory produced 20 shirts. A factory produced 4 fewer coats. "
+        "How many clothes did the factory produce?"
+    )
+    assert not solve(text, reg).answer.committed
+
+
+def test_measured_deadline_projects_a_nonliving_subject(reg):
+    number(
+        reg,
+        "A box weighs 65 kg, 3 weeks before a delivery. "
+        "The box gains 2 kg per week until the delivery. "
+        "How much will the box weigh at the delivery?",
+        71,
+    )
+
+
+def test_means_frame_preserves_the_action_and_specification(reg):
+    from rulekit.kernel.model import BatchEvidence
+
+    text = forecast().replace(
+        "He is on a plan that allows him to lose", "By restricting his diet, he loses"
+    )
+    result = number(reg, text, 65)
+    rate = next(row for row in result.store.by_kind(BatchEvidence) if row.kind == "forecast-rate")
+    assert (rate.entity, rate.attribute, rate.marker) == ("painter", "diet", "restrict")
+    assert not solve(text.replace("his diet", "her diet"), reg).answer.committed
+
+
+def test_shared_stock_distribution_on_divisible_materials(reg):
+    number(
+        reg,
+        "Nora had 3 panels. She shared them with her 4 friends and her teacher, Ms. Iris. "
+        "If each of the panels were divided into 4 pieces and Nora, her friends, and Ms. Iris "
+        "each had 1 piece, how many pieces remain?",
+        6,
+    )
+
+
+def test_activity_cost_keeps_selectional_roles(reg):
+    assert not solve(breakfast().replace("had lunch", "ate meeting"), reg).answer.committed

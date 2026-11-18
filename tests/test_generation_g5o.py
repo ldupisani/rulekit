@@ -18,6 +18,13 @@ ROOT = Path(__file__).resolve().parents[1]
 CURATED = ROOT / "projects" / "curated"
 
 EXPECTED_OCCURRENCES = {
+    "arithmetic/all-savings-priced-intention": ((3,), "all"),
+    "arithmetic/event-capacity-matching-membership": ((6,), "each"),
+    "arithmetic/per-unit-capacity-from-contained-fittings": ((10,), "each"),
+    "arithmetic/per-unit-capacity-from-contained-fittings-singular": ((9,), "each"),
+    "arithmetic/recipient-plan-with-grouped-and-single-cohorts": ((8,), "each"),
+    "arithmetic/recipient-plan-with-per-cohort-count": ((9,), "each"),
+    "arithmetic/unoccupied-fraction-and-remainder-use": ((9,), "each"),
     "arithmetic/all-item-requirement-with-counted-exception": ((0,), "quantifier"),
     "arithmetic/nested-subset-observed-count": ((2, 0), "both"),
     "arithmetic/nested-subset-observed-elided-count": ((2, 0), "both"),
@@ -61,6 +68,7 @@ EXPECTED_OCCURRENCES = {
     'arithmetic/uniform-indexed-performance': ((4,), 'each'),
     'arithmetic/uniform-repetition-frequency': ((4,), 'each'),
     "arithmetic/declared-package-unit-quote": ((6, 0), "each"),
+    "arithmetic/counted-single-package-unit-quote": ((5, 0), "each"),
     "arithmetic/explicit-per-recipient-unit-count": ((0,), "each"),
     "arithmetic/partitioned-stock-served-to-mixed-roster": ((15,), "all"),
     "arithmetic/collected-components-each": ((5,), "each0"),
@@ -232,9 +240,9 @@ def test_g5o_unlocks_only_the_preregistered_rule() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 991
-    assert sum(item.supported for item in availability.values()) == 885
-    assert sum(not item.supported for item in availability.values()) == 106
+    assert len(availability) == 1033
+    assert sum(item.supported for item in availability.values()) == 925
+    assert sum(not item.supported for item in availability.values()) == 108
     assert availability[
         "arithmetic/existential-premise-distributive"
     ].supported
@@ -244,7 +252,7 @@ def test_g5o_unlocks_only_the_preregistered_rule() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 2663
+    assert len(exploration_status(project)["fillers"]) == 2684
 
 
 @pytest.mark.parametrize("quantifier", sorted(EXPECTED_DISTRIBUTIVE_FILLERS))

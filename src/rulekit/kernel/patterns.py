@@ -2624,7 +2624,7 @@ def run_rules(
         for m in match_all(reading, seq, reg, overlapping=rule.overlapping):
             m.rule = rule
             m.specificity = specificity(m, reg)
-            effective_slots = project_references(rule.references, m.slots, reg)
+            effective_slots = project_references(rule.references, m.slots, reg, sentence_index=reading.sentence_index)
             if effective_slots is None or not _check_where(rule, effective_slots, reading, reg):
                 continue
             provenance = Provenance(

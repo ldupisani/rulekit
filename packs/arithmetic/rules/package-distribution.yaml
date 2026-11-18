@@ -182,80 +182,6 @@ rules:
     owner: who
   description: Preserve stocks, units per package or whole, counted recipient groups and explicit serving
     participants.
-- id: arithmetic/stock-for-counted-and-named-recipients
-  phase: read
-  match:
-    sentence:
-    - slot: who
-      type: entity
-      common_noun_cat: allocation_recipient
-      referential: true
-      bare: true
-    - slot: have
-      cat: possession_state
-      finite_form: true
-    - slot: stock
-      cat: decomposable_quantity_whole
-      counted: true
-    - lit: to
-    - slot: share
-      cat: allocation_verb
-      bare_form: true
-    - lit: with
-    - slot: owner
-      cat: possessive_determiner
-    - slot: peers
-      cat: person
-      counted: true
-    - lit: and
-    - slot: other_owner
-      cat: possessive_determiner
-    - slot: role
-      cat: person
-      uncounted: true
-      number: singular
-    - lit: ','
-      consume_skipped: true
-    - slot: named
-      type: name
-    - lit: .
-      consume_skipped: true
-  emits:
-  - fact: batch_evidence
-    kind: distribution-stock
-    entity: '{who}'
-    measure: '{stock}'
-    container: '{stock}'
-    value: stock
-    position: '{stock.span_start}'
-  - fact: batch_evidence
-    kind: distribution-population
-    entity: '{who}'
-    measure: '{peers}'
-    value: peers
-    position: '{peers.span_start}'
-  - fact: batch_evidence
-    kind: distribution-population
-    entity: '{who}'
-    measure: '{role}'
-    value: 1
-    position: '{role.span_start}'
-    container: '{named}'
-  consumes:
-  - have
-  - stock
-  - share
-  - peers
-  satisfies:
-    have:
-    - subject
-    share:
-    - subject
-  description: Preserve stocks, units per package or whole, counted recipient groups and explicit serving
-    participants.
-  references:
-    owner: who
-    other_owner: who
 - id: arithmetic/partitioned-stock-served-to-mixed-roster
   phase: read
   match:
@@ -298,7 +224,7 @@ rules:
     - slot: named
       type: name
     - slot: all
-      cat: group_total_quantifier
+      cat: group_serving_distributor
     - slot: have
       cat: possession_state
       finite_form: true
@@ -452,7 +378,66 @@ asks:
   satisfies:
     be:
     - subject
+- id: ask/distributed-pieces-remain
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: piece, cat: component_quantity_measure, uncounted: true, bare: true}
+    - {slot: remain, cat: remainder_state_verb, finite_form: true}
+    - {lit: '?', consume_skipped: true}
+  where: [{number_compatible: [piece, remain]}]
+  resolves: {consumer: unit-distribution, mode: remainder, measure: '{piece}'}
+  satisfies: {remain: [subject]}
+- id: ask/distributed-pieces-to-take
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: piece, cat: component_quantity_measure, uncounted: true, bare: true}
+    - {slot: aux, cat: ability_modal}
+    - {slot: who, type: entity, common_noun_cat: allocation_recipient, referential: true}
+    - {slot: take, cat: inventory_withdrawal_particle_head, bare_form: true}
+    - {slot: destination, cat: removal_destination_noun}
+    - {lit: '?', consume_skipped: true}
+  resolves: {consumer: unit-distribution, mode: remainder, measure: '{piece}', recipient: '{who}'}
+  satisfies: {take: [subject]}
 templates:
+  mixed-recipient-roster:
+    parameters:
+      opening: []
+      peers: []
+      count: peers
+      position: '{peers.span_start}'
+      shared_items: ""
+      stock: []
+      consumes: [share, peers]
+      satisfies: {share: [subject]}
+      references: {owner: who, other_owner: who}
+    rule:
+      phase: read
+      description: Keep a counted group and one named recipient attached to the stock holder.
+      match:
+        sentence:
+        - {slot: who, type: entity, common_noun_cat: allocation_recipient, referential: true, bare: true, at_start: true}
+        - {parameter: opening}
+        - {lit: with}
+        - {parameter: peers}
+        - {lit: and}
+        - {slot: other_owner, cat: possessive_determiner}
+        - {slot: role, cat: person, uncounted: true, number: singular}
+        - {lit: ',', consume_skipped: true}
+        - {slot: named, type: name}
+        - {lit: '.', consume_skipped: true}
+      emits:
+      - {parameter: stock}
+      - {fact: batch_evidence, kind: distribution-population, entity: '{who}', measure: '{peers}',
+         value: {parameter: count}, position: {parameter: position}, acquisition: {parameter: shared_items}}
+      - {fact: batch_evidence, kind: distribution-population, entity: '{who}', measure: '{role}',
+         value: 1, position: '{role.span_start}', container: '{named}', acquisition: {parameter: shared_items}}
+      consumes: {parameter: consumes}
+      satisfies: {parameter: satisfies}
+      references: {parameter: references}
   active-provision:
     parameters:
       resource:
@@ -521,6 +506,87 @@ templates:
       references:
         parameter: references
 variants:
+- id: arithmetic/stock-for-counted-and-named-recipients
+  template: mixed-recipient-roster
+  arguments:
+    opening:
+    - {slot: have, cat: possession_state, finite_form: true}
+    - {slot: stock, cat: decomposable_quantity_whole, counted: true}
+    - {lit: to}
+    - {slot: share, cat: allocation_verb, bare_form: true}
+    peers:
+    - {slot: owner, cat: possessive_determiner}
+    - {slot: peers, cat: person, counted: true}
+    stock:
+    - {fact: batch_evidence, kind: distribution-stock, entity: '{who}', measure: '{stock}',
+       value: stock, position: '{stock.span_start}', container: '{stock}'}
+    consumes: [have, stock, share, peers]
+    satisfies: {have: [subject], share: [subject]}
+- id: arithmetic/stock-for-counted-group-and-possessed-role
+  template: mixed-recipient-roster
+  arguments:
+    opening:
+    - {slot: have, cat: possession_state, finite_form: true}
+    - {slot: stock, cat: decomposable_quantity_whole, counted: true}
+    - {lit: to}
+    - {slot: share, cat: allocation_verb, bare_form: true}
+    peers:
+    - {slot: peers, cat: person, counted: true}
+    stock:
+    - {fact: batch_evidence, kind: distribution-stock, entity: '{who}', measure: '{stock}',
+       value: stock, position: '{stock.span_start}', container: '{stock}'}
+    consumes: [have, stock, share, peers]
+    satisfies: {have: [subject], share: [subject]}
+    references: {other_owner: who}
+- id: arithmetic/initial-stock-for-mixed-roster
+  template: mixed-recipient-roster
+  arguments:
+    opening:
+    - {slot: have, cat: stock_start_action, finite_form: true}
+    - {lit: with}
+    - {slot: stock, cat: decomposable_quantity_whole, counted: true}
+    - {lit: to}
+    - {slot: share, cat: allocation_verb, bare_form: true}
+    peers:
+    - {slot: owner, cat: possessive_determiner}
+    - {slot: peers, cat: person, counted: true}
+    stock:
+    - {fact: batch_evidence, kind: distribution-stock, entity: '{who}', measure: '{stock}',
+       value: stock, position: '{stock.span_start}', container: '{stock}'}
+    consumes: [have, stock, share, peers]
+    satisfies: {have: [subject], share: [subject]}
+- id: arithmetic/stock-for-partitive-and-named-recipients
+  template: mixed-recipient-roster
+  arguments:
+    opening:
+    - {slot: have, cat: possession_state, finite_form: true}
+    - {slot: stock, cat: decomposable_quantity_whole, counted: true}
+    - {lit: to}
+    - {slot: share, cat: allocation_verb, bare_form: true}
+    peers:
+    - {slot: group_count, type: number, standalone: true, value_min: 1}
+    - {lit: of}
+    - {slot: owner, cat: possessive_determiner}
+    - {slot: peers, cat: person, uncounted: true, number: plural}
+    count: group_count
+    position: '{group_count.span_start}'
+    stock:
+    - {fact: batch_evidence, kind: distribution-stock, entity: '{who}', measure: '{stock}',
+       value: stock, position: '{stock.span_start}', container: '{stock}'}
+    consumes: [have, stock, share, group_count]
+    satisfies: {have: [subject], share: [subject], group_count: [quantifies]}
+- id: arithmetic/shared-stock-mixed-roster
+  template: mixed-recipient-roster
+  arguments:
+    opening:
+    - {slot: share, cat: allocation_verb, finite_form: true}
+    - {slot: items, cat: plural_object_pronoun}
+    peers:
+    - {slot: owner, cat: possessive_determiner}
+    - {slot: peers, cat: person, counted: true}
+    shared_items: '{items}'
+    satisfies: {share: [subject, dobj], items: [refers]}
+
 - id: arithmetic/active-provision-of-item
   template: active-provision
 - id: arithmetic/active-provision-with-supply-choice

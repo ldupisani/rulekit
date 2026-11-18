@@ -351,6 +351,7 @@ entries:
   arrange:
     senses:
     - verb
+  arranged: {senses: [verb], verb: {lemma: arrange}}
   arrive: {senses: [verb], number: plural}
   arrived: {senses: [verb], verb: {lemma: arrive}}
   arrives: {senses: [verb], number: singular, verb: {lemma: arrive}}
@@ -829,6 +830,7 @@ entries:
     - noun
     plural: bluebirds
   blueprint: {senses: [noun], plural: blueprints}
+  board: {senses: [noun], plural: boards}
   boarding school: {senses: [noun], plural: boarding schools, lexical_phrase: true}
   boat:
     senses:
@@ -859,6 +861,7 @@ entries:
     verb:
       lemma: book
       past_participle: true
+  booking: {senses: [verb], verb: {lemma: book}}
   books:
     senses:
     - noun
@@ -1015,6 +1018,7 @@ entries:
     verb:
       lemma: build
   built: {senses: [verb], verb: {lemma: build}}
+  bulk: {senses: [adjective, noun]}
   bunch:
     senses:
     - noun
@@ -1742,6 +1746,7 @@ entries:
     senses:
     - noun
     plural: cones
+  conference: {senses: [noun], plural: conferences}
   connects:
     senses:
     - verb
@@ -2134,6 +2139,7 @@ entries:
   de:
     senses:
     - preposition
+  deal: {senses: [noun], plural: deals}
   debit:
     senses:
     - adjective
@@ -2309,6 +2315,7 @@ entries:
   diet:
     senses:
     - noun
+  dietary: {senses: [adjective]}
   difference:
     senses:
     - noun
@@ -3315,6 +3322,7 @@ entries:
     senses:
     - noun
     plural: frequencies
+  frequently: {senses: [adverb]}
   fresh:
     senses:
     - adjective
@@ -4208,9 +4216,7 @@ entries:
   join:
     senses:
     - verb
-  joined:
-    senses:
-    - verb
+  joined: {senses: [verb], verb: {lemma: join}}
   joins:
     senses:
     - verb
@@ -4908,6 +4914,10 @@ entries:
   mentioned:
     senses:
     - verb
+  meow: {senses: [verb, noun], plural: meows, verb: {lemma: meow, number: plural}}
+  meowed: {senses: [verb], verb: {lemma: meow}}
+  meowing: {senses: [verb], verb: {lemma: meow}}
+  meows: {senses: [verb], verb: {lemma: meow, number: singular}}
   merchandise: {senses: [noun]}
   merchandiser:
     senses:
@@ -5077,6 +5087,7 @@ entries:
   monthly:
     senses:
     - adjective
+  moon: {senses: [noun], plural: moons}
   more: {senses: [comparative]}
   morning:
     senses:
@@ -5527,6 +5538,7 @@ entries:
     - verb
   outside: {senses: [adverb, preposition]}
   over: {senses: [preposition]}
+  overnight: {senses: [adjective]}
   oversized:
     senses:
     - adjective
@@ -5553,6 +5565,7 @@ entries:
   oz:
     senses:
     - noun
+  p.e.: {senses: [noun]}
   pace:
     senses:
     - noun
@@ -5668,6 +5681,8 @@ entries:
   participates: {senses: [verb], number: singular, verb: {lemma: participate}}
   participating: {senses: [verb], verb: {lemma: participate}}
   particular: {senses: [adjective]}
+  partition: {senses: [noun, verb], plural: partitions, verb: {lemma: partition}}
+  partitioned: {senses: [verb], verb: {lemma: partition}}
   partner: {senses: [noun], plural: partners}
   party: {senses: [noun], plural: parties}
   pass:
@@ -5722,6 +5737,7 @@ entries:
     verb:
       lemma: pay
       number: singular
+  pe: {senses: [noun]}
   peach: {senses: [noun], plural: peaches}
   peanut:
     senses:
@@ -5808,6 +5824,7 @@ entries:
     senses:
     - noun
     plural: phrases
+  physical education: {senses: [noun], lexical_phrase: true}
   pi: {senses: [noun]}
   piano:
     senses:
@@ -6105,6 +6122,7 @@ entries:
   prep:
     senses:
     - noun
+  preparation: {senses: [noun], plural: preparations}
   prepare:
     senses:
     - verb
@@ -6133,6 +6151,7 @@ entries:
   primary:
     senses:
     - adjective
+  principal: {senses: [noun], plural: principals}
   print:
     senses:
     - noun
@@ -6259,6 +6278,8 @@ entries:
     senses:
     - noun
     plural: pufferfish
+  pull out: {senses: [adjective], lexical_phrase: true}
+  pull-out: {senses: [adjective]}
   pump:
     senses:
     - noun
@@ -6328,6 +6349,7 @@ entries:
     senses:
     - noun
     plural: quarters
+  queen size: {senses: [adjective], lexical_phrase: true}
   question:
     senses:
     - noun
@@ -6738,6 +6760,11 @@ entries:
     - verb
   rest: {senses: [noun]}
   restaurant: {"senses": ["noun"], "plural": "restaurants"}
+  restrict: {senses: [verb], verb: {lemma: restrict}}
+  restricted: {senses: [verb], verb: {lemma: restrict}}
+  restricting: {senses: [verb], verb: {lemma: restrict}}
+  restriction: {senses: [noun], plural: restrictions}
+  restricts: {senses: [verb], number: singular, verb: {lemma: restrict}}
   rests:
     senses:
     - verb
@@ -7628,6 +7655,7 @@ entries:
     - noun
     plural: spaces
   spaghetti: {"senses": ["noun"]}
+  sparkling: {senses: [adjective]}
   sparrow: {senses: [noun], plural: sparrows}
   spay:
     senses:
@@ -9077,6 +9105,7 @@ entries:
   whole:
     senses:
     - adjective
+  whose: {senses: [pronoun]}
   why: {senses: [interrogative]}
   wick:
     senses:

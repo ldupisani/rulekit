@@ -5,6 +5,7 @@ categories:
     includes: [social_group]
   schedule_separation_descriptor: {parent: adjective}
   scheduled_event: {parent: noun}
+  scheduled_logistics_event: {parent: scheduled_event}
   preparation_activity_verb: {parent: timed_activity_verb}
   event_duration_verb: {parent: verb}
   attendance_observation_verb: {parent: verb}
@@ -14,6 +15,7 @@ members:
   scheduled_cancellation_verb: [cancel, cancels, canceled, cancelled]
   scheduled_activity_group: [class, club, band]
   schedule_separation_descriptor: [different, separate]
+  scheduled_logistics_event: [delivery]
   scheduled_event: [game, match, lesson, session, meeting, show, fight, race, contest]
   preparation_activity_verb: [practice, practices, practicing]
   event_duration_verb: [last, lasted, lasts]

@@ -11,16 +11,16 @@ from ..answer import (
     SemanticNode,
 )
 from ..evaluate import evaluate
-from ..model import BatchEvidence
+from ..model import BatchEvidence, Quantity
 from ..numeric_evidence import audit_numeric_mentions
-from ..reference_identity import reference_from_unit, constrains
-from ..source_coverage import uncovered_document_units
+from ..reference_identity import ReferenceIdentity, constrains, reference_from_unit
+from ..source_coverage import quantity_ledger_source_units, uncovered_units
 
 
 @consumer(
     "unit-distribution",
     applicable=lambda s: any(
-        r.kind in {"distribution-stock", "distribution-capacity"}
+        r.kind in {"distribution-stock", "distribution-capacity", "distribution-partition"}
         for r in s.by_kind(BatchEvidence)
     ),
 )
@@ -36,11 +36,12 @@ def consume(ctx):
     partitions = [r for r in rows if r.kind == "distribution-partition"]
     servings = [r for r in rows if r.kind == "distribution-serving"]
     requirements = [r for r in rows if r.kind == "distribution-per-recipient"]
+    opening_quantities = list(ctx.store.by_kind(Quantity))
     if (
         not population
         or ctx.store.collisions
         or ctx.store.quarantined
-        or len(rows) != len(ctx.store.facts)
+        or len(rows) + len(opening_quantities) != len(ctx.store.facts)
         or len(rows)
         != sum(
             map(
@@ -65,6 +66,8 @@ def consume(ctx):
             "one complete stock or package specification and a counted recipient roster are required"
         )
     expected = defaultdict(Counter)
+    covered = defaultdict(set)
+    assumptions = ()
     for row in population:
         # An overt singular role establishes one person without a numeric token.
         if not row.container:
@@ -84,6 +87,7 @@ def consume(ctx):
             len(capacities) != 1
             or len(contexts) != 1
             or stocks
+            or opening_quantities
             or partitions
             or servings
         ):
@@ -172,7 +176,7 @@ def consume(ctx):
         )
     else:
         if (
-            len(stocks) != 1
+            len(stocks) + len(opening_quantities) != 1
             or len(partitions) != 1
             or len(servings) != 1
             or capacities
@@ -182,13 +186,50 @@ def consume(ctx):
             return decline(
                 "a piece remainder needs one stock, partition and explicit per-recipient serving"
             )
-        stock, partition, serving = stocks[0], partitions[0], servings[0]
+        stock = (stocks or opening_quantities)[0]
+        partition, serving = partitions[0], servings[0]
+        if opening_quantities:
+            source = next(r for r in ctx.premises if r.sentence_index == stock.provenance.sentence)
+            footprint = quantity_ledger_source_units(source, [stock], ctx.reg)
+            whole_ref = stock.measure_ref or ReferenceIdentity(
+                stock.measure, qualifiers=(stock.measure_qualifier,) if stock.measure_qualifier else (),
+            )
+            if (
+                (not footprint and uncovered_units(source))
+                or stock.provenance.assumption
+                or not ctx.reg.word_in_category(stock.verb, "possession_state")
+                or stock.time or stock.owner or stock.label or stock.qualifier
+                or stock.content_ref
+                or not isfinite(stock.value) or stock.value < 0
+                or not ctx.reg.word_in_category(stock.measure, "decomposable_quantity_whole")
+                or not float(stock.value).is_integer()
+                or not all(
+                    source.sentence_index < row.provenance.sentence < partition.provenance.sentence
+                    and row.acquisition_ref is not None
+                    and (not row.acquisition_ref.resolved or constrains(row.acquisition_ref, whole_ref))
+                    for row in population
+                )
+            ):
+                return decline("the sharing clause needs one previously identified opening stock")
+            covered[source.sentence_index].update(footprint)
+        else:
+            whole_ref = stock.container_ref
+        if ctx.query.get("recipient"):
+            if ctx.query_reference("recipient") != stock.entity_ref:
+                return decline("the requested recipient must be the holder of the remaining stock")
+            assumptions = (
+                AnswerAssumption(
+                    "stock-holder-keeps-unallocated-units",
+                    "The stock holder can take all unallocated units.",
+                    (stock.provenance.sentence, partition.provenance.sentence),
+                ),
+            )
         if (
             partition.entity_ref != stock.entity_ref
             or serving.entity_ref != stock.entity_ref
             or any(r.entity_ref != stock.entity_ref for r in population)
             or partition.container != stock.measure
-            or not constrains(partition.container_ref, stock.container_ref)
+            or not constrains(partition.container_ref, whole_ref)
             or partition.measure != ctx.query["measure"]
             or serving.marker != "include-owner"
             or partition.value <= 0
@@ -237,13 +278,15 @@ def consume(ctx):
         )
         if value < 0:
             return decline("the stated stock cannot supply the complete serving roster")
-    if uncovered_document_units(
-        ctx.premises, ctx.question, ctx.match.consumed
-    ) or audit_numeric_mentions(
-        (*ctx.premises, ctx.question),
-        expected,
-        missing="missing",
-        duplicate="duplicate",
+    if (
+        any(uncovered_units(reading, covered[reading.sentence_index]) for reading in ctx.premises)
+        or uncovered_units(ctx.question, ctx.match.consumed)
+        or audit_numeric_mentions(
+            (*ctx.premises, ctx.question),
+            expected,
+            missing="missing",
+            duplicate="duplicate",
+        )
     ):
         return decline(
             "every package, recipient group and serving condition must be accounted for"
@@ -252,21 +295,12 @@ def consume(ctx):
     reason = "count the explicit recipients once, then apply the stated units per whole and per recipient"
     if ctx.query["mode"] == "packages" and not requirements:
         reason += "; treating the listed groups as the complete roster, with one individual unit per recipient"
-    return Answer(
-        "number",
-        value,
-        reason,
-        assumptions=(
-            (
+        if ctx.interpretation != "one-unit-each":
+            assumptions = (
                 AnswerAssumption(
                     "one-individual-unit-per-recipient",
                     "The listed groups form the complete roster, with one individual unit per recipient.",
                     tuple(sorted({r.provenance.sentence for r in population})),
                 ),
             )
-            if ctx.query["mode"] == "packages"
-            and not requirements
-            and ctx.interpretation != "one-unit-each"
-            else ()
-        ),
-    )
+    return Answer("number", value, reason, assumptions=assumptions)

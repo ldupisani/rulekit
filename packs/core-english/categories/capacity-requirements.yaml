@@ -1,0 +1,47 @@
+format: rulekit/categories@1
+categories:
+  recipient_cohort: {parent: noun}
+  educational_subject: {parent: noun}
+  dotted_initialism: {parent: noun}
+  one_per_recipient_product: {parent: noun, includes: [inventory_item]}
+  provision_preparation_verb: {parent: verb}
+  occupancy_fitting: {parent: noun, includes: [reservable_capacity_unit]}
+  occupancy_capacity_verb: {parent: verb}
+  seating_arrangement_verb: {parent: verb}
+  attendance_organization: {parent: noun, includes: [organization]}
+  membership_group_role: {parent: noun, includes: [allocation_recipient]}
+  occupancy_status: {parent: adjective}
+  attendance_action: {parent: verb}
+  event_arrangement_purpose: {parent: noun}
+  attendance_event: {parent: noun, includes: [scheduled_event]}
+  sleeping_furniture: {parent: occupancy_fitting}
+  bedding_size: {parent: adjective}
+  convertible_furniture_form: {parent: adjective}
+  visit_duration_attribute: {parent: adjective}
+  temporary_occupancy_verb: {parent: verb}
+  relative_membership_owner: {parent: pronoun}
+  governance_group: {parent: noun}
+members:
+  governance_group: [board]
+  relative_membership_owner: [whose]
+  temporary_occupancy_verb: [stay, stays, stayed, sleep, sleeps, slept]
+  recipient_cohort: [class, group, team, club, crew]
+  educational_subject: [p.e., pe, physical education]
+  dotted_initialism: [p.e.]
+  provision_preparation_verb: [make, makes, making, prepare, prepared, prepares, preparing, bake, bakes, baking]
+  occupancy_fitting: [chair, bench]
+  sleeping_furniture: [bed, couch, sofa]
+  occupancy_capacity_verb: [fit, fits, hold, holds]
+  seating_arrangement_verb: [arranged, placed]
+  membership_group_role: [member]
+  occupancy_status: [occupied]
+  attendance_action: [attend, attended, attends]
+  event_arrangement_purpose: [preparation]
+  attendance_event: [meeting, trip]
+  bedding_size: [queen size]
+  convertible_furniture_form: [pull-out, pull out]
+  visit_duration_attribute: [overnight]
+attribute_compatibility:
+  bedding_size: [sleeping_furniture]
+  convertible_furniture_form: [sleeping_furniture]
+  visit_duration_attribute: [attendance_event]

@@ -1,0 +1,167 @@
+format: rulekit/rules@1
+templates:
+  activity-tenure:
+    parameters:
+      duration:
+      - {slot: span, cat: duration_measure, uncounted: true, bare: true, number: singular}
+      value: 1
+      count_kind: implicit
+    rule:
+      match:
+        sentence:
+        - {slot: dummy, cat: impersonal_subject_pronoun, at_start: true}
+        - {slot: clitic, cat: elapsed_auxiliary_clitic}
+        - {lit: been}
+        - {parameter: duration}
+        - {lit: since}
+        - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true}
+        - {slot: start, cat: activity_onset_verb, finite_form: true}
+        - {slot: work, cat: crew_activity, present_participle: true}
+        - opt: [{lit: there}]
+        - {lit: '.', consume_skipped: true}
+      consumes: [start, work, span]
+      satisfies: {dummy: [refers], clitic: [owner, owned], start: [subject], work: [subject]}
+      emits:
+      - {fact: batch_evidence, kind: projected-tenure, entity: '{who}', measure: '{span}',
+         value: {parameter: value}, marker: {parameter: count_kind}, position: '{span.span_start}'}
+variants:
+- {id: arithmetic/elapsed-activity-tenure, template: activity-tenure}
+- id: arithmetic/elapsed-counted-activity-tenure
+  template: activity-tenure
+  arguments:
+    duration:
+    - {slot: span, cat: duration_measure, counted: true, bare: true}
+    value: span
+    count_kind: explicit
+rules:
+- id: arithmetic/work-pay-and-schedule
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, at_start: true}
+    - {slot: work, cat: crew_activity, finite_form: true}
+    - {lit: for}
+    - {slot: pay, cat: currency_unit, counted: true, bare: true}
+    - opt: [{lit: per}]
+    - {slot: unit, cat: duration_measure, uncounted: true, bare: true}
+    - {lit: and}
+    - {slot: extent, cat: duration_measure, counted: true, bare: true}
+    - opt: [{lit: per}]
+    - {slot: period, cat: duration_measure, uncounted: true, bare: true}
+    - opt:
+      - {lit: at}
+      - {slot: owner, cat: possessive_determiner}
+      - {slot: occupation, cat: employment_context, uncounted: true}
+    - {lit: '.', consume_skipped: true}
+  where: [{same_lemma: [unit, extent]}, {number_compatible: [who, work]}]
+  disambiguates: [work]
+  consumes: [work, pay, extent]
+  satisfies: {work: [subject, dobj]}
+  emits:
+  - {fact: batch_evidence, kind: projected-pay, entity: '{who}', measure: '{pay}', value: pay,
+     container: '{unit}', per_member: extent, marker: '{period}', position: '{pay.span_start}'}
+- id: arithmetic/all-savings-priced-intention
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, at_start: true}
+    - {slot: save, cat: savings_retention_verb, finite_form: true}
+    - opt: [{lit: up}]
+    - {slot: all, cat: group_total_quantifier}
+    - opt: [{lit: of}]
+    - {slot: owner, cat: possessive_determiner}
+    - {slot: money, cat: mass_currency_noun, uncounted: true}
+    - {lit: because}
+    - {slot: actor, cat: clause_subject_personal_pronoun}
+    - {slot: want, cat: finite_infinitival_goal_predicate, finite_form: true}
+    - {slot: inf, cat: infinitival_marker}
+    - {slot: buy, cat: projected_purchase_verb, bare_form: true}
+    - {slot: item, cat: inventory_item, uncounted: true}
+    - {lit: for}
+    - {slot: price, cat: currency_unit, counted: true, bare: true}
+    - {lit: '.', consume_skipped: true}
+  references: {owner: who, actor: who}
+  consumes: [save, want, buy, price]
+  satisfies: {save: [subject, dobj], all: [collection], want: [subject], inf: [object], buy: [subject, dobj]}
+  emits:
+  - {fact: batch_evidence, kind: projected-savings-outlay, entity: '{who}', measure: '{price}', value: price,
+     container: '{item}', verb: '{buy}', position: '{price.span_start}'}
+- id: arithmetic/periodic-measured-increase
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true, at_start: true}
+    - {slot: verb, cat: measured_change_verb, finite_form: true}
+    - opt:
+      - {lit: at}
+      - {slot: rate, cat: rate_frame_noun}
+      - {lit: of}
+    - {slot: amount, cat: length_measure, counted: true, bare: true}
+    - {lit: [every, per]}
+    - {slot: period, cat: duration_measure, uncounted: true, bare: true, number: singular}
+    - {lit: '.', consume_skipped: true}
+  where: [{number_compatible: [who, verb]}]
+  consumes: [verb, amount]
+  satisfies: {verb: [subject]}
+  emits:
+  - {fact: batch_evidence, kind: projected-increase, entity: '{who}', measure: '{amount}',
+     value: amount, container: '{period}', position: '{amount.span_start}'}
+- id: arithmetic/current-dimension-amount
+  question_assumption: true
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true, at_start: true}
+    - {slot: be, cat: copula}
+    - opt: [{slot: now, cat: current_snapshot_adverb}]
+    - {slot: size, cat: length_measure, counted: true, bare: true}
+    - {slot: dimension, cat: projected_dimension_adjective}
+    - {lit: '.', consume_skipped: true}
+  where: [{number_compatible: [who, be]}]
+  consumes: [be, size]
+  satisfies: {be: [subject]}
+  emits:
+  - {fact: quantity, entity: '{who}', measure: '{size}', value: size, verb: '{be}'}
+asks:
+- id: ask/projected-savings-purchase-balance
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - opt: [{slot: money, cat: mass_currency_noun, uncounted: true}]
+    - {slot: will, cat: future_modal}
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true}
+    - {slot: has, cat: retained_balance_verb}
+    - opt: [{lit: over}]
+    - {lit: after}
+    - {slot: actor, cat: clause_subject_personal_pronoun}
+    - {slot: buy, cat: projected_purchase_verb, finite_form: true}
+    - opt: [{slot: owner, cat: possessive_determiner}]
+    - {slot: item, cat: inventory_item, uncounted: true}
+    - {lit: '?', consume_skipped: true}
+  resolves: {consumer: quantity-projection, mode: savings, entity: '{who}', target: '{item}', verb: '{buy}'}
+  satisfies: {has: [subject], buy: [subject, dobj]}
+- id: ask/projected-dimension
+  match:
+    question:
+    - {lit: what, at_start: true}
+    - {slot: will, cat: future_modal}
+    - {slot: be, cat: copular_infinitive, bare_form: true}
+    - {slot: owner, cat: possessive_determiner}
+    - {slot: dimension, cat: projected_dimension_noun, uncounted: true}
+    - {slot: horizon, cat: projection_window_preposition}
+    - {slot: elapsed, cat: duration_measure, counted: true, bare: true}
+    - {lit: '?', consume_skipped: true}
+  resolves: {consumer: quantity-projection, mode: dimension, entity: '{owner}', dimension: '{dimension}',
+             span_unit: '{elapsed}', span_value: '{elapsed.value}'}
+  satisfies: {be: [subject]}
+- id: ask/projected-dimension-descriptor
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {slot: dimension, cat: projected_dimension_adjective}
+    - {slot: will, cat: future_modal}
+    - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true}
+    - {slot: be, cat: copular_infinitive, bare_form: true}
+    - {slot: horizon, cat: projection_window_preposition}
+    - {slot: elapsed, cat: duration_measure, counted: true, bare: true}
+    - {lit: '?', consume_skipped: true}
+  resolves: {consumer: quantity-projection, mode: dimension, entity: '{who}', dimension: '{dimension}',
+             span_unit: '{elapsed}', span_value: '{elapsed.value}'}
+  satisfies: {be: [subject]}

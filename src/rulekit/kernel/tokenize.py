@@ -60,20 +60,28 @@ _FOLD_APOSTROPHE = str.maketrans("’", "'")
 
 
 @lru_cache(maxsize=32)
-def _token_pattern(currency_symbols: tuple[str, ...]):
-    if not currency_symbols:
+def _token_pattern(currency_symbols: tuple[str, ...], initialisms: tuple[str, ...] = ()):
+    if not currency_symbols and not initialisms:
         return _TOKEN
-    prefix = '(?:' + '|'.join(re.escape(symbol) for symbol in currency_symbols) + ')?'
-    return re.compile(_TOKEN.pattern.replace(r'\$?', prefix, 1))
+    pattern = _TOKEN.pattern
+    if currency_symbols:
+        prefix = '(?:' + '|'.join(re.escape(symbol) for symbol in currency_symbols) + ')?'
+        pattern = pattern.replace(r'\$?', prefix, 1)
+    if initialisms:
+        declared = '|'.join(re.escape(word) for word in initialisms)
+        pattern = rf'(?<!\w)(?i:{declared})(?!\w)|' + pattern
+    return re.compile(pattern)
 
-def split_sentences(text: str, nonterminal_abbreviations=()) -> list[str]:
+def split_sentences(text: str, nonterminal_abbreviations=(), initialisms=()) -> list[str]:
     parts = [p.strip() for p in _SENT_SPLIT.split(text.strip())]
     sentences = []
     abbreviations = {word.casefold().rstrip(".") for word in nonterminal_abbreviations}
+    initials = {word.casefold().rstrip(".") for word in initialisms}
     for part in parts:
         if not part:
             continue
-        if sentences and sentences[-1].split()[-1].casefold().rstrip(".") in abbreviations:
+        previous = sentences[-1].split()[-1].casefold().rstrip(".") if sentences else ""
+        if previous in abbreviations or previous in initials and part[0].islower():
             sentences[-1] += " " + part
         else:
             sentences.append(part)
@@ -87,6 +95,7 @@ def tokenize(
     contractions: Sequence[tuple[str, str]] = (),
     assumption: bool = False,
     currency_symbols: Sequence[str] = (),
+    initialisms: Sequence[str] = (),
 ) -> Reading:
     """Text -> one Unit per token.
 
@@ -112,7 +121,10 @@ def tokenize(
     )
     index = 0
     previous_end: int | None = None
-    pattern = _token_pattern(tuple(sorted(currency_symbols, key=lambda symbol: (-len(symbol), symbol))))
+    pattern = _token_pattern(
+        tuple(sorted(currency_symbols, key=lambda symbol: (-len(symbol), symbol))),
+        tuple(sorted(initialisms, key=lambda word: (-len(word), word))),
+    )
     matches = list(pattern.finditer(sentence))
     for match_no, match in enumerate(matches):
         surface = match.group()

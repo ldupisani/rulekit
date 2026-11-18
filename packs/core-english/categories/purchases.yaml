@@ -88,7 +88,18 @@ categories:
     parent: verb
   quantity_combination_verb:
     parent: verb
+  packaged_offer_supplier: {parent: noun, includes: [transaction_supplier]}
+  offer_count_unit: {parent: noun, includes: [quantity_container]}
+  offer_purchase_lot: {parent: noun}
+  quoted_offer_noun: {parent: noun}
+  retail_price_level: {parent: adjective}
+  seller_scale_attribute: {parent: adjective}
 members:
+  seller_scale_attribute: [bulk]
+  packaged_offer_supplier: [warehouse, supermarket, market]
+  offer_purchase_lot: [case, pack, box, lot]
+  quoted_offer_noun: [deal]
+  retail_price_level: [expensive]
   purchase_item: [grocery, item]
   new_purchase_condition: [new]
   price_at_marker: [at]

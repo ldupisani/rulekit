@@ -33,7 +33,15 @@ categories:
   process_pause_reference: {parent: noun}
   interruption_source_device: {parent: noun}
   transfer_process_verb: {parent: progressive_process_verb}
+  batch_loading_activity: {parent: progressive_process_verb}
+  progress_load_unit: {parent: noun, includes: [inventory_item, material_stock_unit]}
+  crew_activity: {parent: verb}
+  crew_joining_verb: {parent: verb}
+  progress_target_container: {parent: noun, includes: [quantity_container, vehicle]}
 members:
+  batch_loading_activity: [fill, fills, filling, load, loads, loading]
+  crew_activity: [work, works, worked, working]
+  crew_joining_verb: [join, joined, joins]
   process_pause_verb: [pause, paused, pauses, delay, delayed, delays]
   process_pause_reference: [transfer]
   interruption_source_device: [router, pump]

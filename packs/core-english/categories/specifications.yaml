@@ -48,10 +48,25 @@ categories:
   proportional_relation_noun:
     parent: noun
   forecast_permission_verb:
-    parent: verb
+    parent: specification_infinitive_cause
   specification_adoption_preposition:
     parent: preposition
+  specification_adoption_predicate: {parent: verb}
+  specification_infinitive_cause: {parent: verb}
+  specification_bare_cause: {parent: verb}
+  specification_result_predicate: {parent: verb}
+  intervention_means_preposition: {parent: preposition}
+  measured_change_intervention: {parent: noun}
+  dietary_intervention_descriptor: {parent: adjective}
+  measured_change_intervention_action: {parent: verb}
 members:
+  specification_adoption_predicate: [be, am, is, are, was, were, go, goes, went]
+  specification_bare_cause: [make, makes, made]
+  specification_result_predicate: [result, results, resulted]
+  intervention_means_preposition: [by, through]
+  measured_change_intervention: [exercise, restriction]
+  dietary_intervention_descriptor: [dietary]
+  measured_change_intervention_action: [restrict, restricts, restricting, restricted]
   specification_noun:
   - blueprint
   - formula
@@ -107,6 +122,7 @@ members:
   - on
   - under
 attribute_compatibility:
+  dietary_intervention_descriptor: [measured_change_intervention]
   specification_unit:
   - measured_output_container
   same_ratio_descriptor:
