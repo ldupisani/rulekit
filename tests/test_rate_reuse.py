@@ -186,7 +186,9 @@ def test_role_frame_cache_does_not_erase_surface_only_membership():
 
     registry = SimpleNamespace(
         fingerprint="invented-surface-only-role-contract",
-        selectional_frames=lambda word: (("frame", {"theme": "object"}),) if word == "gleams" else (),
+        selectional_frames=lambda word, families: (
+            (("frame", {"theme": "object"}),) if word == "gleams" and not families else ()
+        ),
         selectional_role_number=lambda category, role: None,
         word_in_category=lambda word, category: word == "stone" and category == "object",
     )

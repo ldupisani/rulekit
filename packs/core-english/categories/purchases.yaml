@@ -17,6 +17,9 @@ categories:
   purchase_lot_measure:
     parent: noun
     notes: A measured or packaged purchase can have one price for the whole lot.
+  retail_package_measure:
+    parent: purchase_lot_measure
+  merchandise_package_measure: {parent: retail_package_measure}
   purchase_collection_noun:
     parent: noun
     notes: A collective ask or activity introduction covers every purchased item, by its named
@@ -38,8 +41,9 @@ categories:
     includes: [fruit]
     parent: noun
     notes: Purchased food inputs, not a license to include unrelated purchases.
+  equal_division_action: {parent: verb}
   equal_division_verb:
-    parent: verb
+    parent: equal_division_action
   equal_division_adverb:
     parent: adverb
   list_introduction_marker:
@@ -49,9 +53,9 @@ categories:
     notes: Introduces an explicit priced list; ordering does not assert payment.
   purchase_count_measure:
     parent: noun
-    notes: Discrete counted packages or servings in an itemized price quote.
-    includes:
-    - serving_measure
+    notes: Counted units whose explicit prices can be attached to compatible goods.
+    includes: [retail_package_measure, partitive_set_measure, partitive_pair_measure, partitive_piece_measure,
+      partitive_portion_measure, partitive_slice_measure, partitive_scoop_measure, serving_measure]
   purchase_item:
     parent: noun
     includes:
@@ -64,8 +68,12 @@ categories:
     parent: shared_cost_noun
     notes: A document or account identifying charges in an explicit priced-list and sharing context.
       These words are not global synonyms and do not imply payment, settlement, or a known balance.
+  account_payer: {parent: noun, includes: [membership_collective]}
+  personal_account_payer: {parent: account_payer, includes: [cohort_member, social_group]}
   purchase_context_activity:
     parent: verb
+    explicit_frame_only: true
+    selectional_roles: {actor: account_payer}
     notes: A stated group activity preceding an explicit itemized acquisition.
   purchase_context_site:
     parent: noun
@@ -77,7 +85,7 @@ categories:
     parent: clothes
     notes: Wearable garments, separate from any particular purchase or owner.
   purchase_encounter_verb:
-    parent: verb
+    parent: purchase_context_activity
   residential_return_verb:
     parent: verb
   residential_destination:
@@ -116,14 +124,12 @@ members:
   mass_purchase_collection_noun: [merchandise, stuff]
   purchase_collection_noun: [clothes, grocery, ingredient, treat, stationery]
   grocery: [bread, butter, juice, milk, flour, rice, egg]
-  purchase_lot_measure: [bottle, box, bunch, carton, gallon, gram, kilogram, pack, packet, pint,
-      pound, quart, sack, tub]
-  equal_division_verb:
-  - split
-  - share
-  - divide
-  equal_division_adverb:
-  - equally
+  purchase_lot_measure: [gallon, gram, kilogram, pint, pound, quart]
+  merchandise_package_measure: [bag, box, carton, case, pack, packet, sack, tub]
+  retail_package_measure: [bottle, bunch]
+  equal_division_verb: [split, share, divide]
+  equal_division_action: [splits, shares, shared, divides, divided]
+  equal_division_adverb: [equally, evenly]
   list_introduction_marker:
   - following
   itemized_acquisition_verb:
@@ -136,7 +142,6 @@ members:
   - purchase
   - purchases
   - purchased
-  purchase_count_measure: [bottle, box, bunch, pack, packet, sack, scoop, tub]
   shared_cost_noun:
   - cost
   - expense
@@ -179,4 +184,6 @@ members:
   - combined
 adverb_verb_compatibility:
   equal_division_adverb:
-  - equal_division_verb
+  - equal_division_action
+partitive_measure_compatibility:
+  merchandise_package_measure: [purchase_item]

@@ -21,7 +21,7 @@ categories:
   transaction_channel_descriptor:
     parent: adjective
   shopping_activity:
-    parent: verb
+    parent: purchase_context_activity
   transaction_price_preposition:
     parent: preposition
   transaction_unit_price_preposition:
@@ -49,9 +49,17 @@ categories:
     notes: Explicit equality of the individual prices in one purchased lot.
   activity_account_participation:
     parent: verb
+    selectional_roles: {activity: account_activity, actor: account_payer}
+    explicit_frame_only: true
+    notes: The direct object names the group's activity in a cost account.
+  purchase_transaction_verb:
+    parent: activity_account_participation
+    selectional_roles: {activity: purchasable_activity}
   account_activity:
     parent: noun
     notes: A shared activity with explicitly quoted item costs; no payment is inferred.
+  purchasable_activity:
+    parent: account_activity
   cash_deposit_verb:
     parent: verb
   cash_deposit_account:
@@ -82,7 +90,8 @@ adposition_roles:
     verb_category: purchase
     allow_name_object: true
 members:
-  activity_account_participation: [have, has, had, buy, buys, bought, share, shares, shared]
+  activity_account_participation: [have, has, had, share, shares, shared]
+  purchase_transaction_verb: [buy, buys, bought, purchase, purchases, purchased]
   dispatchable_document: [application, bill, card, envelope, letter, rebate, thank you card]
   document_dispatch_verb: [mail, send, sent, sends]
   per_document_resource: [stamp, label]
@@ -104,11 +113,6 @@ members:
   transaction_supplier_preposition: [from]
   transaction_unit_price_preposition: [at, for]
   uniform_price_attribute: [same]
-  account_activity:
-  - trip
-  - picnic
-  - party
-  - meeting
   cash_deposit_verb:
   - deposit
   - deposits

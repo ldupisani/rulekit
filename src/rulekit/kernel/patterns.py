@@ -1385,16 +1385,7 @@ def _check_where(
             # lemma. Passing only the lemma loses category membership for
             # inflected forms when the bare lemma is intentionally absent
             # (for example ``drops``/``dropped`` in ``drop_quantity_verb``).
-            frames = reg.selectional_frames(verb.surface.casefold())
-            if compatibility.frame_categories:
-                frames = tuple(
-                    (category, frame)
-                    for category, frame in frames
-                    if any(
-                        trigger in reg.cat_ancestors(category)
-                        for trigger in compatibility.frame_categories
-                    )
-                )
+            frames = reg.selectional_frames(verb.surface.casefold(), compatibility.frame_categories)
             # Like the historical conditional predicate, verbs with no
             # declared lexical frame remain open. Once a verb category owns a
             # contract, one complete most-specific frame must accept every

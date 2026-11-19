@@ -188,22 +188,28 @@ def partitive_quantity_source_units(reading, fact, reg):
                  if u is not None)
 
 
-def quantity_ledger_source_units(reading, facts, reg):
+def quantity_ledger_source_units(reading, facts, reg, *, allow_stated_holding=False):
     """Exact ordinary SVO count list, including coordinated partitive objects.
 
-    Consumers retain the folded Quantity roles. This adapter validates the
-    whole list rather than treating an arbitrary co-occurring number as use.
+    Verify each Quantity against its source. A caller may also accept a
+    fully matched, single subject–verb–object holding from the grammar.
     """
     from .reference_identity import ReferenceIdentity, reference_from_unit
     units = list(uncovered_units(reading))
-    if not units:
+    if allow_stated_holding and not units and len(facts) == 1:
+        # A complete grammar rule can read a single holding before the fold.
+        # Verify its original subject, predicate and counted object below.
+        units = [u for u in reading.units if u.sense() not in {"article", "punct"}]
+        if len(units) != 3 or not reg.word_in_category(facts[0].verb, "possession_state"):
+            return ()
+    elif any(f.provenance.source != "fold" for f in facts):
         return ()
     if len(units) < 3 or not facts:
         return ()
     subject, verb, *objects = units
     actor = reference_from_unit(subject)
     if (not actor.resolved or verb.sense() != 'verb'
-            or any(f.provenance.source != 'fold' or f.entity_ref != actor
+            or any(f.entity_ref != actor
                    or f.verb != verb.features.get('lemma')
                    or f.provenance.sentence != reading.sentence_index for f in facts)):
         return ()

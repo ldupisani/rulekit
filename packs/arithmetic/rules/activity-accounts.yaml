@@ -17,19 +17,22 @@ rules:
       cat: account_activity
       uncounted: true
       bare: true
+      number: singular
     - opt:
-      - lit: at
+      - {slot: prep, cat: quantity_site_preposition}
       - slot: site
-        cat: purchase_context_site
+        cat: activity_site
         uncounted: true
+        number: singular
     - lit: .
       consume_skipped: true
   where:
-  - verb_role_compatible:
+  - verb_roles_compatible:
       verb: act
-      roles: [activity]
-      verb_cat: dining_account_participation_action
-      role_cat: dining_account_activity
+      roles: {activity: [activity]}
+      frame_categories: [activity_account_participation]
+      require_declared_frame: true
+  bindings: {prep: {object: site}}
   emits:
   - fact: batch_evidence
     kind: named-cost-account
@@ -44,7 +47,7 @@ rules:
     - subject
   consumes:
   - act
-  description: Preserve a named activity scope and explicit unit quotes; counts and prices do not assert payment.
+  description: Identify the participants and shared activity whose item costs can subsequently be totaled.
 asks:
 - id: ask/named-activity-cost
   match:
@@ -59,6 +62,7 @@ asks:
     - slot: activity
       cat: account_activity
       uncounted: true
+      number: singular
     - slot: cost
       cat: price_verb
       bare_form: true
@@ -83,6 +87,7 @@ asks:
     - slot: activity
       cat: account_activity
       uncounted: true
+      number: singular
     - slot: cost
       cat: price_verb
       bare_form: true
@@ -103,7 +108,7 @@ templates:
       consumes: [cost, amount]
     rule:
       phase: read
-      description: State a price for one serving or package of an item.
+      description: State the price for one quoted unit of an item.
       independent_clause: true
       match:
         sentence:
@@ -114,7 +119,9 @@ templates:
         - {slot: amount, cat: currency_unit, counted: true, bare: true}
         - opt: [{slot: each, cat: postpositive_distributive_quantifier}]
         - {lit: '.', consume_skipped: true}
-      where: [{number_compatible: [package, cost]}]
+      where:
+      - {number_compatible: [package, cost]}
+      - {partitive_compatible: {measure: package, substance: item}}
       emits:
       - {fact: price, item: '{item}', value: amount, measure: '{amount}', per: '{package}', verb: buy}
       consumes: {parameter: consumes}

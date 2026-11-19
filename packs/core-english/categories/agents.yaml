@@ -10,6 +10,9 @@ categories:
     - building
     - clothes
     - vehicle
+  membership_collective: {parent: noun, includes: [organization, recipient_cohort, social_group]}
+  cohort_member: {parent: noun, includes: [person]}
+  cohort_membership_preposition: {parent: preposition}
   social_group:
     parent: quantity_holder
     notes: A collective group of people; the noun does not assert its members or their count.
@@ -58,9 +61,6 @@ categories:
   office_role:
     parent: situated_role
     notes: An office title also licensed without an indefinite article after a copula.
-  activity_site:
-    parent: noun
-    notes: A physical site at which a person can carry out a stated role.
   persongroup:
     parent: quantity_holder
     notes: A collection of people; membership does not supply a group size.
@@ -77,6 +77,8 @@ categories:
     - activity_site
     - quantity_location
 members:
+  cohort_member: [member, player]
+  cohort_membership_preposition: [in, on]
   role_location_preposition:
   - at
   social_group:
@@ -256,15 +258,6 @@ members:
   - writer
   office_role:
   - president
-  activity_site:
-  - garden
-  - park
-  - restaurant
-  - store
-  - theater
-  - warehouse
-  - workplace
-  - zoo
   organization:
   - administration
   - business

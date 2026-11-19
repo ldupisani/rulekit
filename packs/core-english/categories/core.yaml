@@ -218,8 +218,11 @@ categories:
       per-whole content rates. This includes physical packages and
       portioned wholes such as pizzas without claiming that food is a
       container or an interior location.
-  package_content_preposition:
+  counted_content_preposition:
     parent: preposition
+    notes: Links a counted collection to the members or items in it.
+  package_content_preposition:
+    parent: counted_content_preposition
     notes: >
       Adpositions linking a counted, size-qualified package to its
       stated per-package contents inside one acquisition clause.
@@ -704,8 +707,12 @@ categories:
   partitive_pair_measure:
     parent: noun
     notes: Pair-counting units whose complements must be pairable.
+  partitive_set_measure: {parent: measured_output_container}
+  partitive_portion_measure: {parent: measured_output_container}
+  partitive_slice_measure: {parent: measured_output_container}
+  partitive_scoop_measure: {parent: partitive_volume_measure}
   partitive_piece_measure:
-    parent: noun
+    parent: measured_output_container
     notes: Piece-counting units whose complements can be divided into pieces.
   weighable_partitive_substance:
     parent: noun
@@ -718,6 +725,7 @@ categories:
     notes: Countable objects conventionally quantified in pairs.
   piecewise_partitive_substance:
     parent: noun
+    includes: [sheet_material, sliceable_material]
     notes: Materials or collections conventionally quantified in pieces.
   non_quantity_object_verb:
     parent: verb
@@ -3219,7 +3227,11 @@ members:
   partitive: [of]
   partitive_pair_measure: [pair]
   partitive_piece_measure: [piece]
-  partitive_volume_measure: [bottle, cup, gallon, liter, pint, quart, sack]
+  partitive_set_measure: [set]
+  partitive_portion_measure: [portion]
+  partitive_slice_measure: [slice]
+  partitive_scoop_measure: [scoop]
+  partitive_volume_measure: [gallon, liter, pint, quart, sack]
   partitive_weight_measure: [pound]
   passive_quantity_object: [alpaca, animal, apple, apricot, ball, bar, bird, book, candle, card, cat, coin,
       cookie, course, cup, dog, dollar, drum, egg, envelope, fish, flower, grape, hamster, key, marble, number,
@@ -3235,7 +3247,7 @@ members:
       hamster, key, librarian, marble, pantry, paper, pear, pencil, plum, puzzle, rabbit, rose, shopper,
       sticker, storeroom, student, t-shirt, table, teacher, thermos, tire, tomato, towel, toy, tree, umbrella,
       vase, violinist, watermelon, zit]
-  piecewise_partitive_substance: [litter, paper, pizza]
+  piecewise_partitive_substance: [candy, hamburger, litter, paper]
   plain_have_state: [had, has, have]
   planned_progress_modal: [should]
   plantable_quantity_object: [flower, plant]
@@ -3311,21 +3323,21 @@ members:
   quantity_interior_location: [aquarium, arcade, area, arena, auditorium, backpack, backyard, bag, barrel,
       basket, beaker, binder, bookstore, bottle, bowl, box, bucket, cabinet, cage, camp, canister, canteen,
       case, castle, chest, church, city, class, classroom, classrooms, closet, college, container, cooler,
-      country, cupboard, drawer, factory, flask, forest, fridge, gallery, garage, garden, gym, hall, home,
+      country, cupboard, drawer, factory, field, flask, forest, fridge, gallery, garage, garden, gym, hall, home,
       house, jar, jug, kitchen, lake, library, locker, mall, market, museum, neighborhood, office, orchard,
-      packet, pail, pantry, party, pharmacy, plantation, playground, pool, pot, ranch, sandbox, school,
+      packet, pail, pantry, park, party, pharmacy, plantation, playground, pool, pot, ranch, restaurant, sandbox, school,
       schoolyard, shelter, shoebox, stadium, station, store, storeroom, studio, subdivision, supermarket, tank,
     taxi, theater, thermos, trailer, train, treehouse, truck, university, van, vase, vessel, vial, wardrobe,
-      warehouse, well, zoo]
+      warehouse, well, workshop, zoo]
   quantity_location: [album, aquarium, area, bag, basket, bench, binder, bowl, box, city, class, classroom, country,
       cupboard, farm, forest, garden, jar, kitchen, mall, office, pantry, park, party, post office, school,
       sea, side, storeroom, tree, university, wardrobe, waters, wheel, zoo]
   quantity_location_preposition: [in, into]
   quantity_remainder_preposition: [with]
-  quantity_site_location: [beach, bench, camp, church, class, classroom, college, factory, farm, festival,
-      forest, gallery, garage, garden, gym, library, mall, museum, office, park, party, pharmacy, playground,
-      post office, ranch, school, seashore, stadium, station, supermarket, theater, tower, tree, university,
-      warehouse, well, workplace, zoo]
+  quantity_site_location: [arena, auditorium, beach, bench, camp, church, class, classroom, college, factory, farm, festival,
+      field, forest, gallery, garage, garden, gym, hall, library, mall, museum, office, park, party, pharmacy, playground,
+      post office, ranch, restaurant, school, seashore, stadium, station, store, supermarket, theater, tower, tree, university,
+      warehouse, well, workplace, workshop, zoo]
   quantity_site_preposition: [at]
   quantity_surface_location: [aisle, alley, avenue, beach, bench, boulevard, deck, desk, farm, field, floor,
       ground, highway, hill, lane, patio, road, roof, shelf, side, sidewalk, street, table, tile, track, trail,
@@ -3421,7 +3433,7 @@ members:
   volume_convertible_measured_content: [water]
   volume_measure: [gallon, liter, milliliter, ml, pint, quart]
   volume_partitive_substance: [applesauce, batter, coffee, custard, dough, flour, frosting, guacamole, ice,
-      jam, jelly, juice, lassi, lemonade, milk, oatmeal, oil, rice, salad, sand, sauce, snow, soup, sugar]
+      ice cream, jam, jelly, juice, lassi, lemonade, milk, oatmeal, oil, rice, salad, sand, sauce, snow, soup, sugar]
   wage_verb: [earn, earned, earns, made, make, makes]
   weighable_partitive_substance: [applesauce, bacon, basil, batter, beef, beeswax, bread, buttercream,
       charcoal, chicken, clay, coffee, custard, dough, flour, food, frosting, fudge, gluten, guacamole, gum,
@@ -3508,6 +3520,9 @@ measure_holder_compatibility:
   output_quantity_measure: [output_quantity_product]
   student_quantity_measure: [student_quantity_holder]
 partitive_measure_compatibility:
+  partitive_set_measure: [inventory_item]
+  partitive_slice_measure: [sliceable_material]
+  partitive_portion_measure: [material_resource]
   partitive_pair_measure: [pairable_partitive_substance]
   partitive_piece_measure: [piecewise_partitive_substance]
   partitive_volume_measure: [volume_partitive_substance]

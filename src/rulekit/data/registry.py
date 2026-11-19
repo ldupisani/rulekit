@@ -19,7 +19,7 @@ from dataclasses import dataclass, field
 from functools import cached_property
 from math import isfinite
 from types import MappingProxyType
-from typing import Mapping
+from typing import Mapping, Sequence
 
 from .packs import LoadedPack, PackError
 from .properties import DerivedAttribute, PropertyOrigin, PropertyError, compile_properties
@@ -145,6 +145,7 @@ class Registry:
     selectional_roles: Mapping[str, Mapping[str, str]]
     # Optional inherited grammatical-number requirements for the same roles.
     selectional_role_numbers: Mapping[str, Mapping[str, str]]
+    explicit_frame_categories: frozenset[str]
     interchangeable_categories: frozenset[str]
     superordinate_categories: frozenset[str]
     coordinated_superordinate_categories: frozenset[str]
@@ -325,23 +326,28 @@ class Registry:
         return False
 
     def selectional_frames(
-        self, word: str
+        self, word: str, frame_categories: Sequence[str] = ()
     ) -> tuple[tuple[str, Mapping[str, str]], ...]:
         """Most-specific complete role frames applicable to one verb.
 
         A word may carry sibling verb categories for distinct senses. Those
         remain alternatives. An ancestor frame is suppressed when a more
         specific applicable category exists, preventing a broad parent from
-        bypassing a child's narrowed role target.
+        bypassing a child's narrowed role target. An explicit-only sense
+        participates in this choice when its own family is requested.
         """
 
         word = word.casefold()
         lemma = self.verb_lemmas.get(word, word)
+        requested = set(frame_categories)
+        explicit = requested & self.explicit_frame_categories
         applicable = {
             category
             for category in self.selectional_roles
-            if self.word_in_category(word, category)
-            or self.word_in_category(lemma, category)
+            if (category not in self.explicit_frame_categories
+                or explicit.intersection(self.cat_ancestors(category)))
+            and (self.word_in_category(word, category)
+                 or self.word_in_category(lemma, category))
         }
         most_specific = sorted(
             category
@@ -355,6 +361,7 @@ class Registry:
         return tuple(
             (category, self.selectional_roles[category])
             for category in most_specific
+            if not requested or requested.intersection(self.cat_ancestors(category))
         )
 
     def selectional_role_number(
@@ -1111,7 +1118,12 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                     f"target {target!r} is not noun-rooted"
                 )
 
+    explicit_frame_categories = set()
     for category in sorted(category_parents):
+        if category_defs[category][0].explicit_frame_only:
+            if _category_root(category) != "verb":
+                raise CompileError(f"explicit frame family {category!r} must be verb-rooted")
+            explicit_frame_categories.update(_category_region(category))
         if _category_root(category) == "verb":
             _effective_selectional_contract(category)
     selectional_role_names = frozenset(
@@ -2642,6 +2654,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                 for category, roles in selectional_roles.items()
             }
         ),
+        explicit_frame_categories=frozenset(explicit_frame_categories),
         selectional_role_numbers=_freeze(
             {
                 category: _freeze(numbers)

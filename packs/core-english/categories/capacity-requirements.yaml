@@ -11,7 +11,6 @@ categories:
   attendance_organization: {parent: noun, includes: [organization]}
   membership_group_role: {parent: noun, includes: [allocation_recipient]}
   occupancy_status: {parent: adjective}
-  attendance_action: {parent: verb}
   event_arrangement_purpose: {parent: noun}
   attendance_event: {parent: noun, includes: [scheduled_event]}
   sleeping_furniture: {parent: occupancy_fitting}
@@ -35,7 +34,6 @@ members:
   seating_arrangement_verb: [arranged, placed]
   membership_group_role: [member]
   occupancy_status: [occupied]
-  attendance_action: [attend, attended, attends]
   event_arrangement_purpose: [preparation]
   attendance_event: [meeting, trip]
   bedding_size: [queen size]

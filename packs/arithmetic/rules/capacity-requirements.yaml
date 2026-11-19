@@ -122,12 +122,12 @@ rules:
   - {fact: batch_evidence, kind: capacity-reservation-demand, entity: '{who}', measure: '{people}',
      container: '{units}', acquisition: '{cohort}', verb: '{reserve}', value: people, position: '{people.span_start}'}
 - id: arithmetic/event-capacity-matching-membership
-  description: A counted set of identical fittings provides the full capacity for an identified membership.
+  description: An event's stated membership matches the combined capacity of its fittings, optionally at a specified site.
   match:
     sentence:
     - opt:
-      - {lit: in}
-      - {slot: location, cat: room_location, uncounted: true}
+      - {slot: prep, cat: spatial_location_preposition, at_start: true}
+      - {slot: location, cat: activity_site, uncounted: true, number: singular, referential: true}
       - {lit: ',', consume_skipped: true}
     - {slot: units, cat: occupancy_fitting, counted: true, class_only: true}
     - {lit: with}
@@ -158,6 +158,9 @@ rules:
     - {lit: as}
     - {slot: standard, cat: container_capacity_noun, uncounted: true, qualified: true, qualifier_cat: occupancy_fitting}
     - {lit: '.', consume_skipped: true}
+  where:
+  - attribute_compatible: {attribute: prep, noun: location}
+  bindings: {prep: {object: location}}
   disambiguates: [event, arrange]
   consumes: [units, rate, be, arrange, equivalence]
   satisfies: {each: [collection], be: [subject], arrange: [subject], whose: [refers], equivalence: [subject]}

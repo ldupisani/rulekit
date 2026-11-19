@@ -285,6 +285,12 @@ and its declared lemma. `frame_categories` optionally restricts the family.
 `require_declared_frame: true` rejects a verb with no applicable declared
 frame; without it, the historical no-frame path is open.
 
+A verb category can set `explicit_frame_only: true` when its meaning depends
+on the construction. Its frames and descendant frames participate only when
+`frame_categories` selects that family or a subcategory. For example, the
+cost-account reading of “had lunch” selects an activity. Ordinary “had three
+pencils” continues to use the verb's possession reading.
+
 Proper-name, plural-class and plural-pronoun permissions belong to the rule's
 reference policy, not the lexical taxonomy. They do not override a declared
 role-number requirement. Keep overlapping independent facets and negative

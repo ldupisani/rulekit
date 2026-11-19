@@ -136,9 +136,9 @@ def test_generation_frame_cache_keeps_role_checks_and_revision_boundaries(tmp_pa
     calls = []
     original = Registry.selectional_frames
 
-    def counted(self, word):
+    def counted(self, word, frame_categories=()):
         calls.append((self.fingerprint, word))
-        return original(self, word)
+        return original(self, word, frame_categories)
 
     monkeypatch.setattr(Registry, "selectional_frames", counted)
     requirement = VerbRolesCompatibilityPredicate(
@@ -183,6 +183,38 @@ def test_curated_conjoined_rule_reads_category_owned_frames() -> None:
         "actor": "animate",
         "theme": "winnable_quantity_object",
     }
+
+
+def test_explicit_activity_frames_preserve_other_senses(tmp_path):
+    _write_project(tmp_path)
+    categories = tmp_path / "extension/categories.yaml"
+    with categories.open("a") as stream:
+        stream.write("""
+  participation_verb: [share]
+  eating_together_verb: [eat]
+  meal: [lunch]
+categories:
+  activity: {parent: noun}
+  meal: {parent: activity}
+  participation_verb:
+    parent: verb
+    explicit_frame_only: true
+    selectional_roles: {activity: activity}
+  eating_together_verb:
+    parent: participation_verb
+    selectional_roles: {activity: meal}
+""")
+    with (tmp_path / "extension/lexicon.yaml").open("a") as stream:
+        stream.write("  lunch: {senses: [noun]}\n  share: {senses: [verb]}\n")
+    reg = load_project(tmp_path).registry
+    assert reg.selectional_frames("share") == ()
+    ordinary = {"actor": "participant", "theme": "edible_object"}
+    assert dict(reg.selectional_frames("eat")) == {"eating_verb": ordinary}
+    assert dict(reg.selectional_frames("eat", ["verb"])) == {"eating_verb": ordinary}
+    for family in ("participation_verb", "eating_together_verb"):
+        assert dict(reg.selectional_frames("eat", [family])) == {
+            "eating_together_verb": {"activity": "meal"}
+        }
 
 
 @pytest.mark.parametrize(

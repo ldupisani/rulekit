@@ -3,10 +3,10 @@ categories:
   divisible_material_whole:
     parent: decomposable_quantity_whole
   sheet_material: {parent: material_resource}
+  sliceable_material: {parent: material_resource}
   material_stock_unit: {parent: quantity_container}
   rectangular_shape: {parent: noun}
   region_cutting_verb: {parent: verb}
-  room_location: {parent: quantity_interior_location}
   area_unit_modifier: {parent: spatial_unit_modifier, attrs: {measurement_power: 2}}
   fabrication_product: {parent: ownable_quantity_object}
   mass_amount_interrogative: {parent: interrogative}
@@ -69,6 +69,7 @@ categories:
     parent: material_resource
 members:
   divisible_material_whole: [panel, roll, sheet]
+  sliceable_material: [clay, foam, wood]
   sheet_material: [fabric, cloth, paper, cardboard]
   material_stock_unit:
   - bolt
@@ -80,7 +81,6 @@ members:
   - block
   rectangular_shape: [rectangle]
   region_cutting_verb: [cut, cuts, cutting]
-  room_location: [room, bedroom]
   area_unit_modifier: [square]
   fabrication_product: [curtain, panel, dress, model]
   mass_amount_interrogative: [much]

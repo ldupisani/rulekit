@@ -16,7 +16,9 @@ categories:
   partition_consumption_verb:
     parent: partition_input_activity
   complementary_partition_attribute:
-    parent: adjective
+    parent: relative_holder_descriptor
+  contrastive_counterpart:
+    parent: complementary_partition_attribute
   scoped_quantity_predicate:
     parent: verb
 members:
@@ -39,9 +41,8 @@ members:
   - use
   - uses
   - used
-  complementary_partition_attribute:
-  - other
-  - remaining
+  contrastive_counterpart: [other]
+  complementary_partition_attribute: [remaining]
   scoped_quantity_predicate:
   - make
   - made
@@ -49,3 +50,5 @@ members:
   - have
   - has
   - had
+attribute_compatibility:
+  contrastive_counterpart: [membership_collective]

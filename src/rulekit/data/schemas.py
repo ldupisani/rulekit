@@ -188,6 +188,9 @@ class CategoryDef(StrictModel):
     # grammar maps its structural slots onto the semantic role names, while
     # the vocabulary-owning category declares which nouns can fill them.
     selectional_roles: dict[str, str] = Field(default_factory=dict)
+    # This family's verb sense is selected only by constructions that name
+    # the family in frame_categories. Descendants inherit that boundary.
+    explicit_frame_only: bool = False
     # Optional grammatical-number refinements for those semantic roles. A
     # lexical frame may therefore distinguish a plural collection theme from
     # a singular/mass material theme without putting either vocabulary or

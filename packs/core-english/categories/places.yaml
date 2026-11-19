@@ -1,11 +1,19 @@
 format: rulekit/categories@1
 categories:
-  building:
+  activity_site:
     parent: noun
+    includes: [building, room_location, dining_venue, nominal_location]
+    notes: A physical setting for an activity, role or gathering. A site alone implies no occupancy or membership.
+  building:
+    parent: quantity_interior_location
     notes: A physical building; membership does not assert occupancy or ownership.
+  room_location: {parent: quantity_interior_location}
 members:
+  activity_site: [arena, auditorium, beach, camp, field, gallery, garden, gym, hall, park, patio,
+    market, playground, schoolyard, shop, stadium, station, store, studio, workplace, zoo]
   building: [apartment, building, castle, church, factory, garage, home, hotel, house, library, museum, school,
     theater, tower, treehouse, warehouse]
+  room_location: [bedroom, classroom, room]
 context_synonyms:
   contains:
     gate: building

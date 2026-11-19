@@ -1,34 +1,8 @@
 format: rulekit/rules@1
 rules:
-- id: arithmetic/itemized-order-population
-  phase: read
-  match:
-    sentence:
-    - slot: group
-      cat: person
-      counted: true
-      bare: true
-      at_start: true
-    - slot: order
-      cat: itemized_acquisition_verb
-    - slot: list
-      cat: list_introduction_marker
-    - lit: ':'
-      consume_skipped: true
-  emits:
-  - fact: batch_evidence
-    kind: bill-population
-    entity: '{group}'
-    measure: ''
-    value: group
-    position: '{group.span_start}'
-  consumes:
-  - group
-  satisfies:
-    order:
-    - subject
 - id: arithmetic/explicit-equal-bill-division
   phase: read
+  disambiguates: [split, equal]
   match:
     sentence:
     - slot: people
@@ -39,56 +13,82 @@ rules:
         type: future_modal
     - slot: split
       cat: equal_division_verb
+      bare_form: true
     - slot: bill
       cat: shared_cost_noun
     - slot: equal
       cat: equal_division_adverb
+    - opt:
+      - {slot: prep, cat: allocation_distribution_preposition}
+      - opt: [{lit: all}]
+      - {slot: recipients, cat: account_payer, number: plural, uncounted: true, bare: true}
     - lit: .
       consume_skipped: true
   emits:
   - fact: batch_evidence
     kind: bill-division
     entity: ''
-    measure: ''
+    measure: '{recipients.optional}'
     value: 0
     position: '{split.span_start}'
+  bindings: {prep: {object: recipients}}
   satisfies:
     people:
     - refers
-- id: arithmetic/activity-itemized-account-population
+- id: arithmetic/equal-account-division-among-payers
   phase: read
   match:
     sentence:
-    - slot: group
-      cat: person
-      counted: true
-      bare: true
-      at_start: true
-    - slot: activity
-      cat: purchase_context_activity
-    - lit: at
-    - slot: site
-      cat: purchase_context_site
-      uncounted: true
-    - lit: and
-    - slot: order
-      cat: itemized_acquisition_verb
-    - slot: list
-      cat: list_introduction_marker
-    - lit: ':'
-      consume_skipped: true
+    - {slot: bill, cat: shared_cost_noun, bare: true, uncounted: true, number: singular, at_start: true}
+    - {slot: be, cat: singular_copula}
+    - {slot: split, cat: equal_division_action, past_participle: true}
+    - {slot: equal, cat: equal_division_adverb}
+    - {slot: prep, cat: allocation_distribution_preposition}
+    - opt: [{lit: all}]
+    - {slot: payers, cat: account_payer, bare: true, uncounted: true, number: plural}
+    - {lit: '.', consume_skipped: true}
+  bindings: {be: {subject: bill}, prep: {object: payers}}
+  satisfies: {split: [subject], prep: [anchor]}
   emits:
-  - fact: batch_evidence
-    kind: bill-population
-    entity: '{group}'
-    measure: ''
-    value: group
-    position: '{group.span_start}'
-  consumes:
-  - group
-  satisfies:
-    order:
-    - subject
+  - {fact: batch_evidence, kind: bill-division, entity: '', measure: '{payers}', value: 0, position: '{split.span_start}'}
+- id: arithmetic/named-equal-account-division
+  phase: read
+  disambiguates: [split, equal]
+  match:
+    sentence:
+    - {slot: payers, cat: account_payer, number: plural, uncounted: true, bare: true, at_start: true}
+    - opt: [{slot: future, type: future_modal}]
+    - {slot: split, cat: equal_division_verb, bare_form: true}
+    - {slot: bill, cat: shared_cost_noun, uncounted: true, bare: true}
+    - {slot: equal, cat: equal_division_adverb}
+    - opt:
+      - {slot: prep, cat: allocation_distribution_preposition}
+      - opt: [{lit: all}]
+      - {slot: recipients, cat: account_payer, number: plural, uncounted: true, bare: true}
+    - {lit: '.', consume_skipped: true}
+  bindings: {split: {subject: payers}, prep: {object: recipients}}
+  emits:
+  - {fact: batch_evidence, kind: bill-division, entity: '{payers}', measure: '{recipients.optional}', value: 0, position: '{split.span_start}'}
+- id: arithmetic/equal-division-within-group
+  phase: read
+  disambiguates: [share, split, equal]
+  match:
+    sentence:
+    - {slot: each, cat: distributive_quantifier, at_start: true}
+    - {slot: group, cat: membership_collective, number: singular, uncounted: true, bare: true}
+    - {slot: split, cat: equal_division_action, finite_form: true}
+    - {slot: share_owner, cat: impersonal_possessive_reference}
+    - {slot: share, cat: allocation_share_noun, uncounted: true}
+    - {slot: equal, cat: equal_division_adverb}
+    - {slot: prep, cat: allocation_distribution_preposition}
+    - {slot: member_owner, cat: impersonal_possessive_reference}
+    - {slot: members, cat: cohort_member, uncounted: true, number: plural}
+    - {lit: '.', consume_skipped: true}
+  where: [{number_compatible: [group, split]}]
+  bindings: {each: {collection: group}, split: {subject: group}, prep: {object: members},
+             share_owner: {refers: group}, member_owner: {refers: group}}
+  emits:
+  - {fact: batch_evidence, kind: within-group-division, entity: '{group}', measure: '{members}', value: 0, position: '{split.span_start}'}
 - id: arithmetic/billed-service-charge
   match:
     sentence:
@@ -150,6 +150,7 @@ asks:
         type: future_modal
     - slot: split
       cat: equal_division_verb
+      bare_form: true
     - slot: bill
       cat: shared_cost_noun
     - slot: equal
@@ -162,43 +163,6 @@ asks:
   satisfies:
     group:
     - refers
-    people:
-    - refers
-    pay:
-    - subject
-- id: ask/equal-itemized-bill-person
-  match:
-    question:
-    - lit: how
-      at_start: true
-    - lit: much
-    - slot: aux
-      type: auxiliary
-    - lit: each
-    - slot: person
-      cat: person
-      uncounted: true
-      bare: true
-    - slot: pay
-      cat: payment_verb
-    - lit: if
-    - slot: people
-      cat: discourse_referential_group_pronoun
-    - opt:
-      - slot: future
-        type: future_modal
-    - slot: split
-      cat: equal_division_verb
-    - slot: bill
-      cat: shared_cost_noun
-    - slot: equal
-      cat: equal_division_adverb
-    - {lit: '?', consume_skipped: true}
-  resolves:
-    consumer: shared-account-cost
-    person: '{person}'
-    equal: 'true'
-  satisfies:
     people:
     - refers
     pay:
@@ -249,29 +213,6 @@ asks:
     - refers
     pay:
     - subject
-- id: ask/stated-equal-bill-person
-  match:
-    question:
-    - lit: how
-      at_start: true
-    - lit: much
-    - slot: aux
-      type: auxiliary
-    - lit: each
-    - slot: person
-      cat: person
-      uncounted: true
-      bare: true
-    - slot: pay
-      cat: payment_verb
-    - {lit: '?', consume_skipped: true}
-  resolves:
-    consumer: shared-account-cost
-    person: '{person}'
-  satisfies:
-    pay:
-    - subject
-
 - id: ask/itemized-charge-total
   match:
     question:
@@ -297,6 +238,54 @@ asks:
   resolves: {consumer: itemized-charge-total, charge: '{charge}'}
   satisfies: {be: [subject]}
 templates:
+  payer-share-question:
+    parameters:
+      auxiliary: {slot: aux, type: auxiliary}
+      condition: []
+      division: {}
+      obligations: {pay: [subject]}
+    rule:
+      match:
+        question:
+        - {lit: how, at_start: true}
+        - {lit: much}
+        - {parameter: auxiliary}
+        - {lit: each}
+        - {slot: person, cat: account_payer, number: singular, uncounted: true, bare: true}
+        - opt:
+          - {slot: membership, cat: cohort_membership_preposition}
+          - {slot: cohort, cat: membership_collective, number: singular, uncounted: true, class_only: true, qualified: true, qualifier_cat: relative_holder_descriptor, all_qualifiers: true}
+        - {slot: pay, cat: payment_verb, bare_form: true}
+        - {parameter: condition}
+        - {lit: '?', consume_skipped: true}
+      resolves: {parameter: division}
+      satisfies: {parameter: obligations}
+  itemized-payer-list:
+    parameters:
+      group_category: account_payer
+      context: []
+      roster: []
+      counts: [group]
+      constraints: []
+      bindings: {}
+    rule:
+      phase: read
+      match:
+        sentence:
+        - {slot: group, cat: {parameter: group_category}, counted: true, bare: true, at_start: true}
+        - {parameter: context}
+        - {slot: order, cat: itemized_acquisition_verb, finite_form: true}
+        - {slot: list, cat: list_introduction_marker}
+        - {lit: ':', consume_skipped: true}
+      where:
+      - {number_compatible: [group, order]}
+      - {parameter: constraints}
+      bindings: {parameter: bindings}
+      emits:
+      - {fact: batch_evidence, kind: bill-population, entity: '{group}', measure: '', value: group, position: '{group.span_start}'}
+      - {parameter: roster}
+      consumes: {parameter: counts}
+      satisfies: {order: [subject]}
   itemized-price-quote:
     parameters:
       ending:
@@ -317,6 +306,7 @@ templates:
         each:
         - collection
       subject:
+        constraints: [{partitive_compatible: {measure: count, substance: item}}]
         item: '{item}'
         qualifier: '{item.qualifier}'
         tokens:
@@ -373,9 +363,58 @@ templates:
           slot: price
         - parameter: ending
       phase: read
+      where: {parameter: subject.constraints}
       satisfies:
         parameter: satisfaction
 variants:
+- id: arithmetic/itemized-order-population
+  template: itemized-payer-list
+- id: arithmetic/itemized-payer-groups-with-members
+  template: itemized-payer-list
+  arguments:
+    context:
+    - {slot: content_prep, cat: counted_content_preposition}
+    - {slot: members, cat: cohort_member, counted: true, bare: true, class_only: true}
+    - {slot: each, cat: postpositive_distributive_quantifier}
+    bindings: {content_prep: {anchor: group, object: members}, each: {collection: group}}
+    group_category: membership_collective
+    counts: [group, members]
+    roster:
+    - {fact: quantity, entity: '{group}', measure: '{members}', value: members, verb: have, distributive: true}
+- id: arithmetic/activity-itemized-account-population
+  template: itemized-payer-list
+  arguments:
+    context:
+    - {slot: activity, cat: purchase_context_activity, finite_form: true}
+    - {slot: prep, cat: quantity_site_preposition}
+    - {slot: site, cat: activity_site, uncounted: true}
+    - {lit: and}
+    constraints:
+    - {number_compatible: [group, activity]}
+    - verb_roles_compatible:
+        verb: activity
+        roles: {actor: [group]}
+        frame_categories: [purchase_context_activity]
+        require_declared_frame: true
+    bindings: {activity: {subject: group}, prep: {object: site}}
+- id: arithmetic/occasion-itemized-account-population
+  template: itemized-payer-list
+  arguments:
+    context:
+    - {slot: act, cat: activity_account_participation, finite_form: true}
+    - {slot: occasion, cat: account_activity, uncounted: true, bare: true, number: singular}
+    - opt:
+      - {slot: prep, cat: quantity_site_preposition}
+      - {slot: site, cat: activity_site, uncounted: true}
+    - {lit: and}
+    constraints:
+    - {number_compatible: [group, act]}
+    - verb_roles_compatible:
+        verb: act
+        roles: {activity: [occasion], actor: [group]}
+        frame_categories: [activity_account_participation]
+        require_declared_frame: true
+    bindings: {act: {subject: group}, prep: {object: site}}
 - arguments:
     satisfaction:
       cost:
@@ -478,6 +517,7 @@ variants:
       each:
       - collection
     subject:
+      constraints: []
       item: '{count}'
       qualifier: '{count.qualifier}'
       tokens:
@@ -498,6 +538,7 @@ variants:
       cost:
       - subject
     subject:
+      constraints: []
       item: '{count}'
       qualifier: '{count.qualifier}'
       tokens:
@@ -521,6 +562,7 @@ variants:
       marker:
       - object
     subject:
+      constraints: []
       item: '{count}'
       qualifier: '{count.qualifier}'
       tokens:
@@ -549,6 +591,7 @@ variants:
       marker:
       - object
     subject:
+      constraints: []
       item: '{count}'
       qualifier: '{count.qualifier}'
       tokens:
@@ -572,6 +615,7 @@ variants:
       marker:
       - object
     subject:
+      constraints: []
       item: '{count}'
       qualifier: '{count.qualifier}'
       tokens:
@@ -600,6 +644,7 @@ variants:
       marker:
       - object
     subject:
+      constraints: []
       item: '{count}'
       qualifier: '{count.qualifier}'
       tokens:
@@ -651,6 +696,7 @@ variants:
       each:
       - collection
     subject:
+      constraints: []
       item: '{count}'
       qualifier: '{count.qualifier}'
       tokens:
@@ -676,6 +722,7 @@ variants:
       cost:
       - subject
     subject:
+      constraints: []
       item: '{count}'
       qualifier: '{count.qualifier}'
       tokens:
@@ -684,3 +731,53 @@ variants:
         slot: count
   id: arithmetic/itemized-relative-price-item-total
   template: itemized-price-quote
+ask_variants:
+- id: ask/stated-equal-bill-person
+  template: payer-share-question
+  arguments:
+    division: &payer_query {consumer: shared-account-cost, person: '{person}', cohort: '{cohort}', index: '{cohort.qualifier}'}
+- id: ask/stated-equal-bill-person-modal
+  template: payer-share-question
+  arguments:
+    auxiliary: &future_auxiliary {slot: aux, type: future_modal}
+    division: *payer_query
+- id: ask/equal-itemized-bill-person
+  template: payer-share-question
+  arguments:
+    condition: &pronoun_division
+    - {lit: if}
+    - {slot: people, cat: discourse_referential_group_pronoun}
+    - opt: [{slot: future, type: future_modal}]
+    - {slot: split, cat: equal_division_verb, bare_form: true}
+    - {slot: bill, cat: shared_cost_noun, uncounted: true, bare: true}
+    - {slot: equal, cat: equal_division_adverb}
+    - opt:
+      - {slot: prep, cat: allocation_distribution_preposition}
+      - opt: [{lit: all}]
+      - {slot: recipients, cat: account_payer, number: plural, uncounted: true, bare: true}
+    division: &pronoun_payer_query {consumer: shared-account-cost, person: '{person}', cohort: '{cohort}', index: '{cohort.qualifier}', equal: 'true', basis: '{recipients}'}
+    obligations: &pronoun_payment {pay: [subject], people: [refers], prep: [anchor, object]}
+- id: ask/equal-itemized-bill-person-modal
+  template: payer-share-question
+  arguments:
+    auxiliary: *future_auxiliary
+    condition: *pronoun_division
+    division: *pronoun_payer_query
+    obligations: *pronoun_payment
+- id: ask/named-equal-itemized-bill-person
+  template: payer-share-question
+  arguments:
+    condition: &named_division
+    - {lit: if}
+    - {slot: payers, cat: account_payer, number: plural, uncounted: true, bare: true}
+    - opt: [{slot: future, type: future_modal}]
+    - {slot: split, cat: equal_division_verb, bare_form: true}
+    - {slot: bill, cat: shared_cost_noun, uncounted: true, bare: true}
+    - {slot: equal, cat: equal_division_adverb}
+    division: &named_payer_query {consumer: shared-account-cost, person: '{person}', cohort: '{cohort}', index: '{cohort.qualifier}', equal: 'true', basis: '{payers}'}
+- id: ask/named-equal-itemized-bill-person-modal
+  template: payer-share-question
+  arguments:
+    auxiliary: *future_auxiliary
+    condition: *named_division
+    division: *named_payer_query

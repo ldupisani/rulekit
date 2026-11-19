@@ -303,11 +303,16 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
     # Basket inherits the six shared container/size descriptor pairs.
     # Explicit duration qualifiers also license second on seven duration nouns.
     # Remaining also describes the shared measured-material family.
+    # As quantity locations, apartment and restaurant accept the nine existing
+    # ordinal and terminal modifiers (e.g. "first apartment", "last restaurant").
+    assert registry.attribute_applies_to("first", "apartment")
+    assert registry.attribute_applies_to("last", "restaurant")
+    assert registry.attribute_applies_to("other", "team")
     assert sum(
         registry.attribute_applies_to(attribute, noun)
         for attribute in adjectives
         for noun in plural_nouns
-    ) == 11711
+    ) == 11745
 
 
 def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> None:
@@ -368,6 +373,7 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
         "arithmetic/container-package-groups-totality-transfer",
         "arithmetic/container-package-contents-totality-transfer",
         "arithmetic/dangling-comparative-relation",
+        "arithmetic/event-capacity-matching-membership",
         "arithmetic/existential-inventory-leading-location",
         "arithmetic/existential-inventory-trailing-location",
         "arithmetic/with-inventory-located",
@@ -402,7 +408,7 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
 def test_compatibility_rule_remains_supported_after_g5j_expansion() -> None:
     availability = list_rule_availability(load_project(CURATED))
 
-    assert sum(item.supported for item in availability) == 925
+    assert sum(item.supported for item in availability) == 938
     target = next(item for item in availability if item.id == RULE_ID)
     assert target.supported
     assert target.blockers == ()

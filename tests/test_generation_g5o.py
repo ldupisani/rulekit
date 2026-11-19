@@ -18,6 +18,11 @@ ROOT = Path(__file__).resolve().parents[1]
 CURATED = ROOT / "projects" / "curated"
 
 EXPECTED_OCCURRENCES = {
+    "arithmetic/distributive-cohort-membership": ((0,), "each"),
+    "arithmetic/equal-division-within-group": ((0,), "each"),
+    "arithmetic/itemized-payer-groups-with-members": ((3,), "each"),
+    "arithmetic/members-in-each-cohort": ((4,), "each"),
+    "arithmetic/postpositive-cohort-membership": ((3,), "each"),
     "arithmetic/all-savings-priced-intention": ((3,), "all"),
     "arithmetic/event-capacity-matching-membership": ((6,), "each"),
     "arithmetic/per-unit-capacity-from-contained-fittings": ((10,), "each"),
@@ -240,8 +245,8 @@ def test_g5o_unlocks_only_the_preregistered_rule() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 1033
-    assert sum(item.supported for item in availability.values()) == 925
+    assert len(availability) == 1046
+    assert sum(item.supported for item in availability.values()) == 938
     assert sum(not item.supported for item in availability.values()) == 108
     assert availability[
         "arithmetic/existential-premise-distributive"

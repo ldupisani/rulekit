@@ -206,16 +206,7 @@ def _selectional_assignment_compatible(
         if frames is not None:
             _SELECTIONAL_FRAME_CACHE.move_to_end(key)
     if frames is None:
-        frames = reg.selectional_frames(word)
-        if compatibility.frame_categories:
-            frames = tuple(
-                (category, frame)
-                for category, frame in frames
-                if any(
-                    trigger in reg.cat_ancestors(category)
-                    for trigger in compatibility.frame_categories
-                )
-            )
+        frames = reg.selectional_frames(word, compatibility.frame_categories)
         with _CACHE_LOCK:
             _SELECTIONAL_FRAME_CACHE[key] = frames
             _SELECTIONAL_FRAME_CACHE.move_to_end(key)
@@ -2292,16 +2283,7 @@ def _rule_blockers(
             }
 
             def verb_has_possible_frame(verb: _Filler) -> bool:
-                frames = reg.selectional_frames(verb.identity)
-                if compatibility.frame_categories:
-                    frames = tuple(
-                        (category, frame)
-                        for category, frame in frames
-                        if any(
-                            trigger in reg.cat_ancestors(category)
-                            for trigger in compatibility.frame_categories
-                        )
-                    )
+                frames = reg.selectional_frames(verb.surface.casefold(), compatibility.frame_categories)
                 if not frames:
                     return not compatibility.require_declared_frame
                 for frame_category, frame in frames:
@@ -5564,7 +5546,7 @@ def _where_reason(
         if not verb_units:
             return "the target match did not expose the governing verb"
         verb = _unit_lemma(verb_units[0], reg)
-        frames = reg.selectional_frames(verb)
+        frames = reg.selectional_frames(verb_units[0].surface.casefold(), compatibility.frame_categories)
         if not frames:
             if compatibility.require_declared_frame:
                 return (
@@ -6305,7 +6287,7 @@ def _explain_candidate(
             )
             if verb_units:
                 for category, frame in project.registry.selectional_frames(
-                    _unit_lemma(verb_units[0], project.registry)
+                    verb_units[0].surface.casefold(), predicate.verb_roles_compatible.frame_categories
                 ):
                     where_sources.append(
                         project.source_index.categories.get(category)

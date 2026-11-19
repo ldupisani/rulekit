@@ -1,0 +1,117 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/members-in-each-cohort
+  phase: read
+  independent_clause: true
+  match:
+    sentence:
+    - {lit: there, at_start: true}
+    - {slot: be, cat: copula, finite_form: true}
+    - {slot: members, cat: cohort_member, counted: true, class_only: true, bare: true}
+    - {slot: prep, cat: cohort_membership_preposition}
+    - {slot: each, cat: distributive_quantifier}
+    - {slot: group, cat: membership_collective, number: singular, uncounted: true, bare: true}
+    - {lit: '.', consume_skipped: true}
+  where: [{number_compatible: [members, be]}]
+  bindings: {be: {subject: members}, each: {collection: group}, prep: {anchor: members, object: group}}
+  consumes: [members]
+  emits:
+  - {fact: quantity, entity: '{group}', measure: '{members}', value: members, verb: have, distributive: true}
+templates:
+  contrastive-cohort-counts:
+    parameters:
+      counterpart: {slot: other, cat: contrastive_counterpart}
+      counterpart_label: '{other}'
+      count: {slot: count, type: number, standalone: true, integer: true, value_positive: true}
+      agreement: []
+      same_members: []
+    rule:
+      phase: read
+      description: Two contrasted groups have explicit membership counts. A repeated group or member noun must agree with its antecedent.
+      match:
+        sentence:
+        - {slot: group, cat: membership_collective, class_only: true, bare: true, counted: true, number: singular, value_min: 1, value_max: 1, at_start: true}
+        - {slot: have, cat: plain_have_state, finite_form: true}
+        - {slot: members, cat: cohort_member, counted: true, class_only: true, bare: true}
+        - {lit: and}
+        - {lit: the, consume_skipped: true}
+        - {parameter: counterpart}
+        - {slot: other_have, cat: plain_have_state, finite_form: true}
+        - {parameter: count}
+        - {lit: '.', consume_skipped: true}
+      where:
+      - {number_compatible: [group, have, other_have]}
+      - {same_surface: [have, other_have]}
+      - {parameter: agreement}
+      - {parameter: same_members}
+      bindings: {have: {subject: group, dobj: members}, other_have: {subject: other, dobj: count}}
+      satisfies: {count: [quantifies]}
+      consumes: [group, have, members, other_have, count]
+      emits:
+      - {fact: batch_evidence, kind: cohort-pair, entity: '{group}', measure: '{members}', value: group, position: '{group.span_start}', marker: one, attribute: {parameter: counterpart_label}}
+      - {fact: quantity, entity: '{group.lemma}', qualifier: one, measure: '{members}', value: members, verb: '{have}'}
+      - {fact: quantity, entity: '{group.lemma}', qualifier: {parameter: counterpart_label}, measure: '{members}', value: count, verb: '{other_have}'}
+  cohort-membership-count:
+    parameters:
+      subject:
+      - {slot: each, cat: distributive_quantifier, at_start: true}
+      - {slot: group, cat: membership_collective, number: singular, uncounted: true, bare: true}
+      ending: []
+      distributive: true
+      bindings: {have: {subject: group, dobj: members}, each: {collection: group}}
+    rule:
+      phase: read
+      independent_clause: true
+      match:
+        sentence:
+        - {parameter: subject}
+        - {slot: have, cat: plain_have_state, finite_form: true}
+        - {slot: members, cat: cohort_member, counted: true, bare: true, class_only: true}
+        - {parameter: ending}
+        - {lit: '.', consume_skipped: true}
+      where: [{number_compatible: [group, have]}]
+      emits:
+      - fact: quantity
+        entity: '{group}'
+        qualifier: '{group.qualifier}'
+        measure: '{members}'
+        verb: '{have}'
+        value: members
+        distributive: {parameter: distributive}
+      consumes: [members]
+      bindings: {parameter: bindings}
+variants:
+- id: arithmetic/contrastive-cohort-counts-elided
+  template: contrastive-cohort-counts
+- id: arithmetic/contrastive-cohort-counts-with-member
+  template: contrastive-cohort-counts
+  arguments:
+    count: &repeated_member_count {slot: count, cat: cohort_member, counted: true, class_only: true, bare: true}
+    same_members: &same_members [{same_lemma: [members, count]}]
+- id: arithmetic/contrastive-cohort-counts-with-group
+  template: contrastive-cohort-counts
+  arguments:
+    counterpart: &repeated_group {slot: other, cat: membership_collective, class_only: true, qualified: true, qualifier_cat: contrastive_counterpart, all_qualifiers: true, uncounted: true, number: singular}
+    counterpart_label: '{other.qualifier}'
+    agreement: &same_group [{same_lemma: [group, other]}]
+- id: arithmetic/contrastive-cohort-counts-with-group-and-member
+  template: contrastive-cohort-counts
+  arguments:
+    counterpart: *repeated_group
+    counterpart_label: '{other.qualifier}'
+    agreement: *same_group
+    count: *repeated_member_count
+    same_members: *same_members
+- id: arithmetic/distributive-cohort-membership
+  template: cohort-membership-count
+- id: arithmetic/postpositive-cohort-membership
+  template: cohort-membership-count
+  arguments:
+    subject: [{slot: group, cat: membership_collective, number: plural, uncounted: true, bare: true, at_start: true}]
+    ending: [{slot: each, cat: postpositive_distributive_quantifier}]
+- id: arithmetic/indexed-cohort-membership
+  template: cohort-membership-count
+  arguments:
+    subject: [{slot: group, cat: membership_collective, number: singular, uncounted: true, class_only: true, qualified: true, qualifier_cat: holder_ordinal, at_start: true}]
+    distributive: false
+    bindings: {have: {subject: group, dobj: members}}

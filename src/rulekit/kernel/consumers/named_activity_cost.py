@@ -40,6 +40,12 @@ def consume(ctx):
     group = rows[0]
     if {q.entity for q in quantities} != set(group.members):
         return decline("every named participant needs explicit item counts")
+    verbs = {q.verb for q in quantities}
+    if not any(
+        all(ctx.reg.word_in_category(verb, basis) for verb in verbs)
+        for basis in ("possession_state", "purchase_transaction_verb")
+    ):
+        return decline("the activity needs one consistent basis of held or purchased items")
     expected = defaultdict(Counter)
     covered = defaultdict(set)
     expenses = []
@@ -48,7 +54,9 @@ def consume(ctx):
             q for q in quantities if q.provenance.sentence == reading.sentence_index
         ]
         if local:
-            footprint = quantity_ledger_source_units(reading, local, ctx.reg)
+            footprint = quantity_ledger_source_units(
+                reading, local, ctx.reg, allow_stated_holding=True
+            )
             if not footprint:
                 return decline("every participant item count must be fully read")
             covered[reading.sentence_index].update(footprint)
@@ -62,7 +70,6 @@ def consume(ctx):
             or q.label
             or q.qualifier
             or q.provenance.sentence <= group.provenance.sentence
-            or not ctx.reg.word_in_category(q.verb, "possession_state")
             or q.value < 0
             or not float(q.value).is_integer()
         ):
@@ -86,7 +93,7 @@ def consume(ctx):
         p = resolve_unit_quotes(matches, ctx.reg, ctx.log, per=per)
         if p is None:
             return decline(
-                "each item and serving unit needs one matching currency price"
+                "each item needs one price in the quoted unit and currency"
             )
         used.update(price.key() for price in matches)
         expenses.append(
@@ -149,5 +156,5 @@ def consume(ctx):
     return Answer(
         "number",
         value,
-        "sum each participant’s counted items at the matching unit or serving price",
+        "sum each participant’s counted items at the matching unit price",
     )

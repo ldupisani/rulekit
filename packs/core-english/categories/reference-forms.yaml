@@ -19,6 +19,7 @@ categories:
   universal_person_reference:
     parent: pronoun
     notes: All people in an independently established discourse scope; no population is inferred.
+  impersonal_possessive_reference: {parent: pronoun}
   group_possessive_determiner: {parent: possessive_determiner}
   anaphoric_person_subject:
     parent: pronoun
@@ -33,8 +34,10 @@ categories:
     - quantity_container
   holder_prefix_order:
     parent: precardinal_attribute
-  holder_ordinal:
+  relative_holder_descriptor:
     parent: adjective
+  holder_ordinal:
+    parent: relative_holder_descriptor
   holder_terminal_order:
     parent: adjective
   person_title:
@@ -97,6 +100,7 @@ members:
   - first
   generic_addressee_pronoun: [you]
   universal_person_reference: [everyone]
+  impersonal_possessive_reference: [its]
   group_possessive_determiner: [their]
   anaphoric_person_possessive: [her, his, their]
   anaphoric_person_subject: [he, she, they]

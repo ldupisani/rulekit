@@ -113,6 +113,44 @@ def test_composed_questions(registry, case):
     assert [item.id for item in result.answer.assumptions] == ([assumption] if assumption else [])
 
 
+@pytest.mark.parametrize("prefix, site", [
+    ("In a conference room", "conference room"),
+    ("In the school gym", "school gym"),
+    ("In an apartment", "apartment"),
+    ("In a park", "park"),
+    ("At the stadium", "stadium"),
+    ("At an auditorium", "auditorium"),
+    ("On the field", "field"),
+])
+def test_attendance_binds_the_stated_site(registry, prefix, site):
+    question, expected, assumption = CASES["occupied-benches"]
+    result = solve(f"{prefix}, {question}", registry)
+    assert result.answer.committed and result.value == expected
+    assert not result.deficiencies()
+    assert [item.id for item in result.answer.assumptions] == [assumption]
+    plan, = (row.match for row in result.document.rule_results[0]
+             if row.match.rule.id == "arithmetic/event-capacity-matching-membership")
+    location = plan.slots["location"]
+    assert location.surface == site
+    assert any(ob.need == "object" and ob.target is location for ob in plan.slots["prep"].obligations())
+
+
+@pytest.mark.parametrize("prefix", [
+    "In a jar", "At a budget", "On the auditorium", "Into the garden",
+    "In each room", "In three parks", "In the gym and the hall",
+])
+def test_attendance_requires_a_single_compatible_setting(registry, prefix):
+    question, _, _ = CASES["occupied-benches"]
+    assert not solve(f"{prefix}, {question}", registry).answer.committed
+
+
+def test_site_and_capacity_alone_do_not_establish_attendance(registry):
+    question, _, _ = CASES["occupied-benches"]
+    plan, _ = question.split(" If ")
+    result = solve(f"At a park, {plan} How many members attended the meeting?", registry)
+    assert not result.answer.committed
+
+
 @pytest.mark.parametrize(
     "case, original, replacement",
     [

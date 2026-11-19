@@ -73,7 +73,7 @@ rules:
     - {slot: actor, cat: clause_subject_personal_pronoun}
     - {slot: want, cat: finite_infinitival_goal_predicate, finite_form: true}
     - {slot: inf, cat: infinitival_marker}
-    - {slot: buy, cat: projected_purchase_verb, bare_form: true}
+    - {slot: buy, cat: purchase_transaction_verb, bare_form: true}
     - {slot: item, cat: inventory_item, uncounted: true}
     - {lit: for}
     - {slot: price, cat: currency_unit, counted: true, bare: true}
@@ -131,7 +131,7 @@ asks:
     - opt: [{lit: over}]
     - {lit: after}
     - {slot: actor, cat: clause_subject_personal_pronoun}
-    - {slot: buy, cat: projected_purchase_verb, finite_form: true}
+    - {slot: buy, cat: purchase_transaction_verb, finite_form: true}
     - opt: [{slot: owner, cat: possessive_determiner}]
     - {slot: item, cat: inventory_item, uncounted: true}
     - {lit: '?', consume_skipped: true}

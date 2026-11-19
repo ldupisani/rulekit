@@ -10,7 +10,6 @@ categories:
   activity_onset_verb: {parent: verb}
   savings_retention_verb: {parent: verb}
   retained_balance_verb: {parent: verb}
-  projected_purchase_verb: {parent: verb}
   elapsed_auxiliary_clitic: {parent: possessive}
 members:
   copular_infinitive: [be]
@@ -23,7 +22,6 @@ members:
   activity_onset_verb: [start, started, starts]
   savings_retention_verb: [save, saved, saves]
   retained_balance_verb: [left]
-  projected_purchase_verb: [buy, buys, bought, purchase, purchases, purchased]
   elapsed_auxiliary_clitic: ["'s"]
 attrs:
   height: {projection_axis: 1}

@@ -8,7 +8,7 @@ from ..composition_evidence import closed_evidence, finish_batch_answer
 from ..evaluate import evaluate
 from ..model import BatchEvidence, Quantity
 from ..numeric_evidence import audit_numeric_mentions
-from ..resource_equations import resource_residual
+from ..resource_equations import equal_share, resource_residual
 from ..rate_calculation import convert_units
 from ..reference_identity import constrains
 from ..source_coverage import uncovered_document_units, uncovered_units, quantity_source_units
@@ -133,8 +133,7 @@ def _forward_share(ctx):
     available = resource_residual([total], removed, ctx.log, source="allocated-remainder")
     if available < 0:
         return decline("the retained amount exceeds the pool")
-    value = evaluate("available / recipients", {"available": available, "recipients": group.value},
-                     ctx.log, source="uniform-recipient-share")
+    value = equal_share(available, group.value, ctx.log, source="uniform-recipient-share")
     if pool.attribute == "count" and not isclose(value, round(value), abs_tol=1e-9):
         return decline("the discrete pool does not divide into whole shares")
     ctx.log.consumed_batch_keys.update(r.key() for r in rows)

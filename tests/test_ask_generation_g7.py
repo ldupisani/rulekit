@@ -63,7 +63,14 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
     assert any("antecedent discourse group" in blocker for blocker in contextual.blockers)
     # The reusable physics pack adds the independently generatable
     # ask/physics-quantity surface to curated.
-    assert sum(item.supported for item in availability.values()) == 515
+    assert sum(item.supported for item in availability.values()) == 519
+    for rule_id in (
+        "ask/stated-equal-bill-person-modal",
+        "ask/equal-itemized-bill-person-modal",
+        "ask/named-equal-itemized-bill-person",
+        "ask/named-equal-itemized-bill-person-modal",
+    ):
+        assert availability[rule_id].supported
     assert availability["ask/how-many-of-collection-are-label"].supported
     assert availability["ask/how-many-of-collection-are-label"].supported_modes == (
         "ask_only",
@@ -87,7 +94,7 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
     assert availability["ask/measured-content-in-container-unit"].blockers == (
         "ask requires generated premise evidence; standalone realization is disabled",
     )
-    assert len(availability) == 561
+    assert len(availability) == 565
     assert {
         item.id for item in availability.values() if not item.supported
     } == {'ask/available-unit-assignments-with-vacancy',

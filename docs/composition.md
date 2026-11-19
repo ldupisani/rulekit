@@ -709,9 +709,21 @@ Implementation: [monetary units](../packs/core-english/categories/core.yaml),
 
 Currency glyphs come from the pack's currency registry. Pounds sterling have
 their own denomination identity, separate from pounds of mass. A named activity
-can total the participants' counted items at matching item or serving prices;
-that quote does not establish payment. A sales cash account instead combines
-actual sales and supplemental receipts, then subtracts explicit deposits from
+can total participants’ items at a quoted price per item, pair or package. The
+vocabulary links each counting unit to the goods it can measure. Itemized
+accounts use the same relationships for both unit prices and whole-line totals.
+An equal split needs an explicit group of payers and an equal-division statement.
+A group purchase can give one membership count for every group or identify
+every group by ordinal and give its count. For two groups, “one team has four
+players and the other has six” gives both counts. Each count keeps its team
+label, and the second count inherits the stated member type. Splitting the invoice among all
+members gives one per-person payment. If groups pay equal shares and each
+group divides its share equally, members of differently sized groups pay
+different amounts. A per-member question with an unspecified split and unequal
+group sizes offers both interpretations. An explicit group split alone leaves
+each member’s contribution open.
+A price quote alone leaves payment open. A sales cash account combines actual
+sales and supplemental receipts, then subtracts explicit deposits from
 cash on hand. Those deposits remain owned assets, so the result is not net worth.
 
 Implementation: [activity accounts](../src/rulekit/kernel/consumers/named_activity_cost.py)

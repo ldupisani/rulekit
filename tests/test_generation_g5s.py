@@ -34,6 +34,7 @@ FUTURE_RULES = {
     "arithmetic/temporal-offset-times-as-old-as-future",
 }
 EXPECTED_OCCURRENCES = {
+    "arithmetic/named-equal-account-division": ((1, 0), "future_modal", ((1,),)),
     'arithmetic/material-container-service-capacity': ((4,), 'future_modal', ()),
     'arithmetic/nested-supply-exact-service-plan': ((18,), 'future_modal', ()),
     'arithmetic/per-component-and-remaining-resource-requirement': ((10,), 'future_modal', ()),
@@ -258,8 +259,8 @@ def test_g5s_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 1033
-    assert sum(item.supported for item in availability.values()) == 925
+    assert len(availability) == 1046
+    assert sum(item.supported for item in availability.values()) == 938
     assert sum(not item.supported for item in availability.values()) == 108
     assert availability["arithmetic/periodic-rate-every-span"].supported
     assert all(availability[rule_id].supported for rule_id in FUTURE_RULES)

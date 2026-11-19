@@ -447,6 +447,7 @@ entries:
   attends:
     senses:
     - verb
+    number: singular
     verb:
       lemma: attend
   attributable: {senses: [adjective]}
@@ -2403,12 +2404,13 @@ entries:
     - verb
     verb:
       lemma: distribute
-  divide: {"senses": ["verb"], "verb": {"lemma": "divide"}}
+  divide: {senses: [verb], verb: {lemma: divide, number: plural}}
   divided:
     senses:
     - verb
     verb:
       lemma: divide
+      past_participle: true
   divides:
     senses:
     - verb
@@ -2857,9 +2859,7 @@ entries:
     senses:
     - noun
     plural: evenings
-  evenly:
-    senses:
-    - manner
+  evenly: {senses: [manner, adverb]}
   event:
     senses:
     - noun
@@ -5494,7 +5494,7 @@ entries:
   order: {senses: [verb]}
   ordered: {senses: [verb], verb: {lemma: order}}
   ordering: {senses: [verb], verb: {lemma: order}}
-  orders: {senses: [verb], verb: {lemma: order}}
+  orders: {senses: [verb], number: singular, verb: {lemma: order}}
   oregano:
     senses:
     - noun
@@ -6306,6 +6306,7 @@ entries:
   purchases:
     senses:
     - verb
+    number: singular
     verb:
       lemma: purchase
   purchasing:
@@ -7263,11 +7264,12 @@ entries:
   shapes:
     senses:
     - noun
-  share: {senses: [noun, verb]}
-  shared: {senses: [verb], verb: {lemma: share}}
+  share: {senses: [noun, verb], verb: {lemma: share, number: plural}}
+  shared: {senses: [verb], verb: {lemma: share, past_participle: true}}
   shares:
     senses:
     - verb
+    number: singular
     verb:
       lemma: share
   sharing:
@@ -7726,6 +7728,7 @@ entries:
   splits:
     senses:
     - verb
+    number: singular
     verb:
       lemma: split
   splitting:
@@ -8132,7 +8135,7 @@ entries:
     verb:
       lemma: take
       past_participle: true
-  takes: {senses: [verb], verb: {lemma: take}}
+  takes: {senses: [verb], number: singular, verb: {lemma: take}}
   taking:
     senses:
     - verb

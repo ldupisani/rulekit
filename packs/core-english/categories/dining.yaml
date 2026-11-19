@@ -10,12 +10,18 @@ categories:
     parent: measured_output_container
   individual_serving_measure:
     parent: serving_measure
+  plated_serving_measure: {parent: serving_measure}
+  beverage_container_measure: {parent: partitive_volume_measure}
+  beverage: {parent: material_resource}
+  sliceable_food: {parent: sliceable_material, includes: [divisible_food_whole]}
   dining_activity:
     parent: purchase_context_activity
+    selectional_roles: {actor: personal_account_payer}
   dining_account_activity:
-    parent: account_activity
+    parent: purchasable_activity
   dining_account_participation_action:
     parent: activity_account_participation
+    selectional_roles: {activity: dining_account_activity, actor: personal_account_payer}
   food:
     parent: material_resource
     includes:
@@ -30,22 +36,22 @@ members:
   - fast-food
   food_origin_descriptor:
   - french
-  serving_measure:
-  - piece
-  - set
-  - cup
-  - platter
-  - plate
-  - bowl
-  - slice
+  serving_measure: [cup]
+  beverage_container_measure: [bottle, cup]
+  beverage: [coffee, juice, lemonade, milk, soda, tea, water]
+  plated_serving_measure: [bowl, plate, platter]
+  sliceable_food: [bread, cheese, toast]
   individual_serving_measure: [portion, serving]
   dining_activity:
   - eat
   - eats
+  - ate
   dining_account_activity:
   - breakfast
   - lunch
   - dinner
+  - meal
+  - picnic
   food:
   - bacon
   - beef
@@ -54,8 +60,13 @@ members:
   - flour
   - milk
   - pork
+  - soup
 attribute_compatibility:
   dining_venue_descriptor:
   - dining_venue
   food_origin_descriptor:
   - edible_quantity_object
+partitive_measure_compatibility:
+  individual_serving_measure: [food, beverage]
+  beverage_container_measure: [beverage]
+  plated_serving_measure: [food]

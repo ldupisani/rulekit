@@ -204,7 +204,7 @@ def annotate_senses(reading: Reading, reg: Registry) -> Reading:
                     "declared noun/name homograph resolved by capitalization and article",
                 )
                 continue
-            if entry.number is not None:
+            if entry.number is not None and not implicit_plural:
                 number = entry.number
             changes: dict = {
                 "senses": noun_form_senses(reg, fold, entry, inherited=implicit_plural),

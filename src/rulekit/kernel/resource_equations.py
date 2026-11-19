@@ -53,3 +53,9 @@ def resource_residual(available, allocated, log, *, source):
     left = " + ".join(str(v) for v in available) or "0"
     right = " + ".join(str(v) for v in allocated) or "0"
     return evaluate(f"({left}) - ({right})", {}, log, source=source)
+
+
+def equal_share(available, recipients, log, *, source):
+    """Divide a validated pool among its stated recipients, without rounding."""
+    return evaluate("available / recipients", {"available": available, "recipients": recipients},
+                    log, source=source)

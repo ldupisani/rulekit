@@ -798,3 +798,50 @@ def test_shared_stock_distribution_on_divisible_materials(reg):
 
 def test_activity_cost_keeps_selectional_roles(reg):
     assert not solve(breakfast().replace("had lunch", "ate meeting"), reg).answer.committed
+
+
+@pytest.mark.parametrize("opening,activity,item,verb", [
+    ("attended a meeting at the library", "meeting", "pens", "attend"),
+    ("had a meeting at school", "meeting", "pens", "have"),
+    ("took a trip", "trip", "tickets", "take"),
+    ("shared a tour", "tour", "tickets", "share"),
+    ("purchased a tour", "tour", "tickets", "purchase"),
+    ("attended a tournament at the stadium", "tournament", "tickets", "attend"),
+    ("ate lunch at a cafe", "lunch", "eggs", "eat"),
+    ("shared a meal at a cafe", "meal", "eggs", "share"),
+])
+def test_named_activity_cost_uses_the_same_item_ledger(reg, opening, activity, item, verb):
+    from rulekit.kernel.model import BatchEvidence
+
+    text = (f"Nora and Iris {opening}. {item.capitalize()} cost $4 each. "
+            f"Nora had 2 {item}. Iris had 3 {item}. What did their {activity} cost?")
+    result = number(reg, text, 20)
+    account, = result.store.by_kind(BatchEvidence)
+    assert (account.verb, account.measure, account.members) == (verb, activity, ("nora", "iris"))
+
+
+def test_named_activity_cost_accepts_purchases_without_double_counting_holdings(reg):
+    text = ("Nora and Iris took a trip. Tickets cost $4 each. "
+            "Nora bought 2 tickets. Iris purchased 3 tickets. How much did their trip cost?")
+    number(reg, text, 20)
+    assert not solve(text.replace("Iris purchased", "Iris had"), reg).answer.committed
+    assert not solve(text.replace("Nora bought", "Nora ordered"), reg).answer.committed
+
+
+@pytest.mark.parametrize("old,new", [
+    ("attended a meeting", "ate a meeting"),
+    ("attended a meeting", "bought a meeting"),
+    ("attended a meeting", "attended two meetings"),
+    ("at the library", "at a jar"),
+    ("their meeting cost", "their trip cost"),
+    ("their meeting cost", "their meetings cost"),
+    ("2 pens.", "2 pens at home."),
+    ("Iris had", "Theo had"),
+    ("Pens cost $4 each.", ""),
+    ("Pens cost $4 each.", "Nora and Iris took a trip. Pens cost $4 each."),
+    ("How much did their meeting cost?", "How much did Nora pay?"),
+])
+def test_named_activity_needs_one_compatible_account_and_complete_costs(reg, old, new):
+    text = ("Nora and Iris attended a meeting at the library. Pens cost $4 each. "
+            "Nora had 2 pens. Iris had 3 pens. How much did their meeting cost?")
+    assert not solve(text.replace(old, new), reg).answer.committed
