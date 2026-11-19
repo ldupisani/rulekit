@@ -21,7 +21,7 @@ declined, so no capability was lost, only a confident-wrong.
 
 ⚠ THE CONTRACT THIS MUST NOT BREAK, and a first attempt DID break it: a DEFINITE
 pool legitimately SPANS ENTITIES. "Tom found 12 eggs. Mary found 10 eggs. Tom ate
-half of THE eggs" is 11 — half of everyone's, by design (test_mining_increment_5
+half of THE eggs" is 11 — half of everyone's, by design (test_existential_counts_and_fraction_pools
 ::test_fraction_pool_spans_entities pins it). Holder count is a SYMPTOM here, not
 the defect; the defect is the construction. Guarding on the pool's holder count
 declined that item and was reverted.
@@ -29,25 +29,7 @@ declined that item and was reverted.
 Synthetic only — invented fixtures; the SHAPE is what is pinned.
 """
 
-from pathlib import Path
-
-import pytest
-
-from rulekit.data.packs import load_packs
-from rulekit.data.registry import compile_registry
 from rulekit.kernel.engine import solve
-
-REPO = Path(__file__).resolve().parent.parent
-
-
-@pytest.fixture(scope="module")
-def full_registry():
-    mined = REPO / "packs/difg-mined"
-    if not mined.exists():
-        pytest.skip("difg-mined not generated")
-    return compile_registry(
-        load_packs([REPO / "packs/core-english", REPO / "packs/arithmetic", mined])
-    )
 
 
 def test_a_possessive_fraction_declines_rather_than_sizing_against_the_pool(full_registry):
@@ -100,7 +82,7 @@ def test_of_them_still_resolves(full_registry):
 def test_a_definite_pool_still_spans_entities(full_registry):
     """THE CONTRACT A FIRST ATTEMPT BROKE. "half of THE eggs" is the definite
     pool — everyone's — and that is correct English, not a bug. Pinned here as
-    well as in test_mining_increment_5 because it is the boundary this change
+    well as in test_existential_counts_and_fraction_pools because it is the boundary this change
     lives against: restrict by CONSTRUCTION, never by holder count."""
     r = solve(
         "Tom found 12 eggs. Mary found 10 eggs. Tom ate half of the eggs. "

@@ -20,7 +20,7 @@ The journal records candidates, exclusions, distances, and the result.
 
 This primitive is shared machinery, not a universal nearest-mention rule.
 A changed distance function changes interpretation and requires its own
-regression evidence. See [resolver tests](../tests/test_mining_increment_116.py).
+regression evidence. See [resolver tests](../tests/test_deictic_candidate_resolution.py).
 
 ## Participant identity
 

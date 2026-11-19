@@ -51,7 +51,7 @@ def _followed_by_comparative(reading: Reading, noun: Unit, reg: Registry) -> boo
     Scoped to age_comparative/dimension_comparative — the families that actually
     form a 'N UNIT COMP than Y' magnitude difference — NEVER a general comparative
     ('5 apples FASTER than Mia' is a spurious manner comparative that must leave
-    the ordinary '5 apples' fold intact; tests/test_mining_increment_68.py)."""
+    the ordinary '5 apples' fold intact; tests/test_dimensional_comparisons_and_measurements.py)."""
     units = reading.units
     try:
         i = units.index(noun)

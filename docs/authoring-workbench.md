@@ -51,7 +51,7 @@ Implementation: [generation](../src/rulekit/generation/sample.py),
 [candidate model](../src/rulekit/generation/candidate.py), and
 [exploration](../src/rulekit/generation/exploration.py).
 Tests: [generation workbench](../tests/test_generation_workbench.py) and
-[optional realization](../tests/test_generation_g5i.py).
+[optional realization](../tests/test_generation_optional_branches.py).
 
 ## Generate asks and complete scenarios
 
@@ -67,7 +67,7 @@ preserve identities, units, values, and derivation-only wording from reviewed
 premises.
 
 Implementation: [ask generation](../src/rulekit/generation/ask_generation.py).
-Tests: [ask scenarios](../tests/test_ask_generation_g7.py) and
+Tests: [ask scenarios](../tests/test_ask_scenario_generation.py) and
 [review evidence](../tests/test_ask_review_evidence.py).
 
 ## Review and retest

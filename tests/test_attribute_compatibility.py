@@ -405,10 +405,9 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
     }
 
 
-def test_compatibility_rule_remains_supported_after_g5j_expansion() -> None:
+def test_attribute_compatibility_rule_is_available() -> None:
     availability = list_rule_availability(load_project(CURATED))
 
-    assert sum(item.supported for item in availability) == 938
     target = next(item for item in availability if item.id == RULE_ID)
     assert target.supported
     assert target.blockers == ()

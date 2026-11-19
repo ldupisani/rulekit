@@ -1331,7 +1331,7 @@ def test_aggregate_root_slots_block_when_the_lexicon_domain_is_empty(
     )
 
 
-def test_g5b_unlocks_exactly_the_five_preregistered_curated_rules() -> None:
+def test_counted_slots_and_age_measures_generate_with_sources() -> None:
     availability = {
         rule.id: rule
         for rule in list_rule_availability(
@@ -1373,7 +1373,7 @@ def test_g5b_unlocks_exactly_the_five_preregistered_curated_rules() -> None:
             }
 
 
-def test_g5c_possessed_rules_remain_supported_after_g5j() -> None:
+def test_possessed_quantity_rules_generate_owner_bindings() -> None:
     project = load_project(Path("projects/curated"))
     availability = {
         rule.id: rule for rule in list_rule_availability(project)
@@ -1407,7 +1407,7 @@ def test_g5c_possessed_rules_remain_supported_after_g5j() -> None:
     }
 
 
-def test_g5d_unlocks_only_the_four_preregistered_partition_rules() -> None:
+def test_partition_rules_generate_grounded_pronouns() -> None:
     project = load_project(Path("projects/curated"))
     availability = {
         rule.id: rule for rule in list_rule_availability(project)
@@ -1482,7 +1482,7 @@ def test_g5d_unlocks_only_the_four_preregistered_partition_rules() -> None:
         )
 
 
-def test_g5e_unlocks_only_the_preregistered_pool_pronoun_rule() -> None:
+def test_fraction_pool_rules_generate_grounded_pronouns() -> None:
     project = load_project(Path("projects/curated"))
     availability = {
         rule.id: rule for rule in list_rule_availability(project)
@@ -1522,7 +1522,7 @@ def test_g5e_unlocks_only_the_preregistered_pool_pronoun_rule() -> None:
         )
 
 
-def test_g5f_aggregate_boundary_remains_narrow_after_later_increments() -> None:
+def test_aggregate_generation_respects_marker_constraints() -> None:
     project = load_project(Path("projects/curated"))
     availability = {
         rule.id: rule for rule in list_rule_availability(project)
@@ -2482,7 +2482,7 @@ def test_exploration_status_distinguishes_generation_from_human_review(
     assert deleted_filler["status"] == "generated_unreviewed"
 
 
-def test_pre_g6_review_does_not_invent_filler_history(tmp_path: Path) -> None:
+def test_legacy_review_without_filler_evidence_preserves_empty_history(tmp_path: Path) -> None:
     _write_project(tmp_path)
     project = load_project(tmp_path)
     candidate = generate_candidate(
@@ -2502,7 +2502,7 @@ def test_pre_g6_review_does_not_invent_filler_history(tmp_path: Path) -> None:
 
 
 def test_least_explored_selection_is_seeded_and_probe_compatible(
-    tmp_path: Path,
+    tmp_path: Path, curated_fillers,
 ) -> None:
     _write_project(tmp_path)
     project = load_project(tmp_path)
@@ -2536,10 +2536,6 @@ def test_least_explored_selection_is_seeded_and_probe_compatible(
         )
 
     curated = load_project(Path("projects/curated"))
-    curated_fillers = {
-        item["identity"]: item
-        for item in exploration_status(curated)["fillers"]
-    }
     excluded_rule = "arithmetic/affine-fraction-as-many"
     for identity in ("need", "take", "want"):
         assert excluded_rule not in curated_fillers[identity]["compatible_rules"]

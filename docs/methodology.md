@@ -47,6 +47,19 @@ Matching a premise is not enough. Check the full path through the ask,
 consumer, and commitment guards. A generated match is authoring evidence,
 not a gold answer and not a runtime fact.
 
+Name test modules for the behavior they verify, such as
+[existential counts and fraction pools](../tests/test_existential_counts_and_fraction_pools.py).
+Keep feature-specific generation checks with that behavior. The full curated
+[rule inventory](../tests/test_contextual_premise_generation.py) and
+[filler inventory](../tests/test_core_generation_vocabulary.py) each have a single
+test for their expected totals.
+
+To profile the full suite, run `uv run pytest -n 4 --dist=worksteal --durations=40`.
+Compare elapsed time using the same worker count and distribution. Each worker
+shares the checked-in packs and read-only generation fixtures for its session.
+Tests that edit data use temporary projects or explicit pack copies.
+Set `RULEKIT_TEST_CACHE=0` to exercise the loaders without their test caches.
+
 ## Regression comparisons
 
 Where the change's reach warrants corpus comparisons:

@@ -1,0 +1,348 @@
+"""Core modal ownership and generic modal realization."""
+
+from dataclasses import fields, replace
+from pathlib import Path
+
+import pytest
+
+from rulekit.data.project import load_project
+from rulekit.data.registry import compile_registry
+from rulekit.data.schemas import CategoriesDoc
+from rulekit.generation import (
+    GenerationError,
+    generate_candidate,
+)
+from rulekit.generation.sample import _flat_sentence, _leaf_tokens
+
+
+ROOT = Path(__file__).resolve().parents[1]
+CURATED = ROOT / "projects" / "curated"
+GSM8K = ROOT / "projects" / "gsm8k"
+
+CAPACITY = {"can", "could", "may", "might", "must", "should"}
+FUTURE = {"will", "would"}
+MOVED_WORDS = CAPACITY | FUTURE
+MOVED_MEMBERS = {
+    "capacity_modal": sorted(CAPACITY),
+    "future_modal": sorted(FUTURE),
+}
+FUTURE_RULES = {
+    "arithmetic/temporal-offset-age-future",
+    "arithmetic/temporal-offset-age-future-intensified",
+    "arithmetic/temporal-offset-times-as-old-as-future",
+}
+EXPECTED_OCCURRENCES = {
+    "arithmetic/named-equal-account-division": ((1, 0), "future_modal", ((1,),)),
+    'arithmetic/material-container-service-capacity': ((4,), 'future_modal', ()),
+    'arithmetic/nested-supply-exact-service-plan': ((18,), 'future_modal', ()),
+    'arithmetic/per-component-and-remaining-resource-requirement': ((10,), 'future_modal', ()),
+    'arithmetic/calibrated-output-sale-quote': ((1,), 'modal', ()),
+    'arithmetic/periodic-rate-every-unit': ((1, 0), 'modal', ((1,),)),
+    "arithmetic/event-multiplier-step-participle": ((4, 0), "future_modal", ((4,),)),
+    "arithmetic/event-multiplier-step-motive-participle": ((19,), "future_modal", ()),
+    "arithmetic/event-relative-increase-step": ((4, 0), "future_modal", ((4,),)),
+    "arithmetic/event-multiplier-step": ((4, 0), "future_modal", ((4,),)),
+    "arithmetic/event-multiplier-step-motive": ((18,), "future_modal", ()),
+    "arithmetic/explicit-proportion-adoption-owned-scope": ((1, 0), "future_modal", ((1,),)),
+    "arithmetic/explicit-proportion-adoption-population": ((1, 0), "future_modal", ((1,),)),
+    "arithmetic/explicit-equal-bill-division": ((1, 0), "future_modal", ((1,),)),
+    "arithmetic/explicit-proportion-adoption": ((1, 0), "future_modal", ((1,),)),
+    "arithmetic/path-checkpoint-count": ((2, 0), "modal", ((2,),)),
+    "arithmetic/path-checkpoint-count-qualified": ((2, 0), "modal", ((2,),)),
+    "logic-arithmetic/universal-location-exit-impossibility": (
+        (1,),
+        None,
+        (),
+    ),
+    "arithmetic/periodic-rate-every-span": ((1, 0), "modal", ((1,),)),
+    "arithmetic/temporal-offset-age-future": (
+        (3,),
+        "future_modal",
+        (),
+    ),
+    "arithmetic/temporal-offset-age-future-intensified": (
+        (5,),
+        "future_modal",
+        (),
+    ),
+    "arithmetic/temporal-offset-times-as-old-as-future": (
+        (3,),
+        "future_modal",
+        (),
+    ),
+    "arithmetic/temporal-offset-times-as-old-as-future-std-now": (
+        (3,),
+        "future_modal",
+        (),
+    ),
+}
+
+
+def _without_moved_members(doc: CategoriesDoc) -> CategoriesDoc:
+    members = {
+        category: [
+            word
+            for word in words
+            if word not in MOVED_MEMBERS.get(category, ())
+        ]
+        for category, words in doc.members.items()
+    }
+    return doc.model_copy(update={"members": members})
+
+
+def test_modal_occurrence_and_core_ownership_maps_are_complete() -> None:
+    project = load_project(CURATED)
+    core = next(pack for pack in project.packs if pack.name == "core-english")
+    occurrences = {
+        rule.id: (
+            path,
+            token.type
+            or ("future_modal" if token.cat == "future_modal" else None),
+            optional_ancestors,
+        )
+        for rule in project.registry.rules
+        for path, token, optional_ancestors in _leaf_tokens(
+            _flat_sentence(rule) or []
+        )
+        if token.type in {"modal", "future_modal"}
+        or token.cat in {"future_modal", "location_impossibility_modal"}
+    }
+    expected_source = (
+        ROOT / "packs/core-english/lexicon/core.yaml"
+    ).resolve()
+
+    assert occurrences == EXPECTED_OCCURRENCES
+    assert MOVED_WORDS <= set(core.lexicon)
+    assert {
+        project.source_index.lexicon[word].path.resolve()
+        for word in MOVED_WORDS
+    } == {expected_source}
+    assert all(
+        project.registry.word_categories[word] == ("capacity_modal",)
+        for word in CAPACITY - {"can", "could", "may", "should", "must"}
+    )
+    assert project.registry.word_categories["could"] == ("ability_modal", "capacity_modal")
+    assert project.registry.word_categories["must"] == ("capacity_modal", "settlement_modal")
+    assert project.registry.word_categories["may"] == (
+        "activity_setting",
+        "capacity_modal",
+        "named_calendar_period",
+        "named_month",
+        "performance_observation_period",
+        "temporal_in_point_object",
+        "timeperiod",
+        "usable_quantity_resource",
+    )
+    assert project.registry.word_categories["should"] == (
+        "capacity_modal",
+        "planned_progress_modal",
+    )
+    assert project.registry.word_categories["can"] == (
+        "ability_modal",
+        "account_quantity_unit",
+        "allocation_participant",
+        "allocation_recipient",
+        "allocation_storage",
+        "assembled_component_bearer",
+        "capacity_holder",
+        "capacity_modal",
+        "capacity_subject",
+        "collection_source",
+        "component_bearing_object",
+        "countable_event_object",
+        "flowing_countable",
+        "inventory_item",
+        "litter",
+        "location_impossibility_modal",
+        "measured_output_container",
+        "membership_group_role",
+        "nested_content_container",
+        "offer_count_unit",
+        "one_per_recipient_product",
+        "ordinal_quantity_holder",
+        "package_distribution_unit",
+        "partition_count_unit",
+        "per_item_plan_member",
+        "per_item_plan_resource",
+        "population_enclosure",
+        "population_member",
+        "production_creation_source",
+        "progress_load_unit",
+        "progress_target_container",
+        "provision_purpose_noun",
+        "purchase_item",
+        "quantity_account",
+        "quantity_container",
+        "quantity_source",
+        "rate_population",
+        "relocatable_population_member",
+        "skill_performance_unit",
+        "specification_resource",
+        "transferable_quantity_object",
+        "usable_quantity_resource",
+    )
+    assert all(
+        project.registry.word_categories[word] == ("future_modal",)
+        for word in FUTURE - {"would"}
+    )
+    assert project.registry.word_categories["would"] == (
+        "future_modal", "hypothetical_result_modal",
+    )
+    assert set(project.registry.lexicon["can"].senses) == {"modal", "noun"}
+    assert project.registry.lexicon["can"].plural == "cans"
+
+
+def test_combined_pack_semantics_are_identical_to_legacy_ownership() -> None:
+    project = load_project(GSM8K)
+    core, arithmetic, physics, chemistry, mined = project.packs
+    legacy_core = replace(
+        core,
+        lexicon={
+            word: entry
+            for word, entry in core.lexicon.items()
+            if word not in MOVED_WORDS
+        },
+        lexicon_sources={
+            word: path
+            for word, path in core.lexicon_sources.items()
+            if word not in MOVED_WORDS
+        },
+        categories=[
+            _without_moved_members(doc) for doc in core.categories
+        ],
+    )
+    legacy_mined = replace(
+        mined,
+        lexicon={
+            **mined.lexicon,
+            **{word: core.lexicon[word] for word in MOVED_WORDS},
+        },
+        lexicon_sources={
+            **mined.lexicon_sources,
+            **{
+                word: core.lexicon_sources[word]
+                for word in MOVED_WORDS
+            },
+        },
+        categories=[
+            *mined.categories,
+            CategoriesDoc.model_validate(
+                {
+                    "format": "rulekit/categories@1",
+                    "members": MOVED_MEMBERS,
+                }
+            ),
+        ],
+    )
+    legacy = compile_registry(
+        [legacy_core, arithmetic, physics, chemistry, legacy_mined]
+    )
+    compared_fields = {
+        field.name
+        for field in fields(project.registry)
+        if field.name != "fingerprint"
+    }
+
+    assert {
+        name
+        for name in compared_fields
+        if getattr(project.registry, name) != getattr(legacy, name)
+    } == set()
+
+
+
+def test_modal_verbs_rule_availability(curated_availability) -> None:
+    assert curated_availability["arithmetic/periodic-rate-every-span"].supported
+    assert all(curated_availability[rule_id].supported for rule_id in FUTURE_RULES)
+    assert curated_availability[
+        "arithmetic/temporal-offset-times-as-old-as-future-std-now"
+    ].supported
+    assert curated_availability[
+        "arithmetic/anchored-relation-conjoined-anchor"
+    ].supported
+
+
+@pytest.mark.parametrize("modal", sorted(MOVED_WORDS))
+def test_periodic_rule_exposes_every_loaded_modal(modal: str) -> None:
+    candidate = generate_candidate(
+        load_project(CURATED),
+        rule_id="arithmetic/periodic-rate-every-span",
+        seed=0,
+        locked_bindings={"aux": modal},
+    )
+    premise = next(row for row in candidate.premises if row.slot == "aux")
+    direct = "capacity_modal" if modal in CAPACITY else "future_modal"
+    path = (modal, direct, "modal")
+    if modal in {"can", "could"}:
+        path = (modal, "ability_modal", direct, "modal")
+
+    assert candidate.generator_version == "g6-strict-boundary-modes"
+    assert candidate.target_status == "matched"
+    assert premise.binding == modal
+    assert premise.category_path == path
+    assert {
+        "rule-token",
+        "lexicon",
+        "category-member",
+        "category",
+    } <= {source["kind"] for source in premise.sources}
+
+
+@pytest.mark.parametrize("rule_id", sorted(FUTURE_RULES))
+@pytest.mark.parametrize("modal", sorted(FUTURE))
+def test_future_slots_expose_only_future_modals(
+    rule_id: str,
+    modal: str,
+) -> None:
+    candidate = generate_candidate(
+        load_project(CURATED),
+        rule_id=rule_id,
+        seed=0,
+        locked_bindings={"aux": modal},
+    )
+    premise = next(row for row in candidate.premises if row.slot == "aux")
+
+    assert candidate.target_status == "matched"
+    assert premise.binding == modal
+    assert premise.category_path == (modal, "future_modal", "modal")
+
+
+def test_capacity_modal_cannot_enter_a_future_slot() -> None:
+    with pytest.raises(
+        GenerationError,
+        match="constraints left no filler for aux",
+    ):
+        generate_candidate(
+            load_project(CURATED),
+            rule_id="arithmetic/temporal-offset-age-future",
+            seed=0,
+            locked_bindings={"aux": "can"},
+        )
+
+
+def test_numeric_round_trip_errors_resample_instead_of_crashing() -> None:
+    project = load_project(CURATED)
+    recovered = generate_candidate(
+        project,
+        rule_id="arithmetic/periodic-rate-every-span",
+        seed=31,
+    )
+
+    assert recovered.target_status == "matched"
+    assert recovered.attempts == 1
+    with pytest.raises(
+        GenerationError,
+        match="ordinary round trip rejected generated numeric values",
+    ):
+        generate_candidate(
+            project,
+            rule_id="arithmetic/periodic-rate-every-span",
+            seed=0,
+            max_attempts=3,
+            # Fix the linguistic frame so vocabulary growth cannot resample
+            # a nonmatching sentence before exercising division by zero.
+            locked_bindings={
+                "who": "Mary", "aux": "can", "verb": "read",
+                "item": "3 books", "freq": "every", "span": "0 years",
+            },
+        )

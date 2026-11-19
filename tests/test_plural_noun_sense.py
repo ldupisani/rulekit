@@ -5,25 +5,7 @@ surface's independent finite verb reading. Purchase totals retain every
 coordinated item after that selection.
 """
 
-from pathlib import Path
-
-import pytest
-
-from rulekit.data.packs import load_packs
-from rulekit.data.registry import compile_registry
 from rulekit.kernel.engine import analyze, solve
-
-REPO = Path(__file__).resolve().parent.parent
-
-
-@pytest.fixture(scope="module")
-def full_registry():
-    mined = REPO / "packs/difg-mined"
-    if not mined.exists():
-        pytest.skip("difg-mined not generated")
-    return compile_registry(
-        load_packs([REPO / "packs/core-english", REPO / "packs/arithmetic", mined])
-    )
 
 
 def test_plants_carries_a_noun_sense(full_registry):

@@ -28,16 +28,6 @@ from rulekit.kernel.model import Membership
 REPO = Path(__file__).resolve().parent.parent
 
 
-@pytest.fixture(scope="module")
-def full_registry():
-    mined = REPO / "packs/difg-mined"
-    if not mined.exists():
-        pytest.skip("difg-mined not generated")
-    return compile_registry(
-        load_packs([REPO / "packs/core-english", REPO / "packs/arithmetic", mined])
-    )
-
-
 def _verdict(text, reg):
     r = solve(text, reg, tracing=False)
     return r.answer.value if r.answer.kind == "verdict" else r.answer.kind

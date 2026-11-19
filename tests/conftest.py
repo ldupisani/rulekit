@@ -1,4 +1,5 @@
 from functools import lru_cache
+import json
 import os
 from pathlib import Path
 
@@ -16,11 +17,14 @@ from rulekit.harness.firewall import BenchItem
 REPO = Path(__file__).resolve().parent.parent
 _CACHE_ENABLED = os.environ.get("RULEKIT_TEST_CACHE", "1") != "0"
 
-_load_packs = packs_module.load_packs
+_load_pack = packs_module.load_pack
 _compile_registry = registry_module.compile_registry
 _load_project = project_module.load_project
 _load_dataset = firewall_module.load_dataset
-_registry_cache: dict[tuple[tuple[str, str], ...], Registry] = {}
+_PACK_ROOTS = {manifest.parent for manifest in (REPO / "packs").glob("*/pack.yaml")}
+_PROJECT_ROOTS = {manifest.parent for manifest in (REPO / "projects").glob("*/project.yaml")}
+_shared_packs: dict[Path, LoadedPack] = {}
+_registry_cache: dict[tuple[Path, ...], Registry] = {}
 
 
 def _inside_repo(path: Path) -> bool:
@@ -28,34 +32,27 @@ def _inside_repo(path: Path) -> bool:
     return path == REPO or REPO in path.parents
 
 
-@lru_cache(maxsize=None)
-def _repo_packs(paths: tuple[str, ...]) -> tuple[LoadedPack, ...]:
-    return tuple(_load_packs([Path(path) for path in paths]))
-
-
-def _cached_load_packs(roots: list[Path]) -> list[LoadedPack]:
-    """Share immutable repository packs for one pytest process.
-
-    Temporary packs deliberately bypass the cache: tests which write a pack
-    and reload it must continue to exercise the real loader on every call.
-    Repository packs are never mutated by the suite, and their compiled
-    Registry surface is frozen.
-    """
-    paths = tuple(str(Path(root).resolve()) for root in roots)
-    if _CACHE_ENABLED and all(_inside_repo(Path(path)) for path in paths):
-        return list(_repo_packs(paths))
-    return _load_packs([Path(path) for path in paths])
+def _cached_load_pack(root: Path) -> LoadedPack:
+    """Parse each shared vocabulary/rule pack once, including transitive dependencies."""
+    root = root.resolve()
+    if not _CACHE_ENABLED or root not in _PACK_ROOTS:
+        return _load_pack(root)
+    if root not in _shared_packs:
+        _shared_packs[root] = _load_pack(root)
+    return _shared_packs[root]
 
 
 def _cached_compile_registry(packs: list[LoadedPack]) -> Registry:
-    """Compile each unchanged repository pack combination once per session."""
+    """Only the original shared packs can reuse a compiled registry.
+
+    Tests may replace pack contents in memory while retaining the on-disk fingerprint.
+    """
     pack_list = list(packs)
-    if not _CACHE_ENABLED or not all(_inside_repo(pack.root) for pack in pack_list):
+    if not pack_list or any(
+        _shared_packs.get(pack.root) is not pack for pack in pack_list
+    ):
         return _compile_registry(pack_list)
-    key = tuple(
-        (str(pack.root.resolve()), pack.fingerprint)
-        for pack in pack_list
-    )
+    key = tuple(pack.root for pack in pack_list)
     registry = _registry_cache.get(key)
     if registry is None:
         registry = _compile_registry(pack_list)
@@ -71,7 +68,7 @@ def _repo_project(root: str) -> Project:
 def _cached_load_project(root: Path | str) -> Project:
     """Share repository projects; keep writable temporary projects fresh."""
     resolved = Path(root).resolve()
-    if _CACHE_ENABLED and _inside_repo(resolved):
+    if _CACHE_ENABLED and resolved in _PROJECT_ROOTS:
         return _repo_project(str(resolved))
     return _load_project(resolved)
 
@@ -138,8 +135,7 @@ def _cached_load_dataset(
 # has loaded. Patch only the test process; production imports and benchmark
 # worker processes remain unchanged. project.py imported its collaborators by
 # name, so update those bindings as well as their defining modules.
-packs_module.load_packs = _cached_load_packs
-project_module.load_packs = _cached_load_packs
+packs_module.load_pack = _cached_load_pack
 registry_module.compile_registry = _cached_compile_registry
 project_module.compile_registry = _cached_compile_registry
 project_module.load_project = _cached_load_project
@@ -149,7 +145,50 @@ firewall_module.load_dataset = _cached_load_dataset
 @pytest.fixture(scope="session")
 def registry() -> Registry:
     return _cached_compile_registry(
-        _cached_load_packs(
+        packs_module.load_packs(
             [REPO / "packs/core-english", REPO / "packs/arithmetic"]
         )
     )
+
+
+@pytest.fixture(scope="session")
+def full_registry() -> Registry:
+    """Arithmetic with the extended difg vocabulary."""
+    mined = REPO / "packs/difg-mined"
+    if not mined.exists():
+        pytest.skip("difg-mined not generated")
+    return _cached_compile_registry(
+        packs_module.load_packs(
+            [REPO / "packs/core-english", REPO / "packs/arithmetic", mined]
+        )
+    )
+
+
+@pytest.fixture(scope="session")
+def curated_availability():
+    from rulekit.generation import list_rule_availability
+
+    project = _cached_load_project(REPO / "projects/curated")
+    return {rule.id: rule for rule in list_rule_availability(project)}
+
+
+@pytest.fixture(scope="session")
+def curated_fillers():
+    from rulekit.generation.exploration import exploration_status
+
+    project = _cached_load_project(REPO / "projects/curated")
+    rows = exploration_status(project)["fillers"]
+    by_identity = {row["identity"]: row for row in rows}
+    assert len(by_identity) == len(rows)
+    return by_identity
+
+
+@pytest.fixture(scope="session")
+def curated_review_rows():
+    """Index the checked-in raw ledger, including superseded and resolved reviews."""
+    from rulekit.generation.reviews import review_path
+
+    path = review_path(_cached_load_project(REPO / "projects/curated"))
+    with path.open(encoding="utf-8") as stream:
+        rows = (json.loads(line) for line in stream if line.strip())
+        return {row["id"]: row for row in rows}

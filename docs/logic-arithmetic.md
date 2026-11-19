@@ -72,7 +72,7 @@ Implementation: [logic verdict](../src/rulekit/kernel/consumers/logic_verdict.py
 and [disjunction verdict](../src/rulekit/kernel/consumers/logic_disjunction_verdict.py).
 Tests: [logical verdicts](../tests/test_logic_verdict.py),
 [verbal logic](../tests/test_verbal_logic.py), and
-[quantifiers](../tests/test_stage4_quantifiers.py).
+[quantifiers](../tests/test_quantifier_morphology_and_existentials.py).
 
 See [the corpus reference](corpora.md) for the distinction between opt-in logic
 capability and FOLIO's independent arithmetic safety role.

@@ -50,7 +50,6 @@ _PRE_EXISTING = {
     "How many pieces of litter did they pick up altogether?",
     "How many more marbles did John have than Ben then?",
     # real borrowings, pre-dating this check — replace when the file is touched
-    "Thor is 13 times older than Captain America.",
     "Ben had 18 marbles and John had 17 marbles.",
     "Ben gave half of his marbles to John.",
     "Jar B has 12 more marbles than jar A.",

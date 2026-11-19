@@ -22,25 +22,7 @@ not decoration, they are the two conditions.
 Synthetic only — invented fixtures; the SHAPE is what is pinned.
 """
 
-from pathlib import Path
-
-import pytest
-
-from rulekit.data.packs import load_packs
-from rulekit.data.registry import compile_registry
 from rulekit.kernel.engine import solve
-
-REPO = Path(__file__).resolve().parent.parent
-
-
-@pytest.fixture(scope="module")
-def full_registry():
-    mined = REPO / "packs/difg-mined"
-    if not mined.exists():
-        pytest.skip("difg-mined not generated")
-    return compile_registry(
-        load_packs([REPO / "packs/core-english", REPO / "packs/arithmetic", mined])
-    )
 
 
 def test_a_past_age_question_cannot_use_present_age_evidence(full_registry):

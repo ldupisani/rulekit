@@ -1,10 +1,13 @@
 """Planted-failure tests: every compile invariant must fail LOUDLY."""
 
+from dataclasses import replace
+from pathlib import Path
+
 import pytest
 
 from rulekit.data.packs import LoadedPack, PackError, load_pack
 from rulekit.data.registry import CompileError, compile_registry
-from rulekit.data.schemas import CategoriesDoc, LexiconDoc, PackDoc
+from rulekit.data.schemas import CategoriesDoc, LexiconDoc, LexiconEntry, PackDoc
 
 
 def _pack(tmp_path, name="t", **docs):
@@ -178,3 +181,24 @@ def test_fingerprint_deterministic(tmp_path):
     f1 = compile_registry([load_pack(r)]).fingerprint
     f2 = compile_registry([load_pack(r)]).fingerprint
     assert f1 == f2
+
+
+def test_in_memory_pack_changes_use_the_supplied_vocabulary():
+    pack = load_pack(Path(__file__).resolve().parents[1] / "packs/core-english")
+    original = compile_registry([pack])
+    changed = replace(pack, lexicon={**pack.lexicon, "zindle": LexiconEntry(senses=["noun"])})
+
+    assert "zindle" in compile_registry([changed]).lexicon
+    assert "zindle" not in original.lexicon
+
+
+def test_reloading_a_temporary_pack_reads_its_updated_vocabulary(tmp_path):
+    root = _pack(tmp_path, words="format: rulekit/lexicon@1\nentries: {zindle: {senses: [noun]}}\n")
+    first = compile_registry([load_pack(root)])
+    (root / "words.yaml").write_text(
+        "format: rulekit/lexicon@1\nentries: {venlo: {senses: [noun]}}\n"
+    )
+    second = compile_registry([load_pack(root)])
+
+    assert set(first.lexicon) == {"zindle"}
+    assert set(second.lexicon) == {"venlo"}

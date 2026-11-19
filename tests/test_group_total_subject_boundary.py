@@ -14,7 +14,6 @@ from rulekit.data.project import load_project
 from rulekit.generation import (
     GenerationError,
     generate_candidate,
-    list_rule_availability,
     retest_candidate,
 )
 from rulekit.generation.reviews import review_path
@@ -168,15 +167,8 @@ def test_existential_total_requires_agreement_copula_and_totality_marker(
     assert not _totals(text, registry)
 
 
-def test_scope_split_rules_remain_realisable_after_g5j_expansion() -> None:
-    availability = {
-        item.id: item
-        for item in list_rule_availability(load_project(CURATED))
-    }
-
-    assert len(availability) == 1046
-    assert sum(item.supported for item in availability.values()) == 938
-    assert all(availability[rule_id].supported for rule_id in BOUNDARY_RULES)
+def test_group_total_subject_rules_are_available(curated_availability) -> None:
+    assert all(curated_availability[rule_id].supported for rule_id in BOUNDARY_RULES)
 
 
 @pytest.mark.parametrize("rule_id", sorted(EXISTENTIAL_RULES))

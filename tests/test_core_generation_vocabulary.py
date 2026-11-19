@@ -9,7 +9,6 @@ from rulekit.data.project import load_project
 from rulekit.data.registry import compile_registry
 from rulekit.data.schemas import CategoriesDoc
 from rulekit.generation import generate_candidate, retest_candidate
-from rulekit.generation.exploration import exploration_status
 from rulekit.kernel.engine import solve
 
 
@@ -103,10 +102,8 @@ def test_new_location_and_colour_compatibility_is_explicit(registry) -> None:
     )
 
 
-def test_new_core_words_are_reachable_generator_fillers() -> None:
-    project = load_project(CURATED)
-    status = exploration_status(project)
-    identities = {item["identity"] for item in status["fillers"]}
+def test_new_core_words_are_reachable_generator_fillers(curated_fillers) -> None:
+    identities = set(curated_fillers)
 
     assert len(identities) == 2684
     assert "sum" in identities
