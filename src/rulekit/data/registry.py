@@ -304,26 +304,28 @@ class Registry:
                     return (*path, category)
         return (lemma, category)
 
+    @cached_property
+    def _surface_categories(self) -> Mapping[str, frozenset[str]]:
+        """Index lexical senses, category ancestry and noun inflection for this registry."""
+        declared = {word: set(entry.senses) for word, entry in self.lexicon.items()}
+        for word, tags in self.word_categories.items():
+            categories = declared.setdefault(word, set())
+            for tag in tags:
+                categories.update(self.cat_ancestors(tag))
+
+        noun_categories = {"noun"} | {
+            tag for tag in self.category_parents if self.root_sense(tag) == "noun"
+        }
+        surfaces = {word: frozenset(categories) for word, categories in declared.items()}
+        # Inherit only from the declared singular. A plural may have its own
+        # lexical roles or serve as the singular of another inflection.
+        for plural, singular in self.plural_to_singular.items():
+            inherited = noun_categories.intersection(declared.get(singular, ()))
+            surfaces[plural] = frozenset({"plural", *inherited, *declared.get(plural, ())})
+        return MappingProxyType(surfaces)
+
     def word_in_category(self, word: str, category: str) -> bool:
-        """Membership through ancestry and sense-scoped noun morphology."""
-        lemma = (
-            self.plural_to_singular.get(word, word)
-            if self.root_sense(category) == "noun" else word
-        )
-        forms = (word,) if lemma == word else (word, lemma)
-        for w in forms:
-            for tag in self.word_categories.get(w, ()):
-                if category in self.cat_ancestors(tag):
-                    return True
-        # base categories derived from lexicon senses: any sense name acts as
-        # a degenerate category (noun, verb, aggregate, particle, ...)
-        for w in forms:
-            entry = self.lexicon.get(w)
-            if entry is not None and category in entry.senses:
-                return True
-        if category == "plural":
-            return word in self.plural_to_singular
-        return False
+        return category in self._surface_categories.get(word, ())
 
     def selectional_frames(
         self, word: str, frame_categories: Sequence[str] = ()

@@ -1,4 +1,5 @@
 """Noun inflections share semantic membership without changing grammatical senses."""
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -23,6 +24,7 @@ def morphology_registry():
             'ducks': LexiconEntry(senses=['verb'], verb={'lemma': 'duck'}),
             'time': LexiconEntry(senses=['noun'], plural='times'),
             'cattle': LexiconEntry(senses=['noun'], number='plural'),
+            'person': LexiconEntry(senses=['noun'], plural='people'),
         },
         categories=[CategoriesDoc(format='rulekit/categories@1', categories={
             'animal': {'parent': 'noun'},
@@ -32,9 +34,11 @@ def morphology_registry():
             'motion': {'parent': 'verb'},
             'evasion': {'parent': 'verb'},
             'multiplier_marker': {'parent': 'noun'},
+            'individual': {'parent': 'noun'},
         }, members={
             'animal': ['cattle', 'duck'], 'pet': ['mouse'], 'garment': ['scarf'],
             'motion': ['duck'], 'evasion': ['ducks'], 'multiplier_marker': ['times'],
+            'individual': ['person'],
         })], fingerprint='morphology',
     )])
 
@@ -80,6 +84,22 @@ def test_explicit_surface_markers_do_not_inherit_back_to_the_singular():
     assert r.cat_members_deep('multiplier_marker') == ['times']
     assert r.category_membership_path('times', 'multiplier_marker') == (
         'times', 'multiplier_marker')
+
+
+def test_a_revised_registry_inherits_from_the_immediate_singular_only():
+    original = morphology_registry()
+    assert original.word_in_category('people', 'individual')
+    revised = replace(
+        original,
+        lexicon={**original.lexicon, 'people': LexiconEntry(senses=['noun'], plural='peoples')},
+        plural_to_singular={**original.plural_to_singular, 'peoples': 'people'},
+        singular_to_plural={**original.singular_to_plural, 'people': 'peoples'},
+    )
+
+    assert revised.word_in_category('peoples', 'noun')
+    assert revised.word_in_category('peoples', 'plural')
+    assert not revised.word_in_category('peoples', 'individual')
+    assert not original.word_in_category('peoples', 'plural')
 
 
 @pytest.fixture(scope='module')
