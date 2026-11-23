@@ -178,14 +178,32 @@ def consume(ctx):
             or len(set(months)) != len(months)
             or not constrains(ctx.query_reference(), schedule.entity_ref)
             or len({r.marker for r in portions}) != len(portions)
-            or any(
-                r.entity_ref != schedule.entity_ref or r.verb != schedule.verb
-                for r in portions
-            )
+            or any(r.entity_ref != schedule.entity_ref or r.source_position <= schedule.source_position
+                   for r in portions)
         ):
             return fail(
                 "the requested month count, participant and daily portions must agree"
             )
+        material = ctx.query.get("material")
+        if not material:
+            return fail("the requirement must identify the material being measured")
+        named_portions = {r.provenance.sentence for r in portions if r.attribute}
+        if any(r.attribute and r.attribute != material for r in rows):
+            return fail("the scheduled and requested materials must agree")
+        if not schedule.attribute and any(
+            r.provenance.sentence not in named_portions and (named_portions or r.verb != schedule.verb)
+            for r in portions
+        ):
+            return fail("each portion needs a link to the same scheduled resource")
+        resource_is_implied = False
+        for verb in {r.verb for r in rows}:
+            frames = ctx.reg.selectional_frames(verb, ("recipient_provision_action",))
+            themes = {f["theme"] for _, f in frames
+                      if "recipient" in f and ctx.reg.word_in_category(schedule.container, f["recipient"])
+                      and ctx.reg.word_in_category(material, f["theme"])}
+            if not themes:
+                return fail("the provision action must accept both the recipient and the material")
+            resource_is_implied |= material in themes
         year = int(schedule.subtotal) if schedule.subtotal else None
         if year is not None and (not 1 <= year <= 9999 or schedule.subtotal != year):
             return fail("the calendar year must be explicit and valid")
@@ -205,9 +223,11 @@ def consume(ctx):
             if (
                 form is None
                 or recipients[0].features.get("number") not in form.referent_numbers
+                or (ctx.reg.word_in_category(r.container, "singular_animate_object_pronoun")
+                    and not ctx.reg.word_in_category(schedule.container, "living_agent"))
             ):
                 return fail(
-                    "the portion recipient pronoun must agree with the scheduled recipients"
+                    "the portion recipient pronoun must agree with the scheduled recipient"
                 )
         days = [ctx.reg.attribute_value(m, length) for m in months]
         if any(v is None for v in days):
@@ -256,15 +276,23 @@ def consume(ctx):
             )
         ):
             return fail("every daily portion and calendar condition must be read")
+        assumptions = []
+        if not year:
+            assumptions.append(AnswerAssumption(
+                "non-leap-calendar", "An unstated calendar year is treated as non-leap.",
+                (schedule.provenance.sentence,),
+            ))
+        if not schedule.attribute and not named_portions and not resource_is_implied:
+            assumptions.append(AnswerAssumption(
+                "queried-portion-material", f"The unlabeled portions are of the {material} named in the question.",
+                tuple(sorted({r.provenance.sentence for r in portions} | {ctx.question.sentence_index})),
+            ))
         return finish_batch_answer(
             ctx,
             facts,
             value,
             f'{"Calendar year "+str(year) if year else "Assuming a non-leap year"}: {sum(days):g} days, with all stated portions supplied every day',
-            assumptions=() if year else (AnswerAssumption(
-                "non-leap-calendar", "An unstated calendar year is treated as non-leap.",
-                (schedule.provenance.sentence,),
-            ),),
+            assumptions=tuple(assumptions),
         )
     elif op == "savings":
         groups = [r for r in rows if r.kind == "saving-group"]

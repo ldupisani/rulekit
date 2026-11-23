@@ -70,6 +70,54 @@ def test_named_calendar_months(reg, recipient, year, expected):
     assert ("non-leap" in r.answer.reason) if not year else ("202" in r.answer.reason)
 
 
+@pytest.mark.parametrize("schedule,portions,unit,material,year,expected", [
+    ("gives water to the workers", "gives them", "liter", "water", "", 59),
+    ("provides the tanks with oil", "provides them with", "liter", "oil", " of 2028", 60),
+    ("likes to supply clay to the schools", "gives them", "kilogram", "clay", " of 2027", 59),
+    ("feeds milk to the cats", "gives them", "cup", "milk", "", 59),
+])
+@pytest.mark.parametrize("boundary", [" and ", ". She "])
+def test_scheduled_provision_preserves_recipient_and_resource(reg, schedule, portions, unit, material,
+                                                             year, expected, boundary):
+    second = (portions + " ") if boundary == ". She " else ""
+    text = (f"Nora {schedule} in January and February{year}. "
+            f"She {portions} 1/4 {unit} of {material} in the morning"
+            f"{boundary}{second}3/4 {unit} of {material} in the afternoon. "
+            f"How many {unit}s of {material} will she need for both months?")
+    result = number(reg, text, expected)
+    assert {a.id for a in result.answer.assumptions} == (set() if year else {"non-leap-calendar"})
+
+
+@pytest.mark.parametrize("old,new", [
+    ("with oil in January", "with water in January"),
+    ("1/2 liter of oil", "1/2 liter of water"),
+    ("liters of oil will", "liters of fuel will"),
+    ("gives them", "receives from them"),
+    ("gives them", "gives him"),
+    ("gives them", "gives they"),
+    ("She gives them", "She give them"),
+    ("gives them", "gives them with"),
+    ("provides the tanks with oil", "provides the tanks"),
+    ("provides the tanks with oil", "gives the tanks"),
+    ("provides the tanks with oil", "feeds the tanks"),
+    ("provides the tanks with oil", "feeds oil to the birds"),
+])
+def test_scheduled_provision_requires_compatible_evidence(reg, old, new):
+    text = ("Nora provides the tanks with oil in January and February. "
+            "She gives them 1/2 liter of oil in the morning. "
+            "How many liters of oil will she need for both months?")
+    assert text != text.replace(old, new)
+    assert not solve(text.replace(old, new), reg).answer.committed
+
+
+def test_singular_recipient_form_matches_the_scheduled_tank(reg):
+    text = ("Nora provides the tank with oil in April and May. "
+            "Nora gives it 1/4 liter of oil in the morning. "
+            "How many liters of oil will Nora need for both months?")
+    number(reg, text, 15.25)
+    assert not solve(text.replace("gives it", "gives him"), reg).answer.committed
+
+
 @pytest.mark.parametrize(
     "old,new",
     [
@@ -302,13 +350,14 @@ def test_partition_reconstruction_boundaries(reg, old, new):
 
 
 def test_nonliving_recipient_calendar_schedule(reg):
-    number(
+    result = number(
         reg,
         "Nora supplies the tanks in April and May. "
         "She supplies them 1/4 liter in the morning and 3/4 liter in the afternoon. "
         "How many liters of oil will she need for all two months?",
         61,
     )
+    assert "queried-portion-material" in {a.id for a in result.answer.assumptions}
 
 
 def test_month_schedule_preserves_actor_identity(reg):

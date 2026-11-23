@@ -43,7 +43,7 @@ def consume(ctx):
         actor = step.entity or (anchors[0].entity if len(anchors) == 1 else '')
         if (actor != opening.entity or step.provenance.sentence <= opening.provenance.sentence
                 or step.provenance.assumption or not isfinite(step.value) or not 0 <= step.value <= 1
-                or step.marker not in {'opening', 'remainder'}
+                or step.marker not in {'opening', 'explicit-opening', 'remainder'}
                 or step.measure and step.measure != opening.material
                 or step.container_ref is None or not step.container_ref.resolved):
             return decline('each fraction must name the same stock or its current remainder')
@@ -58,7 +58,8 @@ def consume(ctx):
             return decline('a later fraction must distinguish the original stock from its current remainder')
         expected[step.provenance.sentence][step.value] += 1
         try:
-            allocation.allocate(step.value, FractionBasis(step.marker),
+            basis = FractionBasis.REMAINDER if step.marker == 'remainder' else FractionBasis.OPENING
+            allocation.allocate(step.value, basis,
                                 source='fractional-resource-allocation')
         except ValueError as error:
             return decline(str(error))

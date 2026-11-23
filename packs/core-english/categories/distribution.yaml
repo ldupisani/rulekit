@@ -1,5 +1,21 @@
 format: rulekit/categories@1
 categories:
+  recipient_provision_action:
+    parent: verb
+    explicit_frame_only: true
+    selectional_roles: {theme: material_resource}
+    notes: A measured resource is supplied to a recipient. The construction establishes which noun fills each role.
+  recipient_giving_action:
+    parent: recipient_provision_action
+    selectional_roles: {recipient: allocation_recipient}
+  supply_with_complement_action:
+    parent: recipient_provision_action
+    selectional_roles: {recipient: allocation_recipient}
+    notes: These verbs license the recipient followed by a with-complement naming the resource.
+  feeding_action:
+    parent: recipient_provision_action
+    selectional_roles: {recipient: living_agent, theme: food}
+  provision_complement_preposition: {parent: preposition}
   package_distribution_unit:
     parent: noun
     includes: [quantity_container, individual_serving_measure]
@@ -76,6 +92,10 @@ categories:
   equal_amount_attribute:
     parent: adjective
 members:
+  recipient_giving_action: [give, gives, gave]
+  feeding_action: [feed, feeds, fed]
+  supply_with_complement_action: [supply, supplies, supplied]
+  provision_complement_preposition: [with]
   removal_destination_noun: [home]
   group_serving_distributor: [all, each]
   population_enclosure: [zoo]

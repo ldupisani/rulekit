@@ -10,7 +10,7 @@ categories:
   responsibility_role:
     parent: noun
   provision_verb:
-    parent: verb
+    parent: supply_with_complement_action
   provision_purpose_noun:
     parent: noun
     includes: [purchase_item, dining_account_activity]
@@ -60,6 +60,7 @@ members:
   provision_verb:
   - provide
   - provides
+  - provided
   - providing
   supply_decision_verb:
   - decide

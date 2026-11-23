@@ -41,10 +41,10 @@ def project():
 
 def test_curated_premise_generation_inventory(curated_availability) -> None:
     rows = curated_availability.values()
-    assert len(rows) == 1061
-    assert sum(item.supported for item in rows) == 951
+    assert len(rows) == 1079
+    assert sum(item.supported for item in rows) == 967
     blocked = {item.id for item in rows if not item.supported}
-    assert len(blocked) == 110
+    assert len(blocked) == 112
     assert all(not item.blockers or item.id in blocked for item in rows)
     assert blocked == SAFETY_RULES | {
         "arithmetic/coordinated-relative-price-item",
@@ -149,6 +149,8 @@ def test_curated_premise_generation_inventory(curated_availability) -> None:
         "arithmetic/with-inventory-bare",
         "arithmetic/with-inventory-located",
         "arithmetic/year-qualified-month-schedule",
+        "arithmetic/named-month-material-to-recipient",
+        "arithmetic/year-qualified-material-to-recipient",
     }
 
 
@@ -215,7 +217,7 @@ def test_contextual_retest_preserves_the_pinned_discourse(project) -> None:
     assert after.id == before.id
 
 
-def test_generation_api_separates_safety_consumers_from_targets() -> None:
+def test_generation_api_separates_safety_consumers_from_targets(curated_availability) -> None:
     router = build_router(ServerState(CURATED))
     endpoint = next(
         route.endpoint
@@ -225,9 +227,9 @@ def test_generation_api_separates_safety_consumers_from_targets() -> None:
 
     payload = endpoint()
 
-    assert payload["supported"] == 951
-    assert payload["total"] == 1053
-    assert payload["safety_total"] == 8
+    assert payload["supported"] == sum(rule.supported for rule in curated_availability.values())
+    assert payload["total"] == len(curated_availability) - len(SAFETY_RULES)
+    assert payload["safety_total"] == len(SAFETY_RULES)
     assert {rule["id"] for rule in payload["safety_rules"]} == SAFETY_RULES
     assert not ({rule["id"] for rule in payload["rules"]} & SAFETY_RULES)
 

@@ -47,8 +47,6 @@ categories:
     parent: aggregate
   open_state:
     parent: verb
-  feeding_action:
-    parent: verb
   preference_action:
     parent: verb
   saving_action:
@@ -148,13 +146,6 @@ members:
   - average
   open_state:
   - open
-  feeding_action:
-  - feed
-  - feeds
-  - fed
-  - supply
-  - supplies
-  - supplied
   preference_action:
   - like
   - likes

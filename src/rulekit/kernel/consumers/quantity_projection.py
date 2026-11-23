@@ -27,28 +27,20 @@ def quantity_projection(ctx):
         return Answer("decline", None, "the projection needs one participant and compatible amounts")
     if ctx.query["mode"] == "savings":
         return _savings(ctx, rows, actor)
-    return _dimension(ctx, rows, actor)
+    return _dimension(ctx, rows)
 
 
-def _dimension(ctx, rows, actor):
+def _dimension(ctx, rows):
     amounts = list(ctx.store.by_kind(Quantity))
     rates = [row for row in rows if row.kind == "projected-increase"]
     if len(rows) != 1 or len(amounts) != 1 or len(rates) != 1:
         return Answer("decline", None, "the projection needs one current measurement and one rate")
     current, rate = amounts[0], rates[0]
     axis = ctx.reg.attribute_value(ctx.query["dimension"], "projection_axis")
-    observed_axes = [
-        ctx.reg.attribute_value(unit.features.get("lemma", ""), "projection_axis")
-        for reading in ctx.premises
-        if reading.sentence_index == current.provenance.sentence
-        for unit in reading.units
-        if unit.features.get("pattern_consumed")
-        and ctx.reg.word_in_category(unit.features.get("lemma", ""), "projected_dimension_adjective")
-    ]
     evidence = [current, rate]
-    if (axis is None or observed_axes != [axis] or current.entity_ref != actor or current.time
-            or not ctx.reg.word_in_category(current.verb, "copular_infinitive")
-            or rate.provenance.assumption or not closed_evidence(
+    if (axis is None or current.measurement_axis is None
+            or ctx.reg.attribute_value(current.measurement_axis, "projection_axis") != axis
+            or current.entity_ref != rate.entity_ref or current.time or rate.provenance.assumption or not closed_evidence(
                 ctx, evidence, [(row, [row.value]) for row in evidence]
             )):
         return Answer("decline", None, "the current measurement and requested dimension must agree")

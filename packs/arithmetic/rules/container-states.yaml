@@ -223,6 +223,34 @@ asks:
   resolves: {consumer: container-content-state, container: '{container}', content: '{content.optional}', unit: '{unit}'}
   satisfies: {remain: [subject]}
 templates:
+  relative-axis:
+    parameters:
+      measurement: &relative_axis_clause
+      - {slot: first_amount, type: ratio, value_positive: true}
+      - {lit: as}
+      - {slot: first_axis, cat: linear_axis_adjective}
+      - {lit: as}
+      - {slot: first_reference, cat: measured_object_reference_form, number: singular}
+      - {slot: first_basis_be, cat: copula}
+      - {slot: first_basis, cat: linear_axis_adjective}
+    rule:
+      independent_clause: true
+      description: Measure one axis relative to another identified axis of the same holder.
+      question_assumption: true
+      match:
+        sentence:
+        - {slot: container, type: entity, common_noun_cat: quantity_holder, referential: true, at_start: true}
+        - {slot: be, cat: copula, finite_form: true}
+        - {parameter: measurement}
+        - {lit: '.', consume_skipped: true}
+      where: [{number_compatible: [container, be]}, {distinct: [first_axis, first_basis]}]
+      references: {first_reference: container}
+      consumes: [be, first_amount, first_basis_be]
+      satisfies: {be: [subject], first_basis_be: [subject]}
+      emits:
+      - {fact: batch_evidence, kind: relative-axis, entity: '{container}', container: '{container}',
+         measure: '', value: first_amount, marker: '{first_axis}', attribute: '{first_basis}',
+         position: '{first_amount.span_start}'}
   fractional-fill:
     parameters:
       object:
@@ -509,22 +537,37 @@ templates:
         tokens:
         - {slot: first_amount, cat: length_unit, counted: true, bare: true}
         - {slot: first_axis, cat: linear_axis_adjective}
-        unit: '{first_amount}'
-        basis: ''
+        evidence:
+          fact: quantity
+          entity: '{container}'
+          verb: '{be}'
+          measure: '{first_amount}'
+          value: first_amount
+          measurement_axis: '{first_axis}'
         verbs: []
       second:
         tokens:
         - {slot: second_amount, cat: length_unit, counted: true, bare: true}
         - {slot: second_axis, cat: linear_axis_adjective}
-        unit: '{second_amount}'
-        basis: ''
+        evidence:
+          fact: quantity
+          entity: '{container}'
+          verb: '{be}'
+          measure: '{second_amount}'
+          value: second_amount
+          measurement_axis: '{second_axis}'
         verbs: []
       third:
         tokens:
         - {slot: third_amount, cat: length_unit, counted: true, bare: true}
         - {slot: third_axis, cat: linear_axis_adjective}
-        unit: '{third_amount}'
-        basis: ''
+        evidence:
+          fact: quantity
+          entity: '{container}'
+          verb: '{be}'
+          measure: '{third_amount}'
+          value: third_amount
+          measurement_axis: '{third_axis}'
         verbs: []
       references: {}
       obligations: {be: [subject]}
@@ -557,37 +600,11 @@ templates:
       satisfies: {parameter: obligations}
       references: {parameter: references}
       emits:
-      - fact: batch_evidence
-        kind: content-container-dimension
-        entity: '{container}'
-        measure: {parameter: first.unit}
-        value: first_amount
-        position: '{first_amount.span_start}'
-        acquisition: cuboid
-        marker: '{first_axis}'
-        container: '{container}'
-        attribute: {parameter: first.basis}
-      - fact: batch_evidence
-        kind: content-container-dimension
-        entity: '{container}'
-        measure: {parameter: second.unit}
-        value: second_amount
-        position: '{second_amount.span_start}'
-        acquisition: cuboid
-        marker: '{second_axis}'
-        container: '{container}'
-        attribute: {parameter: second.basis}
-      - fact: batch_evidence
-        kind: content-container-dimension
-        entity: '{container}'
-        measure: {parameter: third.unit}
-        value: third_amount
-        position: '{third_amount.span_start}'
-        acquisition: cuboid
-        marker: '{third_axis}'
-        container: '{container}'
-        attribute: {parameter: third.basis}
+      - {parameter: first.evidence}
+      - {parameter: second.evidence}
+      - {parameter: third.evidence}
 variants:
+- {id: arithmetic/relative-axis-measurement, template: relative-axis}
 - id: arithmetic/fractional-container-fill-with-departure
   template: fractional-fill
 - id: arithmetic/fractional-fill-of-named-container
@@ -853,16 +870,17 @@ variants:
   template: three-axis-container
   arguments:
     first: &relative_first_axis
-      tokens:
-      - {slot: first_amount, type: ratio, value_positive: true}
-      - {lit: as}
-      - {slot: first_axis, cat: linear_axis_adjective}
-      - {lit: as}
-      - {slot: first_reference, cat: measured_object_reference_form, number: singular}
-      - {slot: first_basis_be, cat: copula}
-      - {slot: first_basis, cat: linear_axis_adjective}
-      unit: ''
-      basis: '{first_basis}'
+      tokens: *relative_axis_clause
+      evidence:
+        fact: batch_evidence
+        kind: relative-axis
+        entity: '{container}'
+        container: '{container}'
+        measure: ''
+        value: first_amount
+        marker: '{first_axis}'
+        attribute: '{first_basis}'
+        position: '{first_amount.span_start}'
       verbs: [first_basis_be]
     references: {first_reference: container}
     obligations: {be: [subject], first_basis_be: [subject]}
@@ -878,8 +896,16 @@ variants:
       - {slot: second_reference, cat: measured_object_reference_form, number: singular}
       - {slot: second_basis_be, cat: copula}
       - {slot: second_basis, cat: linear_axis_adjective}
-      unit: ''
-      basis: '{second_basis}'
+      evidence:
+        fact: batch_evidence
+        kind: relative-axis
+        entity: '{container}'
+        container: '{container}'
+        measure: ''
+        value: second_amount
+        marker: '{second_axis}'
+        attribute: '{second_basis}'
+        position: '{second_amount.span_start}'
       verbs: [second_basis_be]
     references: {second_reference: container}
     obligations: {be: [subject], second_basis_be: [subject]}
@@ -895,8 +921,16 @@ variants:
       - {slot: third_reference, cat: measured_object_reference_form, number: singular}
       - {slot: third_basis_be, cat: copula}
       - {slot: third_basis, cat: linear_axis_adjective}
-      unit: ''
-      basis: '{third_basis}'
+      evidence:
+        fact: batch_evidence
+        kind: relative-axis
+        entity: '{container}'
+        container: '{container}'
+        measure: ''
+        value: third_amount
+        marker: '{third_axis}'
+        attribute: '{third_basis}'
+        position: '{third_amount.span_start}'
       verbs: [third_basis_be]
     references: {third_reference: container}
     obligations: {be: [subject], third_basis_be: [subject]}

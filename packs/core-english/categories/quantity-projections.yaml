@@ -17,7 +17,7 @@ members:
   projection_window_preposition: [after, in]
   measured_change_verb: [grow, grows, growing, grew]
   projected_dimension_noun: [height, length, width]
-  projected_dimension_adjective: [tall, long, wide]
+  projected_dimension_adjective: [high, tall, long, wide]
   employment_context: [job, work]
   activity_onset_verb: [start, started, starts]
   savings_retention_verb: [save, saved, saves]
@@ -26,6 +26,7 @@ members:
 attrs:
   height: {projection_axis: 1}
   tall: {projection_axis: 1}
+  high: {projection_axis: 1}
   length: {projection_axis: 2}
   long: {projection_axis: 2}
   width: {projection_axis: 3}

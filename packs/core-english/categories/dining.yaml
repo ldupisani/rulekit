@@ -53,6 +53,7 @@ members:
   - meal
   - picnic
   food:
+  - food
   - bacon
   - beef
   - butter

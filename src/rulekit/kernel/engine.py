@@ -392,6 +392,8 @@ def _split_trailing_clause_commaless(question: str) -> tuple[str | None, str]:
 
 
 _CLAUSE_BOUNDARY = re.compile(r",\s+|(?P<word>[A-Za-z]+)\s+")
+# A semicolon also separates list items. Only the complete-clause reader may split it.
+_DECLARED_CLAUSE_BOUNDARY = re.compile(r";\s+|" + _CLAUSE_BOUNDARY.pattern)
 
 
 def _is_conjunction_word(word: str, reg: Registry) -> bool:
@@ -560,7 +562,7 @@ def _split_declared_coordinate_clauses(sentence: str, reg: Registry) -> list[str
     and validates the actual antecedents after routing.
     """
     if not any(boundary.group('word') is None or reg.word_in_category(boundary.group('word').casefold(), 'holder_list_conjunction')
-               for boundary in _CLAUSE_BOUNDARY.finditer(sentence)):
+               for boundary in _DECLARED_CLAUSE_BOUNDARY.finditer(sentence)):
         return [sentence]
     cache = {}
 
@@ -572,7 +574,7 @@ def _split_declared_coordinate_clauses(sentence: str, reg: Registry) -> list[str
             cache[body] = [body + '.']
             return cache[body]
         cache[body] = None
-        for boundary in _CLAUSE_BOUNDARY.finditer(body):
+        for boundary in _DECLARED_CLAUSE_BOUNDARY.finditer(body):
             word = boundary.group('word')
             if word is not None and not reg.word_in_category(word.casefold(), 'holder_list_conjunction'):
                 continue

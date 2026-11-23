@@ -1777,7 +1777,7 @@ class GenerationContextDef(StrictModel):
         return self
 
 
-def _declared_match_tokens(match) -> dict[str, MatchToken]:
+def declared_match_tokens(match) -> dict[str, MatchToken]:
     declared = {}
     pending = [token for sequence in match.values() for token in sequence]
     while pending:
@@ -1857,8 +1857,8 @@ class PatternRule(StrictModel):
     def _satisfaction_contract_is_explicit(self) -> "PatternRule":
         if self.independent_clause and (self.phase != 'read' or 'sentence' not in self.match or not self.emits):
             raise ValueError('independent_clause requires a fact-emitting read-phase sentence rule')
-        _validate_sense_selection(self.disambiguates, _declared_match_tokens(self.match))
-        declared = _declared_match_tokens(self.match)
+        _validate_sense_selection(self.disambiguates, declared_match_tokens(self.match))
+        declared = declared_match_tokens(self.match)
         for emission in self.emits:
             roles = emission.attribution
             if roles is None:
@@ -2067,7 +2067,7 @@ class AskRule(StrictModel):
                 raise ValueError(
                     f"ask {self.id!r}: interpretation ids must be unique"
                 )
-        declared_tokens = _declared_match_tokens(self.match)
+        declared_tokens = declared_match_tokens(self.match)
         declared_slots = set(declared_tokens)
         _validate_sense_selection(self.disambiguates, declared_tokens)
         for slot, needs in self.satisfies.items():

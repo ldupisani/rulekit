@@ -104,6 +104,7 @@ rules:
   - {fact: batch_evidence, kind: projected-increase, entity: '{who}', measure: '{amount}',
      value: amount, container: '{period}', position: '{amount.span_start}'}
 - id: arithmetic/current-dimension-amount
+  independent_clause: true
   question_assumption: true
   match:
     sentence:
@@ -111,13 +112,13 @@ rules:
     - {slot: be, cat: copula}
     - opt: [{slot: now, cat: current_snapshot_adverb}]
     - {slot: size, cat: length_measure, counted: true, bare: true}
-    - {slot: dimension, cat: projected_dimension_adjective}
+    - {slot: dimension, cat: linear_axis_adjective}
     - {lit: '.', consume_skipped: true}
   where: [{number_compatible: [who, be]}]
   consumes: [be, size]
   satisfies: {be: [subject]}
   emits:
-  - {fact: quantity, entity: '{who}', measure: '{size}', value: size, verb: '{be}'}
+  - {fact: quantity, entity: '{who}', measure: '{size}', value: size, verb: '{be}', measurement_axis: '{dimension}'}
 asks:
 - id: ask/projected-savings-purchase-balance
   match:

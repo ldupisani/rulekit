@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from .facts import FactStore
 
 from ..data.registry import Registry
-from ..data.schemas import AskRule, MatchToken, PatternRule
+from ..data.schemas import AskRule, MatchToken, PatternRule, declared_match_tokens
 from .evaluate import ArithmeticLog, EvaluationError, evaluate
 from .model import (
     ActivityDuration,
@@ -1278,15 +1278,14 @@ def _check_where(
                         # standalone lexical unit a fallback number, but that
                         # fallback is not morphological agreement evidence.
                         number = None
-                if unit.sense() == "verb":
-                    entry = reg.lexicon.get(unit.surface.casefold())
-                    if entry is not None:
-                        # Simple-past forms do not inflect for subject number
-                        # ("she sold" / "they sold").  The analyzer gives an
-                        # otherwise unannotated token a singular fallback, so
-                        # only an explicit lexical number feature is genuine
-                        # agreement evidence for a verb.
-                        number = entry.number_for_sense('verb')
+                entry = reg.lexicon.get(unit.surface.casefold())
+                if entry is not None and "verb" in entry.senses and (
+                    unit.sense() == "verb" or name in rule.disambiguates
+                    and reg.root_sense(declared_match_tokens(rule.match)[name].cat) == "verb"
+                ):
+                    # Use lexical verb agreement even when a construction selects
+                    # the verb reading of a plural noun. Past forms can be number-neutral.
+                    number = entry.number_for_sense('verb')
                 if unit.features.get("value_kind") == "count":
                     value = unit.features.get("value")
                     if not isinstance(value, (int, float)):

@@ -61,15 +61,16 @@ def nested_subset(ctx):
 
     rows = list(ctx.store.by_kind(BatchEvidence))
     populations = [row for row in rows if row.kind == "subset-population"]
+    parents = [row for row in rows if row.kind == "subset-parent-share"]
     partitions = [row for row in rows if row.kind in _NESTED_SHARE_KINDS]
     counts = [row for row in rows if row.kind in {"subset-observed-count", "subset-observed-attribute-count"}]
-    if len(populations) != 1 or len(partitions) != 1:
+    if len(populations) != 1 or len(parents) != 1 or len(partitions) != 1:
         return decline("one collection and one nested share are required")
-    population, shares = populations[0], partitions[0]
+    population, parent, shares = populations[0], parents[0], partitions[0]
     flavor = shares.kind == "subset-nested-share"
     if not counts and not flavor:
         return decline("the observed count must identify both attributes of the nested subset")
-    if len(rows) != 3 or len(counts) != 1:
+    if len(rows) != 4 or len(counts) != 1:
         return decline("one observed count and a complete nested subset are required")
     observed = counts[0]
     holder = ctx.query_reference("holder")
@@ -78,25 +79,27 @@ def nested_subset(ctx):
             or ctx.query.get("measure_substance")
             or not ctx.reg.word_in_category(verb.surface.casefold(), "plural_copula")
             or population.measure != ctx.query["measure"] or shares.measure != population.measure
+            or parent.measure != population.measure or parent.attribute == shares.marker
             or observed.measure and observed.measure != population.measure
-            or not population.provenance.sentence < shares.provenance.sentence < observed.provenance.sentence
-            or population.provenance.assumption or shares.provenance.assumption
-            or shares.container_ref is None or shares.container_ref.qualifiers != (shares.attribute,)
+            or not population.provenance.sentence < parent.provenance.sentence
+            or not parent.source_position < shares.source_position or shares.provenance.sentence >= observed.provenance.sentence
+            or any(r.provenance.assumption for r in (population, parent, shares))
+            or shares.container_ref is None or shares.container_ref.qualifiers != (parent.attribute,)
             or observed.value <= 0 or not float(observed.value).is_integer()
-            or not closed_evidence(ctx, rows, [(shares, [shares.value, shares.fraction]), (observed, [observed.value])])):
+            or not closed_evidence(ctx, rows, [(parent, [parent.value]), (shares, [shares.value]), (observed, [observed.value])])):
         return decline("the observed count must belong to the same named nested subset")
 
     if flavor:
         if (observed.kind != "subset-observed-count" or observed.marker != shares.marker
-                or observed.attribute not in ("", shares.attribute)):
+                or observed.attribute not in ("", parent.attribute)):
             return decline("the observed flavor must match the stated nested share")
     elif (observed.kind != "subset-observed-attribute-count"
-          or {observed.attribute, observed.marker} != {shares.attribute, shares.marker}
+          or {observed.attribute, observed.marker} != {parent.attribute, shares.marker}
           or observed.container_ref is not None and observed.container_ref.qualifiers != (observed.attribute,)):
         return decline("the observed count must identify both attributes of the nested subset")
-    parent_count = evaluate("count / share", dict(count=observed.value, share=shares.fraction),
+    parent_count = evaluate("count / share", dict(count=observed.value, share=shares.value),
                             ctx.log, source="nested-subset-parent")
-    total = evaluate("parent / share", dict(parent=parent_count, share=shares.value),
+    total = evaluate("parent / share", dict(parent=parent_count, share=parent.value),
                      ctx.log, source="nested-subset-population")
     if any(not isfinite(count) or not isclose(count, round(count), abs_tol=1e-9, rel_tol=0)
            for count in (parent_count, total)):
@@ -104,8 +107,8 @@ def nested_subset(ctx):
     value = round(total)
     assumptions = (
         AnswerAssumption("observed-subtype-within-parent",
-                         f"The observed {observed.marker} flavor count is entirely within the {shares.attribute} subset.",
-                         (shares.provenance.sentence, observed.provenance.sentence)),
+                         f"The observed {observed.marker} flavor count is entirely within the {parent.attribute} subset.",
+                         tuple(sorted({r.provenance.sentence for r in (parent, shares, observed)}))),
     ) if flavor and not observed.attribute else ()
     return finish_batch_answer(ctx, rows, value, "divide the observed subset count by both nested shares",
                                assumptions=assumptions)

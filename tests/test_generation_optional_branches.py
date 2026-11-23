@@ -99,7 +99,9 @@ def test_recursive_optional_class_inventory() -> None:
     # Named participants can introduce an indexed activity with an optional setting.
     # Repeated context is optional in a plan, a quote or a schedule.
     # The workforce clause can include a nested additive adverb.
-    assert _optional_profile(project) == (537, 920, 80, 3)
+    # Standalone portions, rates and cash observations reuse the modifiers of their joined forms.
+    # Provision schedules and daily portions can name the material or its recipient complement.
+    assert _optional_profile(project) == (545, 935, 82, 3)
 
 
 def test_optional_branches_rule_availability(curated_availability) -> None:

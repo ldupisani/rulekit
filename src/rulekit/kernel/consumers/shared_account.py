@@ -30,8 +30,9 @@ def consume(ctx):
     divisions = [r for r in rows if r.kind == 'bill-division']
     subdivisions = [r for r in rows if r.kind == 'within-group-division']
     pairs = [r for r in rows if r.kind == 'cohort-pair']
+    counterparts = [r for r in rows if r.kind == 'cohort-counterpart-count']
     expenses = list(ctx.store.by_kind(Expenditure))
-    if (len(groups) != 1 or not expenses or len(rows) != 1 + len(divisions) + len(subdivisions) + len(pairs)
+    if (len(groups) != 1 or not expenses or len(rows) != 1 + len(divisions) + len(subdivisions) + len(pairs) + len(counterparts)
             or len(pairs) > 1 or len(divisions) > 1 or len(subdivisions) > 1 or ctx.store.collisions or ctx.store.quarantined):
         return decline('one itemized account and one payer population are required')
     if not divisions and ctx.query.get('equal') != 'true':
@@ -46,11 +47,20 @@ def consume(ctx):
     expected[group.provenance.sentence][group.value] += 1
     roster = list(ctx.store.by_kind(Quantity))
     pair = next(iter(pairs), None)
+    if counterparts:
+        if (len(counterparts) != 1 or pair is None or pair.attribute or len(roster) != 1):
+            return decline('an elided membership count needs exactly one preceding contrasted group')
+        other = counterparts[0]
+        if (other.provenance.assumption or other.source_position <= pair.source_position
+                or other.entity not in ('', pair.entity) or other.measure not in ('', pair.measure)):
+            return decline('the counterpart must complete the same collective and member count')
+        roster.append(Quantity(provenance=other.provenance, entity=pair.entity, measure=pair.measure,
+                               value=other.value, qualifier=other.marker, verb=other.verb))
     if pair:
         if (pair.provenance.assumption or pair.value != 1 or group.value != 2
                 or pair.entity != group.entity or len(roster) != 2
-                or any(r.provenance.sentence != pair.provenance.sentence or r.measure != pair.measure
-                       for r in roster)):
+                or any(r.measure != pair.measure for r in roster)
+                or len({r.provenance.temporal_perspective for r in roster}) != 1):
             return decline('the contrasted counts must identify both purchasing groups')
         expected[pair.provenance.sentence][pair.value] += 1
     for count in roster:
@@ -101,7 +111,14 @@ def _roster_sizes(ctx, group, roster, pair):
         elif not row.provenance.distributive and len(ref.qualifiers) == 1:
             label, = ref.qualifiers
             if pair:
-                if label not in (pair.marker, pair.attribute):
+                if label == pair.marker:
+                    if row.provenance.sentence != pair.provenance.sentence:
+                        return None
+                elif pair.attribute:
+                    if label != pair.attribute or row.provenance.sentence != pair.provenance.sentence:
+                        return None
+                elif (not ctx.reg.word_in_category(label, 'contrastive_counterpart')
+                      or row.provenance.sentence <= pair.provenance.sentence):
                     return None
                 index = label
             else:

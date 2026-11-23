@@ -51,8 +51,36 @@ templates:
       - {fact: batch_evidence, kind: cohort-pair, entity: '{group}', measure: '{members}', value: group, position: '{group.span_start}', marker: one, attribute: {parameter: counterpart_label}}
       - {fact: quantity, entity: '{group.lemma}', qualifier: one, measure: '{members}', value: members, verb: '{have}'}
       - {fact: quantity, entity: '{group.lemma}', qualifier: {parameter: counterpart_label}, measure: '{members}', value: count, verb: '{other_have}'}
+  elided-counterpart-count:
+    parameters:
+      counterpart: {slot: other, cat: contrastive_counterpart}
+      entity: ''
+      label: '{other}'
+      count: {slot: count, type: number, integer: true, standalone: true, value_positive: true}
+      member: ''
+      agreement: []
+    rule:
+      description: A contrasted roster may omit its collective or member noun. Its unique preceding pair supplies the omitted role.
+      match:
+        sentence:
+        - {lit: the, at_start: true, consume_skipped: true}
+        - {parameter: counterpart}
+        - {slot: have, cat: plain_have_state, finite_form: true}
+        - {parameter: count}
+        - {lit: '.', consume_skipped: true}
+      consumes: [have, count]
+      satisfies: {have: [subject, dobj], count: [quantifies]}
+      where: {parameter: agreement}
+      emits:
+      - {fact: batch_evidence, kind: cohort-counterpart-count, entity: {parameter: entity},
+         measure: {parameter: member}, marker: {parameter: label}, value: count, verb: '{have}',
+         temporal_perspective: '{have.surface}', position: '{count.span_start}'}
   cohort-membership-count:
     parameters:
+      group_identity: '{group}'
+      qualifier: '{group.qualifier}'
+      population_marker: []
+      numeric_subject: []
       subject:
       - {slot: each, cat: distributive_quantifier, at_start: true}
       - {slot: group, cat: membership_collective, number: singular, uncounted: true, bare: true}
@@ -72,13 +100,15 @@ templates:
       where: [{number_compatible: [group, have]}]
       emits:
       - fact: quantity
-        entity: '{group}'
-        qualifier: '{group.qualifier}'
+        entity: {parameter: group_identity}
+        qualifier: {parameter: qualifier}
+        temporal_perspective: '{have.surface}'
         measure: '{members}'
         verb: '{have}'
         value: members
         distributive: {parameter: distributive}
-      consumes: [members]
+      - {parameter: population_marker}
+      consumes: [members, {parameter: numeric_subject}]
       bindings: {parameter: bindings}
 variants:
 - id: arithmetic/contrastive-cohort-counts-elided
@@ -115,3 +145,39 @@ variants:
     subject: [{slot: group, cat: membership_collective, number: singular, uncounted: true, class_only: true, qualified: true, qualifier_cat: holder_ordinal, at_start: true}]
     distributive: false
     bindings: {have: {subject: group, dobj: members}}
+
+- id: arithmetic/one-contrasted-cohort-membership
+  template: cohort-membership-count
+  arguments:
+    subject:
+    - {slot: group, cat: membership_collective, counted: true, class_only: true, bare: true, number: singular,
+       value_min: 1, value_max: 1, at_start: true}
+    distributive: false
+    qualifier: one
+    group_identity: '{group.lemma}'
+    numeric_subject: [group]
+    bindings: {have: {subject: group, dobj: members}}
+    population_marker:
+    - {fact: batch_evidence, kind: cohort-pair, entity: '{group}', measure: '{members}', value: group,
+       position: '{group.span_start}', marker: one}
+- id: arithmetic/counterpart-cohort-membership
+  template: cohort-membership-count
+  arguments:
+    subject:
+    - {slot: group, cat: membership_collective, number: singular, uncounted: true, class_only: true,
+       qualified: true, qualifier_cat: contrastive_counterpart, all_qualifiers: true, at_start: true}
+    distributive: false
+    bindings: {have: {subject: group, dobj: members}}
+- {id: arithmetic/elided-counterpart-membership, template: elided-counterpart-count}
+- id: arithmetic/elided-counterpart-with-member
+  template: elided-counterpart-count
+  arguments:
+    count: *repeated_member_count
+    member: '{count}'
+- id: arithmetic/named-counterpart-elided-member
+  template: elided-counterpart-count
+  arguments:
+    counterpart: *repeated_group
+    label: '{other.qualifier}'
+    entity: '{other}'
+    agreement: [{number_compatible: [other, have]}]

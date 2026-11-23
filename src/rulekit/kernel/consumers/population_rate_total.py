@@ -1,5 +1,6 @@
 """Weight per-member average rates by disjoint population shares."""
 from collections import Counter, defaultdict
+from dataclasses import replace
 from math import isclose, isfinite
 
 from . import consumer
@@ -60,9 +61,9 @@ def consume(ctx):
         return decline('the observer, population count and requested population must agree')
     if inline_whole and (
         count.container_ref != shares[0].entity_ref
-        or not shares[0].position < count.position < rests[0].position
-        or any(r.provenance.sentence != count.provenance.sentence
-               or r.provenance.assumption != count.provenance.assumption for r in (*shares, *rests))
+        or shares[0].provenance.sentence != count.provenance.sentence
+        or not shares[0].source_position < count.source_position < rests[0].source_position
+        or any(r.provenance.assumption != count.provenance.assumption for r in (*shares, *rests))
     ):
         return decline('the counted whole and complementary rates must form one complete population partition')
     expected = defaultdict(Counter)
@@ -83,7 +84,14 @@ def consume(ctx):
             expected[row.provenance.sentence][row.fraction] += 1
             share = row.fraction
         else:
-            if row.provenance.sentence != shares[-1].provenance.sentence or row.position <= shares[-1].position:
+            rest_population = row.entity_ref
+            if rest_population is not None:
+                qualifiers = tuple(q for q in rest_population.qualifiers
+                                   if not ctx.reg.word_in_category(q, 'remaining_partition_attribute'))
+                rest_population = replace(rest_population, qualifiers=qualifiers)
+            if (row.source_position <= shares[-1].source_position
+                    or rest_population is not None and not constrains(rest_population, population_ref)
+                    or row.container and shares[-1].container and row.container != shares[-1].container):
                 return decline('the complementary group must follow its explicit same-population share')
             share = evaluate('1 - assigned', {'assigned': total_share}, ctx.log, source='unassigned-population-share')
         expected[row.provenance.sentence][row.value] += 1

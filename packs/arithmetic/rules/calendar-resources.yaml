@@ -227,130 +227,6 @@ rules:
   - item
   - daily
   - average
-- id: arithmetic/named-month-activity-schedule
-  phase: read
-  match:
-    sentence:
-    - slot: who
-      type: entity
-      common_noun_cat: intentional_agent
-      referential: true
-      at_start: true
-    - opt:
-      - slot: like
-        cat: preference_action
-      - lit: to
-        consume_skipped: true
-    - slot: act
-      cat: feeding_action
-    - slot: recipient
-      cat: allocation_recipient
-      uncounted: true
-      bare: true
-    - lit: in
-      consume_skipped: true
-    - slot: months
-      span: true
-      enumeration_cat: named_month
-    - lit: .
-      consume_skipped: true
-  emits:
-  - fact: batch_evidence
-    kind: calendar-months
-    entity: '{who}'
-    measure: ''
-    value: 0
-    position: '{who.span_start}'
-    container: '{recipient}'
-    members: '{months.members}'
-    verb: '{act}'
-  consumes:
-  - like
-  - act
-  satisfies:
-    like:
-    - subject
-    act:
-    - subject
-  disambiguates:
-  - like
-  - act
-  - recipient
-- id: arithmetic/daily-two-part-quantities
-  phase: read
-  match:
-    sentence:
-    - slot: who
-      type: entity
-      common_noun_cat: intentional_agent
-      referential: true
-      at_start: true
-    - slot: act
-      cat: feeding_action
-    - slot: recipient
-      type: pronoun
-    - slot: first
-      type: fraction
-    - slot: unit
-      cat: resource_measure_unit
-      uncounted: true
-      bare: true
-    - lit: in
-      consume_skipped: true
-    - slot: part1
-      cat: part_of_day
-      uncounted: true
-      bare: true
-    - lit: and
-      consume_skipped: true
-    - slot: second
-      type: fraction
-    - slot: unit2
-      cat: resource_measure_unit
-      uncounted: true
-      bare: true
-    - lit: in
-      consume_skipped: true
-    - slot: part2
-      cat: part_of_day
-      uncounted: true
-      bare: true
-    - lit: .
-      consume_skipped: true
-  emits:
-  - fact: batch_evidence
-    kind: daily-portion
-    entity: '{who}'
-    measure: '{unit}'
-    value: first
-    position: '{first.span_start}'
-    marker: '{part1}'
-    container: '{recipient}'
-    verb: '{act}'
-  - fact: batch_evidence
-    kind: daily-portion
-    entity: '{who}'
-    measure: '{unit2}'
-    value: second
-    position: '{second.span_start}'
-    marker: '{part2}'
-    container: '{recipient}'
-    verb: '{act}'
-  consumes:
-  - act
-  - first
-  - second
-  satisfies:
-    act:
-    - subject
-    recipient:
-    - refers
-  disambiguates:
-  - act
-  - unit
-  - part1
-  - unit2
-  - part2
 - id: arithmetic/named-joint-plan-context
   phase: read
   match:
@@ -499,66 +375,6 @@ rules:
   - earn
   - owner
   - event
-- id: arithmetic/year-qualified-month-schedule
-  phase: read
-  match:
-    sentence:
-    - slot: who
-      type: entity
-      common_noun_cat: intentional_agent
-      referential: true
-      at_start: true
-    - opt:
-      - slot: like
-        cat: preference_action
-      - lit: to
-        consume_skipped: true
-    - slot: act
-      cat: feeding_action
-    - slot: recipient
-      cat: allocation_recipient
-      uncounted: true
-      bare: true
-    - lit: in
-      consume_skipped: true
-    - slot: months
-      span: true
-      enumeration_cat: named_month
-    - lit: of
-      consume_skipped: true
-    - slot: year
-      type: number
-      integer: true
-      value_positive: true
-      standalone: true
-    - lit: .
-      consume_skipped: true
-  emits:
-  - fact: batch_evidence
-    kind: calendar-months
-    entity: '{who}'
-    measure: ''
-    value: 0
-    position: '{who.span_start}'
-    container: '{recipient}'
-    members: '{months.members}'
-    verb: '{act}'
-    subtotal: year
-  consumes:
-  - like
-  - act
-  - year
-  satisfies:
-    like:
-    - subject
-    act:
-    - subject
-    year:
-    - quantifies
-  disambiguates:
-  - like
-  - act
-  - recipient
 - id: arithmetic/named-joint-saving-share
   phase: read
   match:
@@ -790,6 +606,106 @@ asks:
   - save
   - period
 templates:
+  named-month-provision:
+    parameters:
+      participants:
+        - &provision_recipient {slot: recipient, cat: allocation_recipient, uncounted: true, bare: true}
+        - opt:
+          - opt: [{slot: link, cat: provision_complement_preposition}]
+          - &provision_material {slot: material, cat: material_resource, uncounted: true, bare: true}
+      complement_constraints:
+        - &provision_with_license {bound_requires_category: {bound: link, slot: act, cat: supply_with_complement_action}}
+        - &provision_with_required {category_requires_bound: {slot: act, cat: provision_verb, bound: link}}
+        - category_requires_bound: {slot: act, cat: recipient_giving_action, bound: material}
+      extra_selections: [link]
+      year_clause: []
+      year_value: 0
+      extra_quantities: []
+      roles: {like: [subject], act: [subject]}
+    rule:
+      phase: read
+      match:
+        sentence:
+        - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, at_start: true}
+        - opt:
+          - {slot: like, cat: preference_action}
+          - {lit: to, consume_skipped: true}
+        - {slot: act, cat: recipient_provision_action, finite_form: true}
+        - {parameter: participants}
+        - {lit: in, consume_skipped: true}
+        - {slot: months, span: true, enumeration_cat: named_month}
+        - {parameter: year_clause}
+        - {lit: '.', consume_skipped: true}
+      where:
+      - {parameter: complement_constraints}
+      - bound_requires_form: {bound: like, slot: act, form: bare}
+      - verb_roles_compatible:
+          verb: act
+          roles: {recipient: [recipient]}
+          frame_categories: [recipient_provision_action]
+          require_declared_frame: true
+      emits:
+      - {fact: batch_evidence, kind: calendar-months, entity: '{who}', measure: '', value: 0,
+         position: '{who.span_start}', verb: '{act}', container: '{recipient}', attribute: '{material.optional}',
+         members: '{months.members}', subtotal: {parameter: year_value}}
+      consumes: [like, act, {parameter: extra_quantities}]
+      satisfies: {parameter: roles}
+      disambiguates: [like, act, recipient, material, {parameter: extra_selections}]
+  daily-portions:
+    parameters:
+      independent: true
+      continuation: []
+      extra_portions: []
+      extra_quantities: []
+      extra_selections: []
+    rule:
+      independent_clause: {parameter: independent}
+      phase: read
+      match:
+        sentence:
+        - slot: who
+          type: entity
+          common_noun_cat: intentional_agent
+          referential: true
+          at_start: true
+        - slot: act
+          cat: recipient_provision_action
+          finite_form: true
+        - {slot: recipient, cat: third_person_object_pronoun}
+        - opt: [{slot: link, cat: provision_complement_preposition}]
+        - slot: first
+          type: fraction
+        - slot: unit
+          cat: resource_measure_unit
+          uncounted: true
+          bare: true
+        - opt:
+          - {lit: of, consume_skipped: true}
+          - {slot: material, cat: material_resource, uncounted: true, bare: true}
+        - lit: in
+          consume_skipped: true
+        - slot: part1
+          cat: part_of_day
+          uncounted: true
+          bare: true
+        - {parameter: continuation}
+        - {lit: '.', consume_skipped: true}
+      where: [*provision_with_license, *provision_with_required, {number_compatible: [who, act]}]
+      emits:
+      - fact: batch_evidence
+        kind: daily-portion
+        entity: '{who}'
+        measure: '{unit}'
+        value: first
+        position: '{first.span_start}'
+        marker: '{part1}'
+        container: '{recipient}'
+        attribute: '{material.optional}'
+        verb: '{act}'
+      - {parameter: extra_portions}
+      consumes: [act, first, {parameter: extra_quantities}]
+      satisfies: {act: [subject], recipient: [refers]}
+      disambiguates: [act, link, unit, material, part1, {parameter: extra_selections}]
   scheduled-month-requirement:
     parameters:
       months:
@@ -833,6 +749,7 @@ templates:
         operation: months
         entity: '{who}'
         measure: '{unit}'
+        material: '{item}'
         month_count: {parameter: count}
       satisfies:
         need:
@@ -851,3 +768,67 @@ ask_variants:
     - {slot: pair, cat: joint_pair_quantifier}
     - {slot: months, cat: calendar_month_unit, uncounted: true, bare: true, number: plural}
     count: '2'
+
+variants:
+- {id: arithmetic/named-month-activity-schedule, template: named-month-provision}
+- id: arithmetic/year-qualified-month-schedule
+  template: named-month-provision
+  arguments:
+    year_clause: &provision_year
+    - {lit: of, consume_skipped: true}
+    - {slot: year, type: number, integer: true, value_positive: true, standalone: true}
+    year_value: year
+    extra_quantities: [year]
+    roles: &dated_provision_roles {like: [subject], act: [subject], year: [quantifies]}
+- id: arithmetic/named-month-material-to-recipient
+  template: named-month-provision
+  arguments:
+    participants: &material_to_recipient [*provision_material, {lit: to, consume_skipped: true}, *provision_recipient]
+    complement_constraints: []
+    extra_selections: []
+- id: arithmetic/year-qualified-material-to-recipient
+  template: named-month-provision
+  arguments:
+    participants: *material_to_recipient
+    complement_constraints: []
+    extra_selections: []
+    year_clause: *provision_year
+    year_value: year
+    extra_quantities: [year]
+    roles: *dated_provision_roles
+- {id: arithmetic/daily-portion, template: daily-portions}
+- id: arithmetic/daily-two-part-quantities
+  template: daily-portions
+  arguments:
+    independent: false
+    continuation:
+    - lit: and
+      consume_skipped: true
+    - slot: second
+      type: fraction
+    - slot: unit2
+      cat: resource_measure_unit
+      uncounted: true
+      bare: true
+    - opt:
+      - {lit: of, consume_skipped: true}
+      - {slot: material2, cat: material_resource, uncounted: true, bare: true}
+    - lit: in
+      consume_skipped: true
+    - slot: part2
+      cat: part_of_day
+      uncounted: true
+      bare: true
+    extra_portions:
+    - fact: batch_evidence
+      kind: daily-portion
+      entity: '{who}'
+      measure: '{unit2}'
+      value: second
+      position: '{second.span_start}'
+      marker: '{part2}'
+      container: '{recipient}'
+      attribute: '{material2.optional}'
+      verb: '{act}'
+    extra_quantities: [second]
+    extra_selections: [unit2, material2, part2]

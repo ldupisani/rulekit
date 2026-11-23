@@ -265,7 +265,13 @@ def _check_number(
     """Numeric guards, including explicit use of allocation endpoints."""
 
     if _enabled(reg, "answer-accounting") and store is not None:
-        from .model import JOURNEY_KINDS
+        from .model import JOURNEY_KINDS, Quantity
+
+        axes = [q for q in store.by_kind(Quantity) if q.measurement_axis]
+        if (len({reg.attribute_value(q.measurement_axis, "projection_axis") or q.measurement_axis
+                 for q in axes}) > 1
+                and any(q.key() not in log.consumed_component_keys for q in axes)):
+            return GuardVeto("answer-accounting", "distinct measured axes need an axis-aware calculation")
 
         if any(f.key() not in log.consumed_journey_keys
                for kind in JOURNEY_KINDS for f in store.by_kind(kind)):

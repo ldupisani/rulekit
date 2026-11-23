@@ -753,7 +753,7 @@ categories:
       `pool_pronoun`) and every plural (`_bind_discourse` refuses plurals
       outright — group referents are unbuilt).
   animate_object_pronoun:
-    parent: pronoun
+    parent: third_person_object_pronoun
     notes: >
       Objective-case animate pronouns. This stays separate from subject
       pronouns and possessive determiners so a transfer recipient cannot
@@ -1419,6 +1419,7 @@ categories:
       more specific states and compatible produce.
   colorable_noun:
     parent: noun
+    includes: [edible_quantity_object]
     notes: Nouns for which a color partition is an ordinary reading.
   physical_size_noun:
     parent: findable_quantity_object

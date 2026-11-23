@@ -308,11 +308,13 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
     assert registry.attribute_applies_to("first", "apartment")
     assert registry.attribute_applies_to("last", "restaurant")
     assert registry.attribute_applies_to("other", "team")
+    assert registry.attribute_applies_to("green", "candy")
+    assert registry.attribute_applies_to("original", "clay")
     assert sum(
         registry.attribute_applies_to(attribute, noun)
         for attribute in adjectives
         for noun in plural_nouns
-    ) == 11745
+    ) == 12927
 
 
 def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> None:
@@ -348,6 +350,8 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
         "arithmetic/holder-content-total-located-trailing",
         "arithmetic/located-quantity-event-context",
         "arithmetic/nested-attribute-shares",
+        "arithmetic/unqualified-subset-attribute-share",
+        "arithmetic/qualified-subset-attribute-share",
         "arithmetic/nested-subset-observed-count",
         "arithmetic/nested-subset-observed-qualified-count",
         "arithmetic/collection-two-shared-attributes",

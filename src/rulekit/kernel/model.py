@@ -1505,6 +1505,10 @@ class BatchEvidence(Fact):
     entity_ref: ReferenceIdentity | None = field(default=None, metadata={"reference_for": "entity"})
     container_ref: ReferenceIdentity | None = field(default=None, metadata={"reference_for": "container"})
 
+    @property
+    def source_position(self) -> tuple[int, int]:
+        return self.provenance.sentence, self.position
+
     def key(self):
         return ("batch-evidence", self.provenance.sentence, self.position, self.kind)
 
@@ -1831,6 +1835,8 @@ class Quantity(Fact):
     # Keep them independent of legacy display-key qualification.
     measure_ref: ReferenceIdentity | None = None
     content_ref: ReferenceIdentity | None = None
+    # Preserve distinct dimensions of one holder measured in the same unit.
+    measurement_axis: str | None = None
 
     def __post_init__(self):
         if self.entity_ref is None:
@@ -1843,6 +1849,8 @@ class Quantity(Fact):
 
     def key(self) -> tuple:
         key = ("quantity", self.entity, self.measure, self.verb, self.time, self.occurrence)
+        if self.measurement_axis:
+            key += ("axis", self.measurement_axis)
         return key + ((self.entity_ref.key(),) if self.entity_ref.described else ())
 
     def value_part(self) -> Any:

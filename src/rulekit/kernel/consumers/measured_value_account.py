@@ -67,8 +67,7 @@ def consume(ctx):
             or purpose_item.head != price.item
             or purpose_item.described
             or opening.provenance.sentence <= purpose.sentence_index
-            or closing.provenance.sentence != opening.provenance.sentence
-            or closing.position <= opening.position
+            or closing.source_position <= opening.source_position
             or any(not isfinite(r.value) or r.value < 0 for r in (opening, closing))
         ):
             return decline(

@@ -146,6 +146,25 @@ variants:
         - {lit: the, consume_skipped: true}
         - {slot: source, cat: material_resource, uncounted: true, bare: true}
       material: '{source}'
+  - id: arithmetic/fractional-resource-original-use
+    template: fractional-resource-use
+    arguments:
+      generation: contextual
+      context:
+        before: *measured_stock_supporting_sentences
+        target_identity_links: {context_actor: who, context_material: source}
+        required_fact_counts: {region_evidence: 1}
+      prefix: *fractional_use_actor_prefix
+      actor: '{who}'
+      guards: *fractional_use_actor_guards
+      predicates: [use]
+      satisfaction: {use: [subject]}
+      basis: explicit-opening
+      reference:
+        - {lit: of}
+        - {lit: the, consume_skipped: true}
+        - {slot: source, cat: material_resource, uncounted: true, qualified: true, qualifier_cat: original_stock_attribute, all_qualifiers: true}
+      material: '{source}'
   - id: arithmetic/fractional-resource-named-use-continuation
     template: fractional-resource-use
     arguments:

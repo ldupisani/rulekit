@@ -14,7 +14,7 @@ from ..answer import (
 )
 from ..dimensions import conversion_factor
 from ..evaluate import evaluate
-from ..model import BatchEvidence, MeasuredContentChange, ContainerContent
+from ..model import BatchEvidence, MeasuredContentChange, ContainerContent, Quantity
 from ..numeric_evidence import audit_numeric_mentions
 from ..properties import Measurement, evaluate_property
 from ...data.properties import PropertyError
@@ -63,8 +63,11 @@ def consume(ctx):
     contexts = [r for r in rows if r.kind == "content-container-context"]
     openings = [r for r in rows if r.kind in {"content-opening-fraction", "content-opening-amount"}]
     measured = len(openings) == 1 and openings[0].kind == "content-opening-amount"
-    dimensions = [r for r in rows if r.kind == "content-container-dimension"]
-    axes = {_axis(ctx.reg, r.marker): r for r in dimensions}
+    direct = [q for q in ctx.store.by_kind(Quantity) if q.measurement_axis]
+    relative = [r for r in rows if r.kind == "relative-axis"]
+    dimensions = [*direct, *relative]
+    axes = {_axis(ctx.reg, r.measurement_axis): r for r in direct}
+    axes.update((_axis(ctx.reg, r.marker), r) for r in relative)
     transitions = [r for r in rows if r.kind == "content-container-transition"]
     disturbances = [r for r in rows if r.kind == "content-container-disturbance"]
     if (
@@ -73,8 +76,8 @@ def consume(ctx):
         or len(dimensions) != (0 if measured else 3)
         or not changes
         or len(rows)
-        != len(contexts) + len(openings) + len(dimensions) + len(transitions) + len(disturbances)
-        or len(ctx.store.facts) != len(rows) + len(changes) + len(mirrors)
+        != len(contexts) + len(openings) + len(relative) + len(transitions) + len(disturbances)
+        or len(ctx.store.facts) != len(rows) + len(direct) + len(changes) + len(mirrors)
         or ctx.store.collisions
         or ctx.store.quarantined
     ):
@@ -106,11 +109,8 @@ def consume(ctx):
             for r in transitions
         )
         or any(
-            not constrains(container, r.container_ref)
-            or not (
-                constrains(identity, r.container_ref)
-                or constrains(r.container_ref, identity)
-            )
+            not constrains(container, r.entity_ref)
+            or not (constrains(identity, r.entity_ref) or constrains(r.entity_ref, identity))
             for r in dimensions
         )
         or not measured and set(axes) != AXIS_CATEGORIES.keys()
@@ -130,7 +130,7 @@ def consume(ctx):
     container_refs = [
         identity,
         container,
-        *(r.container_ref for r in dimensions),
+        *(r.entity_ref for r in dimensions),
     ]
     for change in changes:
         reading = next(
@@ -197,6 +197,12 @@ def consume(ctx):
             "apply the stated changes in order and select losses by their recorded attribution"
             if selected else f"apply the stated changes to the opening amount in {unit}s",
         )
+    shapes = {ctx.reg.plural_to_singular.get(shape, shape)
+              for shape in ctx.reg.cat_members_deep("cuboid_geometry")
+              if set(ctx.reg.property_inputs(shape, "volume")) == axes.keys()}
+    if len(shapes) != 1:
+        return decline("the three independent axes need one rectangular-prism volume formula")
+    shape, = shapes
     descriptors = {q for ref in container_refs for q in ref.qualifiers}
     explicit = bool(descriptors) and all(
         ctx.reg.word_in_category(q, "rectangular_attribute") for q in descriptors
@@ -214,7 +220,7 @@ def consume(ctx):
                         "Rectangular container",
                         "Use the stated dimensions as a rectangular prism.",
                         SemanticNode(
-                            "container-shape", (("shape", dimensions[0].acquisition),)
+                            "container-shape", (("shape", shape),)
                         ),
                     ),
                 ),
@@ -223,12 +229,12 @@ def consume(ctx):
     measurements = {
         axis: Measurement(row.value, row.measure)
         for axis, row in axes.items()
-        if row.measure
+        if isinstance(row, Quantity)
     }
     relative = [
         (axis, _axis(ctx.reg, row.attribute), row.value, 0)
         for axis, row in axes.items()
-        if not row.measure
+        if isinstance(row, BatchEvidence)
     ]
     try:
         if relative:
@@ -251,7 +257,7 @@ def consume(ctx):
             measurements = {axis: Measurement(graph.value(axis), unit) for axis in axes}
         capacity = evaluate_property(
             ctx.reg,
-            dimensions[0].acquisition,
+            shape,
             "volume",
             measurements,
             ctx.log,
@@ -269,6 +275,7 @@ def consume(ctx):
     if isinstance(outcome, Answer):
         return outcome
     amount, selected = outcome
+    ctx.log.consumed_component_keys.update(row.key() for row in direct)
     ctx.log.consumed_batch_keys.update(r.key() for r in rows)
     reason = (
         "apply the stated changes in order and select losses by their recorded attribution"

@@ -1,5 +1,38 @@
 format: rulekit/rules@1
 rules:
+- id: arithmetic/carried-cash
+  independent_clause: true
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, at_start: true}
+    - {slot: bring, cat: cash_carriage_verb, finite_form: true}
+    - {slot: start, cat: currency_unit, counted: true, bare: true}
+    - opt: [{lit: with}, {slot: self, cat: singular_animate_object_pronoun}]
+    - {lit: '.', consume_skipped: true}
+  where: [{number_compatible: [who, bring]}]
+  references: {self: who}
+  consumes: [bring, start]
+  satisfies: {bring: [subject]}
+  disambiguates: [bring, start]
+  emits:
+  - {fact: batch_evidence, kind: purchase-cash-opening, entity: '{who}', measure: '{start}',
+     value: start, position: '{start.span_start}'}
+- id: arithmetic/departing-cash
+  independent_clause: true
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, at_start: true}
+    - {slot: leave, cat: cash_departure_verb, finite_form: true}
+    - {lit: with}
+    - {slot: end, cat: currency_unit, counted: true, bare: true}
+    - {lit: '.', consume_skipped: true}
+  where: [{number_compatible: [who, leave]}]
+  consumes: [leave, end]
+  satisfies: {leave: [subject]}
+  disambiguates: [leave, end]
+  emits:
+  - {fact: batch_evidence, kind: purchase-cash-closing, entity: '{who}', measure: '{end}',
+     value: end, position: '{end.span_start}'}
 - id: arithmetic/collection-shopping-purpose
   phase: read
   match:

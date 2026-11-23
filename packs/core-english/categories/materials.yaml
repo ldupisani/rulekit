@@ -33,6 +33,7 @@ categories:
     notes: >
       Physical extent queried with a measured material. Kept separate from
       general holder dimensions because the same word can ask about duration.
+  original_stock_attribute: {parent: adjective}
   resource_remnant_attribute:
     parent: adjective
   volume_unit_modifier:
@@ -108,7 +109,6 @@ members:
   - wire
   - wood
   - yarn
-  - food
   production_variety_noun: [kind, type, version]
   solid_stock_unit:
   - block
@@ -145,6 +145,7 @@ members:
   - volume
   - mass
   length_interrogative_adjective: [long]
+  original_stock_attribute: [original]
   resource_remnant_attribute: [remaining, uncut]
   volume_unit_modifier:
   - cubic
@@ -188,6 +189,7 @@ members:
   - lip gloss
   - gloss
 attribute_compatibility:
+  original_stock_attribute: [material_resource]
   resource_remnant_attribute: [material_resource]
   rectangular_attribute:
   - material_stock_unit
