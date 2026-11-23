@@ -22,12 +22,9 @@ rules:
       cat: purchase_item
       uncounted: true
       bare: true
-    - lit: at
-      consume_skipped: true
-    - slot: site
-      cat: purchase_context_site
-      uncounted: true
-      bare: true
+    - opt:
+      - {lit: at}
+      - {slot: site, cat: purchase_context_site, uncounted: true, bare: true}
     - lit: before
       consume_skipped: true
     - slot: meet
@@ -66,7 +63,7 @@ rules:
     position: '{who.span_start}'
     container: '{item}'
     acquisition: '{other}'
-    marker: '{site}'
+    marker: '{site.optional}'
     verb: '{buy}'
   consumes:
   - buy
@@ -113,6 +110,7 @@ rules:
       common_noun_cat: intentional_agent
       referential: true
       at_start: true
+    - opt: [{slot: sequence, cat: transaction_sequence_adverb}]
     - slot: buy
       cat: purchase
       finite_form: true
@@ -122,6 +120,9 @@ rules:
       qualified: true
       qualifier_cat: supplemental_amount_attribute
       all_qualifiers: true
+    - opt:
+      - {lit: of}
+      - {slot: added_content, cat: purchase_item, uncounted: true, bare: true}
     - lit: for
       consume_skipped: true
     - slot: every
@@ -130,6 +131,9 @@ rules:
       cat: quantity_container
       counted: true
       bare: true
+    - opt:
+      - {lit: of}
+      - {slot: base_content, cat: purchase_item, uncounted: true, bare: true}
     - slot: standard
       type: entity
       common_noun_cat: intentional_agent
@@ -147,6 +151,8 @@ rules:
     value: extra
     position: '{who.span_start}'
     container: '{standard}'
+    attribute: '{added_content.optional}'
+    marker: '{base_content.optional}'
     per_member: base
     verb: '{buy}'
   consumes:
@@ -163,6 +169,8 @@ rules:
     buy2:
       subject: standard
   where:
+  - {number_compatible: [who, buy]}
+  - {number_compatible: [standard, buy2]}
   - same_lemma:
     - extra
     - base
@@ -171,6 +179,56 @@ rules:
   - extra
   - base
   - buy2
+- id: arithmetic/additive-purchase-target
+  phase: read
+  description: An additional buyer names a product without specifying an amount or price.
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, at_start: true}
+    - {slot: also, cat: additive_discourse_adverb}
+    - {slot: buy, cat: purchase, finite_form: true}
+    - {slot: item, cat: purchase_item, uncounted: true, bare: true, blocks_skipped: article}
+    - {lit: '.', consume_skipped: true}
+  where: [{number_compatible: [who, buy]}]
+  consumes: [buy, item]
+  bindings: {buy: {subject: who, dobj: item}}
+  emits:
+  - {fact: predication, subject: '{who}', verb: '{buy}', dobj: '{item}', dobj_unquantified: true}
+  - {fact: expenditure, entity: '{who}', item: '{item}', verb: '{buy}', position: '{item.uid}', event: '{buy.uid}'}
+templates:
+  purchased-container-question:
+    parameters:
+      containers: {slot: unit, cat: quantity_container, number: plural, uncounted: true, bare: true}
+      component: total
+    rule:
+      match:
+        question:
+        - {lit: how, at_start: true}
+        - {lit: many}
+        - {parameter: containers}
+        - {lit: of}
+        - {slot: item, cat: purchase_item, uncounted: true, bare: true}
+        - {slot: aux, cat: past_factual_auxiliary}
+        - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true}
+        - {slot: buy, cat: purchase, bare_form: true}
+        - opt:
+          - opt: [{slot: prep, cat: group_total_preposition}]
+          - {slot: total, cat: group_total_marker}
+        - {lit: '?', consume_skipped: true}
+      where:
+      - bound_requires_category: {bound: prep, slot: total, cat: prepositional_group_total_marker}
+      satisfies: {buy: [subject, dobj], prep: [anchor, object]}
+      disambiguates: [unit, buy, total]
+      resolves: {consumer: purchased-container-total, operation: incremental, entity: '{who}', measure: '{unit}',
+                 measure_qualifier: '{item}', content: '{item}', verb: '{buy}', component: {parameter: component}}
+ask_variants:
+- {id: ask/purchased-container-count, template: purchased-container-question}
+- id: ask/additional-purchased-container-count
+  template: purchased-container-question
+  arguments:
+    containers: {slot: unit, cat: quantity_container, number: plural, uncounted: true, qualified: true,
+                 qualifier_cat: supplemental_amount_attribute, all_qualifiers: true}
+    component: additional
 asks:
 - id: ask/incremental-purchase-taken-home
   match:

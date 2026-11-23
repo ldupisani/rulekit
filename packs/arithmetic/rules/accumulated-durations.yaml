@@ -42,108 +42,194 @@ rules:
   - spend
   - amount
   - act
-- id: arithmetic/relative-accumulated-activity-time
+- id: arithmetic/finite-activity-tenure
   phase: read
+  description: A finite activity with an explicit duration states an ordinary activity quantity.
   match:
     sentence:
-    - opt:
-      - slot: owner
-        cat: possessive_determiner
-    - slot: who
-      type: entity
-      common_noun_cat: intentional_agent
-      referential: true
-    - slot: be
-      cat: sequence_passive_auxiliary
-    - slot: act
-      cat: accumulated_activity_verb
-      present_participle: true
-    - lit: for
-      consume_skipped: true
-    - slot: amount
-      cat: duration_measure
-      counted: true
-      bare: true
-    - slot: direction
-      cat: mass_quantity_delta
-    - lit: .
-      consume_skipped: true
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, at_start: true}
+    - {slot: act, cat: accumulated_activity_verb, finite_form: true}
+    - {lit: for}
+    - {slot: amount, cat: duration_measure, counted: true, bare: true}
+    - {lit: '.', consume_skipped: true}
+  where: [{number_compatible: [who, act]}]
+  consumes: [act, amount]
+  disambiguates: [act, amount]
+  bindings: {act: {subject: who}}
   emits:
-  - fact: batch_evidence
-    kind: duration-relative
-    entity: '{who}'
-    measure: '{amount}'
-    value: amount
-    position: '{who.span_start}'
-    verb: '{act}'
-    sign: sign(direction)
-  consumes:
-  - be
-  - act
-  - amount
-  - direction
-  satisfies:
-    be:
-    - subject
-    direction:
-    - standard
-  bindings:
-    act:
-      subject: who
-  disambiguates:
-  - be
-  - act
-  - amount
-asks:
-- id: ask/combined-accumulated-experience
-  match:
-    question:
-    - lit: how
-      consume_skipped: true
-    - slot: long
-      cat: elapsed_extent_adjective
-    - slot: be
-      cat: copula
-    - slot: group
-      cat: plural_possessive_determiner
-    - slot: total
-      cat: prenominal_group_total_marker
-    - slot: experience
-      cat: activity_experience_noun
-      uncounted: true
-      bare: true
-    - lit: '?'
-      consume_skipped: true
-  resolves:
-    consumer: scoped-comparison
-    operation: duration-sum
-  satisfies:
-    be:
-    - subject
-  disambiguates:
-  - total
+  - {fact: quantity, entity: '{who}', measure: '{amount}', value: amount, verb: '{act}'}
+templates:
+  accumulated-tenure:
+    parameters:
+      predicate:
+      - {slot: act, cat: accumulated_activity_verb, finite_form: true}
+      agreement: [{number_compatible: [who, act]}]
+      subjects: {act: {subject: who}}
+      senses: [act, amount]
+      duration: [{slot: amount, cat: duration_measure, counted: true, bare: true}]
+      comparison:
+      - {slot: direction, cat: duration_delta_comparative}
+      - &explicit_standard
+        opt:
+        - {lit: than, consume_skipped: true}
+        - {slot: standard, type: entity, common_noun_cat: intentional_agent, referential: true}
+      value: amount
+      kind: duration-relative
+      sign: sign(direction)
+      standard: '{standard.optional}'
+      role: ''
+      consumes: [act, amount, direction]
+      obligations: {direction: [standard]}
+    rule:
+      phase: read
+      match:
+        sentence:
+        - opt: [{slot: owner, cat: possessive_determiner, at_start: true}]
+        - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true}
+        - {parameter: predicate}
+        - {lit: for, consume_skipped: true}
+        - {parameter: duration}
+        - {parameter: comparison}
+        - {lit: '.', consume_skipped: true}
+      where: {parameter: agreement}
+      bindings: {parameter: subjects}
+      satisfies: {parameter: obligations}
+      consumes: {parameter: consumes}
+      disambiguates: {parameter: senses}
+      emits:
+      - {fact: batch_evidence, kind: {parameter: kind}, entity: '{who}', measure: '{amount}', value: {parameter: value},
+         position: '{who.span_start}', verb: '{act}', attribute: {parameter: role},
+         container: {parameter: standard}, sign: {parameter: sign}}
+  possessive-combined-experience:
+    parameters:
+      head: [{lit: how, at_start: true}, {slot: long, cat: elapsed_extent_adjective}]
+    rule:
+      match:
+        question:
+        - {parameter: head}
+        - {slot: be, cat: singular_copula}
+        - {slot: group, cat: plural_possessive_determiner}
+        - {slot: total, cat: prenominal_group_total_marker}
+        - &activity_modifier
+          opt: [{slot: activity, cat: accumulated_activity_verb, present_participle: true}]
+        - &experience {slot: experience, cat: activity_experience_noun, uncounted: true, number: singular, class_only: true}
+        - {lit: '?', consume_skipped: true}
+      resolves:
+        consumer: scoped-comparison
+        operation: duration-sum
+        experience: '{experience}'
+        activity: '{activity.optional}'
+      satisfies: {be: [subject], activity: [subject]}
+      disambiguates: [activity, total]
+  group-held-experience:
+    parameters:
+      amount:
+      - {lit: many}
+      - {slot: unit, cat: duration_measure, number: plural, uncounted: true, bare: true}
+      - {lit: of}
+      output_unit: '{unit}'
+    rule:
+      match:
+        question:
+        - {lit: how, at_start: true}
+        - {parameter: amount}
+        - *activity_modifier
+        - *experience
+        - {slot: aux, cat: plural_auxiliary}
+        - {slot: group, cat: discourse_subject_group_pronoun}
+        - {slot: have, cat: plain_have_state, bare_form: true}
+        - opt: [{slot: prep, cat: group_total_preposition}]
+        - {slot: total, cat: group_total_marker}
+        - {lit: '?', consume_skipped: true}
+      where:
+      - bound_requires_category: {bound: prep, slot: total, cat: prepositional_group_total_marker}
+      resolves:
+        consumer: scoped-comparison
+        operation: duration-sum
+        experience: '{experience}'
+        activity: '{activity.optional}'
+        unit: {parameter: output_unit}
+      satisfies: {have: [subject], group: [refers], activity: [subject], prep: [anchor, object]}
+      disambiguates: [have, activity, total]
+variants:
+- id: arithmetic/relative-finite-activity-tenure
+  template: accumulated-tenure
+- id: arithmetic/relative-accumulated-activity-time
+  template: accumulated-tenure
+  arguments:
+    predicate: &progressive_activity
+    - {slot: be, cat: sequence_passive_auxiliary}
+    - {slot: act, cat: accumulated_activity_verb, present_participle: true}
+    agreement: [{number_compatible: [who, be]}]
+    subjects: {be: {subject: who}, act: {subject: who}}
+    senses: [be, act, amount]
+    consumes: [be, act, amount, direction]
+- id: arithmetic/occupation-tenure
+  template: accumulated-tenure
+  arguments:
+    predicate: &occupation
+    - {slot: act, cat: singular_copula}
+    - {lit: [a, an], consume_skipped: true}
+    - {slot: role, cat: situated_role, number: singular, uncounted: true, bare: true}
+    role: '{role}'
+    senses: [act, role, amount]
+    comparison: []
+    standard: ''
+    kind: duration-amount
+    sign: 0
+    consumes: [act, role, amount]
+    obligations: {}
+- id: arithmetic/relative-occupation-tenure
+  template: accumulated-tenure
+  arguments:
+    predicate: *occupation
+    role: '{role}'
+    senses: [act, role, amount]
+    consumes: [act, role, amount, direction]
+- id: arithmetic/relative-finite-activity-counted-unit
+  template: accumulated-tenure
+  arguments:
+    duration: &comparative_count
+    - {slot: delta, type: number, standalone: true, value_min: 0}
+    - {slot: direction, cat: count_quantity_delta}
+    - {slot: amount, cat: duration_measure, uncounted: true, bare: true}
+    comparison: &comparison_target [*explicit_standard]
+    agreement: [{number_compatible: [who, act]}, {same_number: [delta, amount]}]
+    value: delta
+    consumes: [act, delta, direction, amount]
+    obligations: &count_obligations {delta: [quantifies], direction: [standard]}
+- id: arithmetic/relative-progressive-activity-counted-unit
+  template: accumulated-tenure
+  arguments:
+    predicate: *progressive_activity
+    duration: *comparative_count
+    comparison: *comparison_target
+    agreement: [{number_compatible: [who, be]}, {same_number: [delta, amount]}]
+    subjects: {be: {subject: who}, act: {subject: who}}
+    senses: [be, act, amount]
+    value: delta
+    consumes: [be, act, delta, direction, amount]
+    obligations: *count_obligations
+- id: arithmetic/relative-occupation-counted-unit
+  template: accumulated-tenure
+  arguments:
+    predicate: *occupation
+    role: '{role}'
+    senses: [act, role, amount]
+    duration: *comparative_count
+    comparison: *comparison_target
+    agreement: [{number_compatible: [who, act]}, {same_number: [delta, amount]}]
+    value: delta
+    consumes: [act, role, delta, direction, amount]
+    obligations: *count_obligations
+ask_variants:
+- {id: ask/combined-accumulated-experience, template: possessive-combined-experience}
 - id: ask/combined-activity-time
-  match:
-    question:
-    - lit: what
-      consume_skipped: true
-    - slot: be
-      cat: copula
-    - slot: group
-      cat: plural_possessive_determiner
-    - slot: total
-      cat: prenominal_group_total_marker
-    - slot: experience
-      cat: activity_experience_noun
-      uncounted: true
-      bare: true
-    - lit: '?'
-      consume_skipped: true
-  resolves:
-    consumer: scoped-comparison
-    operation: duration-sum
-  satisfies:
-    be:
-    - subject
-  disambiguates:
-  - total
+  template: possessive-combined-experience
+  arguments: {head: [{lit: what, at_start: true}]}
+- {id: ask/group-experience-in-unit, template: group-held-experience}
+- id: ask/group-experience-amount
+  template: group-held-experience
+  arguments:
+    amount: [{slot: much, cat: mass_amount_quantifier}]
+    output_unit: ''

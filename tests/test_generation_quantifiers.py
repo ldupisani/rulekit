@@ -63,7 +63,7 @@ EXPECTED_OCCURRENCES = {
     'arithmetic/periodic-rate-every-unit': ((4,), 'freq'),
     'arithmetic/relative-measured-item-quote': ((5,), 'much'),
     'arithmetic/returned-exchange-subset-valuation': ((16,), 'each'),
-    'arithmetic/additional-ratio-acquisition': ((4,), 'every'),
+    'arithmetic/additional-ratio-acquisition': ((6,), 'every'),
     'arithmetic/distributive-object-unit-price': ((0,), 'each'),
     'arithmetic/fixed-block-with-excess-rate': ((15,), 'every'),
     'arithmetic/pooled-stock-shared-within-group': ((2,), 'all'),

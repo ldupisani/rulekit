@@ -39,7 +39,7 @@ CORE_MEMBERSHIPS["larger"] = tuple(sorted(
 ))
 for word in ("longer", "shorter"):
     CORE_MEMBERSHIPS[word] = tuple(sorted(
-        (*CORE_MEMBERSHIPS[word], "text_length_comparative")
+        (*CORE_MEMBERSHIPS[word], "text_length_comparative", "duration_delta_comparative")
     ))
 CORE_MEMBERSHIPS["longer"] = tuple(sorted(
     (*CORE_MEMBERSHIPS["longer"], "activity_continuation_marker")

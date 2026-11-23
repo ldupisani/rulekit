@@ -8,9 +8,11 @@ from .indexed_path import ordinal_index
 from ..affine_graph import AffineGraph, AffineError
 from ..answer import Answer
 from ..evaluate import evaluate
-from ..model import BatchEvidence, Relation, Quantity
-from ..rate_calculation import convert_calendar_duration
+from ..model import BatchEvidence, Relation, Quantity, VerbalRelation
+from ..predicate_compatibility import predicate_concepts
+from ..rate_calculation import convert_calendar_duration, convert_exact_duration
 from ..reference_identity import reference_from_unit, constrains
+from ..source_coverage import covered_temporal_annotation
 from ..totals import _sign
 
 
@@ -24,38 +26,74 @@ def consume(ctx):
     anchors, links = [], []
     mode = ctx.query["operation"]
     if mode == "duration-sum":
-        known = [r for r in rows if r.kind == "duration-amount"]
-        relative = [r for r in rows if r.kind == "duration-relative"]
-        if len(known) != 1 or len(relative) != 1 or len(rows) != 2:
-            return decline(
-                "a combined activity duration needs one anchor and one comparable participant"
-            )
-        base, edge = known[0], relative[0]
+        for q in ctx.store.by_kind(Quantity):
+            if (q.time or q.measure_qualifier or q.provenance.assumption
+                    or not ctx.reg.word_in_category(q.measure, "duration_measure")
+                    or not ctx.reg.word_in_category(q.verb, "accumulated_activity_verb")):
+                return decline("each quantity must be an asserted duration of the activity")
+            rows.append(q)
+        if len(rows) != 2:
+            return decline("combined experience needs a duration for each of two participants")
+        base, other = sorted(rows, key=lambda r: r.provenance.sentence)
+        relative = isinstance(other, BatchEvidence) and other.kind == "duration-relative"
         if (
-            base.verb != edge.verb
-            or base.provenance.sentence >= edge.provenance.sentence
-            or edge.entity_ref == base.entity_ref
-            or edge.entity_ref.owner != base.entity_ref
-            or edge.container_ref
-            and edge.container_ref != base.entity_ref
+            isinstance(base, BatchEvidence) and base.kind != "duration-amount"
+            or isinstance(other, BatchEvidence) and other.kind not in {"duration-amount", "duration-relative"}
+            or not base.entity_ref.resolved
+            or not other.entity_ref.resolved
+            or base.entity_ref == other.entity_ref
         ):
-            return decline(
-                "the relative duration must identify the same activity and its preceding participant"
-            )
-        amount = convert_calendar_duration(
-            edge.value,
-            edge.measure,
-            base.measure,
-            ctx.reg,
-            ctx.log,
-            source="relative-activity-unit",
+            return decline("combined experience needs two distinct participants and an initial duration")
+        if relative and (
+            base.provenance.sentence >= other.provenance.sentence
+            or (other.container_ref or other.entity_ref.owner) != base.entity_ref
+        ):
+            return decline("the relative duration must identify its preceding comparison participant")
+        # A gerund can be read separately or inside the experience noun phrase.
+        # Both representations must constrain the same comparison.
+        experience = ctx.match.slots.get("experience")
+        qualifiers = reference_from_unit(experience).qualifiers if experience else ()
+        activity = ctx.query.get("activity")
+        if qualifiers:
+            if (
+                activity or len(qualifiers) != 1
+                or not ctx.reg.word_in_category(qualifiers[0], "accumulated_activity_verb")
+            ):
+                return decline("the experience description needs one identifiable activity")
+            activity = ctx.reg.verb_lemmas.get(qualifiers[0], qualifiers[0])
+        activities = [r.attribute if isinstance(r, BatchEvidence) and r.attribute else r.verb for r in rows]
+        if activity:
+            activities.append(activity)
+        meanings = [
+            predicate_concepts(term, ctx.query.get("experience", ""), ctx.reg, fallback_to_verb=True)
+            for term in activities
+        ]
+        if not frozenset.intersection(*meanings):
+            return decline("both durations must describe the requested activity")
+        unit = ctx.query.get("unit") or base.measure
+        initial = convert_exact_duration(
+            base.value, base.measure, unit, ctx.reg, ctx.log, source="anchor-activity-unit"
         )
-        if amount is None:
-            return decline("the activity durations require compatible units")
-        anchors = [(base.entity_ref, base.value)]
-        links = [(edge.entity_ref, base.entity_ref, 1.0, edge.sign * amount)]
-        operands = [(base, [base.value]), (edge, [edge.value])]
-        requested = [(base.entity_ref, 1), (edge.entity_ref, 1)]
+        amount = convert_exact_duration(
+            other.value, other.measure, unit, ctx.reg, ctx.log, source="compared-activity-unit"
+        )
+        if initial is None or amount is None:
+            return decline("both activity durations must convert to the requested unit")
+        anchors = [(base.entity_ref, initial)]
+        if relative:
+            links.append((other.entity_ref, base.entity_ref, 1.0, other.sign * amount))
+        else:
+            anchors.append((other.entity_ref, amount))
+        operands = [(r, [r.value]) for r in rows]
+        requested = [(r.entity_ref, 1) for r in rows]
+        rows += [
+            fact for fact in ctx.store.by_kind(VerbalRelation)
+            if fact.role == "temporal-duration" and any(
+                fact.verb == r.verb and covered_temporal_annotation(
+                    fact, ctx.premises, r.entity, {(r.provenance.sentence, r.measure)}
+                ) for r in (base, other)
+            )
+        ]
     elif mode == "age-difference":
         relations = list(ctx.store.by_kind(Relation))
         quantities = list(ctx.store.by_kind(Quantity))

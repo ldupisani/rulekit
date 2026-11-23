@@ -76,6 +76,8 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
     }
 
     assert occurrences == {
+        "arithmetic/additional-ratio-acquisition": ((1, 0), "sequence", ((1,),)),
+        "arithmetic/additive-purchase-target": ((1,), "also", ()),
         "arithmetic/equal-account-division-among-payers": ((3,), "equal", ()),
         "arithmetic/equal-division-within-group": ((5,), "equal", ()),
         "arithmetic/named-equal-account-division": ((4,), "equal", ()),

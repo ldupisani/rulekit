@@ -30,6 +30,9 @@ categories:
     parent: verb
   activity_experience_noun:
     parent: noun
+  duration_delta_comparative:
+    parent: comparative
+    notes: A direction following a duration in a tenure comparison.
   comparison_activity_verb:
     parent: verb
   comparison_property_noun:
@@ -97,9 +100,18 @@ members:
   - practice
   - practices
   - practicing
+  - bake
+  - bakes
+  - baked
+  - baking
+  - paint
+  - paints
+  - painted
+  - painting
   activity_experience_noun:
   - experience
   - time
+  duration_delta_comparative: [less, more, shorter, longer]
   comparison_activity_verb:
   - compare
   - compared
@@ -141,3 +153,9 @@ members:
   - sorting
 attribute_compatibility:
   activity_context_descriptor: [activity_context]
+context_synonyms:
+  # A role and an activity can describe the same tenure. This applies
+  # when comparing experience and does not infer anyone's occupation.
+  teaching_experience: {gate: activity_experience_noun, forms: [teach, teacher]}
+  baking_experience: {gate: activity_experience_noun, forms: [bake, baker]}
+  painting_experience: {gate: activity_experience_noun, forms: [paint, painter]}

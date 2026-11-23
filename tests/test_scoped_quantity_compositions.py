@@ -56,6 +56,54 @@ def test_relative_activity_experience(reg, activity, direction, value):
     )
 
 
+@pytest.mark.parametrize("comparison", ["taught", "was a teacher"])
+@pytest.mark.parametrize("ask", [
+    "How long is their total experience?",
+    "What is their total teaching experience?",
+    "How many months of teaching experience do they have combined?",
+])
+def test_teaching_experience_reuses_verbal_and_occupational_evidence(reg, comparison, ask):
+    number(reg, f"Nora spent 14 months teaching. Her partner {comparison} for 4 months less. {ask}", 24)
+
+
+@pytest.mark.parametrize("premises,ask,expected", [
+    ("Nora was a baker for 3 years. Iris baked for 6 months less than Nora.",
+     "How many months of baking experience do they have in total?", 66),
+    ("Nora painted for 12 months. Her partner was a painter for 3 more months.",
+     "How many months of painting experience do they have together?", 27),
+    ("Nora taught for 8 years. Iris taught for 3 fewer years than Nora.",
+     "What is their combined teaching experience?", 13),
+    ("Nora studied for 9 hours. Her partner has been studying for 2 fewer hours.",
+     "How much experience do they have altogether?", 16),
+    ("Nora studied for 45 minutes. Her partner studied for 15 minutes longer.",
+     "How many hours of experience do they have combined?", 1.75),
+    ("Nora was a carpenter for 6 years. Iris was a carpenter for 2 years shorter than Nora.",
+     "How much experience do they have together?", 10),
+    ("Nora baked for 8 months. Iris was a baker for 2 years.",
+     "How many months of baking experience do they have combined?", 32),
+    ("Nora spent 6 years working. Her partner worked for 6 years less.",
+     "What is their combined time?", 6),
+])
+def test_combined_experience_compares_people_activities_and_requested_units(reg, premises, ask, expected):
+    number(reg, f"{premises} {ask}", expected)
+
+
+@pytest.mark.parametrize("comparison,ask", [
+    ("Her partner was a painter for 2 months less.", "What is their combined time?"),
+    ("Her partner baked for 2 months less.", "What is their combined teaching experience?"),
+    ("Her partner baked for 2 months less.", "How many months of painting experience do they have together?"),
+    ("Her partner baked for 2 months less.", "How many months of red baking experience do they have together?"),
+    ("Iris baked for 2 months less than Theo.", "What is their combined time?"),
+    ("Iris baked for 2 months less.", "What is their combined time?"),
+    ("Nora baked for 3 months.", "How much baking experience do they have together?"),
+    ("Her partner baked for 2 months less.", "How much experience does she have?"),
+    ("Her partner baked for 2 months less.", "How many days of baking experience do they have combined?"),
+    ("Her partner baked for 2 months less. Iris baked for 2 months.", "How long is their total experience?"),
+])
+def test_combined_experience_requires_matching_scope_and_an_identified_pair(reg, comparison, ask):
+    assert not solve(f"Nora baked for 10 months. {comparison} {ask}", reg).answer.committed
+
+
 def test_relative_activity_cannot_borrow_an_unrelated_activity(reg):
     assert not solve(
         "Nora spends 12 years teaching. Her partner has been working for 3 years less. "
@@ -155,6 +203,73 @@ def test_additional_ratio_preserves_initial_purchase(reg):
 )
 def test_incremental_purchase_boundaries(reg, old, new):
     assert not solve(extra().replace(old, new), reg).answer.committed
+
+
+@pytest.mark.parametrize("premises,ask,expected,implicit_product", [
+    ("Nora bought 8 boxes of books before meeting her friend Iris, who was also buying books. "
+     "Nora bought 2 extra boxes for every 3 boxes Iris bought. If Iris bought 12 boxes,",
+     "how many boxes of books did Nora purchase?", 16, True),
+    ("Nora bought 8 boxes of books. Iris also bought books. "
+     "Nora bought 2 additional boxes for every 3 boxes Iris purchased. If Iris purchased 12 boxes,",
+     "how many boxes of books did Nora buy?", 16, True),
+    ("Iris purchased 12 bags of rice. Nora purchased 6 bags of rice. "
+     "Nora later bought 3 additional bags for every 2 bags Iris bought.",
+     "How many bags of rice did Nora buy altogether?", 24, True),
+    ("Nora bought 8 boxes of books. Iris purchased 12 boxes. "
+     "Nora then bought 2 additional boxes of books for every 3 boxes Iris bought.",
+     "How many boxes of books did Nora purchase in total?", 16, False),
+    ("Nora bought 8 boxes of books. Iris purchased 12 boxes of hats. "
+     "Nora bought 2 additional boxes of books for every 3 boxes of hats Iris bought.",
+     "How many boxes of books did Nora buy?", 16, False),
+    ("Nora bought 8 boxes of books. Iris bought 12 boxes of hats. "
+     "Nora bought 2 additional boxes of books for every 3 boxes of hats Iris bought.",
+     "How many additional boxes of books did Nora purchase?", 8, False),
+    ("Nora bought 6 bags of rice. Iris bought 10 bags. "
+     "Nora bought 3 additional bags for every 2 bags Iris bought.",
+     "How many extra bags of rice did Nora buy in total?", 15, True),
+    ("Nora purchased 5 bags of rice. Nora bought 7 bags of rice. Iris bought 9 bags of rice.",
+     "How many bags of rice did Nora purchase in total?", 12, False),
+    ("Nora bought 4 boxes of books. Nora bought 6 boxes of hats.",
+     "How many boxes of books did Nora buy?", 4, False),
+])
+def test_purchased_container_totals_track_actor_container_and_contents(reg, premises, ask, expected, implicit_product):
+    result = number(reg, f"{premises} {ask}", expected)
+    assert [a.id for a in result.answer.assumptions] == (
+        ["additional-containers-same-content"] if implicit_product else []
+    )
+
+
+@pytest.mark.parametrize("opening,standard,ratio,ask", [
+    ("Nora bought 8 boxes of books.", "Iris bought 12 boxes of hats.",
+     "2 additional boxes for every 3 boxes of hats", "How many boxes of books did Nora buy?"),
+    ("Nora bought 8 boxes of books.", "Iris bought 12 boxes of hats.",
+     "2 additional boxes of books for every 3 boxes of books", "How many boxes of books did Nora buy?"),
+    ("Nora bought 8 boxes of books.", "Iris bought 12 bags of books.",
+     "2 additional boxes for every 3 boxes", "How many boxes of books did Nora buy?"),
+    ("Nora bought 8 boxes of books.", "Iris bought 12 boxes.",
+     "2 additional boxes of hats for every 3 boxes", "How many boxes of books did Nora buy?"),
+    ("Nora bought 8 boxes of books.", "Iris bought 12 boxes. Iris also bought books.",
+     "2 additional boxes for every 3 boxes", "How many boxes of books did Nora buy?"),
+    ("Nora bought 8 boxes of books.", "Iris also bought hats. Iris bought 12 boxes.",
+     "2 additional boxes for every 3 boxes", "How many boxes of books did Nora buy?"),
+    ("", "Iris bought 12 boxes.",
+     "2 additional boxes of books for every 3 boxes", "How many boxes of books did Nora buy?"),
+    ("Nora bought 8 boxes of books.", "Iris bought 12 boxes.",
+     "2 additional boxes for every 3 boxes", "How many boxes of books did Theo buy?"),
+    ("Nora bought 8 boxes of books.", "Iris bought 12 boxes.",
+     "2 additional boxes for every 3 boxes", "How many boxes of books did Nora bring home from the store?"),
+])
+def test_ambiguous_additional_purchases(reg, opening, standard, ratio, ask):
+    text = f"{opening} {standard} Nora bought {ratio} Iris bought. {ask}".strip()
+    assert not solve(text, reg).answer.committed
+
+
+@pytest.mark.parametrize("text", [
+    "Iris bought 8 bags of rice. Iris bought 3 bags. How many bags of rice did Iris buy?",
+    "Iris bought 8 bags of rice. How many additional bags of rice did Iris buy?",
+])
+def test_purchase_total_requires_the_requested_contents_and_scope(reg, text):
+    assert not solve(text, reg).answer.committed
 
 
 def pool():

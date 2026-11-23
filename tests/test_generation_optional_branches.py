@@ -95,7 +95,8 @@ def test_recursive_optional_class_inventory() -> None:
     # Relative dimensions reuse the same optional comma across four additional layouts.
     # Explicit factors share the ordinary scaling frame's optional sequence and return clauses.
     # An itemized group activity can name its venue.
-    assert _optional_profile(project) == (517, 881, 79, 3)
+    # Tenure comparisons and packaged purchases add flat duration, venue and content options.
+    assert _optional_profile(project) == (525, 897, 79, 3)
 
 
 def test_optional_branches_rule_availability(curated_availability) -> None:

@@ -5,16 +5,17 @@ from math import isfinite
 from . import consumer
 from ..composition_evidence import closed_evidence, finish_batch_answer
 from ..affine_graph import AffineGraph, AffineError
-from ..answer import Answer
+from ..answer import Answer, AnswerAssumption
 from ..evaluate import evaluate
 from .indexed_path import ordinal_index
-from ..model import BatchEvidence, Quantity, CommercialTerm
+from ..model import BatchEvidence, Quantity, CommercialTerm, Expenditure, Predication
 from ..learn import _bound
 from ..reference_identity import constrains, reference_from_unit
 from ..resource_equations import resource_residual
 from ..source_coverage import quantity_ledger_source_units
 
 
+@consumer("purchased-container-total")
 @consumer(
     "dependent-quantity-total",
     applicable=lambda store: any(
@@ -76,6 +77,7 @@ def consume(ctx):
                 time=periods[0].surface.casefold(),
             )
         )
+    assumptions = ()
     facts = rows + observed + terms
     operands = [(q, [q.value]) for q in quantities]
     covered = {}
@@ -175,6 +177,22 @@ def consume(ctx):
             return decline(
                 "the stated indivisible stock cannot be shared equally in whole items"
             )
+    elif mode == "incremental" and not rows and ctx.query.get("verb"):
+        if ctx.query.get("component") == "additional":
+            return decline("the purchase account must distinguish additional containers from the opening purchase")
+        who = reference_from_unit(ctx.match.slots["who"])
+        item = reference_from_unit(ctx.match.slots["item"])
+        purchases = [
+            q for q in quantities if q.entity_ref == who
+            and (q.measure_ref.head if q.measure_ref else q.measure) == ctx.query["measure"]
+        ]
+        if (any(q.time or not ctx.reg.word_in_category(q.verb, "purchase") for q in quantities)
+                or any(q.content_ref is None or not q.content_ref.resolved for q in purchases)):
+            return decline("the purchase total needs explicit contents for the requested buyer's containers")
+        selected = [q for q in purchases if constrains(item, q.content_ref)]
+        if not selected:
+            return decline("no stated purchase matches the requested contents")
+        value = evaluate(" + ".join(str(q.value) for q in selected), {}, ctx.log, source="packaged-purchase-total")
     elif mode == "incremental":
         ratios = [r for r in rows if r.kind == "incremental-ratio"]
         openings = [r for r in rows if r.kind == "incremental-opening"]
@@ -193,6 +211,7 @@ def consume(ctx):
             or ratio.container_ref == who
             or ratio.per_member <= 0
             or ratio.value < 0
+            or not all(float(n).is_integer() for n in (ratio.per_member, ratio.value))
             or ratio.measure != ctx.query["measure"]
         ):
             return decline(
@@ -218,6 +237,35 @@ def consume(ctx):
             return decline(
                 "the standard purchase must use the ratio's same container class"
             )
+        content = reference_from_unit(ctx.match.slots["item"])
+        if ratio.attribute and ratio.attribute != content.head:
+            return decline("the additional containers hold a different product from the one asked for")
+        targets = list(ctx.store.by_kind(Predication))
+        expenses = list(ctx.store.by_kind(Expenditure))
+        standard_content = standard.content_ref
+        if standard_content and standard_content.described:
+            return decline("the comparison purchase specifies a narrower product")
+        product = standard_content.head if standard_content else ""
+        if targets or expenses:
+            if len(targets) != 1 or len(expenses) != 1:
+                return decline("the comparison needs one uncounted purchase naming its product")
+            target, expense = targets[0], expenses[0]
+            if (openings or target.subject_ref != standard.entity_ref or not target.polarity
+                    or not target.dobj_unquantified or not ctx.reg.word_in_category(target.verb, "purchase")
+                    or target.provenance.sentence != expense.provenance.sentence
+                    or target.provenance.sentence >= standard.provenance.sentence
+                    or expense.entity != standard.entity or expense.verb != target.verb or expense.item != target.dobj
+                    or not expense.complete or expense.qualifier
+                    or any(x is not None for x in (expense.value, expense.quantity, expense.lot_quantity, expense.unit_price))
+                    or product and product != target.dobj):
+                return decline("the uncounted purchase must describe the observed comparison buyer and product")
+            product = target.dobj
+            facts.extend((target, expense))
+        expected_product = ratio.marker or content.head
+        if (not ratio.attribute and expected_product != content.head
+                or product and product != expected_product
+                or not product and ratio.marker and ratio.marker != content.head):
+            return decline("the comparison count must identify the product specified by the ratio")
         if openings:
             opening = openings[0]
             if (
@@ -226,6 +274,7 @@ def consume(ctx):
                 or opening.measure != ratio.measure
                 or opening.container != ctx.query["content"]
                 or opening.acquisition_ref != standard.entity_ref
+                or expected_product != opening.container
                 or ctx.query.get("site")
                 and opening.marker != ctx.query["site"]
             ):
@@ -238,13 +287,12 @@ def consume(ctx):
             if (
                 len(owned) != 1
                 or owned[0].measure != ratio.measure
-                or owned[0].content_ref is None
-                or standard.content_ref != owned[0].content_ref
-                or owned[0].content_ref.head != ctx.query["content"]
+                or owned[0].content_ref != content
+                or owned[0].time or ctx.query.get("site")
                 or not ctx.reg.word_in_category(owned[0].verb, "purchase")
             ):
                 return decline(
-                    "a simplified additional purchase needs explicit matching initial and standard contents"
+                    "the opening purchase must identify the requested containers and contents"
                 )
             opening, initial = owned[0], owned[0].value
         if not isfinite(initial) or initial < 0 or not float(initial).is_integer():
@@ -253,6 +301,12 @@ def consume(ctx):
             )
         if opening.provenance.sentence >= ratio.provenance.sentence:
             return decline("the initial stock must precede the additional acquisition")
+        if not ratio.attribute:
+            assumptions = (AnswerAssumption(
+                "additional-containers-same-content",
+                f"Treat the additional containers as holding the same product ({content.head}) as the opening purchase.",
+                (opening.provenance.sentence, ratio.provenance.sentence),
+            ),)
         operands.append((ratio, [ratio.value, ratio.per_member]))
         factor = evaluate(
             "numerator / denominator",
@@ -266,7 +320,8 @@ def consume(ctx):
                 [("additional", "standard", factor, 0)],
                 ctx.log,
             )
-            value = graph.linear([("opening", 1), ("additional", 1)])
+            value = (graph.value("additional") if ctx.query.get("component") == "additional"
+                     else graph.linear([("opening", 1), ("additional", 1)]))
         except AffineError as error:
             return decline(str(error))
         if not float(value).is_integer():
@@ -345,6 +400,7 @@ def consume(ctx):
         facts,
         value,
         "resolve the dependent quantities before totaling or sharing the complete account",
+        assumptions=assumptions,
     )
 
 

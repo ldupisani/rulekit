@@ -41,8 +41,8 @@ def project():
 
 def test_curated_premise_generation_inventory(curated_availability) -> None:
     rows = curated_availability.values()
-    assert len(rows) == 1046
-    assert sum(item.supported for item in rows) == 938
+    assert len(rows) == 1054
+    assert sum(item.supported for item in rows) == 946
     blocked = {item.id for item in rows if not item.supported}
     assert len(blocked) == 108
     assert all(not item.blockers or item.id in blocked for item in rows)
@@ -223,8 +223,8 @@ def test_generation_api_separates_safety_consumers_from_targets() -> None:
 
     payload = endpoint()
 
-    assert payload["supported"] == 938
-    assert payload["total"] == 1038
+    assert payload["supported"] == 946
+    assert payload["total"] == 1046
     assert payload["safety_total"] == 8
     assert {rule["id"] for rule in payload["safety_rules"]} == SAFETY_RULES
     assert not ({rule["id"] for rule in payload["rules"]} & SAFETY_RULES)
