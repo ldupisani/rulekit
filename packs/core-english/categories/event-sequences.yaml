@@ -40,6 +40,8 @@ categories:
     parent: adjective
   repetition_alias_unit:
     parent: repetition_count_unit
+  repetition_completion_verb:
+    parent: repetition_performance_verb
   self_named_count_action:
     parent: repetition_performance_verb
   countable_event_object:
@@ -86,9 +88,7 @@ members:
   - jump
   - jumps
   - jumped
-  - complete
-  - completes
-  - completed
+  repetition_completion_verb: [complete, completes, completed]
   repetition_count_unit:
   - skip
   - jump

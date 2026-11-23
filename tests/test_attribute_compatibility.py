@@ -374,6 +374,7 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
         "arithmetic/container-package-contents-totality-transfer",
         "arithmetic/dangling-comparative-relation",
         "arithmetic/event-capacity-matching-membership",
+        "arithmetic/event-seating-capacity",
         "arithmetic/existential-inventory-leading-location",
         "arithmetic/existential-inventory-trailing-location",
         "arithmetic/with-inventory-located",

@@ -252,9 +252,10 @@ rules:
     - {slot: join, cat: crew_joining_verb, past_participle: true}
     - {lit: by}
     - {slot: others, cat: allocation_recipient, counted: true, class_only: true}
-    - {lit: who}
-    - opt: [{slot: also, cat: additive_discourse_adverb}]
-    - {slot: continue, cat: crew_activity, finite_form: true}
+    - opt:
+      - {lit: who}
+      - opt: [{slot: also, cat: additive_discourse_adverb}]
+      - {slot: continue, cat: crew_activity, finite_form: true}
     - {lit: at}
     - {slot: rate, cat: rate_frame_noun, qualified: true, qualifier_cat: uniform_quantity_attribute}
     - {lit: '.', consume_skipped: true}

@@ -35,7 +35,7 @@ def _provision(ctx, rows):
     actor = ctx.query_reference()
     amounts = [plan.per_member, plan.value, plan.subtotal]
     if (actor is None or plan.entity_ref != actor or plan.provenance.assumption
-            or plan.measure != ctx.query["measure"] or plan.verb != ctx.query["verb"]
+            or plan.measure != ctx.query["measure"] or (ctx.query.get("verb") and plan.verb != ctx.query["verb"])
             or not all(float(amount).is_integer() for amount in amounts)
             or not closed_evidence(ctx, rows, [(plan, amounts)])):
         return Answer("decline", None, "all groups and the requested output must belong to the same plan")
@@ -94,10 +94,13 @@ def _attendance(ctx, rows):
         return Answer("decline", None, "one capacity and one occupied share are required")
     plan, used = (roles[kind] for kind in ("capacity-attendance-plan", "capacity-attendance-use"))
     group = ctx.query_reference("measure")
-    if (group is None or group.head != plan.measure
+    if (group is None or (plan.measure and group.head != plan.measure)
+            or not plan.measure and group.head != used.measure
+            and not ctx.reg.word_in_category(group.head, "generic_membership_role")
+            or group.owner or group.label or not group.resolved
             or group.qualifiers and group.qualifiers != (plan.attribute,)
             or plan.acquisition.casefold() != ctx.query["event"].casefold()
-            or ctx.reg.plural_to_singular.get(plan.marker, plan.marker) != plan.container
+            or (plan.marker and ctx.reg.plural_to_singular.get(plan.marker, plan.marker) != plan.container)
             or plan.container_ref != used.container_ref
             or plan.verb != used.measure or used.per_member > plan.per_member
             or plan.provenance.assumption or plan.provenance.sentence >= used.provenance.sentence

@@ -125,7 +125,7 @@ rules:
   - {fact: quantity, entity: '{who}', measure: '{product}', measure_qualifier: '{product.qualifier}', value: product, verb: '{sale}'}
 - id: arithmetic/commercial-work-context
   phase: read
-  description: A participant makes a declared product and offers that product at a declared location.
+  description: A participant makes a declared product and sells it, optionally naming the location.
   match:
     sentence:
     - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
@@ -134,8 +134,9 @@ rules:
     - {lit: and}
     - {slot: sale, cat: sell, finite_form: true}
     - {slot: reference, cat: commercial_object_anaphor}
-    - {slot: prep, cat: quantity_site_preposition}
-    - {slot: place, cat: quantity_site_location, bare: true}
+    - opt:
+      - {slot: prep, cat: quantity_site_preposition}
+      - {slot: place, cat: quantity_site_location, bare: true}
     - {lit: ., consume_skipped: true}
   satisfies:
     reference:

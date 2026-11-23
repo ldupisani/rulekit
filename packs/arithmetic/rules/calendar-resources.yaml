@@ -451,19 +451,20 @@ rules:
       cat: discourse_subject_group_pronoun
     - slot: earn
       cat: income_action
-    - lit: for
-      consume_skipped: true
-    - slot: owner
-      cat: plural_possessive_determiner
-    - slot: event
-      cat: travel_event
-      uncounted: true
+    - opt:
+      - lit: for
+        consume_skipped: true
+      - slot: owner
+        cat: plural_possessive_determiner
+      - slot: event
+        cat: travel_event
+        uncounted: true
     - lit: .
       consume_skipped: true
   emits:
   - fact: batch_evidence
     kind: saving-share
-    entity: '{event}'
+    entity: '{event.optional}'
     measure: ''
     value: fraction
     position: '{fraction.span_start}'
@@ -580,18 +581,19 @@ rules:
     - slot: income
       cat: income_resource_noun
       uncounted: true
-    - lit: for
-      consume_skipped: true
-    - slot: event
-      cat: travel_event
-      uncounted: true
-      bare: true
+    - opt:
+      - lit: for
+        consume_skipped: true
+      - slot: event
+        cat: travel_event
+        uncounted: true
+        bare: true
     - lit: .
       consume_skipped: true
   emits:
   - fact: batch_evidence
     kind: saving-group
-    entity: '{event}'
+    entity: '{event.optional}'
     measure: ''
     value: 0
     position: '{a.span_start}'
@@ -599,7 +601,7 @@ rules:
     acquisition: '{b}'
   - fact: batch_evidence
     kind: saving-share
-    entity: '{event}'
+    entity: '{event.optional}'
     measure: ''
     value: fraction
     position: '{fraction.span_start}'
@@ -687,55 +689,6 @@ asks:
   - open
   - first
   - last
-- id: ask/named-month-resource-requirement
-  match:
-    question:
-    - lit: how
-      consume_skipped: true
-    - lit: many
-      consume_skipped: true
-    - slot: unit
-      cat: resource_measure_unit
-      uncounted: true
-      bare: true
-    - lit: of
-      consume_skipped: true
-    - slot: item
-      cat: material_resource
-      uncounted: true
-      bare: true
-    - slot: future
-      type: modal
-    - slot: who
-      type: entity
-      common_noun_cat: intentional_agent
-      referential: true
-    - slot: need
-      cat: component_requirement_verb
-    - lit: for
-      consume_skipped: true
-    - lit: all
-      consume_skipped: true
-    - slot: months
-      cat: calendar_month_unit
-      counted: true
-      bare: true
-    - lit: '?'
-      consume_skipped: true
-  resolves:
-    consumer: calendar-resource-total
-    operation: months
-    entity: '{who}'
-    measure: '{unit}'
-    month_count: '{months.value}'
-  satisfies:
-    need:
-    - subject
-  disambiguates:
-  - unit
-  - item
-  - need
-  - months
 - id: ask/joint-calendar-savings
   match:
     question:
@@ -836,3 +789,65 @@ asks:
   - group
   - save
   - period
+templates:
+  scheduled-month-requirement:
+    parameters:
+      months:
+      - opt: [{lit: all, consume_skipped: true}]
+      - {slot: months, cat: calendar_month_unit, counted: true, bare: true}
+      count: '{months.value}'
+    rule:
+      match:
+        question:
+        - lit: how
+          consume_skipped: true
+        - lit: many
+          consume_skipped: true
+        - slot: unit
+          cat: resource_measure_unit
+          number: plural
+          uncounted: true
+          bare: true
+        - lit: of
+          consume_skipped: true
+        - slot: item
+          cat: material_resource
+          uncounted: true
+          bare: true
+        - slot: future
+          type: modal
+        - slot: who
+          type: entity
+          common_noun_cat: intentional_agent
+          referential: true
+        - slot: need
+          cat: component_requirement_verb
+          bare_form: true
+        - lit: for
+          consume_skipped: true
+        - {parameter: months}
+        - lit: '?'
+          consume_skipped: true
+      resolves:
+        consumer: calendar-resource-total
+        operation: months
+        entity: '{who}'
+        measure: '{unit}'
+        month_count: {parameter: count}
+      satisfies:
+        need:
+        - subject
+      disambiguates:
+      - unit
+      - item
+      - need
+      - months
+ask_variants:
+- {id: ask/named-month-resource-requirement, template: scheduled-month-requirement}
+- id: ask/both-months-resource-requirement
+  template: scheduled-month-requirement
+  arguments:
+    months:
+    - {slot: pair, cat: joint_pair_quantifier}
+    - {slot: months, cat: calendar_month_unit, uncounted: true, bare: true, number: plural}
+    count: '2'

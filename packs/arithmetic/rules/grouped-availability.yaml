@@ -16,12 +16,13 @@ rules:
       cat: reservable_capacity_unit
       uncounted: true
       bare: true
-    - lit: in
-      consume_skipped: true
-    - slot: site
-      cat: capacity_site
-      uncounted: true
-      bare: true
+    - opt:
+      - lit: in
+        consume_skipped: true
+      - slot: site
+        cat: capacity_site
+        uncounted: true
+        bare: true
     - lit: .
       consume_skipped: true
   emits:
@@ -31,7 +32,7 @@ rules:
     measure: '{unit}'
     value: 0
     position: '{who.span_start}'
-    container: '{site}'
+    container: '{site.optional}'
   consumes:
   - book
   satisfies:

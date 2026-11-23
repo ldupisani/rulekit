@@ -12,12 +12,13 @@ rules:
     - slot: go
       cat: outing_motion_verb
       finite_form: true
-    - lit: to
-      consume_skipped: true
-    - slot: site
-      cat: purchase_context_site
-      uncounted: true
-      bare: true
+    - opt:
+      - lit: to
+        consume_skipped: true
+      - slot: site
+        cat: purchase_context_site
+        uncounted: true
+        bare: true
     - lit: to
       consume_skipped: true
     - slot: buy
@@ -60,12 +61,13 @@ rules:
     - slot: go
       cat: outing_motion_verb
       finite_form: true
-    - lit: to
-      consume_skipped: true
-    - slot: site
-      cat: purchase_context_site
-      uncounted: true
-      bare: true
+    - opt:
+      - lit: to
+        consume_skipped: true
+      - slot: site
+        cat: purchase_context_site
+        uncounted: true
+        bare: true
     - lit: to
       consume_skipped: true
     - slot: buy
@@ -138,70 +140,6 @@ rules:
   - cost
   - amount
   - unit
-- id: arithmetic/cash-carried-and-returned
-  phase: read
-  match:
-    sentence:
-    - slot: who
-      type: entity
-      common_noun_cat: intentional_agent
-      referential: true
-      at_start: true
-    - slot: bring
-      cat: cash_carriage_verb
-      finite_form: true
-    - slot: start
-      cat: currency_unit
-      counted: true
-      bare: true
-    - opt:
-      - lit: with
-        consume_skipped: true
-      - slot: self
-        cat: singular_animate_object_pronoun
-    - lit: and
-      consume_skipped: true
-    - slot: leave
-      cat: cash_departure_verb
-      finite_form: true
-    - lit: with
-      consume_skipped: true
-    - slot: end
-      cat: currency_unit
-      counted: true
-      bare: true
-    - lit: .
-      consume_skipped: true
-  emits:
-  - fact: batch_evidence
-    kind: purchase-cash-opening
-    entity: '{who}'
-    measure: '{start}'
-    value: start
-    position: '{who.span_start}'
-  - fact: batch_evidence
-    kind: purchase-cash-closing
-    entity: '{who}'
-    measure: '{end}'
-    value: end
-    position: '{end.span_start}'
-  consumes:
-  - bring
-  - start
-  - leave
-  - end
-  satisfies:
-    bring:
-    - subject
-    leave:
-    - subject
-  references:
-    self: who
-  disambiguates:
-  - bring
-  - start
-  - leave
-  - end
 - id: arithmetic/distributive-object-unit-price
   phase: read
   match:
@@ -278,3 +216,72 @@ asks:
   satisfies:
     buy:
     - subject
+templates:
+  carried-and-returned-cash:
+    parameters:
+      accompaniment: [{lit: with}, {slot: self, cat: singular_animate_object_pronoun}]
+      references: {self: who}
+    rule:
+      phase: read
+      match:
+        sentence:
+        - slot: who
+          type: entity
+          common_noun_cat: intentional_agent
+          referential: true
+          at_start: true
+        - slot: bring
+          cat: cash_carriage_verb
+          finite_form: true
+        - slot: start
+          cat: currency_unit
+          counted: true
+          bare: true
+        - {parameter: accompaniment}
+        - lit: and
+          consume_skipped: true
+        - slot: leave
+          cat: cash_departure_verb
+          finite_form: true
+        - lit: with
+          consume_skipped: true
+        - slot: end
+          cat: currency_unit
+          counted: true
+          bare: true
+        - lit: .
+          consume_skipped: true
+      emits:
+      - fact: batch_evidence
+        kind: purchase-cash-opening
+        entity: '{who}'
+        measure: '{start}'
+        value: start
+        position: '{who.span_start}'
+      - fact: batch_evidence
+        kind: purchase-cash-closing
+        entity: '{who}'
+        measure: '{end}'
+        value: end
+        position: '{end.span_start}'
+      consumes:
+      - bring
+      - start
+      - leave
+      - end
+      satisfies:
+        bring:
+        - subject
+        leave:
+        - subject
+      references: {parameter: references}
+      disambiguates:
+      - bring
+      - start
+      - leave
+      - end
+variants:
+- {id: arithmetic/cash-carried-and-returned, template: carried-and-returned-cash}
+- id: arithmetic/cash-carried-and-returned-without-pronoun
+  template: carried-and-returned-cash
+  arguments: {accompaniment: [], references: {}}

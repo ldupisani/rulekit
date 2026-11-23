@@ -20,41 +20,46 @@ def consume(ctx):
         return Answer("decline", None, s)
 
     if (
-        len(contexts) != 1
+        len(contexts) > 1
         or not known
         or len(removed) != 1
         or not rest
-        or len(rows) != 1 + len(known) + 1 + len(rest)
+        or len(rows) != len(contexts) + len(known) + 1 + len(rest)
     ):
         return fail(
             "one stock, disjoint observed section and exhaustive complementary section are required"
         )
-    context, removed = contexts[0], removed[0]
+    removed = removed[0]
+    actor, holder, item = known[0].entity_ref, removed.container_ref, removed.measure
+    if contexts:
+        context = contexts[0]
+        if (context.entity_ref != actor or context.measure != item
+                or (context.container and context.container_ref != holder)):
+            return fail("the stated opening stock must agree with the section observations")
     asked = reference_from_unit(ctx.match.slots["holder"])
-    if asked.owner or asked.label or set(asked.qualifiers) - {context.measure}:
+    if asked.owner or asked.label or set(asked.qualifiers) - {item}:
         return fail("the requested container has an unstated identity or restriction")
     if (
-        not constrains(ctx.query_reference(), context.entity_ref)
+        not constrains(ctx.query_reference(), actor)
         or not constrains(
-            ctx.query_reference("other") or ctx.query_reference(), context.entity_ref
+            ctx.query_reference("other") or ctx.query_reference(), actor
         )
-        or context.container != ctx.query["holder"]
-        or context.measure != ctx.query["measure"]
+        or removed.container != ctx.query["holder"]
+        or item != ctx.query["measure"]
         or any(
-            (r.entity_ref != context.entity_ref and not (r is removed and not r.entity))
-            or r.container_ref != context.container_ref
-            for r in rows
+            (r.entity_ref != actor and not (r is removed and not r.entity))
+            or r.container_ref != holder
+            for r in [*known, removed, *rest]
         )
         or len({r.attribute for r in known}) != 1
         or any(r.attribute != removed.attribute for r in rest)
-        or removed.measure != context.measure
-        or removed.acquisition != context.measure
-        and not ctx.reg.category_term_contains(context.measure, removed.acquisition)
+        or removed.acquisition != item
+        and not ctx.reg.category_term_contains(item, removed.acquisition)
         or known[0].attribute == removed.attribute
         or not 0 <= removed.value < 1
         or any(
-            r.measure != context.measure
-            and not ctx.reg.category_term_contains(context.measure, r.measure)
+            r.measure != item
+            and not ctx.reg.category_term_contains(item, r.measure)
             for r in [*known, *rest]
         )
     ):
@@ -70,7 +75,6 @@ def consume(ctx):
         if len(set(identities)) != len(identities):
             return fail("a component list repeats an item identity")
     operands = [
-        (context, []),
         (removed, [removed.value]),
         *((r, [r.value]) for r in [*known, *rest]),
     ]

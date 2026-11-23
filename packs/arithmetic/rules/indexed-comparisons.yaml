@@ -17,11 +17,9 @@ rules:
     - slot: event
       cat: indexed_activity_context
       uncounted: true
-    - lit: at
-      consume_skipped: true
-    - slot: context
-      uncounted: true
-      cat: activity_setting
+    - opt:
+      - {lit: at, consume_skipped: true}
+      - {slot: context, cat: activity_setting, uncounted: true}
     - lit: .
       consume_skipped: true
   emits:
@@ -162,8 +160,7 @@ rules:
         cat: performance_condition_attribute
       - lit: and
         consume_skipped: true
-      - lit: only
-        consume_skipped: true
+    - opt: [{lit: only, consume_skipped: true}]
     - slot: act
       cat: repetition_performance_verb
       finite_form: true
@@ -354,7 +351,7 @@ asks:
       referential: true
     - lit: '?'
       consume_skipped: true
-  resolves:
+  resolves: &indexed_mean
     consumer: scoped-comparison
     operation: indexed-mean
     entity: '{who}'
@@ -365,3 +362,37 @@ asks:
     - subject
     complete:
     - subject
+
+- id: ask/mean-indexed-performance-active
+  match:
+    question:
+    - {lit: what, at_start: true}
+    - {slot: be, cat: singular_copula}
+    - {lit: the, consume_skipped: true}
+    - {slot: average, cat: mean_aggregate}
+    - {slot: number, cat: count_aggregate_noun, uncounted: true, bare: true}
+    - {lit: of}
+    - &performance_item {slot: item, cat: repetition_count_unit, uncounted: true, bare: true, number: plural}
+    - {lit: per}
+    - &performance_period {slot: period, cat: repeating_event, uncounted: true, bare: true, number: singular}
+    - &performer {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true}
+    - {slot: complete, cat: repetition_completion_verb, finite_form: true}
+    - {lit: '?', consume_skipped: true}
+  where: [{number_compatible: [who, complete]}]
+  resolves: *indexed_mean
+  satisfies: {be: [subject], complete: [subject]}
+- id: ask/average-performance-per-period
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - *performance_item
+    - {slot: aux, cat: do_support_auxiliary}
+    - *performer
+    - {slot: average, cat: averaging_verb, bare_form: true}
+    - {lit: per}
+    - *performance_period
+    - {lit: '?', consume_skipped: true}
+  where: [{number_compatible: [who, aux]}]
+  resolves: *indexed_mean
+  satisfies: {average: [subject]}

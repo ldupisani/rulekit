@@ -162,8 +162,23 @@ def indexed():
     )
 
 
-def test_scoped_round_comparisons_and_frequency(reg):
-    number(reg, indexed(), 11)
+@pytest.mark.parametrize("intro", [
+    "",
+    "Nora and Iris had a skipping contest. ",
+    "Iris and Nora had a contest at the park. ",
+])
+def test_scoped_round_comparisons_and_frequency(reg, intro):
+    number(reg, intro + indexed(), 11)
+
+
+@pytest.mark.parametrize("intro", [
+    "Nora and Theo had a skipping contest.",
+    "Nora and Iris had a test.",
+    "Nora and Iris had no skipping contest.",
+    "Nora and Iris had a contest at.",
+])
+def test_indexed_participant_intro_requires_a_matching_asserted_event(reg, intro):
+    assert not solve(f"{intro} {indexed()}", reg).answer.committed
 
 
 @pytest.mark.parametrize(
@@ -502,10 +517,11 @@ def test_partial_group_class_cannot_supply_all_capacity(reg):
     ).answer.committed
 
 
-def test_indexed_comparisons_also_count_completed_laps(reg):
+@pytest.mark.parametrize("intro", ["", "Nora and Iris had a swimming contest. "])
+def test_indexed_comparisons_also_count_completed_laps(reg, intro):
     number(
         reg,
-        "The contest was split into two rounds. Nora completed 2 fewer laps than Iris in the first round. "
+        f"{intro}The contest was split into two rounds. Nora completed 2 fewer laps than Iris in the first round. "
         "Nora completed 4 more laps than Iris in the last round. "
         "If Iris completed 10 laps in each round, what is the average number of laps per round completed by Nora?",
         11,

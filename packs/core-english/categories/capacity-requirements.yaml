@@ -10,6 +10,7 @@ categories:
   seating_arrangement_verb: {parent: verb}
   attendance_organization: {parent: noun, includes: [organization]}
   membership_group_role: {parent: noun, includes: [allocation_recipient]}
+  generic_membership_role: {parent: membership_group_role}
   occupancy_status: {parent: adjective}
   event_arrangement_purpose: {parent: noun}
   attendance_event: {parent: noun, includes: [scheduled_event]}
@@ -32,7 +33,7 @@ members:
   sleeping_furniture: [bed, couch, sofa]
   occupancy_capacity_verb: [fit, fits, hold, holds]
   seating_arrangement_verb: [arranged, placed]
-  membership_group_role: [member]
+  generic_membership_role: [member]
   occupancy_status: [occupied]
   event_arrangement_purpose: [preparation]
   attendance_event: [meeting, trip]

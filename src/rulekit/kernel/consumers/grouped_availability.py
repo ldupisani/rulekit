@@ -104,7 +104,7 @@ def consume(ctx):
     if contexts:
         context = contexts[0]
         if (
-            context.container_ref != structure.entity_ref
+            context.container and context.container_ref != structure.entity_ref
             or context.measure != structure.measure
             or ctx.query.get("entity")
             and context.entity_ref != reference_from_unit(ctx.match.slots["who"])

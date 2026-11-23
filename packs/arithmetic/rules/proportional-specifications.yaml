@@ -107,11 +107,13 @@ templates:
   specification-output-context:
     parameters:
       ownership_constraints: []
-      scope:
-        slot: scope
-        cat: specification_scope
-        uncounted: true
-        bare: true
+      scope_clause:
+      - opt:
+        - {lit: for}
+        - slot: scope
+          cat: specification_scope
+          uncounted: true
+          bare: true
     rule:
       phase: read
       generation_where:
@@ -130,8 +132,7 @@ templates:
           cat: specification_resource
           bare: true
           uncounted: true
-        - lit: for
-        - parameter: scope
+        - parameter: scope_clause
         - lit: .
           consume_skipped: true
       emits:
@@ -140,15 +141,17 @@ templates:
         position: '{who.span_start}'
         entity: '{who}'
         output_item: '{output_item}'
-        scope: '{scope}'
+        scope: '{scope.optional}'
   explicit-proportion-adoption:
     parameters:
       ownership_constraints: []
-      scope:
-        slot: scope
-        cat: specification_scope
-        bare: true
-        uncounted: true
+      scope_clause:
+      - opt:
+        - {lit: for}
+        - slot: scope
+          cat: specification_scope
+          bare: true
+          uncounted: true
     rule:
       phase: read
       generation_where:
@@ -167,8 +170,7 @@ templates:
           cat: proportional_relation_noun
           qualifier_cat: same_ratio_descriptor
           qualified: true
-        - lit: for
-        - parameter: scope
+        - parameter: scope_clause
         - lit: .
           consume_skipped: true
       emits:
@@ -176,7 +178,7 @@ templates:
         kind: reuse
         position: '{who.span_start}'
         entity: '{who}'
-        scope: '{scope}'
+        scope: '{scope.optional}'
   population-output-demand:
     parameters:
       ownership_constraints: []
@@ -393,7 +395,8 @@ variants:
   arguments:
     ownership_constraints:
     - unbound: [scope_determiner]
-    scope:
+    scope_clause:
+    - {lit: for}
     - opt:
       - slot: scope_determiner
         cat: possessive_determiner
@@ -408,7 +411,8 @@ variants:
   arguments:
     ownership_constraints:
     - unbound: [scope_determiner]
-    scope:
+    scope_clause:
+    - {lit: for}
     - opt:
       - slot: scope_determiner
         cat: possessive_determiner
@@ -489,11 +493,12 @@ rules:
   phase: read
   match:
     sentence:
-    - slot: who
-      type: name
-      at_start: true
-    - slot: know
-      cat: knowledge_verb
+    - opt:
+      - slot: who
+        type: name
+        at_start: true
+      - slot: know
+        cat: knowledge_verb
     - opt:
       - slot: owner
         cat: possessive_determiner
@@ -530,13 +535,15 @@ rules:
   - fact: specification_evidence
     kind: reference
     position: '{input.span_start}'
-    entity: '{who}'
+    entity: '{who.optional}'
     output_item: '{output_item}'
     input_item: '{input_item}'
     measure: '{input}'
     value: input
     output_measure: '{output.qualifier}'
     output_value: output
+  where: [{number_compatible: [actor, activity]}, {number_compatible: [actor, use]}]
+  bindings: {activity: {subject: actor}, use: {subject: actor}}
   consumes:
   - input
   - output

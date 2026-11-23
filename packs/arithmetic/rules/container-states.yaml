@@ -131,62 +131,6 @@ rules:
     - subject
   description: Preserve one measured container, its capacity dimensions and ordered changes to current
     contents.
-- id: arithmetic/contextual-fractional-content-loss
-  phase: read
-  match:
-    sentence:
-    - lit: while
-      at_start: true
-    - slot: absent
-      type: entity
-      common_noun_cat: living_agent
-      referential: true
-      bare: true
-    - slot: clitic
-      cat: contracted_copula_clitic
-    - slot: gone
-      cat: temporary_departure_verb
-    - lit: ','
-      consume_skipped: true
-    - slot: share
-      type: fraction
-      fraction_within_whole: true
-    - opt:
-      - lit: of
-    - slot: content
-      cat: material_resource
-      uncounted: true
-      bare: true
-    - lit: in
-    - slot: container
-      cat: volumetric_container
-      uncounted: true
-      number: singular
-    - slot: loss
-      cat: solvent_removal_verb
-      finite_form: true
-    - lit: .
-      consume_skipped: true
-  emits:
-  - fact: measured_content_change
-    attribution: {predicate: loss, subject: content}
-    container: '{container}'
-    content: '{content}'
-    operation: remove_fraction
-    value: share
-  consumes:
-  - gone
-  - loss
-  - share
-  satisfies:
-    gone:
-    - subject
-    loss:
-    - subject
-    clitic:
-    - owner
-    - owned
-  description: An explicit fraction of current contents is lost from the named container.
 - id: arithmetic/measured-container-opening
   phase: read
   match:
@@ -464,6 +408,8 @@ templates:
       description: Record one measured transfer of material into or out of its stated container.
   intransitive-content-loss:
     parameters:
+      loss_category: content_spill_verb
+      context_actions: []
       opener: []
       start: true
       location:
@@ -483,7 +429,7 @@ templates:
           - {lit: of}
         - {slot: content, cat: material_resource, uncounted: true, bare: true}
         - parameter: location
-        - {slot: loss, cat: content_spill_verb, finite_form: true}
+        - {slot: loss, cat: {parameter: loss_category}, finite_form: true}
         - parameter: ending
         - {lit: '.', consume_skipped: true}
       where: {parameter: constraints}
@@ -494,7 +440,7 @@ templates:
         content: '{content}'
         operation: remove_fraction
         value: share
-      consumes: [share, loss]
+      consumes: [share, loss, {parameter: context_actions}]
       satisfies: {parameter: obligations}
       description: Apply a stated loss fraction to the contents of its explicitly linked container.
   container-content-scaling:
@@ -749,6 +695,24 @@ variants:
     consumes: [cause_action, spill, share]
 - id: arithmetic/unattributed-fractional-content-loss
   template: intransitive-content-loss
+- id: arithmetic/fractional-content-evaporation
+  template: intransitive-content-loss
+  arguments:
+    loss_category: solvent_removal_verb
+    obligations: {loss: [subject]}
+- id: arithmetic/contextual-fractional-content-loss
+  template: intransitive-content-loss
+  arguments:
+    start: false
+    opener:
+    - {lit: while, at_start: true}
+    - {slot: absent, type: entity, common_noun_cat: living_agent, referential: true, bare: true}
+    - {slot: clitic, cat: contracted_copula_clitic}
+    - {slot: gone, cat: temporary_departure_verb}
+    - {lit: ',', consume_skipped: true}
+    loss_category: solvent_removal_verb
+    context_actions: [gone]
+    obligations: {loss: [subject], gone: [subject], clitic: [owner, owned]}
 - id: arithmetic/fractional-content-loss-with-cause-clause
   template: intransitive-content-loss
   arguments:

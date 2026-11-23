@@ -215,6 +215,11 @@ def consume(ctx):
             measure(r) != ctx.query["measure"] for r in relations
         ):
             return decline("all performances need the requested activity count unit")
+        performance = ctx.match.slots.get("complete")
+        if performance:
+            verb = reference_from_unit(performance).head
+            if ctx.reg.word_in_category(verb, "self_named_count_action") and verb != ctx.query["measure"]:
+                return decline("the requested activity must agree with the counted performance")
         target = reference_from_unit(ctx.match.slots["who"])
         pair = {target, base.entity_ref}
         if len(pair) != 2 or any(

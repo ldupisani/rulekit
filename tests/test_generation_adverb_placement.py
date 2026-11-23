@@ -82,7 +82,7 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
         "arithmetic/equal-division-within-group": ((5,), "equal", ()),
         "arithmetic/named-equal-account-division": ((4,), "equal", ()),
         "arithmetic/current-dimension-amount": ((2, 0), "now", ((2,),)),
-        "arithmetic/member-rated-workforce-expansion": ((11, 0), "also", ((11,),)),
+        "arithmetic/member-rated-workforce-expansion": ((10, 1, 0), "also", ((10,), (10, 1))),
         "arithmetic/ordinal-relative-event-rate": ((5,), "extent", ()),
         "arithmetic/packaged-offer-with-stated-lot-count": ((8, 0), "only", ((8,),)),
         "arithmetic/equal-population-arrival-with-return-share": ((9, 0), 'then', ((9,),)),

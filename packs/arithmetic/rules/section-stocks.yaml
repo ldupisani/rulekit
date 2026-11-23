@@ -261,16 +261,18 @@ rules:
       at_start: true
     - slot: act
       cat: stock_placement_verb
+      finite_form: true
     - slot: item
       cat: inventory_item
       uncounted: true
       bare: true
-    - lit: from
-      consume_skipped: true
-    - slot: holder
-      cat: stock_source_container
-      uncounted: true
-      bare: true
+    - opt:
+      - lit: from
+        consume_skipped: true
+      - slot: holder
+        cat: stock_source_container
+        uncounted: true
+        bare: true
     - lit: .
       consume_skipped: true
   emits:
@@ -280,7 +282,7 @@ rules:
     measure: '{item}'
     value: 0
     position: '{who.span_start}'
-    container: '{holder}'
+    container: '{holder.optional}'
   consumes:
   - act
   satisfies:
@@ -344,54 +346,71 @@ rules:
   - holder
   - be
   - kind
-asks:
-- id: ask/initial-section-stock
-  match:
-    question:
-    - lit: how
-      consume_skipped: true
-    - lit: many
-      consume_skipped: true
-    - slot: item
-      cat: inventory_item
-      uncounted: true
-      bare: true
-    - slot: aux
-      type: auxiliary
-    - slot: who
-      type: entity
-      common_noun_cat: intentional_agent
-      referential: true
-    - slot: have
-      cat: possession_state
-    - lit: on
-      consume_skipped: true
-    - slot: holder
-      cat: stock_source_container
-      uncounted: true
-    - lit: when
-      consume_skipped: true
-    - slot: who2
-      type: entity
-      common_noun_cat: intentional_agent
-      referential: true
-    - slot: start
-      cat: start_marker_verb
-    - lit: '?'
-      consume_skipped: true
-  resolves:
-    consumer: section-stock-reconstruction
-    entity: '{who}'
-    other: '{who2}'
-    measure: '{item}'
-    holder: '{holder}'
-  satisfies:
-    have:
-    - subject
-    start:
-    - subject
-  disambiguates:
-  - item
-  - have
-  - holder
-  - start
+templates:
+  opening-section-stock:
+    parameters:
+      boundary:
+      - lit: when
+        consume_skipped: true
+      - slot: who2
+        type: entity
+        common_noun_cat: intentional_agent
+        referential: true
+      - slot: start
+        cat: start_marker_verb
+      starter: '{who2}'
+      obligations: {have: [subject], start: [subject]}
+    rule:
+      match:
+        question:
+        - lit: how
+          consume_skipped: true
+        - lit: many
+          consume_skipped: true
+        - slot: item
+          cat: inventory_item
+          number: plural
+          uncounted: true
+          bare: true
+        - slot: aux
+          cat: do_support_auxiliary
+        - slot: who
+          type: entity
+          common_noun_cat: intentional_agent
+          referential: true
+        - slot: have
+          cat: possession_state
+          bare_form: true
+        - lit: on
+          consume_skipped: true
+        - slot: holder
+          cat: stock_source_container
+          referential: true
+          uncounted: true
+        - {parameter: boundary}
+        - lit: '?'
+          consume_skipped: true
+      where: [{number_compatible: [aux, who]}]
+      resolves:
+        consumer: section-stock-reconstruction
+        entity: '{who}'
+        other: {parameter: starter}
+        measure: '{item}'
+        holder: '{holder}'
+      satisfies: {parameter: obligations}
+      disambiguates:
+      - item
+      - have
+      - holder
+      - start
+ask_variants:
+- {id: ask/initial-section-stock, template: opening-section-stock}
+- id: ask/section-stock-at-start
+  template: opening-section-stock
+  arguments:
+    boundary:
+    - {lit: at}
+    - {lit: the, consume_skipped: true}
+    - {slot: start, cat: period_start_boundary_noun, uncounted: true, bare: true}
+    starter: '{who}'
+    obligations: {have: [subject]}

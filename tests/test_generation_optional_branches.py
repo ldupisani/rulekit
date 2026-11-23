@@ -96,7 +96,10 @@ def test_recursive_optional_class_inventory() -> None:
     # Explicit factors share the ordinary scaling frame's optional sequence and return clauses.
     # An itemized group activity can name its venue.
     # Tenure comparisons and packaged purchases add flat duration, venue and content options.
-    assert _optional_profile(project) == (525, 897, 79, 3)
+    # Named participants can introduce an indexed activity with an optional setting.
+    # Repeated context is optional in a plan, a quote or a schedule.
+    # The workforce clause can include a nested additive adverb.
+    assert _optional_profile(project) == (537, 920, 80, 3)
 
 
 def test_optional_branches_rule_availability(curated_availability) -> None:

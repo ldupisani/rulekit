@@ -255,12 +255,13 @@ rules:
       bare: true
     - slot: longer
       cat: higher
-    - lit: for
-      consume_skipped: true
-    - slot: bonus
-      cat: bonus_noun
-      uncounted: true
-      bare: true
+    - opt:
+      - lit: for
+        consume_skipped: true
+      - slot: bonus
+        cat: bonus_noun
+        uncounted: true
+        bare: true
     - lit: .
       consume_skipped: true
   emits:

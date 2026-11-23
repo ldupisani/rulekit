@@ -394,10 +394,11 @@ asks:
       consume_skipped: true
     - slot: much
       cat: mass_amount_quantifier
-    - slot: money
-      cat: mass_currency_noun
-      uncounted: true
-      bare: true
+    - opt:
+      - slot: money
+        cat: mass_currency_noun
+        uncounted: true
+        bare: true
     - slot: aux
       type: auxiliary
     - slot: who

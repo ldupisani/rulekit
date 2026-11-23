@@ -41,12 +41,14 @@ def project():
 
 def test_curated_premise_generation_inventory(curated_availability) -> None:
     rows = curated_availability.values()
-    assert len(rows) == 1054
-    assert sum(item.supported for item in rows) == 946
+    assert len(rows) == 1061
+    assert sum(item.supported for item in rows) == 951
     blocked = {item.id for item in rows if not item.supported}
-    assert len(blocked) == 108
+    assert len(blocked) == 110
     assert all(not item.blockers or item.id in blocked for item in rows)
     assert blocked == SAFETY_RULES | {
+        "arithmetic/coordinated-relative-price-item",
+        "arithmetic/coordinated-relative-price-item-total",
         "arithmetic/absence-of-other-occupants",
         "arithmetic/account-anaphoric-full-settlement",
         "arithmetic/account-coordinated-payment",
@@ -223,8 +225,8 @@ def test_generation_api_separates_safety_consumers_from_targets() -> None:
 
     payload = endpoint()
 
-    assert payload["supported"] == 946
-    assert payload["total"] == 1046
+    assert payload["supported"] == 951
+    assert payload["total"] == 1053
     assert payload["safety_total"] == 8
     assert {rule["id"] for rule in payload["safety_rules"]} == SAFETY_RULES
     assert not ({rule["id"] for rule in payload["rules"]} & SAFETY_RULES)

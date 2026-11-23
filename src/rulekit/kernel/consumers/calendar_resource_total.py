@@ -237,11 +237,12 @@ def consume(ctx):
             (schedule, [schedule.subtotal] if schedule.subtotal else []),
             *((r, [r.value]) for r in portions),
         ]
-        # The month count occurs in the question, rather than in the schedule evidence.
+        # An overt cardinal is a numeric mention. A pair quantifier has no numeral to audit.
         expected = defaultdict(Counter)
         for r, vs in operands:
             expected[r.provenance.sentence].update(vs)
-        expected[ctx.question.sentence_index][float(ctx.query["month_count"])] += 1
+        if ctx.match.slots["months"].features.get("value") is not None:
+            expected[ctx.question.sentence_index][float(ctx.query["month_count"])] += 1
         if (
             ctx.store.collisions
             or ctx.store.quarantined
@@ -274,8 +275,9 @@ def consume(ctx):
             )
         group, share = groups[0], shares[0]
         if (
-            group.entity != ctx.query.get("event", group.entity)
-            or share.entity != group.entity
+            (ctx.query.get("event") and ctx.query["event"] != (share.entity or group.entity))
+            or (share.entity and group.entity and share.entity != group.entity)
+            or group.provenance.sentence > share.provenance.sentence
             or {r.entity for r in rates} != {group.container, group.acquisition}
             or group.container_ref == group.acquisition_ref
             or not 0 <= share.value <= 1

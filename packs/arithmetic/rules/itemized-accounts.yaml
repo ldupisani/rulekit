@@ -282,12 +282,18 @@ templates:
       - {parameter: constraints}
       bindings: {parameter: bindings}
       emits:
-      - {fact: batch_evidence, kind: bill-population, entity: '{group}', measure: '', value: group, position: '{group.span_start}'}
+      - &payer_population {fact: batch_evidence, kind: bill-population, entity: '{group}', measure: '', value: group, position: '{group.span_start}'}
       - {parameter: roster}
       consumes: {parameter: counts}
       satisfies: {order: [subject]}
   itemized-price-quote:
     parameters:
+      introduction:
+      - {lit: [':', ';'], consume_skipped: true}
+      - opt: [{lit: and}]
+      population: []
+      population_operands: []
+      introduction_constraints: []
       ending:
       - opt:
         - cat: postpositive_distributive_quantifier
@@ -322,10 +328,12 @@ templates:
       consumes:
       - count
       - price
+      - {parameter: population_operands}
       description: An explicit itemized asking-price quote, with unit and
         whole-line prices kept distinct. Estimated values do not establish
         charges.
       emits:
+      - {parameter: population}
       - basis: quote
         entity: ''
         event: '{count.uid}'
@@ -349,12 +357,7 @@ templates:
         verb: '{cost}'
       match:
         sentence:
-        - consume_skipped: true
-          lit:
-          - ':'
-          - ;
-        - opt:
-          - lit: and
+        - parameter: introduction
         - parameter: subject.tokens
         - parameter: quote
         - bare: true
@@ -363,7 +366,9 @@ templates:
           slot: price
         - parameter: ending
       phase: read
-      where: {parameter: subject.constraints}
+      where:
+      - {parameter: subject.constraints}
+      - {parameter: introduction_constraints}
       satisfies:
         parameter: satisfaction
 variants:
@@ -386,8 +391,9 @@ variants:
   arguments:
     context:
     - {slot: activity, cat: purchase_context_activity, finite_form: true}
-    - {slot: prep, cat: quantity_site_preposition}
-    - {slot: site, cat: activity_site, uncounted: true}
+    - opt:
+      - {slot: prep, cat: quantity_site_preposition}
+      - {slot: site, cat: activity_site, uncounted: true}
     - {lit: and}
     constraints:
     - {number_compatible: [group, activity]}
@@ -685,17 +691,17 @@ variants:
   id: arithmetic/itemized-relative-price-serving-total
   template: itemized-price-quote
 - arguments:
-    quote:
+    quote: &relative_price_clause
     - lit: that
     - cat: price_verb
       finite_form: true
       slot: cost
-    satisfaction:
+    satisfaction: &relative_price_roles
       cost:
       - subject
       each:
       - collection
-    subject:
+    subject: &counted_purchase_item
       constraints: []
       item: '{count}'
       qualifier: '{count.qualifier}'
@@ -731,6 +737,48 @@ variants:
         slot: count
   id: arithmetic/itemized-relative-price-item-total
   template: itemized-price-quote
+- id: arithmetic/group-purchase-priced-item
+  template: itemized-price-quote
+  arguments:
+    introduction: &buyer_and_purchase
+    - {slot: group, cat: account_payer, counted: true, bare: true, at_start: true}
+    - {slot: order, cat: itemized_acquisition_verb, finite_form: true}
+    introduction_constraints: &buyer_agreement [{number_compatible: [group, order]}]
+    population: [*payer_population]
+    population_operands: [group]
+    subject: *counted_purchase_item
+    quote: *relative_price_clause
+    satisfaction: {order: [subject], cost: [subject], each: [collection]}
+- id: arithmetic/group-purchase-priced-item-total
+  template: itemized-price-quote
+  arguments:
+    introduction: *buyer_and_purchase
+    introduction_constraints: *buyer_agreement
+    population: [*payer_population]
+    population_operands: [group]
+    subject: *counted_purchase_item
+    quote: *relative_price_clause
+    ending: &whole_line [{lit: in}, {lit: total}]
+    pricing: &line_price {quantity: null, total: price, unit: null}
+    satisfaction: {order: [subject], cost: [subject]}
+- id: arithmetic/coordinated-relative-price-item
+  template: itemized-price-quote
+  arguments:
+    introduction: &line_separator [{lit: [',', and], consume_skipped: true}]
+    introduction_constraints: &after_price [{preceding_verb_category: {slot: count, cat: price_verb}}]
+    subject: *counted_purchase_item
+    quote: *relative_price_clause
+    satisfaction: *relative_price_roles
+- id: arithmetic/coordinated-relative-price-item-total
+  template: itemized-price-quote
+  arguments:
+    introduction: *line_separator
+    introduction_constraints: *after_price
+    subject: *counted_purchase_item
+    quote: *relative_price_clause
+    ending: *whole_line
+    pricing: *line_price
+    satisfaction: {cost: [subject]}
 ask_variants:
 - id: ask/stated-equal-bill-person
   template: payer-share-question

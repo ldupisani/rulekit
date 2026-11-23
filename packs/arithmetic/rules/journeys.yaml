@@ -174,8 +174,9 @@ asks:
         - {lit: how, at_start: true}
         - {lit: many}
         - {slot: unit, cat: duration_measure, number: plural, uncounted: true}
-        - {lit: in}
-        - {slot: total, cat: group_total_marker}
+        - opt:
+          - {lit: in}
+          - {slot: total, cat: group_total_marker}
         - {slot: aux, type: auxiliary}
         - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true}
         - {slot: take, cat: journey_duration_ask_verb, bare_form: true}
@@ -187,11 +188,12 @@ asks:
         - {slot: destination, cat: journey_destination, uncounted: true, bare: true}
         - {lit: a, consume_skipped: true}
         - {slot: period, cat: duration_measure, uncounted: true, bare: true}
-        - {slot: modes_prep, cat: journey_mode_list_preposition}
-        - {slot: first, cat: journey_activity_verb, present_participle: true}
-        - {lit: and}
-        - {slot: second, cat: journey_activity_verb, present_participle: true}
+        - opt:
+          - {slot: modes_prep, cat: journey_mode_list_preposition}
+          - {slot: first, cat: journey_activity_verb, present_participle: true}
+          - {lit: and}
+          - {slot: second, cat: journey_activity_verb, present_participle: true}
         - {lit: '?', consume_skipped: true}
     where: [{distinct: [first, second]}, {number_compatible: [who, aux]}]
     satisfies: {infinitive: [object], modes_prep: [object]}
-    resolves: {consumer: journey-duration, entity: '{who}', destination: '{destination}', first_mode: '{first}', second_mode: '{second}', period: '{period}', unit: '{unit}'}
+    resolves: {consumer: journey-duration, entity: '{who}', destination: '{destination}', first_mode: '{first.optional}', second_mode: '{second.optional}', period: '{period}', unit: '{unit}'}

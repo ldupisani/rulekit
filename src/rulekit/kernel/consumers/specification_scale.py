@@ -39,14 +39,14 @@ def consume(ctx):
         context, reference, reuse, target = (
             by_kind[k][0] for k in ('context', 'reference', 'reuse', 'target'))
         entity = context.entity
-        scope = context.scope_ref
-        if (scope is None or not scope.resolved or target.scope_ref is None
-                or not target.scope_ref.resolved or scope != target.scope_ref):
+        scope = target.scope_ref
+        if (scope is None or not scope.resolved
+                or (context.scope and context.scope_ref != scope)):
             return decline('the demand must identify the same scope and owner as the plan')
         if reuse.scope == '$anaphor:population$':
             if not ctx.reg.word_in_category(target.population_item, 'person'):
                 return decline('a universal person reference needs an explicitly counted human population')
-        elif scope != reuse.scope_ref:
+        elif reuse.scope and scope != reuse.scope_ref:
             return decline('the adopted ratio must apply to the same scope and owner')
         if (entity != reuse.entity or (reference.entity and reference.entity != entity)
                 or len({context.output_item, reference.output_item, target.output_item}) != 1

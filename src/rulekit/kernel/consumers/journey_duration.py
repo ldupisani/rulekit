@@ -20,8 +20,10 @@ def consume(ctx):
 
     legs = list(ctx.store.by_kind(JourneyLeg))
     schedules = list(ctx.store.by_kind(JourneySchedule))
-    modes = {ctx.query["first_mode"], ctx.query["second_mode"]}
-    if len(modes) != 2 or len(legs) != len(schedules) or len(schedules) != len(modes):
+    named = [ctx.query[key] for key in ("first_mode", "second_mode") if ctx.query.get(key)]
+    modes = set(named) if named else {leg.mode for leg in legs}
+    if (not modes or len(set(named)) != len(named)
+            or len(legs) != len(modes) or len(schedules) != len(modes)):
         return decline("each requested mode needs one one-way duration and one return schedule")
     if ({f.mode for f in legs} != modes or {f.mode for f in schedules} != modes
             or any(f.entity != ctx.query["entity"] or f.destination != ctx.query["destination"]

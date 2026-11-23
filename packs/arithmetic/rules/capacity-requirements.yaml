@@ -1,5 +1,61 @@
 format: rulekit/rules@1
 templates:
+  meeting-capacity:
+    parameters:
+      membership:
+      - opt: [{lit: ',', consume_skipped: true}]
+      - {slot: whose, cat: relative_membership_owner}
+      - {slot: number, cat: nominal_count_comparison_head, uncounted: true, bare: true}
+      - {lit: of}
+      - {slot: members, cat: membership_group_role, uncounted: true, number: plural}
+      - {slot: equivalence, cat: singular_copula}
+      - {slot: same, cat: uniform_quantity_attribute}
+      - {lit: as}
+      - {slot: standard, cat: container_capacity_noun, uncounted: true, qualified: true, qualifier_cat: occupancy_fitting}
+      member_role: '{members}'
+      capacity_standard: '{standard.qualifier}'
+      operands: [units, rate, be, arrange, equivalence]
+      obligations: {each: [collection], be: [subject], arrange: [subject], whose: [refers], equivalence: [subject]}
+    rule:
+      description: Identify the fittings and capacity for an event, including any stated membership comparison.
+      match:
+        sentence:
+        - opt:
+          - {slot: prep, cat: spatial_location_preposition, at_start: true}
+          - {slot: location, cat: activity_site, uncounted: true, number: singular, referential: true}
+          - {lit: ',', consume_skipped: true}
+        - {slot: units, cat: occupancy_fitting, counted: true, class_only: true}
+        - {lit: with}
+        - {slot: capacity, cat: container_capacity_noun, uncounted: true, bare: true}
+        - {lit: of}
+        - {slot: rate, cat: allocation_recipient, counted: true, bare: true}
+        - {slot: each, cat: postpositive_distributive_quantifier}
+        - {slot: be, cat: plural_copula}
+        - {slot: arrange, cat: seating_arrangement_verb, past_participle: true}
+        - opt:
+          - {lit: in}
+          - {slot: layout, cat: capacity_partition_group, uncounted: true, bare: true, number: plural}
+        - opt:
+          - {lit: in}
+          - {slot: prepare, cat: event_arrangement_purpose, uncounted: true, bare: true}
+        - {lit: for}
+        - opt: [{slot: group_type, cat: governance_group}]
+        - {slot: event, cat: attendance_event, uncounted: true}
+        - opt:
+          - {lit: of}
+          - {slot: organization, cat: attendance_organization, uncounted: true}
+        - {parameter: membership}
+        - {lit: '.', consume_skipped: true}
+      where:
+      - attribute_compatible: {attribute: prep, noun: location}
+      bindings: {prep: {object: location}}
+      disambiguates: [event, arrange]
+      consumes: {parameter: operands}
+      satisfies: {parameter: obligations}
+      emits:
+      - {fact: batch_evidence, kind: capacity-attendance-plan, entity: '{organization.optional}', measure: {parameter: member_role},
+         container: '{units}', attribute: '{group_type.optional}{event.qualifier}', acquisition: '{event.surface}', marker: {parameter: capacity_standard},
+         verb: '{rate}', value: units, per_member: rate, position: '{units.span_start}'}
   provision-for-cohorts:
     parameters:
       distribution:
@@ -76,6 +132,15 @@ templates:
          container: '{multiple}', acquisition: '{single}', value: shared, per_member: multiple,
          subtotal: other, position: '{multiple.span_start}'}
 variants:
+- {id: arithmetic/event-capacity-matching-membership, template: meeting-capacity}
+- id: arithmetic/event-seating-capacity
+  template: meeting-capacity
+  arguments:
+    membership: []
+    member_role: ''
+    capacity_standard: ''
+    operands: [units, rate, be, arrange]
+    obligations: {each: [collection], be: [subject], arrange: [subject]}
 - {id: arithmetic/recipient-plan-with-grouped-and-single-cohorts, template: provision-for-cohorts}
 - id: arithmetic/recipient-plan-with-per-cohort-count
   template: provision-for-cohorts
@@ -121,53 +186,6 @@ rules:
   emits:
   - {fact: batch_evidence, kind: capacity-reservation-demand, entity: '{who}', measure: '{people}',
      container: '{units}', acquisition: '{cohort}', verb: '{reserve}', value: people, position: '{people.span_start}'}
-- id: arithmetic/event-capacity-matching-membership
-  description: An event's stated membership matches the combined capacity of its fittings, optionally at a specified site.
-  match:
-    sentence:
-    - opt:
-      - {slot: prep, cat: spatial_location_preposition, at_start: true}
-      - {slot: location, cat: activity_site, uncounted: true, number: singular, referential: true}
-      - {lit: ',', consume_skipped: true}
-    - {slot: units, cat: occupancy_fitting, counted: true, class_only: true}
-    - {lit: with}
-    - {slot: capacity, cat: container_capacity_noun, uncounted: true, bare: true}
-    - {lit: of}
-    - {slot: rate, cat: allocation_recipient, counted: true, bare: true}
-    - {slot: each, cat: postpositive_distributive_quantifier}
-    - {slot: be, cat: plural_copula}
-    - {slot: arrange, cat: seating_arrangement_verb, past_participle: true}
-    - opt:
-      - {lit: in}
-      - {slot: layout, cat: capacity_partition_group, uncounted: true, bare: true, number: plural}
-    - opt:
-      - {lit: in}
-      - {slot: prepare, cat: event_arrangement_purpose, uncounted: true, bare: true}
-    - {lit: for}
-    - opt: [{slot: group_type, cat: governance_group}]
-    - {slot: event, cat: attendance_event, uncounted: true}
-    - {lit: of}
-    - {slot: organization, cat: attendance_organization, uncounted: true}
-    - opt: [{lit: ',', consume_skipped: true}]
-    - {slot: whose, cat: relative_membership_owner}
-    - {slot: number, cat: nominal_count_comparison_head, uncounted: true, bare: true}
-    - {lit: of}
-    - {slot: members, cat: membership_group_role, uncounted: true, number: plural}
-    - {slot: equivalence, cat: singular_copula}
-    - {slot: same, cat: uniform_quantity_attribute}
-    - {lit: as}
-    - {slot: standard, cat: container_capacity_noun, uncounted: true, qualified: true, qualifier_cat: occupancy_fitting}
-    - {lit: '.', consume_skipped: true}
-  where:
-  - attribute_compatible: {attribute: prep, noun: location}
-  bindings: {prep: {object: location}}
-  disambiguates: [event, arrange]
-  consumes: [units, rate, be, arrange, equivalence]
-  satisfies: {each: [collection], be: [subject], arrange: [subject], whose: [refers], equivalence: [subject]}
-  emits:
-  - {fact: batch_evidence, kind: capacity-attendance-plan, entity: '{organization}', measure: '{members}',
-     container: '{units}', attribute: '{group_type.optional}{event.qualifier}', acquisition: '{event.surface}', marker: '{standard.qualifier}',
-     verb: '{rate}', value: units, per_member: rate, position: '{units.span_start}'}
 - id: arithmetic/unoccupied-fraction-and-remainder-use
   question_assumption: true
   match:
@@ -200,11 +218,12 @@ asks:
     - {slot: aux, cat: do_support_auxiliary}
     - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true}
     - {slot: need, cat: infinitival_requirement_predicate, bare_form: true}
-    - {slot: inf, cat: infinitival_marker}
-    - {slot: make, cat: provision_preparation_verb, bare_form: true}
+    - opt:
+      - {slot: inf, cat: infinitival_marker}
+      - {slot: make, cat: provision_preparation_verb, bare_form: true}
     - {lit: '?', consume_skipped: true}
   where: [{number_compatible: [who, aux]}]
-  resolves: {consumer: cohort-capacity, mode: provision, entity: '{who}', measure: '{resource}', verb: '{make}'}
+  resolves: {consumer: cohort-capacity, mode: provision, entity: '{who}', measure: '{resource}', verb: '{make.optional}'}
   satisfies: {need: [subject], inf: [object], make: [subject, dobj]}
 - id: ask/cohort-reservation-count
   match:
