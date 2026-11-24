@@ -1757,9 +1757,9 @@ entries:
   considers:
     senses:
     - verb
-  consists:
-    senses:
-    - verb
+  consist: {senses: [verb], verb: {number: plural}}
+  consisted: {senses: [verb], verb: {lemma: consist}}
+  consists: {senses: [verb], verb: {lemma: consist, number: singular}}
   console:
     senses:
     - noun

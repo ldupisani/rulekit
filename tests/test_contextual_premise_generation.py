@@ -41,8 +41,8 @@ def project():
 
 def test_curated_premise_generation_inventory(curated_availability) -> None:
     rows = curated_availability.values()
-    assert len(rows) == 1079
-    assert sum(item.supported for item in rows) == 967
+    assert len(rows) == 1083
+    assert sum(item.supported for item in rows) == 971
     blocked = {item.id for item in rows if not item.supported}
     assert len(blocked) == 112
     assert all(not item.blockers or item.id in blocked for item in rows)

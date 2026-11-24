@@ -62,7 +62,7 @@ rules:
       bare: true
     - lit: .
       consume_skipped: true
-  emits:
+  emits: &indexed_range
   - fact: batch_evidence
     kind: indexed-range
     entity: '{event}'
@@ -109,8 +109,7 @@ rules:
       type: entity
       common_noun_cat: intentional_agent
       referential: true
-    - lit: in
-      consume_skipped: true
+    - {slot: scope, cat: temporal_interval_preposition}
     - slot: period
       cat: repeating_event
       uncounted: true
@@ -142,82 +141,7 @@ rules:
   disambiguates:
   - act
   - item
-  - period
-- id: arithmetic/indexed-fractional-performance-comparison
-  phase: read
-  match:
-    sentence:
-    - slot: who
-      type: entity
-      common_noun_cat: intentional_agent
-      referential: true
-      at_start: true
-    - opt:
-      - slot: get
-        cat: acquire
-        finite_form: true
-      - slot: condition
-        cat: performance_condition_attribute
-      - lit: and
-        consume_skipped: true
-    - opt: [{lit: only, consume_skipped: true}]
-    - slot: act
-      cat: repetition_performance_verb
-      finite_form: true
-    - slot: fraction
-      type: fraction
-    - lit: the
-      consume_skipped: true
-    - slot: number
-      cat: count_aggregate_noun
-      uncounted: true
-      bare: true
-    - lit: of
-      consume_skipped: true
-    - slot: item
-      cat: repetition_count_unit
-      uncounted: true
-      bare: true
-    - lit: as
-      consume_skipped: true
-    - slot: standard
-      type: entity
-      common_noun_cat: intentional_agent
-      referential: true
-    - lit: in
-      consume_skipped: true
-    - slot: period
-      cat: repeating_event
-      uncounted: true
-      qualified: true
-    - lit: .
-      consume_skipped: true
-  emits:
-  - fact: batch_evidence
-    kind: indexed-relation
-    entity: '{who}'
-    measure: '{item}'
-    value: 0
-    position: '{who.span_start}'
-    container: '{standard}'
-    verb: '{act}'
-    fraction: fraction
-    attribute: '{period.qualifier}'
-    marker: '{period}'
-  consumes:
-  - get
-  - act
-  - fraction
-  satisfies:
-    get:
-    - subject
-    act:
-    - subject
-  disambiguates:
-  - get
-  - act
-  - number
-  - item
+  - scope
   - period
 - id: arithmetic/uniform-indexed-performance
   phase: read
@@ -235,14 +159,14 @@ rules:
       cat: repetition_count_unit
       counted: true
       bare: true
-    - lit: in
-      consume_skipped: true
+    - {slot: scope, cat: temporal_interval_preposition}
     - slot: each
-      cat: partitive_distributive_quantifier
+      cat: distributive_quantifier
     - slot: period
       cat: repeating_event
       uncounted: true
       bare: true
+      number: singular
     - lit: .
       consume_skipped: true
   emits:
@@ -266,6 +190,7 @@ rules:
   disambiguates:
   - act
   - amount
+  - scope
   - period
 - id: arithmetic/uniform-repetition-frequency
   phase: read
@@ -281,14 +206,14 @@ rules:
       finite_form: true
     - slot: amount
       type: multiplier
-    - lit: in
-      consume_skipped: true
+    - {slot: scope, cat: temporal_interval_preposition}
     - slot: each
-      cat: partitive_distributive_quantifier
+      cat: distributive_quantifier
     - slot: period
       cat: repeating_event
       uncounted: true
       bare: true
+      number: singular
     - lit: .
       consume_skipped: true
   emits:
@@ -396,3 +321,83 @@ asks:
   where: [{number_compatible: [who, aux]}]
   resolves: *indexed_mean
   satisfies: {average: [subject]}
+templates:
+  indexed-activity-range:
+    parameters:
+      clause:
+        - &event_subject {slot: event, cat: indexed_activity_context, uncounted: true, bare: true, number: singular, at_start: true}
+        - {slot: verb, cat: whole_composition_verb, finite_form: true}
+        - {lit: of, consume_skipped: true}
+        - &event_periods {slot: periods, cat: indexed_activity_period, counted: true, bare: true}
+      agreement: event
+    rule:
+      phase: read
+      match:
+        sentence:
+        - {parameter: clause}
+        - {lit: '.', consume_skipped: true}
+      where: [{number_compatible: [{parameter: agreement}, verb]}]
+      emits: *indexed_range
+      consumes: [verb, periods]
+      satisfies: {verb: [subject]}
+      disambiguates: [event, verb, periods]
+  indexed-fractional-performance:
+    parameters:
+      comparison:
+        - {lit: the, consume_skipped: true}
+        - {slot: number, cat: count_aggregate_noun, uncounted: true, bare: true}
+        - {lit: of, consume_skipped: true}
+      selections: [number]
+    rule:
+      phase: read
+      match:
+        sentence:
+        - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, at_start: true}
+        - opt:
+          - {slot: get, cat: acquire, finite_form: true}
+          - {slot: condition, cat: performance_condition_attribute}
+          - {lit: and, consume_skipped: true}
+        - opt: [{lit: only, consume_skipped: true}]
+        - {slot: act, cat: repetition_performance_verb, finite_form: true}
+        - {slot: fraction, type: fraction}
+        - {parameter: comparison}
+        - *performance_item
+        - {lit: as, consume_skipped: true}
+        - {slot: standard, type: entity, common_noun_cat: intentional_agent, referential: true}
+        - {slot: scope, cat: temporal_interval_preposition}
+        - {slot: period, cat: repeating_event, uncounted: true, qualified: true}
+        - {lit: '.', consume_skipped: true}
+      emits:
+      - {fact: batch_evidence, kind: indexed-relation, entity: '{who}', measure: '{item}', value: 0,
+         position: '{who.span_start}', container: '{standard}', verb: '{act}', fraction: fraction,
+         attribute: '{period.qualifier}', marker: '{period}'}
+      consumes: [get, act, fraction]
+      satisfies: {get: [subject], act: [subject]}
+      disambiguates: [get, act, {parameter: selections}, item, scope, period]
+
+variants:
+- {id: arithmetic/indexed-activity-consists-of-periods, template: indexed-activity-range}
+- id: arithmetic/indexed-activity-lasts-periods
+  template: indexed-activity-range
+  arguments:
+    clause:
+    - *event_subject
+    - {slot: verb, cat: event_duration_verb, finite_form: true}
+    - opt: [{lit: for, consume_skipped: true}]
+    - *event_periods
+- id: arithmetic/existential-indexed-activity-periods
+  template: indexed-activity-range
+  arguments:
+    clause:
+    - {lit: there, at_start: true}
+    - {slot: verb, cat: copula}
+    - *event_periods
+    - {lit: in, consume_skipped: true}
+    - {slot: event, cat: indexed_activity_context, uncounted: true, bare: true, number: singular}
+    agreement: periods
+- {id: arithmetic/indexed-fractional-performance-comparison, template: indexed-fractional-performance}
+- id: arithmetic/indexed-fraction-as-many-performances
+  template: indexed-fractional-performance
+  arguments:
+    comparison: [{lit: as}, {lit: many}]
+    selections: []

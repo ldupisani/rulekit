@@ -2,6 +2,9 @@ format: rulekit/categories@1
 categories:
   repeating_event:
     parent: noun
+  indexed_activity_period:
+    parent: repeating_event
+    notes: A countable division of an activity that can identify a position within it.
   event_result_object:
     parent: noun
   event_result_participle:
@@ -57,8 +60,7 @@ members:
   - earthquake
   - tornado
   - storm
-  - round
-  - session
+  indexed_activity_period: [round, session]
   event_result_object:
   - building
   - house

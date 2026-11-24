@@ -171,6 +171,57 @@ def test_scoped_round_comparisons_and_frequency(reg, intro):
     number(reg, intro + indexed(), 11)
 
 
+def test_frequency_baseline_during_every_round(reg):
+    text = indexed().replace("10 times in each round", "10 times during every round")
+    number(reg, text, 11)
+    assert not solve(text.replace("during every round", "over both rounds"), reg).answer.committed
+
+
+@pytest.mark.parametrize("partition,fraction,baseline", [
+    ("The contest consisted of two rounds.", "half the number of laps", "in each round"),
+    ("The contest lasts two rounds.", "half the quantity of laps", "during each round"),
+    ("The contest lasted for two rounds.", "half as many laps", "in every round"),
+    ("There were two rounds in the contest.", "half the amount of laps", "during every round"),
+])
+def test_equivalent_period_counts_and_fractional_comparisons(reg, partition, fraction, baseline):
+    text = (f"Iris and Nora had a swimming contest. {partition} "
+            "Iris completed 2 more laps than Nora in the first round. "
+            f"Nora completed {fraction} as Iris during the last round. "
+            f"If Iris completed 12 laps {baseline}, how many laps did Nora average per round?")
+    number(reg, text, 8)
+
+
+def session_performances():
+    return ("The test consists of two sessions. Nora completed 3 fewer situps than Iris in the first session. "
+            "Nora completed one third as many situps as Iris in the last session. "
+            "If Iris completed 15 situps during each session, how many situps did Nora average per session?")
+
+
+def test_compared_counts_in_test_sessions(reg):
+    number(reg, session_performances(), 8.5)
+
+
+@pytest.mark.parametrize("phrase,replacement", [
+    ("consists of two sessions", "consists of three sessions"),
+    ("consists of two sessions", "lasted for two hours"),
+    ("consists of two sessions", "lasted until the second session"),
+    ("The test consists of two sessions", "There was two sessions in the test"),
+    ("The test consists of two sessions", "There were at least two sessions in the test"),
+    ("The test consists of two sessions", "The test consisted for two sessions"),
+    ("in the last session", "in the first session"),
+    ("as many situps", "as many laps"),
+    ("as many situps", "as many situp"),
+    ("as Iris in the last", "as Theo in the last"),
+    ("during each session", "after each session"),
+    ("during each session", "during the sessions"),
+    ("15 situps", "14 situps"),
+])
+def test_indexed_paraphrases_still_require_exact_comparable_counts(reg, phrase, replacement):
+    text = session_performances()
+    assert phrase in text
+    assert not solve(text.replace(phrase, replacement), reg).answer.committed
+
+
 @pytest.mark.parametrize("intro", [
     "Nora and Theo had a skipping contest.",
     "Nora and Iris had a test.",

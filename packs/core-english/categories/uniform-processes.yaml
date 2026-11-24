@@ -8,6 +8,9 @@ categories:
     includes: [component_quantity_measure, process_part]
   whole_partition_verb:
     parent: verb
+  whole_composition_verb:
+    parent: verb
+    notes: The whole is the subject and its constituent parts follow an of-complement.
   partition_progress_activity_verb:
     parent: quantity_ask_verb
     notes: >
@@ -23,6 +26,7 @@ categories:
   rate_continuity_attribute: {parent: adjective}
   complete_extent_attribute: {parent: adjective}
 members:
+  whole_composition_verb: [consist, consists, consisted]
   partition_progress_activity_verb: [ate, eat, eats, finish, finished, finishes]
   equal_part_size_attribute: [equal]
   continuation_rate_noun: [pace]
