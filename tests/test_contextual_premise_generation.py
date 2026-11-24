@@ -41,12 +41,28 @@ def project():
 
 def test_curated_premise_generation_inventory(curated_availability) -> None:
     rows = curated_availability.values()
-    assert len(rows) == 1083
-    assert sum(item.supported for item in rows) == 971
+    assert len(rows) == 1157
+    assert sum(item.supported for item in rows) == 1029
     blocked = {item.id for item in rows if not item.supported}
-    assert len(blocked) == 112
+    assert len(blocked) == 128
     assert all(not item.blockers or item.id in blocked for item in rows)
     assert blocked == SAFETY_RULES | {
+        "arithmetic/collective-companions-measurements",
+        "arithmetic/collective-companions-measurements-planned",
+        "arithmetic/counted-companions-measurements",
+        "arithmetic/counted-companions-measurements-planned",
+        "arithmetic/group-member-measurements",
+        "arithmetic/individual-companions-measurements",
+        "arithmetic/individual-companions-measurements-planned",
+        "arithmetic/owned-scaled-area-difference",
+        "arithmetic/partial-indexed-section",
+        "arithmetic/partial-indexed-section-at-clock-reading",
+        "arithmetic/partial-indexed-section-unmarked",
+        "arithmetic/partial-indexed-section-with-source",
+        "arithmetic/skipped-indexed-section-remainder",
+        "arithmetic/skipped-indexed-section-remainder-unmarked",
+        "arithmetic/skipped-remainder-and-further-sections",
+        "arithmetic/skipped-remainder-and-further-sections-unmarked",
         "arithmetic/coordinated-relative-price-item",
         "arithmetic/coordinated-relative-price-item-total",
         "arithmetic/absence-of-other-occupants",

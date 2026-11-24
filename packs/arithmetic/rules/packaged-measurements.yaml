@@ -1,0 +1,93 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/measured-packaged-purchase
+  independent_clause: true
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, at_start: true}
+    - {slot: act, cat: purchase_transaction_verb, finite_form: true}
+    - {slot: packages, cat: retail_package_measure, counted: true, bare: true}
+    - {lit: of, consume_skipped: true}
+    - {slot: goods, cat: material_resource, uncounted: true, bare: true}
+    - {lit: that, consume_skipped: true}
+    - {slot: be, cat: copula, finite_form: true}
+    - {slot: size, cat: resource_measure_unit, counted: true, bare: true}
+    - {slot: each, cat: postpositive_distributive_quantifier}
+    - {lit: ., consume_skipped: true}
+  satisfies: {act: [subject], be: [subject], each: [collection]}
+  consumes: [who, act, packages, goods, be, size, each]
+  emits:
+  - {fact: batch_evidence, kind: measured-purchase-packages, entity: '{who}', measure: '{packages}', value: packages, position: '{packages.span_start}',
+    container: '{goods}'}
+  - {fact: batch_evidence, kind: purchase-package-size, entity: '', measure: '{size}', value: size, position: '{size.span_start}',
+    container: '{packages}', acquisition: '{goods}'}
+  disambiguates: [act, packages, goods, be, size, each]
+- id: arithmetic/individual-package-size
+  independent_clause: true
+  match:
+    sentence:
+    - {slot: each, cat: distributive_quantifier, at_start: true}
+    - {slot: packages, cat: retail_package_measure, uncounted: true, bare: true}
+    - opt:
+      - {lit: of, consume_skipped: true}
+      - {slot: goods, cat: material_resource, uncounted: true, bare: true}
+    - {slot: act, cat: measurement_mass_verb, finite_form: true}
+    - {slot: size, cat: mass_unit, counted: true, bare: true}
+    - {lit: ., consume_skipped: true}
+  satisfies: {each: [collection], act: [subject]}
+  consumes: [each, packages, goods, act, size]
+  emits:
+  - {fact: batch_evidence, kind: purchase-package-size, entity: '', measure: '{size}', value: size, position: '{size.span_start}',
+    container: '{packages}', acquisition: '{goods.optional}'}
+  disambiguates: [each, packages, goods, act, size]
+- id: arithmetic/individual-package-contents
+  independent_clause: true
+  match:
+    sentence:
+    - {slot: each, cat: distributive_quantifier, at_start: true}
+    - {slot: packages, cat: retail_package_measure, uncounted: true, bare: true}
+    - opt:
+      - {lit: of, consume_skipped: true}
+      - {slot: goods, cat: material_resource, uncounted: true, bare: true}
+    - {slot: act, cat: container_content_state_verb, finite_form: true}
+    - {slot: size, cat: resource_measure_unit, counted: true, bare: true}
+    - {lit: ., consume_skipped: true}
+  satisfies: {each: [collection], act: [subject]}
+  consumes: [each, packages, goods, act, size]
+  emits:
+  - {fact: batch_evidence, kind: purchase-package-size, entity: '', measure: '{size}', value: size, position: '{size.span_start}',
+    container: '{packages}', acquisition: '{goods.optional}'}
+  disambiguates: [each, packages, goods, act, size]
+- id: arithmetic/material-denominated-quote
+  independent_clause: true
+  match:
+    sentence:
+    - {slot: price, cat: price_anaphor, uncounted: true, at_start: true}
+    - {lit: of, consume_skipped: true}
+    - {slot: goods, cat: material_resource, uncounted: true, bare: true}
+    - {slot: be, cat: singular_copula, finite_form: true}
+    - {slot: price_amount, cat: currency_unit, counted: true}
+    - {lit: per, consume_skipped: true}
+    - {slot: unit, cat: resource_measure_unit, uncounted: true, bare: true}
+    - {lit: ., consume_skipped: true}
+  satisfies: {be: [subject]}
+  consumes: [price, goods, be, price_amount, unit]
+  emits:
+  - {fact: price, item: '{goods}', measure: '{price_amount}', value: price_amount, per: '{unit}', verb: cost, occurrence: '{price_amount.uid}'}
+  disambiguates: [price, goods, be, price_amount, unit]
+asks:
+- id: ask/measured-package-payment
+  match:
+    question:
+    - {lit: how, consume_skipped: true, at_start: true}
+    - {lit: much, consume_skipped: true}
+    - {lit: did, consume_skipped: true}
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true}
+    - {slot: pay, cat: payment_verb, bare_form: true}
+    - opt:
+      - {slot: in, cat: group_total_preposition}
+      - {lit: all, consume_skipped: true}
+    - {lit: '?', consume_skipped: true}
+  satisfies: {in: [object], pay: [subject]}
+  resolves: {consumer: measured-purchase, entity: '{who}'}
+  disambiguates: [pay]

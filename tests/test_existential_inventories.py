@@ -7,8 +7,9 @@ from pydantic import ValidationError
 
 from rulekit.data.project import load_project
 from rulekit.data.schemas import MatchToken
-from rulekit.kernel.engine import solve
+from rulekit.kernel.engine import analyze, solve
 from rulekit.kernel.model import Quantity
+from rulekit.kernel.patterns import match_all
 
 
 @pytest.fixture(scope="module")
@@ -118,6 +119,25 @@ def test_counted_enumeration_requires_a_gated_span():
         MatchToken(slot="items", span=True, enumeration_counted=True)
     with pytest.raises(ValidationError, match="enumeration_cat requires a span"):
         MatchToken(slot="items", type="noun", enumeration_cat="noun", enumeration_counted=True)
+    with pytest.raises(ValidationError, match="requires enumeration_counted"):
+        MatchToken(slot="sizes", span=True, enumeration_cat="length_unit", enumeration_shared_unit=True)
+
+
+@pytest.mark.parametrize("phrase,valid", [
+    ("2, 4 and 8 meters.", True),
+    ("Two meters and four meters.", True),
+    ("2, 4 or 8 meters.", False),
+    ("2 4 and 8 meters.", False),
+    ("2 feet and 8 meters.", False),
+    ("2, 4 and 8.", False),
+])
+def test_shared_trailing_unit_in_measured_lists(registry, phrase, valid):
+    tokens = [
+        MatchToken(slot="sizes", span=True, enumeration_cat="length_unit", enumeration_counted=True,
+                   enumeration_shared_unit=True, enumeration_min_members=2, at_start=True),
+        MatchToken(lit=".", consume_skipped=True),
+    ]
+    assert bool(list(match_all(analyze(phrase, registry), tokens, registry))) is valid
 
 
 @pytest.mark.parametrize("premise,expected", [

@@ -1,0 +1,151 @@
+format: rulekit/rules@1
+templates:
+  group-members:
+    parameters:
+      leader:
+        slot: {slot: first, cat: cohort_member, counted: true, bare: true, at_start: true}
+        count: first
+        source: explicit
+      measurements: {phrase: [], facts: [], uses: [], senses: []}
+      travel:
+        phrase:
+        - opt:
+          - opt: [{lit: ',', consume_skipped: true}]
+          - {slot: motion, cat: spatial_motion_verb, finite_form: true}
+          - {lit: to, consume_skipped: true}
+          - {slot: site, cat: activity_location, uncounted: true}
+        uses: [motion, site]
+        senses: [motion, site]
+        obligations: {motion: [subject]}
+        decision: ''
+    rule:
+      independent_clause: true
+      match:
+        sentence:
+        - {parameter: leader.slot}
+        - {lit: [with, and], consume_skipped: true}
+        - {slot: members, cat: cohort_member, counted: true, bare: true}
+        - {parameter: measurements.phrase}
+        - {parameter: travel.phrase}
+        - {lit: ., consume_skipped: true}
+      satisfies: {parameter: travel.obligations}
+      consumes: [first, members, {parameter: measurements.uses}, {parameter: travel.uses}]
+      disambiguates: [first, members, {parameter: measurements.senses}, {parameter: travel.senses}]
+      emits:
+      - {fact: batch_evidence, kind: group-members, measure: '', entity: '{first}', value: {parameter: leader.count},
+         marker: {parameter: leader.source}, position: '{first.span_start}', acquisition: '{site.optional}',
+         verb: '{motion.optional}', attribute: {parameter: travel.decision}}
+      - {fact: batch_evidence, kind: group-members, measure: '', entity: '{members}', value: members,
+         marker: explicit, position: '{members.span_start}', acquisition: '{site.optional}',
+         verb: '{motion.optional}', attribute: {parameter: travel.decision}}
+      - {parameter: measurements.facts}
+variants:
+- {id: arithmetic/counted-companions, template: group-members}
+- id: arithmetic/counted-companions-measurements
+  template: group-members
+  arguments:
+    measurements: &associated_measurements
+      phrase:
+      - {lit: ',', consume_skipped: true}
+      - {slot: property_label, cat: member_measurement_label, uncounted: true}
+      - &measurement_list {slot: observations, span: true, enumeration_cat: member_measurement_unit, enumeration_counted: true, enumeration_shared_unit: true}
+      - {slot: property, cat: measured_property_descriptor}
+      facts:
+      - {fact: batch_evidence, each: observations, kind: group-member-measurement, entity: '{members}',
+         measure: '{observations.shared_unit}', value: item, position: '{item.span_start}',
+         attribute: '{property}', acquisition: '{property_label}'}
+      uses: [property_label, observations, property]
+      senses: [property_label, property]
+- id: arithmetic/counted-companions-planned
+  template: group-members
+  arguments:
+    travel: &planned_journey
+      phrase:
+      - opt: [{lit: ',', consume_skipped: true}]
+      - {slot: decision, cat: decision_action, finite_form: true}
+      - {lit: to, consume_skipped: true}
+      - {slot: motion, cat: spatial_motion_verb, bare_form: true}
+      - {lit: to, consume_skipped: true}
+      - {slot: site, cat: activity_location, uncounted: true}
+      uses: [decision, motion, site]
+      senses: [decision, motion, site]
+      obligations: {decision: [subject], motion: [subject]}
+      decision: '{decision}'
+- id: arithmetic/counted-companions-measurements-planned
+  template: group-members
+  arguments: {measurements: *associated_measurements, travel: *planned_journey}
+- id: arithmetic/individual-companions
+  template: group-members
+  arguments:
+    leader: &single_person
+      slot: {slot: first, cat: cohort_member, uncounted: true, number: singular, bare: true, at_start: true}
+      count: 1
+      source: singular
+- id: arithmetic/individual-companions-measurements
+  template: group-members
+  arguments: {leader: *single_person, measurements: *associated_measurements}
+- id: arithmetic/individual-companions-planned
+  template: group-members
+  arguments: {leader: *single_person, travel: *planned_journey}
+- id: arithmetic/individual-companions-measurements-planned
+  template: group-members
+  arguments: {leader: *single_person, measurements: *associated_measurements, travel: *planned_journey}
+- id: arithmetic/collective-companions
+  template: group-members
+  arguments:
+    leader: &fixed_size_collective
+      slot: {slot: first, cat: fixed_size_social_group, uncounted: true, number: singular, bare: true, at_start: true}
+      count: attr(first, member_count)
+      source: lexical
+- id: arithmetic/collective-companions-measurements
+  template: group-members
+  arguments: {leader: *fixed_size_collective, measurements: *associated_measurements}
+- id: arithmetic/collective-companions-planned
+  template: group-members
+  arguments: {leader: *fixed_size_collective, travel: *planned_journey}
+- id: arithmetic/collective-companions-measurements-planned
+  template: group-members
+  arguments: {leader: *fixed_size_collective, measurements: *associated_measurements, travel: *planned_journey}
+rules:
+- id: arithmetic/group-member-measurements
+  independent_clause: true
+  match:
+    sentence:
+    - {slot: members, cat: cohort_member, uncounted: true, number: plural, bare: true, at_start: true}
+    - {slot: be, cat: plural_copula, finite_form: true}
+    - *measurement_list
+    - {slot: property, cat: measured_property_descriptor}
+    - {lit: ., consume_skipped: true}
+  satisfies: {be: [subject]}
+  consumes: [members, be, observations, property]
+  emits:
+  - {fact: batch_evidence, each: observations, kind: group-member-measurement, entity: '{members}',
+     measure: '{observations.shared_unit}', value: item, position: '{item.span_start}', attribute: '{property}'}
+  disambiguates: [members, be, property]
+- id: arithmetic/indexed-group-member-measurement
+  independent_clause: true
+  match:
+    sentence:
+    - {slot: member, cat: cohort_member, qualified: true, qualifier_cat: holder_ordinal, all_qualifiers: true, uncounted: true, number: singular, at_start: true}
+    - {slot: be, cat: singular_copula, finite_form: true}
+    - {slot: reading, cat: member_measurement_unit, counted: true, bare: true}
+    - {slot: property, cat: measured_property_descriptor}
+    - {lit: '.', consume_skipped: true}
+  satisfies: {be: [subject]}
+  consumes: [member, be, reading, property]
+  emits:
+  - {fact: batch_evidence, kind: group-member-measurement, entity: '{member}', measure: '{reading}', value: reading, attribute: '{property}',
+     marker: '{member.qualifier}', position: '{reading.span_start}'}
+asks:
+- id: ask/group-headcount
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: many}
+    - {slot: unit, cat: group_headcount_unit, uncounted: true, bare: true}
+    - {slot: be, cat: plural_copula, finite_form: true}
+    - {lit: in}
+    - {slot: group, cat: assembled_group, uncounted: true, bare: true}
+    - {lit: '?', consume_skipped: true}
+  satisfies: {be: [subject]}
+  resolves: {consumer: group-headcount, group: '{group}'}

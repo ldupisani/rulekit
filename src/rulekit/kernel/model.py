@@ -1522,6 +1522,20 @@ class BatchEvidence(Fact):
 
 
 @dataclass(frozen=True)
+class CohortDiscount(BatchEvidence):
+    """A monetary saving for members of a subgroup, optionally subject to a measured boundary."""
+
+    operator: str = ""
+    boundary_value: float | None = None
+    boundary_unit: str = ""
+    inclusive_marker: str = ""
+
+    def value_part(self):
+        return (*super().value_part(), self.operator, self.boundary_value, self.boundary_unit,
+                self.inclusive_marker)
+
+
+@dataclass(frozen=True)
 class ActivityAccountEvidence(BatchEvidence):
     """Account activity with independently preserved reporting-period scope.
 

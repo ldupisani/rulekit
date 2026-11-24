@@ -1,11 +1,55 @@
 format: rulekit/categories@1
 categories:
+  sectioned_work: {parent: noun, includes: [written_work, audiovisual_work, audio_work]}
+  written_work: {parent: noun, includes: [content_progress_product]}
+  audiovisual_work: {parent: noun, includes: [audiovisual_product]}
+  audio_work: {parent: noun}
+  written_section_extent: {parent: noun, includes: [content_progress_measure]}
+  section_extent_unit: {parent: noun, includes: [written_section_extent, playback_duration_unit]}
+  playback_duration_unit: {parent: duration_measure}
+  written_work_section: {parent: counted_work_section}
+  viewed_work_section: {parent: counted_work_section}
+  audio_work_section: {parent: counted_work_section}
+  preparation_participle: {parent: verb}
+  relative_source_preposition: {parent: preposition}
+  study_activity: {parent: verb}
+  continuation_motion_verb: {parent: verb}
+  clock_indication_verb: {parent: verb}
+  clock_point_marker: {parent: adverb}
+  content_consumption_action: {parent: verb, explicit_frame_only: true}
+  text_reading_action:
+    parent: content_consumption_action
+    selectional_roles: {work: written_work, section: written_work_section, extent: written_section_extent}
+  media_viewing_action:
+    parent: content_consumption_action
+    selectional_roles: {work: audiovisual_work, section: viewed_work_section, extent: playback_duration_unit}
+  media_listening_action:
+    parent: content_consumption_action
+    selectional_roles: {work: audio_work, section: audio_work_section, extent: playback_duration_unit}
+  counted_work_section: {parent: noun}
   partitioned_process: {parent: duration_holder}
   process_part: {parent: duration_holder}
   process_partition_verb: {parent: whole_partition_verb}
   process_elapsed_predicate: {parent: verb}
   completion_ability_descriptor: {parent: adjective}
 members:
+  written_work: [novel, report, textbook]
+  written_section_extent: [sentence, word]
+  audiovisual_work: [series]
+  audio_work: [album, audiobook, podcast, recording, series]
+  written_work_section: [chapter, section]
+  viewed_work_section: [clip, episode, section]
+  audio_work_section: [chapter, episode, section, track]
+  playback_duration_unit: [hour, minute, second, seconds]
+  preparation_participle: [studying, preparing]
+  relative_source_preposition: [from]
+  study_activity: [study, studying, studied]
+  continuation_motion_verb: [proceeded, continued]
+  clock_indication_verb: [clocked, struck]
+  clock_point_marker: [o'clock]
+  text_reading_action: [read, reads, reading]
+  media_viewing_action: [watch, watches, watched, watching]
+  media_listening_action: [listen to, listens to, listened to, listening to]
   partitioned_process: [assignment, project, task, test, tutorial]
   process_part: [part]
   process_partition_verb: [divide, divided]

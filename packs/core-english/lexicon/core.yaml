@@ -262,6 +262,8 @@ entries:
     - verb
     verb:
       lemma: amount
+  amusement: {senses: [noun]}
+  amusement park: {senses: [noun], plural: amusement parks, lexical_phrase: true}
   an: {senses: [article]}
   and: {senses: [conjunction]}
   andrena:
@@ -451,6 +453,7 @@ entries:
     verb:
       lemma: attend
   attributable: {senses: [adjective]}
+  audiobook: {senses: [noun], plural: audiobooks}
   auditorium:
     senses:
     - noun
@@ -1088,6 +1091,7 @@ entries:
   buying: {senses: [verb], verb: {lemma: buy}}
   buys: {senses: [verb], number: singular, verb: {lemma: buy}}
   by: {senses: [preposition]}
+  cabin: {senses: [noun], plural: cabins}
   cabinet:
     senses:
     - noun
@@ -1259,6 +1263,7 @@ entries:
     senses:
     - noun
     - name
+  cashier: {senses: [noun], plural: cashiers}
   castle:
     senses:
     - noun
@@ -1517,6 +1522,8 @@ entries:
     senses:
     - verb
   clip: {senses: [noun], plural: clips}
+  clock: {senses: [noun, verb], plural: clocks}
+  clocked: {senses: [verb], verb: {lemma: clock}}
   closed: {senses: [adjective, verb], verb: {lemma: close}}
   closet:
     senses:
@@ -2635,6 +2642,7 @@ entries:
   dump:
     senses:
     - noun
+  duo: {senses: [noun], plural: duos}
   during: {senses: [preposition]}
   dvd: {senses: [noun], plural: dvds}
   each: {senses: [quantifier], number: singular, notes: distributive; singular agreement}
@@ -4618,6 +4626,10 @@ entries:
     senses:
     - noun
     plural: listens
+  listen to: {senses: [verb], lexical_phrase: true, number: plural, verb: {lemma: listen to}}
+  listened to: {senses: [verb], lexical_phrase: true, verb: {lemma: listen to}}
+  listening to: {senses: [verb], lexical_phrase: true, verb: {lemma: listen to, finite: false}}
+  listens to: {senses: [verb], lexical_phrase: true, number: singular, verb: {lemma: listen to}}
   lists:
     senses:
     - noun
@@ -5331,6 +5343,7 @@ entries:
     senses:
     - noun
     plural: nuts
+  o'clock: {senses: [adverb]}
   oasis:
     senses:
     - noun
@@ -6006,6 +6019,7 @@ entries:
     senses:
     - noun
     plural: pockets
+  podcast: {senses: [noun], plural: podcasts}
   poem: {senses: [noun], plural: poems}
   poetry:
     senses:
@@ -6139,6 +6153,7 @@ entries:
   present:
     senses:
     - noun
+    - adjective
     plural: presents
   president: {senses: [noun]}
   pretzel:
@@ -6184,6 +6199,8 @@ entries:
     - adjective
   prize: {senses: [noun], plural: prizes}
   procedure: {senses: [noun], plural: procedures}
+  proceed: {senses: [verb]}
+  proceeded: {senses: [verb], verb: {lemma: proceed}}
   proceeds:
     senses:
     - noun
@@ -6529,6 +6546,7 @@ entries:
     - verb
     verb:
       lemma: record
+  recording: {senses: [noun], plural: recordings}
   records:
     senses:
     - noun
@@ -7122,6 +7140,7 @@ entries:
     - noun
     plural: scrapbooks
   scratched: {senses: [adjective]}
+  sculpture: {senses: [noun], plural: sculptures}
   sea: {senses: [noun], plural: seas}
   sea star:
     senses:
@@ -7932,6 +7951,7 @@ entries:
     senses:
     - noun
     plural: stripes
+  struck: {senses: [verb], verb: {lemma: strike}}
   student: {senses: [noun], plural: students}
   studied: {senses: [verb], verb: {lemma: study}}
   studies: {senses: [verb], number: singular, verb: {lemma: study}}
@@ -8604,6 +8624,7 @@ entries:
     senses:
     - noun
     plural: tricycles
+  trio: {senses: [noun], plural: trios}
   trip: {senses: [noun], plural: trips}
   triple: {senses: [quantifier, verb]}
   triple-flip:
@@ -8813,6 +8834,8 @@ entries:
     - adjective
   uses: {senses: [verb], number: singular, verb: {lemma: use, number: singular}}
   using: {senses: [verb], verb: {lemma: use}}
+  usual: {senses: [adjective]}
+  usually: {senses: [adverb]}
   utilities:
     senses:
     - noun
@@ -8993,8 +9016,10 @@ entries:
   was: {senses: [verb], number: singular, verb: {lemma: be}}
   wash: {senses: [verb], verb: {number: plural}}
   washed: {senses: [verb], verb: {lemma: wash}}
+  washer: {senses: [noun], plural: washers}
   washes: {senses: [verb], number: singular, verb: {lemma: wash, number: singular}}
   washing: {"senses": ["verb"], "verb": {"lemma": "wash"}}
+  washing machine: {senses: [noun], plural: washing machines, lexical_phrase: true}
   watch:
     senses:
     - verb
@@ -9034,6 +9059,7 @@ entries:
     senses:
     - noun
     plural: wavelengths
+  wax: {senses: [noun]}
   way:
     senses:
     - noun

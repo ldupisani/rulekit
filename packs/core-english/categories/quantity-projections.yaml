@@ -5,7 +5,10 @@ categories:
   current_snapshot_adverb: {parent: adverb}
   projection_window_preposition: {parent: preposition}
   projected_dimension_noun: {parent: noun}
-  projected_dimension_adjective: {parent: adjective}
+  measured_property_descriptor: {parent: adjective}
+  member_measurement_unit: {parent: noun, includes: [age_measure, length_unit]}
+  member_measurement_label: {parent: noun, includes: [age_noun, projected_dimension_noun]}
+  projected_dimension_adjective: {parent: measured_property_descriptor}
   employment_context: {parent: noun}
   activity_onset_verb: {parent: verb}
   savings_retention_verb: {parent: verb}
@@ -23,6 +26,8 @@ members:
   savings_retention_verb: [save, saved, saves]
   retained_balance_verb: [left]
   elapsed_auxiliary_clitic: ["'s"]
+attribute_compatibility:
+  projected_dimension_adjective: [length_unit]
 attrs:
   height: {projection_axis: 1}
   tall: {projection_axis: 1}

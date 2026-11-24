@@ -144,6 +144,9 @@ def consumer(name: str, *, time_scoped: bool = False,
 
 from . import (  # noqa: E402,F401  (import registers each handler)
     partitioned_account as _partitioned_account,
+    component_accounts as _component_accounts,
+    group_members as _group_members,
+    lot_transactions as _lot_transactions,
     unit_plan as _unit_plan,
     cohort_capacity as _cohort_capacity,
     activity_account as _activity_account,

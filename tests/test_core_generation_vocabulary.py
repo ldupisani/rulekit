@@ -105,7 +105,7 @@ def test_new_location_and_colour_compatibility_is_explicit(registry) -> None:
 def test_new_core_words_are_reachable_generator_fillers(curated_fillers) -> None:
     identities = set(curated_fillers)
 
-    assert len(identities) == 2684
+    assert len(identities) == 2703
     assert "sum" in identities
     assert {"neighborhood", "neighbourhood"} <= identities
     assert {"family", "household", "team"} <= identities

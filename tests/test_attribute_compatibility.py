@@ -190,7 +190,7 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
         if "noun" in entry.senses and entry.plural is not None
     }
 
-    assert len(adjectives) == 375
+    assert len(adjectives) == 377
     assert adjectives >= {
         "equal", "living", "odd", "square", "rectangular", "separate", "cubic", "uncut",
         "early", "late", "long",
@@ -246,8 +246,8 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
         "yellow",
     }
     # The core generation vocabulary adds ordinary count nouns and the
-    # reviewed descriptor vocabulary. Core-owned literal adjectives such as
-    # `old` and `different` remain outside descriptor compatibility categories.
+    # reviewed descriptor vocabulary. The age descriptor accepts explicit duration units, and
+    # regular prices can qualify goods and services.
     # Compatibility still comes from category membership, never broader senses.
     # `head` and `university` are core-owned for the logic bridge, while
     # `topic` supports reviewed topical quantities. `page` and `week` support
@@ -275,7 +275,7 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
     # Shared vocabulary includes the former alphabetic source dictionaries.
     # Count morphology and justified person/object/location roles expand this
     # domain; descriptor compatibility still follows declared category pairs.
-    assert len(plural_nouns) == 1064
+    assert len(plural_nouns) == 1076
     assert {
         "boy",
         "day",
@@ -294,6 +294,7 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
         "university",
         "wallet",
     } <= plural_nouns
+    assert registry.attribute_applies_to("free", "ticket")
     assert registry.attribute_applies_to("final", "weight")
     assert registry.attribute_applies_to("queen size", "bed")
     assert registry.attribute_applies_to("pull-out", "couch")
@@ -314,7 +315,7 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
         registry.attribute_applies_to(attribute, noun)
         for attribute in adjectives
         for noun in plural_nouns
-    ) == 12927
+    ) == 14316
 
 
 def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> None:

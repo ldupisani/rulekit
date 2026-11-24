@@ -1,5 +1,15 @@
 format: rulekit/categories@1
 categories:
+  last_sale_descriptor: {parent: adjective}
+  completed_sale: {parent: noun}
+  business_closing_action: {parent: verb}
+  priced_offering: {parent: noun, includes: [purchase_item, purchasable_activity]}
+  promotion_recipient: {parent: person}
+  payment_recipient: {parent: person}
+  standard_price_adverb: {parent: adverb}
+  regular_price_descriptor: {parent: adjective}
+  complimentary_descriptor: {parent: adjective}
+  promotion_good: {parent: purchase_item, includes: [commercial_product, edible_quantity_object]}
   commercial_product: {parent: ownable_quantity_object}
   revenue_purpose_verb: {parent: verb}
   revenue_purpose_support_verb: {parent: verb}
@@ -104,6 +114,15 @@ categories:
   surcharge_noun: {parent: transaction_adjustment_noun}
   attribution_descriptor: {parent: adjective}
 members:
+  last_sale_descriptor: [last, final]
+  completed_sale: [sale]
+  business_closing_action: [stopped, closed]
+  promotion_recipient: [customer, buyer, shopper]
+  payment_recipient: [cashier, clerk]
+  standard_price_adverb: [normally, usually]
+  regular_price_descriptor: [regular, usual, normal]
+  complimentary_descriptor: [free]
+  promotion_good: [cone, ticket, coupon, book, drink]
   revenue_purpose_verb: [fund]
   revenue_purpose_support_verb: [help]
   commercial_product: [bar, notebook, pen, pencil]
@@ -225,6 +244,9 @@ members:
   sale_activity_verb:
   - selling
 attribute_compatibility:
+  complimentary_descriptor: [promotion_good]
+  regular_price_descriptor: [priced_offering, price_anaphor]
+  last_sale_descriptor: [completed_sale]
   surcharge_type: [surcharge_noun]
   income_modifier: [income_resource_noun]
   account_product_attribute:

@@ -1,0 +1,190 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/group-stay-duration
+  independent_clause: true
+  match:
+    sentence:
+    - {slot: groups, cat: supply_group, counted: true, bare: true, at_start: true}
+    - {lit: of, consume_skipped: true}
+    - {slot: members, cat: person, counted: true, bare: true}
+    - {slot: act, cat: divide, finite_form: true}
+    - {slot: site, cat: stay_accommodation, uncounted: true}
+    - {lit: for, consume_skipped: true}
+    - {slot: duration, cat: duration_measure, counted: true, bare: true}
+    - {lit: ., consume_skipped: true}
+  satisfies: {act: [subject]}
+  consumes: [groups, members, act, site, duration]
+  emits:
+  - {fact: batch_evidence, kind: group-size, entity: '', measure: '{groups}', value: groups, position: '{groups.span_start}',
+    per_member: members, marker: '{members}'}
+  - {fact: batch_evidence, kind: group-period, entity: '', measure: '{duration}', value: duration, position: '{duration.span_start}',
+    container: '{groups}'}
+  disambiguates: [groups, members, act, site, duration]
+- id: arithmetic/counted-groups-of-members
+  independent_clause: true
+  match:
+    sentence:
+    - {lit: there, consume_skipped: true, at_start: true}
+    - {slot: be, cat: copula, finite_form: true}
+    - {slot: groups, cat: supply_group, counted: true, bare: true}
+    - {lit: of, consume_skipped: true}
+    - {slot: members, cat: person, counted: true, bare: true}
+    - {lit: ., consume_skipped: true}
+  satisfies: {be: [subject]}
+  consumes: [be, groups, members]
+  emits:
+  - {fact: batch_evidence, kind: group-size, entity: '', measure: '{groups}', value: groups, position: '{groups.span_start}',
+    per_member: members, marker: '{members}'}
+  disambiguates: [be, groups, members]
+- id: arithmetic/group-activity-duration
+  independent_clause: true
+  match:
+    sentence:
+    - {slot: groups, cat: supply_group, uncounted: true, at_start: true}
+    - {slot: act, cat: divide, finite_form: true}
+    - {slot: site, cat: stay_accommodation, uncounted: true}
+    - {lit: for, consume_skipped: true}
+    - {slot: duration, cat: duration_measure, counted: true, bare: true}
+    - {lit: ., consume_skipped: true}
+  satisfies: {act: [subject]}
+  consumes: [groups, act, site, duration]
+  emits:
+  - {fact: batch_evidence, kind: group-period, entity: '', measure: '{duration}', value: duration, position: '{duration.span_start}',
+    container: '{groups}'}
+  disambiguates: [groups, act, site, duration]
+- id: arithmetic/recurring-individual-supply
+  independent_clause: true
+  match:
+    sentence:
+    - {slot: person, cat: universal_person_reference, at_start: true}
+    - {slot: act, cat: resource_usage_verb, finite_form: true}
+    - {slot: amount, cat: consumable_supply, counted: true}
+    - {lit: a, consume_skipped: true}
+    - {slot: period, cat: duration_measure, uncounted: true, bare: true}
+    - {lit: before, consume_skipped: true}
+    - {slot: get, cat: acquire, present_participle: true}
+    - {lit: a, consume_skipped: true}
+    - {slot: fresh, cat: new_purchase_condition}
+    - {slot: one, type: number, value_min: 1, value_max: 1}
+    - {lit: ., consume_skipped: true}
+  satisfies: {person: [refers], act: [subject], get: [subject], one: [quantifies]}
+  consumes: [person, act, amount, period, get, fresh, one]
+  emits:
+  - {fact: batch_evidence, kind: per-person-consumption, entity: '', measure: '{amount}', value: amount, position: '{amount.span_start}',
+    marker: '{period}', acquisition: '{amount}', attribute: replacement, subtotal: one}
+  disambiguates: [person, act, amount, period, get, fresh]
+- id: arithmetic/machine-batch-capacity
+  independent_clause: true
+  match:
+    sentence:
+    - {slot: machine, cat: batch_processing_device, uncounted: true, at_start: true}
+    - {lit: can, consume_skipped: true}
+    - {slot: hold, cat: occupancy_capacity_verb, bare_form: true}
+    - {slot: amount, cat: consumable_supply, counted: true}
+    - {lit: per, consume_skipped: true}
+    - {slot: batch, cat: processing_batch_unit, uncounted: true, bare: true}
+    - {lit: ., consume_skipped: true}
+  satisfies: {hold: [subject]}
+  consumes: [machine, hold, amount, batch]
+  emits:
+  - {fact: batch_evidence, kind: processing-capacity, entity: '{machine}', measure: '{amount}', value: amount, position: '{amount.span_start}',
+    marker: '{batch}', acquisition: '{amount}'}
+  disambiguates: [machine, hold, amount, batch]
+- id: arithmetic/recurring-individual-supply-unmarked
+  independent_clause: true
+  match:
+    sentence:
+    - {slot: person, cat: universal_person_reference, at_start: true}
+    - {slot: act, cat: resource_usage_verb, finite_form: true}
+    - {slot: amount, cat: consumable_supply, counted: true}
+    - {lit: a, consume_skipped: true}
+    - {slot: period, cat: duration_measure, uncounted: true, bare: true}
+    - {lit: ., consume_skipped: true}
+  satisfies: {person: [refers], act: [subject]}
+  consumes: [person, act, amount, period]
+  emits:
+  - {fact: batch_evidence, kind: per-person-consumption, entity: '', measure: '{amount}', value: amount, position: '{amount.span_start}',
+    marker: '{period}', acquisition: '{amount}'}
+  disambiguates: [person, act, amount, period]
+- id: arithmetic/counted-group-stay
+  independent_clause: true
+  match:
+    sentence:
+    - {slot: groups, cat: supply_group, counted: true, bare: true, at_start: true}
+    - {slot: act, cat: divide, finite_form: true}
+    - {slot: site, cat: stay_accommodation, uncounted: true}
+    - {lit: for, consume_skipped: true}
+    - {slot: duration, cat: duration_measure, counted: true, bare: true}
+    - {lit: ., consume_skipped: true}
+  satisfies: {act: [subject]}
+  consumes: [groups, act, site, duration]
+  emits:
+  - {fact: batch_evidence, kind: group-headcount, entity: '', measure: '{groups}', value: groups, position: '{groups.span_start}'}
+  - {fact: batch_evidence, kind: group-period, entity: '', measure: '{duration}', value: duration, position: '{duration.span_start}',
+    container: '{groups}'}
+  disambiguates: [groups, act, site, duration]
+- id: arithmetic/uniform-group-member-count
+  independent_clause: true
+  match:
+    sentence:
+    - {slot: each, cat: distributive_quantifier, at_start: true}
+    - {slot: group, cat: supply_group, uncounted: true, bare: true}
+    - {slot: act, cat: possession_state, finite_form: true}
+    - {slot: members, cat: person, counted: true, bare: true}
+    - {lit: ., consume_skipped: true}
+  satisfies: {each: [collection], act: [subject]}
+  consumes: [each, group, act, members]
+  emits:
+  - {fact: batch_evidence, kind: members-per-user-group, entity: '', measure: '{group}', value: members, position: '{members.span_start}',
+    marker: '{members}'}
+  disambiguates: [each, group, act, members]
+- id: arithmetic/individual-periodic-supply
+  independent_clause: true
+  match:
+    sentence:
+    - {slot: each, cat: distributive_quantifier, at_start: true}
+    - {slot: person, cat: person, uncounted: true, bare: true}
+    - {slot: act, cat: resource_usage_verb, finite_form: true}
+    - {slot: amount, cat: consumable_supply, counted: true}
+    - {lit: per, consume_skipped: true}
+    - {slot: period, cat: duration_measure, uncounted: true, bare: true}
+    - {lit: ., consume_skipped: true}
+  satisfies: {each: [collection], act: [subject]}
+  consumes: [each, person, act, amount, period]
+  emits:
+  - {fact: batch_evidence, kind: per-person-consumption, entity: '', measure: '{amount}', value: amount, position: '{amount.span_start}',
+    marker: '{period}', acquisition: '{amount}', container: '{person}'}
+  disambiguates: [each, person, act, amount, period]
+asks:
+- id: ask/required-processing-batches
+  match:
+    question:
+    - {lit: how, consume_skipped: true, at_start: true}
+    - {lit: many, consume_skipped: true}
+    - {slot: batch, cat: processing_batch_unit, uncounted: true}
+    - opt:
+      - {lit: of, consume_skipped: true}
+      - {slot: collection, cat: processed_collection, uncounted: true}
+    - {lit: will, consume_skipped: true}
+    - {slot: it, cat: impersonal_subject_pronoun}
+    - {slot: take, cat: elapsed_duration_verb, bare_form: true}
+    - {lit: to, consume_skipped: true}
+    - {slot: act, cat: batch_processing_action, bare_form: true}
+    - {lit: all, consume_skipped: true}
+    - {slot: goods, cat: consumable_supply, uncounted: true}
+    - {lit: '?', consume_skipped: true}
+  satisfies: {take: [subject], act: [subject], it: [refers]}
+  resolves: {consumer: consumption-loads, measure: '{batch}', goods: '{goods}', activity: '{act}', collection: '{collection.optional}'}
+  disambiguates: [batch, collection, take, act, goods]
+- id: ask/sufficient-processing-batches
+  match:
+    question:
+    - {lit: how, consume_skipped: true, at_start: true}
+    - {lit: many, consume_skipped: true}
+    - {slot: batch, cat: processing_batch_unit, uncounted: true}
+    - {slot: be, cat: plural_copula, finite_form: true}
+    - {lit: needed, consume_skipped: true}
+    - {lit: '?', consume_skipped: true}
+  satisfies: {be: [subject]}
+  resolves: {consumer: consumption-loads, measure: '{batch}'}
+  disambiguates: [batch, be]

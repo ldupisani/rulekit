@@ -1,0 +1,344 @@
+format: rulekit/rules@1
+templates:
+  whole-sections-completed:
+    parameters:
+      clock_phrase: []
+      clock_consumes: []
+      clock_senses: []
+      obligations: {studying: [subject], owner: [refers], action: [subject]}
+      clock_value: 0
+      clock_evidence: ''
+    rule:
+      independent_clause: true
+      match:
+        sentence:
+        - opt:
+          - {slot: studying, cat: preparation_participle}
+          - {lit: for, consume_skipped: true}
+          - {slot: owner, cat: possessive_determiner}
+          - {slot: test, cat: partitioned_process, uncounted: true}
+          - {lit: ',', consume_skipped: true}
+        - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true}
+        - {slot: action, cat: content_consumption_action, finite_form: true}
+        - {slot: sections, cat: counted_work_section, counted: true, bare: true}
+        - {lit: of, consume_skipped: true}
+        - {slot: work, cat: sectioned_work, uncounted: true, bare: true}
+        - {parameter: clock_phrase}
+        - {lit: ., consume_skipped: true}
+      where:
+      - {verb_roles_compatible: {verb: action, frame_categories: [content_consumption_action], require_declared_frame: true, roles: {work: [work], section: [sections]}}}
+      satisfies: {parameter: obligations}
+      consumes: [studying, owner, test, who, action, sections, work, {parameter: clock_consumes}]
+      emits:
+      - {fact: batch_evidence, kind: completed-sections, entity: '{who}', measure: '{sections}', value: sections, position: '{sections.span_start}',
+        container: '{work}', verb: '{action}', attribute: {parameter: clock_evidence}, subtotal: {parameter: clock_value}}
+      disambiguates: [studying, owner, test, action, sections, work, {parameter: clock_senses}]
+  partial-indexed-section:
+    parameters:
+      indexed_section:
+      - {slot: ordinal, type: ordinal}
+      - {slot: section, cat: counted_work_section, uncounted: true, bare: true}
+      section_number: '{ordinal.value}'
+      ordinal_slots: [ordinal]
+      clock_phrase: []
+      clock_consumes: []
+      clock_senses: []
+      study_clause: []
+      study_slots: []
+      study_senses: []
+      references: {}
+      obligations: {action: [subject]}
+      clock_value: 0
+      clock_evidence: ''
+    rule:
+      independent_clause: true
+      match:
+        sentence:
+        - {parameter: clock_phrase}
+        - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true}
+        - {slot: action, cat: content_consumption_action, finite_form: true}
+        - {slot: extent, cat: section_extent_unit, counted: true, bare: true}
+        - {lit: of, consume_skipped: true}
+        - {parameter: indexed_section}
+        - {lit: of, consume_skipped: true}
+        - {slot: work, cat: sectioned_work, uncounted: true, bare: true}
+        - {parameter: study_clause}
+        - {lit: ., consume_skipped: true}
+      references: {parameter: references}
+      where:
+      - {verb_roles_compatible: {verb: action, frame_categories: [content_consumption_action], require_declared_frame: true, roles: {work: [work], section: [section], extent: [extent]}}}
+      satisfies: {parameter: obligations}
+      consumes: [who, action, extent, {parameter: ordinal_slots}, section, work, {parameter: study_slots}, {parameter: clock_consumes}]
+      emits:
+      - {fact: batch_evidence, kind: partial-section, entity: '{who}', measure: '{extent}', value: extent, position: '{extent.span_start}',
+        container: '{work}', acquisition: '{section}', verb: '{action}', marker: {parameter: section_number}, attribute: {parameter: clock_evidence}, subtotal: {
+          parameter: clock_value}}
+      disambiguates: [action, extent, section, work, {parameter: study_senses}, {parameter: clock_senses}]
+  skipped-indexed-section-remainder:
+    parameters:
+      clock_phrase: []
+      clock_consumes: []
+      clock_senses: []
+      obligations: {action: [subject], index: [quantifies], neg: [negates]}
+      clock_value: 0
+      clock_evidence: ''
+    rule:
+      independent_clause: true
+      match:
+        sentence:
+        - {parameter: clock_phrase}
+        - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true}
+        - {lit: did, consume_skipped: true}
+        - {slot: neg, cat: negation}
+        - {slot: action, cat: content_consumption_action, bare_form: true}
+        - {slot: remainder, cat: section_extent_unit, uncounted: true, qualified: true, qualifier_cat: remaining_quantity_descriptor}
+        - {lit: of, consume_skipped: true}
+        - {slot: section, cat: counted_work_section, uncounted: true, bare: true}
+        - {slot: index, type: number}
+        - {lit: ., consume_skipped: true}
+      where:
+      - {verb_roles_compatible: {verb: action, frame_categories: [content_consumption_action], require_declared_frame: true, roles: {section: [section], extent: [remainder]}}}
+      satisfies: {parameter: obligations}
+      consumes: [who, action, remainder, section, index, {parameter: clock_consumes}]
+      emits:
+      - {fact: batch_evidence, kind: skipped-section-remainder, entity: '{who}', measure: '{remainder}', value: index, position: '{index.span_start}',
+        container: '{section}', verb: '{action}', attribute: {parameter: clock_evidence}, subtotal: {parameter: clock_value}}
+      disambiguates: [action, remainder, section, {parameter: clock_senses}]
+  skipped-remainder-and-further-sections:
+    parameters:
+      clock_phrase: []
+      clock_consumes: []
+      clock_senses: []
+      obligations: {action: [subject], index: [quantifies], proceed: [subject], continue_action: [subject], n: [quantifies], neg: [negates]}
+      clock_value: 0
+      clock_evidence: ''
+    rule:
+      independent_clause: true
+      match:
+        sentence:
+        - {parameter: clock_phrase}
+        - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true}
+        - {lit: did, consume_skipped: true}
+        - {slot: neg, cat: negation}
+        - {slot: action, cat: content_consumption_action, bare_form: true}
+        - {slot: remainder, cat: section_extent_unit, uncounted: true, qualified: true, qualifier_cat: remaining_quantity_descriptor}
+        - {lit: of, consume_skipped: true}
+        - {slot: section, cat: counted_work_section, uncounted: true, bare: true}
+        - {slot: index, type: number}
+        - {lit: but, consume_skipped: true}
+        - opt:
+          - {slot: proceed, cat: continuation_motion_verb, finite_form: true}
+          - {lit: and, consume_skipped: true}
+        - {slot: continue_action, cat: content_consumption_action, finite_form: true}
+        - {slot: n, type: number}
+        - {slot: more, cat: count_quantity_delta}
+        - {slot: sections, cat: counted_work_section, uncounted: true, bare: true}
+        - {lit: of, consume_skipped: true}
+        - {slot: work, cat: sectioned_work, uncounted: true, bare: true}
+        - {lit: ., consume_skipped: true}
+      where:
+      - {verb_roles_compatible: {verb: action, frame_categories: [content_consumption_action], require_declared_frame: true, roles: {section: [section], extent: [remainder]}}}
+      - {verb_roles_compatible: {verb: continue_action, frame_categories: [content_consumption_action], require_declared_frame: true, roles: {work: [work], section: [sections]}}}
+      satisfies: {parameter: obligations}
+      consumes: [who, action, remainder, section, index, proceed, continue_action, n, more, sections, work, {parameter: clock_consumes}]
+      emits:
+      - {fact: batch_evidence, kind: skipped-section-remainder, entity: '{who}', measure: '{remainder}', value: index, position: '{index.span_start}',
+        container: '{section}', verb: '{action}', attribute: {parameter: clock_evidence}, subtotal: {parameter: clock_value}}
+      - {fact: batch_evidence, kind: additional-sections, entity: '{who}', measure: '{sections}', value: n, position: '{n.span_start}',
+        container: '{work}', marker: '{more}', verb: '{continue_action}'}
+      disambiguates: [action, remainder, section, proceed, continue_action, more, sections, work, {parameter: clock_senses}]
+  uniform-section-extent:
+    parameters: {predicate: possession_state, unit: section_extent_unit}
+    rule:
+      independent_clause: true
+      question_assumption: true
+      match:
+        sentence:
+        - {slot: each, cat: distributive_quantifier, at_start: true}
+        - {slot: section, cat: counted_work_section, uncounted: true, bare: true}
+        - opt:
+          - {lit: in, consume_skipped: true}
+          - {slot: work, cat: sectioned_work, uncounted: true, bare: true}
+        - {slot: predicate, cat: {parameter: predicate}, finite_form: true}
+        - {slot: extent, cat: {parameter: unit}, counted: true, bare: true}
+        - {lit: ., consume_skipped: true}
+      satisfies: {each: [collection], predicate: [subject]}
+      consumes: [each, section, work, predicate, extent]
+      emits:
+      - {fact: batch_evidence, kind: uniform-section-size, entity: '', measure: '{extent}', value: extent, position: '{extent.span_start}',
+        container: '{section}', acquisition: '{work.optional}'}
+      disambiguates: [each, section, work, predicate, extent]
+variants:
+- {id: arithmetic/uniform-section-extent, template: uniform-section-extent}
+- id: arithmetic/uniform-section-duration
+  template: uniform-section-extent
+  arguments: {predicate: event_duration_verb, unit: playback_duration_unit}
+- {id: arithmetic/whole-sections-completed-unmarked, template: whole-sections-completed}
+- id: arithmetic/whole-sections-completed
+  template: whole-sections-completed
+  arguments:
+    clock_phrase:
+    - {lit: before, consume_skipped: true}
+    - {slot: clock, type: number}
+    - {slot: time, cat: clock_point_marker}
+    clock_consumes: [clock, time]
+    clock_senses: [time]
+    obligations: {studying: [subject], owner: [refers], action: [subject], clock: [quantifies]}
+    clock_value: clock
+    clock_evidence: clock
+- {id: arithmetic/partial-indexed-section-unmarked, template: partial-indexed-section}
+- id: arithmetic/partial-ordinal-section
+  template: partial-indexed-section
+  arguments:
+    indexed_section:
+    - {slot: section, cat: counted_work_section, uncounted: true, qualified: true, qualifier_cat: holder_ordinal}
+    section_number: '{section.qualifier}'
+    ordinal_slots: []
+- id: arithmetic/partial-indexed-section
+  template: partial-indexed-section
+  arguments:
+    clock_phrase: &at_clock_reading
+    - {lit: when, consume_skipped: true}
+    - {slot: it, cat: impersonal_subject_pronoun}
+    - {slot: clocked, cat: clock_indication_verb, finite_form: true}
+    - {slot: clock, type: number}
+    - opt:
+      - {lit: ',', consume_skipped: true}
+    clock_consumes: [clocked, clock]
+    clock_senses: [clocked]
+    obligations: {clocked: [subject], clock: [quantifies], action: [subject], be: [subject], studying: [subject], it: [
+        refers], source: [object]}
+    study_clause: &relative_study_clause
+    - {slot: she, cat: clause_subject_personal_pronoun}
+    - {slot: be, cat: copula, finite_form: true}
+    - {slot: studying, cat: study_activity, present_participle: true}
+    - {slot: source, cat: relative_source_preposition}
+    references: {she: who}
+    study_slots: [she, be, studying]
+    study_senses: [she, be, studying]
+    clock_value: clock
+    clock_evidence: clock
+- id: arithmetic/partial-indexed-section-at-clock-reading
+  template: partial-indexed-section
+  arguments:
+    clock_phrase: *at_clock_reading
+    clock_consumes: [clocked, clock]
+    clock_senses: [clocked]
+    obligations: {clocked: [subject], clock: [quantifies], it: [refers], action: [subject]}
+    clock_value: clock
+    clock_evidence: clock
+- id: arithmetic/partial-indexed-section-with-source
+  template: partial-indexed-section
+  arguments:
+    study_clause: *relative_study_clause
+    references: {she: who}
+    study_slots: [she, be, studying]
+    study_senses: [she, be, studying]
+    obligations: {action: [subject], be: [subject], studying: [subject], source: [object]}
+- {id: arithmetic/skipped-indexed-section-remainder-unmarked, template: skipped-indexed-section-remainder}
+- id: arithmetic/skipped-indexed-section-remainder
+  template: skipped-indexed-section-remainder
+  arguments:
+    clock_phrase:
+    - {lit: after, consume_skipped: true}
+    - {slot: clock, type: number}
+    - {slot: time, cat: clock_point_marker}
+    - opt:
+      - {lit: ',', consume_skipped: true}
+    clock_consumes: [clock, time]
+    clock_senses: [time]
+    obligations: {clock: [quantifies], action: [subject], index: [quantifies], neg: [negates]}
+    clock_value: clock
+    clock_evidence: clock
+- {id: arithmetic/skipped-remainder-and-further-sections-unmarked, template: skipped-remainder-and-further-sections}
+- id: arithmetic/skipped-remainder-and-further-sections
+  template: skipped-remainder-and-further-sections
+  arguments:
+    clock_phrase:
+    - {lit: after, consume_skipped: true}
+    - {slot: clock, type: number}
+    - {slot: time, cat: clock_point_marker}
+    - opt:
+      - {lit: ',', consume_skipped: true}
+    clock_consumes: [clock, time]
+    clock_senses: [time]
+    obligations: {clock: [quantifies], action: [subject], index: [quantifies], proceed: [subject], continue_action: [subject], n: [quantifies],
+      neg: [negates]}
+    clock_value: clock
+    clock_evidence: clock
+rules:
+- id: arithmetic/additional-completed-sections
+  independent_clause: true
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, at_start: true}
+    - {slot: continue_action, cat: content_consumption_action, finite_form: true}
+    - {slot: n, type: number}
+    - {slot: more, cat: count_quantity_delta}
+    - {slot: sections, cat: counted_work_section, uncounted: true, bare: true}
+    - {lit: of, consume_skipped: true}
+    - {slot: work, cat: sectioned_work, uncounted: true, bare: true}
+    - {lit: ., consume_skipped: true}
+  where:
+  - {verb_roles_compatible: {verb: continue_action, frame_categories: [content_consumption_action], require_declared_frame: true, roles: {work: [work], section: [sections]}}}
+  satisfies: {continue_action: [subject], n: [quantifies]}
+  consumes: [who, continue_action, n, more, sections, work]
+  emits:
+  - {fact: batch_evidence, kind: additional-sections, entity: '{who}', measure: '{sections}', value: n, position: '{n.span_start}',
+    container: '{work}', marker: '{more}', verb: '{continue_action}'}
+  disambiguates: [continue_action, more, sections, work]
+asks:
+- id: ask/completed-extent-total
+  match:
+    question:
+    - {lit: calculate, consume_skipped: true, at_start: true}
+    - {lit: the, consume_skipped: true}
+    - {lit: total, consume_skipped: true}
+    - {slot: number, cat: count_aggregate_noun}
+    - {lit: of, consume_skipped: true}
+    - {slot: extent, cat: section_extent_unit, uncounted: true}
+    - {lit: that, consume_skipped: true}
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true}
+    - {slot: action, cat: content_consumption_action, finite_form: true}
+    - opt:
+      - {lit: altogether, consume_skipped: true}
+    - {lit: '?', consume_skipped: true}
+  satisfies: {action: [subject]}
+  resolves: {consumer: completed-section-extent, entity: '{who}', measure: '{extent}', activity: '{action}'}
+  disambiguates: [number, extent, action]
+- id: ask/completed-extent-question
+  match:
+    question:
+    - {lit: how, consume_skipped: true, at_start: true}
+    - {lit: many, consume_skipped: true}
+    - {slot: extent, cat: section_extent_unit, uncounted: true}
+    - opt:
+      - {lit: of, consume_skipped: true}
+      - {slot: work, cat: sectioned_work, uncounted: true, bare: true}
+    - {lit: did, consume_skipped: true}
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true}
+    - {slot: action, cat: content_consumption_action, bare_form: true}
+    - opt:
+      - {slot: in, cat: group_total_preposition}
+      - {lit: total, consume_skipped: true}
+    - {lit: '?', consume_skipped: true}
+  satisfies: {in: [object], action: [subject]}
+  resolves: {consumer: completed-section-extent, entity: '{who}', measure: '{extent}', activity: '{action}', work: '{work.optional}'}
+  disambiguates: [extent, action]
+- id: ask/total-completed-content-extent
+  match:
+    question:
+    - {lit: what, consume_skipped: true, at_start: true}
+    - {slot: be, cat: singular_copula, finite_form: true}
+    - opt: [{lit: the, consume_skipped: true}]
+    - {lit: total, consume_skipped: true}
+    - {slot: number, cat: count_aggregate_noun}
+    - {lit: of, consume_skipped: true}
+    - {slot: extent, cat: section_extent_unit, uncounted: true}
+    - opt: [{lit: that, consume_skipped: true}]
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true}
+    - {slot: action, cat: content_consumption_action, finite_form: true}
+    - {lit: '?', consume_skipped: true}
+  satisfies: {be: [subject], action: [subject]}
+  resolves: {consumer: completed-section-extent, entity: '{who}', measure: '{extent}', activity: '{action}'}
+  disambiguates: [be, number, extent, action]

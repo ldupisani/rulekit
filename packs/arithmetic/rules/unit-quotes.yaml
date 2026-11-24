@@ -60,6 +60,21 @@ rules:
     emits:
     - {fact: batch_evidence, kind: packaged-offer, entity: '{seller}', measure: '{price}', marker: same,
        acquisition: '{goods}', container: '{count}', value: price, per_member: count, position: '{price.span_start}'}
+  - id: arithmetic/regular-price-of-offering
+    independent_clause: true
+    match:
+      sentence:
+        - {slot: label, cat: price_anaphor, qualified: true, qualifier_cat: regular_price_descriptor, all_qualifiers: true, uncounted: true, at_start: true}
+        - {lit: of}
+        - {slot: item, cat: priced_offering, uncounted: true, bare: true, number: singular}
+        - {slot: be, cat: singular_copula, finite_form: true}
+        - {slot: price, cat: currency_unit, counted: true, bare: true}
+        - {lit: '.', consume_skipped: true}
+    satisfies: {be: [subject]}
+    consumes: [label, item, be, price]
+    disambiguates: [label, item, be, price]
+    emits:
+    - {fact: price, item: '{item}', qualifier: '', value: price, measure: '{price}', verb: '{be}'}
 asks:
   - id: ask/relative-packaged-unit-price
     match:

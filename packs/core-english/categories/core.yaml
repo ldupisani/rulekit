@@ -1522,6 +1522,7 @@ categories:
       fill this narrower grammatical role.
   age_noun:
     parent: noun
+    attrs: {projection_axis: 4}
     notes: >
       mining candidate sum-constraint-premise-surfaces: the noun 'age'
       (singular lemma; 'ages' collapses onto it via the ordinary plural

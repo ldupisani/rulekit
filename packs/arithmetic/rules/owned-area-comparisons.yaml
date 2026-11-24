@@ -1,0 +1,95 @@
+format: rulekit/rules@1
+templates:
+  scaled-area-comparison:
+    parameters:
+      # A counted comparative can bind the number and squared unit into one phrase.
+      offset:
+      - {slot: unit, cat: length_unit, counted: true, qualified: true, qualifier_cat: area_unit_modifier}
+      amount: unit
+      position: '{unit.span_start}'
+      additional_uses: []
+      additional_senses: []
+      obligations: {be: [subject], more: [standard]}
+    rule:
+      match:
+        sentence:
+        - {slot: site, cat: area_comparison_holder, number: singular, possessed: true, at_start: true}
+        - {slot: be, cat: singular_copula, finite_form: true}
+        - {parameter: offset}
+        - {slot: more, cat: area_excess_comparative}
+        - {lit: than, consume_skipped: true}
+        - {slot: factor, type: multiplier}
+        - {slot: other, cat: area_comparison_holder, number: singular, possessed: true}
+        - {lit: ., consume_skipped: true}
+      satisfies: {parameter: obligations}
+      consumes: [site, be, {parameter: additional_uses}, unit, more, factor, other]
+      disambiguates: [site, be, {parameter: additional_senses}, unit, more, other]
+      emits:
+      - fact: batch_evidence
+        kind: owned-area-comparison
+        entity: '{site}'
+        measure: '{unit}'
+        value: {parameter: amount}
+        position: {parameter: position}
+        container: '{other}'
+        fraction: factor
+variants:
+- id: arithmetic/owned-scaled-area-difference
+  template: scaled-area-comparison
+- id: arithmetic/owned-scaled-area-difference-in-squared-units
+  template: scaled-area-comparison
+  arguments:
+    offset:
+    - {slot: amount, type: number}
+    - {slot: power, cat: area_unit_modifier}
+    - {slot: unit, cat: length_unit, uncounted: true, bare: true}
+    amount: amount
+    position: '{amount.span_start}'
+    additional_uses: [amount, power]
+    additional_senses: [power]
+    obligations: {be: [subject], amount: [quantifies], more: [standard]}
+rules:
+- id: arithmetic/owned-area-anchor
+  question_assumption: true
+  match:
+    sentence:
+    - {slot: site, cat: area_comparison_holder, number: singular, possessed: true, at_start: true}
+    - {slot: be, cat: singular_copula, finite_form: true}
+    - {slot: amount, type: number}
+    - {slot: power, cat: area_unit_modifier}
+    - {slot: unit, cat: length_unit, uncounted: true, bare: true}
+    - {lit: ., consume_skipped: true}
+  satisfies: {be: [subject], amount: [quantifies]}
+  consumes: [site, be, amount, power, unit]
+  emits:
+  - {fact: batch_evidence, kind: owned-area-anchor, entity: '{site}', measure: '{unit}', value: amount, position: '{amount.span_start}'}
+  disambiguates: [site, be, power, unit]
+asks:
+- id: ask/owned-area-in-squared-units
+  match:
+    question:
+    - {lit: how, consume_skipped: true, at_start: true}
+    - {lit: many, consume_skipped: true}
+    - {slot: power, cat: area_unit_modifier}
+    - {slot: unit, cat: length_unit, uncounted: true, bare: true}
+    - {slot: be, cat: singular_copula, finite_form: true}
+    - {slot: site, cat: area_comparison_holder, number: singular, possessed: true}
+    - {lit: '?', consume_skipped: true}
+  satisfies: {be: [subject]}
+  resolves: {consumer: owned-area, entity: '{site}', unit: '{unit}'}
+  disambiguates: [power, unit, be, site]
+- id: ask/owned-area-property-question
+  match:
+    question:
+    - {lit: what, consume_skipped: true, at_start: true}
+    - {slot: be, cat: singular_copula, finite_form: true}
+    - {slot: area, cat: area_quantity}
+    - {lit: of, consume_skipped: true}
+    - {slot: site, cat: area_comparison_holder, number: singular, possessed: true}
+    - {lit: in, consume_skipped: true}
+    - {slot: power, cat: area_unit_modifier}
+    - {slot: unit, cat: length_unit, uncounted: true, bare: true}
+    - {lit: '?', consume_skipped: true}
+  satisfies: {be: [subject]}
+  resolves: {consumer: owned-area, entity: '{site}', unit: '{unit}'}
+  disambiguates: [be, area, site, power, unit]

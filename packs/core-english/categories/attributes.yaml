@@ -1,5 +1,8 @@
 format: rulekit/categories@1
 attrs:
+  couple: {member_count: 2}
+  duo: {member_count: 2}
+  trio: {member_count: 3}
   weekend: {weekday_start: 5, weekday_end: 6}
   monday: {weekday_index: 0}
   tuesday: {weekday_index: 1}

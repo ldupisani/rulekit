@@ -130,9 +130,10 @@ reading while declaring a plural finite verb form. Both paths use
 insufficient evidence. Reading, expense learning and generation share the
 same form check; a merged perfect auxiliary keeps its own finite surface.
 
-`lexical_phrase: true` marks an indivisible multiword noun, adjective or adverb with
-exactly that one sense. It is not a general replacement for compositional
-compound parsing.
+`lexical_phrase: true` gives a multiword expression one lexical sense. Nouns,
+adjectives and adverbs keep the identity of the whole expression. A verb phrase
+also declares its verb lemma so that forms such as “listened to” and “listen to”
+identify the same activity.
 
 Declared hyphenated noun plurals retain their canonical identity and require
 the source hyphen boundaries. An explicit non-noun entry for the plural
@@ -518,6 +519,7 @@ arbitrary definite plural references. Live schemas lists all `SLOT_TYPES`.
 | `span, span_blocks, span_blocks_counted` | Bounded span capture and barriers |
 | `enumeration_cat` | Span-only: an exact singleton or conjunctive list of heads in this category |
 | `enumeration_counted` | Require one counted nominal per enumeration member; per-item emission retains its value and reference |
+| `enumeration_shared_unit` | With `enumeration_counted`, earlier numbers may share the final measured noun. In “6, 8 and 12 years,” `each` emits three separate values and `{slot.shared_unit}` gives their common unit. |
 | `enumeration_qualified` | Permit explicit modifiers on an uncounted, category-validated list; per-item emission retains the full reference |
 | `at_start` | Anchor the first match token |
 | `consume_skipped, blocks_skipped` | Control permitted skipped material |

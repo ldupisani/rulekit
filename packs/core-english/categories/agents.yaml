@@ -1,5 +1,8 @@
 format: rulekit/categories@1
 categories:
+  fixed_size_social_group: {parent: social_group}
+  group_headcount_unit: {parent: person}
+  assembled_group: {parent: noun}
   living_agent:
     parent: noun
     includes:
@@ -77,6 +80,10 @@ categories:
     - activity_site
     - quantity_location
 members:
+  activity_location: [amusement park, museum]
+  fixed_size_social_group: [couple, duo, trio]
+  group_headcount_unit: [person]
+  assembled_group: [group, party]
   cohort_member: [member, player]
   cohort_membership_preposition: [in, on]
   role_location_preposition:

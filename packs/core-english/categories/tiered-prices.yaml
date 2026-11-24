@@ -10,6 +10,7 @@ categories:
     parent: noun
   admission_product:
     parent: ownable_quantity_object
+    attrs: {assumed_units_per_member: 1}
   admission_event:
     parent: noun
   benefit_receipt_verb:

@@ -1,5 +1,7 @@
 format: rulekit/categories@1
 categories:
+  present_status: {parent: adjective}
+  absent_status: {parent: adjective}
   education_cohort:
     parent: population_cohort
   academic_period:
@@ -7,6 +9,8 @@ categories:
   academic_material_descriptor:
     parent: noun
 members:
+  present_status: [present]
+  absent_status: [absent]
   education_cohort:
   - grade
   - level
@@ -15,5 +19,6 @@ members:
   academic_material_descriptor:
   - coursework
 attribute_compatibility:
+  present_status: [person]
   academic_material_descriptor:
   - material_resource

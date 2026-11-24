@@ -558,11 +558,27 @@ def test_boundary_mode_survives_retest_and_review_without_counting_coverage(
 def test_gsm8k_generation_fixtures_make_every_premise_rule_available() -> None:
     availability = list_rule_availability(load_project(Path("projects/gsm8k")))
 
-    assert len(availability) == 1076
+    assert len(availability) == 1150
     blocked = {
         rule.id: rule for rule in availability if not rule.supported
     }
     assert set(blocked) == {
+        "arithmetic/collective-companions-measurements",
+        "arithmetic/collective-companions-measurements-planned",
+        "arithmetic/counted-companions-measurements",
+        "arithmetic/counted-companions-measurements-planned",
+        "arithmetic/group-member-measurements",
+        "arithmetic/individual-companions-measurements",
+        "arithmetic/individual-companions-measurements-planned",
+        "arithmetic/owned-scaled-area-difference",
+        "arithmetic/partial-indexed-section",
+        "arithmetic/partial-indexed-section-at-clock-reading",
+        "arithmetic/partial-indexed-section-unmarked",
+        "arithmetic/partial-indexed-section-with-source",
+        "arithmetic/skipped-indexed-section-remainder",
+        "arithmetic/skipped-indexed-section-remainder-unmarked",
+        "arithmetic/skipped-remainder-and-further-sections",
+        "arithmetic/skipped-remainder-and-further-sections-unmarked",
         "arithmetic/coordinated-relative-price-item",
         "arithmetic/coordinated-relative-price-item-total",
         "arithmetic/event-capacity-matching-membership",

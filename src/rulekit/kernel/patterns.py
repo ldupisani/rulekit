@@ -32,6 +32,7 @@ from .model import (
     AccountEntry,
     BatchEvidence,
     ActivityAccountEvidence,
+    CohortDiscount,
     SpecificationEvidence,
     PopulationEvidence,
     ProportionalBaseEvidence,
@@ -131,6 +132,7 @@ _FACT_CLASSES = {
     "indexed_path_evidence": IndexedPathEvidence,
     "measured_component": MeasuredComponent,
     "batch_evidence": BatchEvidence,
+    "cohort_discount": CohortDiscount,
     "activity_account_evidence": ActivityAccountEvidence,
     "specification_evidence": SpecificationEvidence,
     "population_evidence": PopulationEvidence,
@@ -1029,6 +1031,14 @@ def _try_match_at(
             # floats, and a retry that starts AFTER the article would
             # otherwise never see it.
             return None
+        if token.at_start and any(
+            u.sense() not in SKIPPABLE_SENSES for u in units[:i]
+        ):
+            # OPT-IN anchor (schemas.MatchToken.at_start): nothing MEANINGFUL may
+            # precede. Skippables stay invisible here exactly as they are to the
+            # loop above — an anchor that tripped on a leading article would be a
+            # different rule than the one the author wrote.
+            return None
         if not _referential_slot_ok(units, i, units[i], token, reg):
             return None
         if token.span:
@@ -1050,6 +1060,7 @@ def _try_match_at(
                     members = _category_enumeration(
                         captured, token.enumeration_cat, reg,
                         counted=token.enumeration_counted,
+                        shared_unit=token.enumeration_shared_unit,
                         qualified=token.enumeration_qualified,
                     )
                     if members is None or len(members) < token.enumeration_min_members:
@@ -1102,14 +1113,6 @@ def _try_match_at(
                 slots.update(sub_slots)
                 consumed[:] = sub_consumed
                 return tail
-            return None
-        if token.at_start and any(
-            u.sense() not in SKIPPABLE_SENSES for u in units[:i]
-        ):
-            # OPT-IN anchor (schemas.MatchToken.at_start): nothing MEANINGFUL may
-            # precede. Skippables stay invisible here exactly as they are to the
-            # loop above — an anchor that tripped on a leading article would be a
-            # different rule than the one the author wrote.
             return None
         unit = units[i]
         if token.lit is not None:
@@ -1384,7 +1387,11 @@ def _check_where(
             # lemma. Passing only the lemma loses category membership for
             # inflected forms when the bare lemma is intentionally absent
             # (for example ``drops``/``dropped`` in ``drop_quantity_verb``).
-            frames = reg.selectional_frames(verb.surface.casefold(), compatibility.frame_categories)
+            surface = verb.surface.casefold()
+            frames = reg.selectional_frames(surface, compatibility.frame_categories)
+            if not frames and len(verb.words) > 1 and surface not in reg.lexicon:
+                # A condensed auxiliary and participle preserve the lexical verb's lemma.
+                frames = reg.selectional_frames(_lemma_of(verb), compatibility.frame_categories)
             # Like the historical conditional predicate, verbs with no
             # declared lexical frame remain open. Once a verb category owns a
             # contract, one complete most-specific frame must accept every
@@ -1922,7 +1929,7 @@ def intersective_split(
 _RELATIVE_MARKER_SENSES = ("interrogative", "complementizer", "wh_which")
 
 
-def _enumeration_segments(span: tuple) -> list[tuple]:
+def _enumeration_segments(span: tuple, *, shared_unit: bool = False) -> list[tuple]:
     """Split an enumeration span at its list separators — comma punct and
     conjunction-sensed units (', and' yields an empty middle segment, which
     drops). Structural only: senses and the comma, never words."""
@@ -1937,6 +1944,9 @@ def _enumeration_segments(span: tuple) -> list[tuple]:
                 cur = []
         else:
             cur.append(u)
+            if shared_unit and u.sense() == "value" and u.surface.endswith(","):
+                segs.append(tuple(cur))
+                cur = []
     if cur:
         segs.append(tuple(cur))
     return [
@@ -1951,17 +1961,30 @@ def _named_enumeration(span: tuple, reg: Registry) -> list[str] | None:
     return list(members) if members and len(members) >= 2 else None
 
 
-def _category_enumeration(span, category, reg, *, counted=False, qualified=False):
+def _category_enumeration(span, category, reg, *, counted=False, qualified=False, shared_unit=False):
     """An exact singleton or conjunctive list of category-compatible heads."""
-    segments = _enumeration_segments(span)
+    segments = _enumeration_segments(span, shared_unit=shared_unit)
     if not segments:
         return None
+    if shared_unit:
+        final = span[-1]
+        if final.sense() != "noun" or final.features.get("value_kind") != "count":
+            return None
+        if not reg.word_in_category(_lemma_of(final), category) or final.features.get("reference_qualifiers"):
+            return None
     names = []
     for segment in segments:
         content = [u for u in segment if u.sense() not in SKIPPABLE_SENSES]
         if len(content) != 1:
             return None
         unit = content[0]
+        if shared_unit:
+            if (unit.sense() == "value" and unit.features.get("value_kind") == "count"
+                    and not unit.features.get("currency")):
+                names.append(_lemma_of(final))
+                continue
+            if _lemma_of(unit) != _lemma_of(final) or unit.features.get("reference_qualifiers"):
+                return None
         if counted:
             if unit.sense() != "noun" or unit.features.get("value_kind") != "count":
                 return None
@@ -1987,6 +2010,8 @@ def _category_enumeration(span, category, reg, *, counted=False, qualified=False
             return None
         for left, right in zip(heads, heads[1:]):
             separators = [u.sense() for u in span[left + 1:right] if u.sense() != "article"]
+            if shared_unit and span[left].sense() == "value" and span[left].surface.endswith(","):
+                separators.insert(0, "punct")
             if separators not in (["punct"], ["conjunction"], ["punct", "conjunction"]):
                 return None
     if len(names) > 1:
@@ -2205,6 +2230,8 @@ def _slot_value(unit: Unit, attr: str | None) -> str:
         span_index = 0 if attr == "span_start" else -1
         return str(units[index].span[span_index])
     if isinstance(unit, tuple):
+        if attr == "shared_unit":
+            return _lemma_of(unit[-1])
         # a span slot (MatchToken.span) binds a RUN of units; its rendering
         # is the canonical phrase — `.singular` additionally folds unknown-
         # word plurals (the plural-agreeing-construction attr, see
@@ -2440,7 +2467,7 @@ def _build_fact(
             kwargs[key] = value
             continue
         kwargs[key] = _resolve_field(raw, slots, reg, numeric, log, rule_id)
-    if cls in (Expenditure, AccountEntry, BatchEvidence, ActivityAccountEvidence,
+    if cls in (Expenditure, AccountEntry, BatchEvidence, CohortDiscount, ActivityAccountEvidence,
                SpecificationEvidence, PopulationEvidence, RegionEvidence):
         # Source positions are identifiers, not arithmetic operands.
         for key in ("position", "event", "lot_position", "quantity_position", "cost_factor_position"):
@@ -2604,12 +2631,12 @@ def run_rules(
             if t.lit is not None
         ):
             continue
-        scalar_enumerations = set()
+        scalar_enumerations = {}
         pending = list(seq)
         while pending:
             token = pending.pop()
             if token.enumeration_cat:
-                scalar_enumerations.add(token.slot)
+                scalar_enumerations[token.slot] = token
             pending.extend(token.opt or ())
         for m in match_all(reading, seq, reg, overlapping=rule.overlapping):
             m.rule = rule
@@ -2677,7 +2704,8 @@ def run_rules(
                     span = m.slots.get(e.each)
                     if not isinstance(span, tuple):
                         continue
-                    for seg in _enumeration_segments(span):
+                    token = scalar_enumerations.get(e.each)
+                    for seg in _enumeration_segments(span, shared_unit=bool(token and token.enumeration_shared_unit)):
                         sub_slots = dict(effective_slots)
                         content = tuple(u for u in seg if u.sense() not in SKIPPABLE_SENSES)
                         # A category-validated member is one scalar nominal.

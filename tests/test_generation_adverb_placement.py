@@ -76,6 +76,11 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
     }
 
     assert occurrences == {
+        "arithmetic/ordinary-and-reduced-price": ((4,), "normal", ()),
+        "arithmetic/ordinary-purchase-lot-price": ((3,), "normal", ()),
+        "arithmetic/whole-sections-completed": ((8,), "time", ()),
+        "arithmetic/skipped-indexed-section-remainder": ((2,), "time", ()),
+        "arithmetic/skipped-remainder-and-further-sections": ((2,), "time", ()),
         "arithmetic/additional-ratio-acquisition": ((1, 0), "sequence", ((1,),)),
         "arithmetic/additive-purchase-target": ((1,), "also", ()),
         "arithmetic/equal-account-division-among-payers": ((3,), "equal", ()),
@@ -234,7 +239,7 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
         if "adverb" in entry.senses
     ] == sorted([
         "actively", "actually", "afterward", "all-around", "already", "always", "back", "continuously", "correctly", "downhill", "earlier", "exactly", "forever", "forth", "initially", "instead", "later", "normally", "otherwise", "quickly", "separately", "strictly", "incorrectly", "very",
-        "again", "ago", "also", "away", "back and forth", "completely", MOVED_WORD, "daily", "down", "entirely", "equally", "evenly", "far", "finally", "fully", "further", "however", "immediately", "individually",
+        "usually", "o'clock", "again", "ago", "also", "away", "back and forth", "completely", MOVED_WORD, "daily", "down", "entirely", "equally", "evenly", "far", "finally", "fully", "further", "however", "immediately", "individually",
         "frequently", "halfway", "just", "next", "off", "once again", "online", "only", "originally", "out", "outside", "recently", "respectively", "safely", "still", "then", "thereafter", "too", "up", "upstairs", "vertically", "yet",
     ])
 
@@ -353,7 +358,7 @@ def test_combined_project_exposes_only_declared_holding_anchor_adverbs() -> None
         for item in exploration_status(project)["fillers"]
     }
 
-    assert len(adverbs) == 65
+    assert len(adverbs) == 67
     assert "evenly" in adverbs
     holding_anchor_adverbs = {
         word

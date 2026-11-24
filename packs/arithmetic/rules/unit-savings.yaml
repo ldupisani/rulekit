@@ -1,0 +1,177 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/ordinary-and-reduced-price
+  independent_clause: true
+  match:
+    sentence:
+    - {slot: unit, cat: purchase_lot_measure, uncounted: true, bare: true, at_start: true}
+    - {lit: of, consume_skipped: true}
+    - {slot: goods, cat: purchase_item, uncounted: true}
+    - {lit: that, consume_skipped: true}
+    - {slot: normal, cat: standard_price_adverb}
+    - {slot: act, cat: price_verb, finite_form: true}
+    - {slot: old, cat: currency_unit, counted: true}
+    - {slot: be, cat: singular_copula, finite_form: true}
+    - opt:
+      - {lit: now, consume_skipped: true}
+    - {slot: sale, cat: sell, past_participle: true}
+    - {lit: at, consume_skipped: true}
+    - {slot: amount, cat: currency_unit, counted: true, bare: true}
+    - {lit: ., consume_skipped: true}
+  satisfies: {act: [subject], be: [subject], sale: [subject]}
+  consumes: [unit, goods, normal, act, old, be, sale, amount]
+  emits:
+  - {fact: batch_evidence, kind: ordinary-unit-price, entity: '{goods}', measure: '{old}', value: old, position: '{old.span_start}',
+    marker: '{unit}'}
+  - {fact: batch_evidence, kind: reduced-unit-price, entity: '{goods}', measure: '{amount}', value: amount, position: '{amount.span_start}',
+    marker: '{unit}'}
+  disambiguates: [unit, goods, normal, act, old, be, sale, amount]
+- id: arithmetic/ordinary-purchase-lot-price
+  independent_clause: true
+  match:
+    sentence:
+    - {slot: unit, cat: purchase_lot_measure, uncounted: true, bare: true, at_start: true}
+    - {lit: of, consume_skipped: true}
+    - {slot: goods, cat: purchase_item, uncounted: true}
+    - {slot: normal, cat: standard_price_adverb}
+    - {slot: act, cat: price_verb, finite_form: true}
+    - {slot: amount, cat: currency_unit, counted: true, bare: true}
+    - {lit: ., consume_skipped: true}
+  satisfies: {act: [subject]}
+  consumes: [unit, goods, normal, act, amount]
+  emits:
+  - {fact: batch_evidence, kind: ordinary-unit-price, entity: '{goods}', measure: '{amount}', value: amount, position: '{amount.span_start}',
+    marker: '{unit}'}
+  disambiguates: [unit, goods, normal, act, amount]
+- id: arithmetic/reduced-purchase-lot-price
+  independent_clause: true
+  match:
+    sentence:
+    - {slot: unit, cat: purchase_lot_measure, uncounted: true, bare: true, at_start: true}
+    - {lit: of, consume_skipped: true}
+    - {slot: goods, cat: purchase_item, uncounted: true}
+    - {lit: now, consume_skipped: true}
+    - {slot: act, cat: price_verb, finite_form: true}
+    - {slot: amount, cat: currency_unit, counted: true, bare: true}
+    - {lit: ., consume_skipped: true}
+  satisfies: {act: [subject]}
+  consumes: [unit, goods, act, amount]
+  emits:
+  - {fact: batch_evidence, kind: reduced-unit-price, entity: '{goods}', measure: '{amount}', value: amount, position: '{amount.span_start}',
+    marker: '{unit}', attribute: now}
+  disambiguates: [unit, goods, act, amount]
+- id: arithmetic/explicit-lot-discount
+  independent_clause: true
+  match:
+    sentence:
+    - {slot: unit, cat: purchase_lot_measure, uncounted: true, bare: true, at_start: true}
+    - {lit: of, consume_skipped: true}
+    - {slot: goods, cat: purchase_item, uncounted: true}
+    - {slot: be, cat: copula, finite_form: true}
+    - {slot: sale, cat: sell, past_participle: true}
+    - {lit: at, consume_skipped: true}
+    - {lit: a, consume_skipped: true}
+    - {slot: discount, cat: price_discount_noun}
+    - {lit: of, consume_skipped: true}
+    - {slot: amount, cat: currency_unit, counted: true, bare: true}
+    - {lit: ., consume_skipped: true}
+  satisfies: {be: [subject], sale: [subject]}
+  consumes: [unit, goods, be, sale, discount, amount]
+  emits:
+  - {fact: batch_evidence, kind: unit-saving, entity: '{goods}', measure: '{amount}', value: amount, position: '{amount.span_start}',
+    marker: '{unit}'}
+  disambiguates: [unit, goods, be, sale, discount, amount]
+- id: arithmetic/addressee-purchase-lots
+  independent_clause: true
+  question_assumption: true
+  match:
+    sentence:
+    - {slot: who, cat: addressee_pronoun, at_start: true}
+    - {slot: buy, cat: purchase_transaction_verb, finite_form: true}
+    - {slot: units, cat: purchase_lot_measure, counted: true, bare: true}
+    - {lit: of, consume_skipped: true}
+    - {slot: goods, cat: purchase_item, uncounted: true}
+    - {lit: and, consume_skipped: true}
+    - {slot: units2, cat: purchase_lot_measure, counted: true, bare: true}
+    - {lit: of, consume_skipped: true}
+    - {slot: goods2, cat: purchase_item, uncounted: true}
+    - {lit: ., consume_skipped: true}
+  satisfies: {buy: [subject], who: [refers]}
+  consumes: [who, buy, units, goods, units2, goods2]
+  emits:
+  - {fact: batch_evidence, kind: saving-purchase-line, entity: '{who}', measure: '{units}', value: units, position: '{units.span_start}',
+    container: '{goods}'}
+  - {fact: batch_evidence, kind: saving-purchase-line, entity: '{who}', measure: '{units2}', value: units2, position: '{units2.span_start}',
+    container: '{goods2}'}
+  disambiguates: [who, buy, units, goods, units2, goods2]
+- id: arithmetic/addressee-purchase-lot
+  independent_clause: true
+  question_assumption: true
+  match:
+    sentence:
+    - {slot: who, cat: addressee_pronoun, at_start: true}
+    - {slot: buy, cat: purchase_transaction_verb, finite_form: true}
+    - {slot: units, cat: purchase_lot_measure, counted: true, bare: true}
+    - {lit: of, consume_skipped: true}
+    - {slot: goods, cat: purchase_item, uncounted: true}
+    - {lit: ., consume_skipped: true}
+  satisfies: {buy: [subject], who: [refers]}
+  consumes: [who, buy, units, goods]
+  emits:
+  - {fact: batch_evidence, kind: saving-purchase-line, entity: '{who}', measure: '{units}', value: units, position: '{units.span_start}',
+    container: '{goods}'}
+  disambiguates: [who, buy, units, goods]
+- id: arithmetic/per-lot-saving
+  independent_clause: true
+  match:
+    sentence:
+    - {slot: unit, cat: purchase_lot_measure, uncounted: true, bare: true, at_start: true}
+    - {lit: of, consume_skipped: true}
+    - {slot: goods, cat: purchase_item, uncounted: true}
+    - {slot: have, cat: possession_state, finite_form: true}
+    - {slot: saving, cat: currency_unit, counted: true}
+    - {slot: disc, cat: price_discount_noun}
+    - {lit: ., consume_skipped: true}
+  satisfies: {have: [subject]}
+  consumes: [unit, goods, have, saving, disc]
+  emits:
+  - {fact: batch_evidence, kind: unit-saving, entity: '{goods}', measure: '{saving}', value: saving, position: '{saving.span_start}',
+    marker: '{unit}'}
+  disambiguates: [unit, goods, have, saving, disc]
+asks:
+- id: ask/basket-discount-savings
+  match:
+    question:
+    - {lit: how, consume_skipped: true, at_start: true}
+    - {lit: much, consume_skipped: true}
+    - {lit: will, consume_skipped: true}
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true}
+    - {slot: action, cat: saving_action, bare_form: true}
+    - opt:
+      - {lit: via, consume_skipped: true}
+      - {slot: discounts, cat: price_discount_noun, uncounted: true}
+    - opt:
+      - {slot: in, cat: group_total_preposition}
+      - {lit: total, consume_skipped: true}
+    - {lit: '?', consume_skipped: true}
+  satisfies: {in: [object], action: [subject]}
+  resolves: {consumer: purchase-savings, entity: '{who}'}
+  disambiguates: [action, discounts]
+- id: ask/addressee-discount-savings
+  match:
+    question:
+    - {lit: how, consume_skipped: true, at_start: true}
+    - {lit: much, consume_skipped: true}
+    - {lit: will, consume_skipped: true}
+    - {slot: who, cat: addressee_pronoun}
+    - {slot: action, cat: saving_action, bare_form: true}
+    - opt:
+      - {lit: via, consume_skipped: true}
+      - {slot: discounts, cat: price_discount_noun, uncounted: true}
+    - opt:
+      - {slot: in, cat: group_total_preposition}
+      - {lit: total, consume_skipped: true}
+    - {lit: '?', consume_skipped: true}
+  satisfies: {in: [object], action: [subject], who: [refers]}
+  resolves: {consumer: purchase-savings, entity: '{who}'}
+  disambiguates: [who, action, discounts]

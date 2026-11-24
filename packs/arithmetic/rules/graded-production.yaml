@@ -1,0 +1,96 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/graded-product-material-requirement
+  independent_clause: true
+  match:
+    sentence:
+    - {slot: goods, cat: graded_product, uncounted: true, qualified: true, qualifier_cat: size_attribute, at_start: true}
+    - {slot: act, cat: nested_container_relation_verb, finite_form: true}
+    - {slot: units, cat: fabrication_input_unit, counted: true, bare: true}
+    - opt:
+      - {lit: of, consume_skipped: true}
+      - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    - {lit: ., consume_skipped: true}
+  satisfies: {act: [subject]}
+  consumes: [goods, act, units, material]
+  emits:
+  - {fact: batch_evidence, kind: graded-input, entity: '{goods}', measure: '{units}', value: units, position: '{units.span_start}',
+    marker: '{material.optional}'}
+  disambiguates: [goods, act, units, material]
+- id: arithmetic/graded-production-count-comparison
+  independent_clause: true
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, at_start: true}
+    - {slot: act, cat: production_quantity_verb, finite_form: true}
+    - {slot: factor, type: multiplier}
+    - {lit: as, consume_skipped: true}
+    - {lit: many, consume_skipped: true}
+    - {slot: goods, cat: graded_product, uncounted: true, qualified: true, qualifier_cat: size_attribute}
+    - {lit: as, consume_skipped: true}
+    - {slot: base, cat: graded_product, uncounted: true, qualified: true, qualifier_cat: size_attribute}
+    - {lit: ., consume_skipped: true}
+  satisfies: {act: [subject]}
+  consumes: [who, act, factor, goods, base]
+  emits:
+  - {fact: batch_evidence, kind: graded-output-ratio, entity: '{who}', measure: '', value: factor, position: '{factor.span_start}',
+    container: '{goods}', acquisition: '{base}'}
+  disambiguates: [act, goods, base]
+- id: arithmetic/graded-production-input-consumption
+  independent_clause: true
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, at_start: true}
+    - {slot: act, cat: resource_usage_verb, finite_form: true}
+    - {slot: units, cat: fabrication_input_unit, counted: true, bare: true}
+    - {lit: of, consume_skipped: true}
+    - {slot: material, cat: material_resource, uncounted: true, bare: true}
+    - {lit: for, consume_skipped: true}
+    - {slot: goods, cat: graded_product, uncounted: true, qualified: true, qualifier_cat: size_attribute}
+    - {lit: ., consume_skipped: true}
+  satisfies: {act: [subject]}
+  consumes: [who, act, units, material, goods]
+  emits:
+  - {fact: batch_evidence, kind: graded-input-used, entity: '{who}', measure: '{units}', value: units, position: '{units.span_start}',
+    container: '{goods}', marker: '{material}'}
+  disambiguates: [act, units, material, goods]
+- id: arithmetic/qualified-material-model-context
+  independent_clause: true
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, at_start: true}
+    - {slot: act, cat: production_quantity_verb, finite_form: true}
+    - {slot: form, cat: formed_depiction, uncounted: true, qualified: true, qualifier_cat: formable_resource}
+    - {lit: of, consume_skipped: true}
+    - {slot: product, cat: depictable_noun, uncounted: true}
+    - {lit: ., consume_skipped: true}
+  satisfies: {act: [subject]}
+  consumes: [who, act, form, product]
+  emits:
+  - {fact: batch_evidence, kind: modeled-production, entity: '{who}', measure: '{form.qualifier}', value: 0, position: '{form.span_start}',
+    container: '{product}'}
+  disambiguates: [act, form, product]
+asks:
+- id: ask/total-graded-material-requirement
+  match:
+    question:
+    - {lit: how, consume_skipped: true, at_start: true}
+    - {lit: many, consume_skipped: true}
+    - {slot: units, cat: fabrication_input_unit, uncounted: true}
+    - {lit: of, consume_skipped: true}
+    - {slot: material, cat: material_resource, uncounted: true}
+    - {lit: did, consume_skipped: true}
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true}
+    - {slot: act, cat: resource_usage_verb, bare_form: true}
+    - opt:
+      - {lit: to, consume_skipped: true}
+      - {slot: make, cat: production_quantity_verb, bare_form: true}
+      - {lit: all, consume_skipped: true}
+      - {slot: product, cat: graded_product, uncounted: true}
+    - opt:
+      - {slot: in, cat: group_total_preposition}
+      - {lit: total, consume_skipped: true}
+    - {lit: '?', consume_skipped: true}
+  satisfies: {in: [object], act: [subject], make: [subject]}
+  resolves: {consumer: graded-input-total, entity: '{who}', unit: '{units}', material: '{material}', product: '{product.optional}'}
+  disambiguates: [units, material, act, make, product]

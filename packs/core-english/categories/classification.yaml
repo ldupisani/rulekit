@@ -8,8 +8,11 @@ categories:
     parent: preposition
   threshold_lower:
     parent: threshold_operator
+    attrs: {threshold_direction: -1}
   threshold_upper:
     parent: threshold_operator
+    attrs: {threshold_direction: 1}
+  inclusive_boundary_marker: {parent: conjunction}
   assessment_receipt_verb:
     parent: verb
   population_cohort:
@@ -37,8 +40,11 @@ members:
   - final
   threshold_lower:
   - below
+  - under
   threshold_upper:
   - above
+  - over
+  inclusive_boundary_marker: [or]
   assessment_receipt_verb:
   - get
   - got

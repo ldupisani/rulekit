@@ -86,3 +86,14 @@ def test_atomic_phrase_keys_must_be_normalized_multiword_entries(project, key):
     })
     with pytest.raises(CompileError, match="normalized multiword"):
         compile_registry([modified if p.name == core.name else p for p in project.packs])
+
+
+@pytest.mark.parametrize("surface,number", [
+    ("listen to", "plural"), ("listens to", "singular"), ("listened to", None)
+])
+def test_atomic_verb_preserves_lemma_and_stated_agreement(project, surface, number):
+    reading = analyze(surface, project.registry)
+    phrase, = reading.units
+    assert phrase.sense() == "verb"
+    assert phrase.features["lemma"] == "listen to"
+    assert phrase.features.get("number") == number

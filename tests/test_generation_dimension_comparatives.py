@@ -35,7 +35,7 @@ CORE_MEMBERSHIPS = {
     for word in MOVED_WORDS
 }
 CORE_MEMBERSHIPS["larger"] = tuple(sorted(
-    (*CORE_MEMBERSHIPS["larger"], "sequence_growth_descriptor")
+    (*CORE_MEMBERSHIPS["larger"], "area_excess_comparative", "sequence_growth_descriptor")
 ))
 for word in ("longer", "shorter"):
     CORE_MEMBERSHIPS[word] = tuple(sorted(

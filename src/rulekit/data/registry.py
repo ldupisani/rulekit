@@ -1763,10 +1763,13 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                         )
         for emit in rule.emits:
             for raw in emit.fields.values():
+                shared = re.fullmatch(r"\{(\w+)\.shared_unit\}", raw) if isinstance(raw, str) else None
+                if shared and (shared[1] not in slots or not slots[shared[1]].enumeration_shared_unit):
+                    raise CompileError(f"rule {rule.id!r}: shared unit emission needs a shared-unit enumeration")
                 members = re.fullmatch(r"\{(\w+)\.members\}", raw) if isinstance(raw, str) else None
                 if members is not None:
                     token = slots.get(members.group(1))
-                    if token is None or not token.enumeration_cat:
+                    if token is None or not token.enumeration_cat or token.enumeration_shared_unit:
                         raise CompileError(f"rule {rule.id!r}: members emission needs an enumeration-gated span")
                 optional = re.fullmatch(r"\{(\w+)\.optional\}", raw) if isinstance(raw, str) else None
                 if optional is not None and optional.group(1) not in slots:

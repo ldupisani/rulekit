@@ -1,0 +1,117 @@
+format: rulekit/rules@1
+rules:
+- id: arithmetic/periodic-complimentary-item
+  independent_clause: true
+  match:
+    sentence:
+    - {slot: every, cat: frequency_quantifier, at_start: true}
+    - {slot: recipient, cat: promotion_recipient, uncounted: true, number: singular, qualified: true, qualifier_cat: holder_ordinal}
+    - {slot: gets, cat: acquire, finite_form: true}
+    - {slot: good, cat: promotion_good, uncounted: true, qualified: true, qualifier_cat: complimentary_descriptor}
+    - {lit: ., consume_skipped: true}
+  satisfies: {every: [collection], gets: [subject]}
+  consumes: [every, recipient, gets, good]
+  emits:
+  - {fact: batch_evidence, kind: periodic-promotion, entity: '{recipient}', measure: '{good}', value: 0, position: '{recipient.span_start}',
+    marker: '{recipient.qualifier}', attribute: '{good.qualifier}'}
+  disambiguates: [every, recipient, gets, good]
+- id: arithmetic/seller-periodic-complimentary-item
+  independent_clause: true
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, at_start: true}
+    - {slot: own, cat: possession_state, finite_form: true}
+    - opt:
+      - {slot: goods, cat: material_resource, uncounted: true}
+    - {slot: site, cat: transaction_supplier, uncounted: true}
+    - {lit: and, consume_skipped: true}
+    - {slot: every, cat: frequency_quantifier}
+    - {slot: recipient, cat: promotion_recipient, uncounted: true, number: singular, qualified: true, qualifier_cat: holder_ordinal}
+    - {slot: gets, cat: acquire, finite_form: true}
+    - {slot: good, cat: promotion_good, uncounted: true, qualified: true, qualifier_cat: complimentary_descriptor}
+    - {lit: ., consume_skipped: true}
+  satisfies: {own: [subject], every: [collection], gets: [subject]}
+  consumes: [who, own, goods, site, every, recipient, gets, good]
+  emits:
+  - {fact: batch_evidence, kind: promotion-seller, entity: '{who}', measure: '', value: 0, position: '{site.span_start}', container: '{site}'}
+  - {fact: batch_evidence, kind: periodic-promotion, entity: '{recipient}', measure: '{good}', value: 0, position: '{recipient.span_start}',
+    marker: '{recipient.qualifier}', attribute: '{good.qualifier}'}
+  disambiguates: [own, goods, site, every, recipient, gets, good]
+- id: arithmetic/promotion-business-ownership
+  independent_clause: true
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, at_start: true}
+    - {slot: own, cat: possession_state, finite_form: true}
+    - opt:
+      - {slot: goods, cat: material_resource, uncounted: true}
+    - {slot: site, cat: transaction_supplier, uncounted: true}
+    - {lit: ., consume_skipped: true}
+  satisfies: {own: [subject]}
+  consumes: [who, own, goods, site]
+  emits:
+  - {fact: batch_evidence, kind: promotion-seller, entity: '{who}', measure: '', value: 0, position: '{site.span_start}', container: '{site}'}
+  disambiguates: [own, goods, site]
+- id: arithmetic/sold-value-of-items
+  independent_clause: true
+  question_assumption: true
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, at_start: true}
+    - {slot: act, cat: sell, finite_form: true}
+    - {slot: amount, cat: currency_unit, counted: true}
+    - {slot: worth, cat: valuation_descriptor}
+    - {lit: of, consume_skipped: true}
+    - {slot: good, cat: promotion_good, uncounted: true, bare: true}
+    - {lit: ., consume_skipped: true}
+  satisfies: {act: [subject]}
+  consumes: [who, act, amount, worth, good]
+  emits:
+  - {fact: batch_evidence, kind: promoted-sales-value, entity: '{who}', measure: '{amount}', value: amount, position: '{amount.span_start}',
+    container: '{good}'}
+  disambiguates: [act, amount, worth, good]
+- id: arithmetic/promotion-ends-at-paid-sale
+  independent_clause: true
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, at_start: true}
+    - {slot: stop, cat: business_closing_action, finite_form: true}
+    - {lit: after, consume_skipped: true}
+    - {slot: last_sale, cat: completed_sale, uncounted: true, qualified: true, qualifier_cat: last_sale_descriptor}
+    - {lit: ., consume_skipped: true}
+  satisfies: {stop: [subject]}
+  consumes: [who, stop, last_sale]
+  emits:
+  - {fact: batch_evidence, kind: promotion-paid-ending, entity: '{who}', measure: '', value: 0, position: '{stop.span_start}'}
+  disambiguates: [stop, last_sale]
+- id: arithmetic/promotion-ended-after-paying-customer
+  independent_clause: true
+  match:
+    sentence:
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, at_start: true}
+    - {slot: stop, cat: business_closing_action, finite_form: true}
+    - {lit: after, consume_skipped: true}
+    - {slot: last, cat: promotion_recipient, uncounted: true, qualified: true, qualifier_cat: holder_terminal_order}
+    - {slot: pay, cat: payment_verb, finite_form: true}
+    - {lit: ., consume_skipped: true}
+  satisfies: {stop: [subject], pay: [subject]}
+  consumes: [who, stop, last, pay]
+  emits:
+  - {fact: batch_evidence, kind: promotion-paid-ending, entity: '{who}', measure: '', value: 0, position: '{stop.span_start}'}
+  disambiguates: [stop, last, pay]
+asks:
+- id: ask/periodic-free-items-given
+  match:
+    question:
+    - {lit: how, consume_skipped: true, at_start: true}
+    - {lit: many, consume_skipped: true}
+    - {slot: free, type: qualified, qualifier_cat: complimentary_descriptor}
+    - {lit: did, consume_skipped: true}
+    - {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true}
+    - {slot: act, cat: recipient_giving_action, bare_form: true}
+    - opt:
+      - {lit: away, consume_skipped: true}
+    - {lit: '?', consume_skipped: true}
+  satisfies: {act: [subject]}
+  resolves: {consumer: periodic-giveaway, entity: '{who}', item: '{free}'}
+  disambiguates: [act]

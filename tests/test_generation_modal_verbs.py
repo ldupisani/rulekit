@@ -166,6 +166,7 @@ def test_modal_occurrence_and_core_ownership_maps_are_complete() -> None:
         "per_item_plan_resource",
         "population_enclosure",
         "population_member",
+        "priced_offering",
         "production_creation_source",
         "progress_load_unit",
         "progress_target_container",

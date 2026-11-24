@@ -16,6 +16,21 @@ ROOT = Path(__file__).resolve().parents[1]
 CURATED = ROOT / "projects" / "curated"
 
 EXPECTED_OCCURRENCES = {
+    "arithmetic/cohort-discount": ((4, 1), "per_item"),
+    "arithmetic/group-per-person-purchase": ((1,), "each"),
+    "arithmetic/measured-cohort-discount": ((8, 1), "per_item"),
+    "arithmetic/purchase-by-each-person": ((0,), "each"),
+    "arithmetic/unit-price-with-cohort-discount": ((9, 1), "per_item"),
+    "arithmetic/unit-price-with-measured-cohort-discount": ((13, 1), "per_item"),
+    "arithmetic/individual-package-contents": ((0,), "each"),
+    "arithmetic/individual-package-size": ((0,), "each"),
+    "arithmetic/individual-periodic-supply": ((0,), "each"),
+    "arithmetic/measured-packaged-purchase": ((8,), "each"),
+    "arithmetic/periodic-complimentary-item": ((0,), "every"),
+    "arithmetic/seller-periodic-complimentary-item": ((5,), "every"),
+    "arithmetic/uniform-group-member-count": ((0,), "each"),
+    "arithmetic/uniform-section-duration": ((0,), "each"),
+    "arithmetic/uniform-section-extent": ((0,), "each"),
     "arithmetic/distributive-cohort-membership": ((0,), "each"),
     "arithmetic/equal-division-within-group": ((0,), "each"),
     "arithmetic/itemized-payer-groups-with-members": ((3,), "each"),

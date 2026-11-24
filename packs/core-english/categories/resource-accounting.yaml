@@ -90,6 +90,7 @@ adposition_roles:
     verb_category: purchase
     allow_name_object: true
 members:
+  purchasable_activity: [rental]
   activity_account_participation: [have, has, had, share, shares, shared]
   purchase_transaction_verb: [buy, buys, bought, purchase, purchases, purchased]
   dispatchable_document: [application, bill, card, envelope, letter, rebate, thank you card]

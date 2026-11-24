@@ -57,9 +57,11 @@ def condense_lexical_phrases(reading: Reading, reg: Registry) -> Reading:
             "preposition" in entry.senses or entry.lexical_phrase
         ):
             continue
-        phrases.append(
-            (tuple(phrase.split()), phrase, phrase, entry.number or "singular", entry)
-        )
+        if entry.lexical_phrase and entry.verb:
+            lemma, number = entry.verb.lemma, entry.number_for_sense("verb")
+        else:
+            lemma, number = phrase, entry.number or "singular"
+        phrases.append((tuple(phrase.split()), phrase, lemma, number, entry))
         if entry.lexical_phrase:
             phrases.extend(
                 (tuple(plural.split()), plural, phrase, "plural", entry)
@@ -93,8 +95,9 @@ def condense_lexical_phrases(reading: Reading, reg: Registry) -> Reading:
                 "lemma": lemma,
                 "senses": noun_form_senses(reg, phrase, entry,
                     inherited=phrase != lemma and phrase not in reg.lexicon),
-                "number": number,
             }
+            if number is not None:
+                changes["number"] = number
             # An atomic numeric spelling takes its own declared value. It
             # must neither lose that value nor inherit a component's count.
             changes.update(declared_number_features(phrase, reg))

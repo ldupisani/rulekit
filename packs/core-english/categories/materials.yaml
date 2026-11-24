@@ -1,5 +1,11 @@
 format: rulekit/categories@1
 categories:
+  area_excess_comparative: {parent: comparative}
+  area_comparison_holder: {parent: noun}
+  graded_product: {parent: noun, includes: [fabrication_product, depictable_noun]}
+  fabrication_input_unit: {parent: noun}
+  formed_depiction: {parent: noun}
+  formable_resource: {parent: material_resource}
   divisible_material_whole:
     parent: decomposable_quantity_whole
   sheet_material: {parent: material_resource}
@@ -69,6 +75,11 @@ categories:
   cosmetic_material:
     parent: material_resource
 members:
+  area_excess_comparative: [larger, bigger]
+  area_comparison_holder: [house, room, garden, field, plot, farm]
+  fabrication_input_unit: [stick, block, piece]
+  formed_depiction: [sculpture, model]
+  formable_resource: [wax, clay]
   divisible_material_whole: [panel, roll, sheet]
   sliceable_material: [clay, foam, wood]
   sheet_material: [fabric, cloth, paper, cardboard]
@@ -189,6 +200,7 @@ members:
   - lip gloss
   - gloss
 attribute_compatibility:
+  formable_resource: [formed_depiction]
   original_stock_attribute: [material_resource]
   resource_remnant_attribute: [material_resource]
   rectangular_attribute:

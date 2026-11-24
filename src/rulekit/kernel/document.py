@@ -75,10 +75,18 @@ def _satisfy_pattern_obligations(
     from .reference_bindings import project_references
     selected = set(getattr(result.match.rule, "disambiguates", ()))
     pending = ([token for seq in result.match.rule.match.values() for token in seq]
-               if selected else [])
+               if selected or any(isinstance(slot, tuple) for slot in result.match.slots.values()) else [])
     while pending:
         token = pending.pop()
         pending.extend(token.opt or ())
+        if token.enumeration_shared_unit and (span := result.match.slots.get(token.slot)):
+            for member in span:
+                pending_needs = member.unmet()
+                if member.sense() == "value" and any(ob.need == "quantifies" for ob in pending_needs):
+                    bound = [Obligation(ob.role, ob.need, span[-1], ob.optional)
+                             if ob.need == "quantifies" and not ob.met else ob for ob in member.obligations()]
+                    reading.record("pattern-bind", member, {"obligations": bound},
+                                   "coordinated value uses the stated shared unit", rule_id=result.match.rule.id)
         if token.slot not in selected or not token.cat:
             continue
         unit = result.match.slots.get(token.slot)

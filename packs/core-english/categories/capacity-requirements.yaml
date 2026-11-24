@@ -1,5 +1,24 @@
 format: rulekit/categories@1
 categories:
+  transport_collection: {parent: processed_collection}
+  laundry_collection: {parent: processed_collection}
+  transport_processing_device: {parent: batch_processing_device}
+  transport_processing_action:
+    parent: batch_processing_action
+    explicit_frame_only: true
+    selectional_roles: {device: transport_processing_device, collection: transport_collection}
+  laundry_processing_device: {parent: batch_processing_device}
+  laundry_processing_action:
+    parent: batch_processing_action
+    explicit_frame_only: true
+    selectional_roles: {device: laundry_processing_device, collection: laundry_collection}
+  supply_group: {parent: noun}
+  consumable_supply: {parent: noun}
+  batch_processing_action: {parent: verb, explicit_frame_only: true}
+  processed_collection: {parent: noun}
+  processing_batch_unit: {parent: noun}
+  batch_processing_device: {parent: noun}
+  stay_accommodation: {parent: noun}
   recipient_cohort: {parent: noun}
   educational_subject: {parent: noun}
   dotted_initialism: {parent: noun}
@@ -22,6 +41,17 @@ categories:
   relative_membership_owner: {parent: pronoun}
   governance_group: {parent: noun}
 members:
+  transport_collection: [cargo]
+  laundry_collection: [laundry]
+  transport_processing_device: [truck]
+  transport_processing_action: [carry, transport]
+  laundry_processing_device: [washing machine, washer]
+  laundry_processing_action: [wash]
+  supply_group: [family, team, group]
+  consumable_supply: [towel, sheet, blanket]
+  processing_batch_unit: [load, batch]
+  batch_processing_device: [machine]
+  stay_accommodation: [rental, house, cabin, room]
   governance_group: [board]
   relative_membership_owner: [whose]
   temporary_occupancy_verb: [stay, stays, stayed, sleep, sleeps, slept]

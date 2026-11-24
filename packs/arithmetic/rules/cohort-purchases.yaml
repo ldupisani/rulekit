@@ -1,0 +1,158 @@
+format: rulekit/rules@1
+templates:
+  cohort-discount:
+    parameters:
+      prefix:
+        phrase: []
+        facts: []
+        uses: []
+        at_start: true
+        obligations: {offer: [subject], per_item: [collection]}
+      criterion:
+        phrase: []
+        uses: []
+        offer: {fact: cohort_discount, kind: cohort-discount, entity: '{item.optional}', container: '{eligible_group}',
+                measure: '{saving}', value: saving, position: '{saving.span_start}'}
+    rule:
+      independent_clause: true
+      match:
+        sentence:
+        - {parameter: prefix.phrase}
+        - {slot: eligible_group, cat: cohort_member, uncounted: true, number: plural, bare: true, at_start: {parameter: prefix.at_start}}
+        - {parameter: criterion.phrase}
+        - {slot: offer, cat: receive, finite_form: true}
+        - {slot: saving, cat: currency_unit, counted: true, bare: true}
+        - {slot: discount, cat: price_discount_noun, bare: true}
+        - opt:
+          - {lit: on, consume_skipped: true}
+          - {slot: per_item, cat: postpositive_distributive_quantifier}
+          - {slot: item, cat: priced_offering, bare: true, uncounted: true, number: singular}
+        - {lit: ., consume_skipped: true}
+      satisfies: {parameter: prefix.obligations}
+      consumes: [eligible_group, {parameter: prefix.uses}, {parameter: criterion.uses}, offer, saving, discount, per_item, item]
+      disambiguates: [eligible_group, {parameter: prefix.uses}, {parameter: criterion.uses}, offer, saving, discount, per_item, item]
+      emits:
+      - {parameter: prefix.facts}
+      - {parameter: criterion.offer}
+variants:
+- id: arithmetic/cohort-discount
+  template: cohort-discount
+- id: arithmetic/measured-cohort-discount
+  template: cohort-discount
+  arguments:
+    criterion: &measurement_criterion
+      phrase:
+      - opt:
+        - {lit: at, consume_skipped: true}
+        - {slot: inclusive, cat: inclusive_boundary_marker}
+      - {slot: comparison, cat: threshold_operator}
+      - {slot: boundary, cat: member_measurement_unit, counted: true, bare: true}
+      - {slot: property, cat: measured_property_descriptor}
+      uses: [inclusive, comparison, boundary, property]
+      offer: {fact: cohort_discount, kind: cohort-discount, entity: '{item.optional}', container: '{eligible_group}',
+              measure: '{saving}', value: saving, position: '{saving.span_start}', attribute: '{property}',
+              operator: '{comparison}', boundary_value: boundary, boundary_unit: '{boundary}', inclusive_marker: '{inclusive.optional}'}
+- id: arithmetic/unit-price-with-cohort-discount
+  template: cohort-discount
+  arguments:
+    prefix: &regular_quote
+      phrase:
+      - &priced_item {slot: offering, cat: priced_offering, uncounted: true, number: singular, qualified: true,
+                      qualifier_cat: regular_price_descriptor, all_qualifiers: true, at_start: true}
+      - &cost {slot: cost, cat: price_verb, finite_form: true}
+      - &price {slot: price, cat: currency_unit, counted: true, bare: true}
+      - opt: [{lit: ',', consume_skipped: true}]
+      - {lit: but, consume_skipped: true}
+      facts:
+      - &unit_quote {fact: price, item: '{offering}', qualifier: '', value: price, measure: '{price}', verb: '{cost}'}
+      uses: [offering, cost, price]
+      at_start: false
+      obligations: {cost: [subject], offer: [subject], per_item: [collection]}
+- id: arithmetic/unit-price-with-measured-cohort-discount
+  template: cohort-discount
+  arguments: {prefix: *regular_quote, criterion: *measurement_criterion}
+rules:
+- id: arithmetic/regular-unit-price
+  independent_clause: true
+  match:
+    sentence:
+    - *priced_item
+    - *cost
+    - *price
+    - {lit: ., consume_skipped: true}
+  satisfies: {cost: [subject]}
+  consumes: [offering, cost, price]
+  disambiguates: [offering, cost, price]
+  emits: [*unit_quote]
+- id: arithmetic/group-per-person-purchase
+  independent_clause: true
+  match:
+    sentence:
+    - {slot: group, cat: discourse_subject_group_pronoun, at_start: true}
+    - {slot: each, cat: postpositive_distributive_quantifier}
+    - &purchase_action {slot: purchase, cat: purchase_transaction_verb, finite_form: true}
+    - &purchased_count {slot: items, cat: priced_offering, counted: true, bare: true}
+    - {lit: ., consume_skipped: true}
+  satisfies: {group: [refers], each: [collection], purchase: [subject]}
+  consumes: [group, each, purchase, items]
+  disambiguates: [group, each, purchase, items]
+  emits:
+  - {fact: batch_evidence, kind: purchase-per-person, entity: '{items}', value: items, measure: '', position: '{items.span_start}', marker: '{group}'}
+- id: arithmetic/purchase-by-each-person
+  independent_clause: true
+  match:
+    sentence:
+    - {slot: each, cat: postpositive_distributive_quantifier, at_start: true}
+    - {slot: member, cat: group_headcount_unit, uncounted: true, bare: true, number: singular}
+    - *purchase_action
+    - *purchased_count
+    - {lit: ., consume_skipped: true}
+  satisfies: {each: [collection], purchase: [subject]}
+  consumes: [each, member, purchase, items]
+  disambiguates: [each, member, purchase, items]
+  emits:
+  - {fact: batch_evidence, kind: purchase-per-person, entity: '{items}', value: items, measure: '', position: '{items.span_start}'}
+- id: arithmetic/group-cash-tender
+  independent_clause: true
+  question_assumption: true
+  match:
+    sentence:
+    - {slot: group, cat: discourse_subject_group_pronoun, at_start: true}
+    - {slot: act, cat: tender_verb, finite_form: true}
+    - opt:
+      - {slot: recipient, cat: payment_recipient, uncounted: true}
+    - {slot: cash, cat: currency_unit, counted: true}
+    - {lit: ., consume_skipped: true}
+  satisfies: {group: [refers], act: [subject]}
+  consumes: [group, act, recipient, cash]
+  emits:
+  - {fact: batch_evidence, kind: group-tender, entity: '', measure: '{cash}', value: cash, position: '{cash.span_start}'}
+  disambiguates: [group, act, recipient, cash]
+asks:
+- id: ask/group-purchase-change
+  match:
+    question:
+    - {lit: how, consume_skipped: true, at_start: true}
+    - {lit: much, consume_skipped: true}
+    - {slot: change, cat: cash_remainder_noun}
+    - {lit: will, consume_skipped: true}
+    - {slot: group, cat: discourse_subject_group_pronoun}
+    - {slot: receive, cat: change_receipt_verb, bare_form: true}
+    - {lit: '?', consume_skipped: true}
+  satisfies: {group: [refers], receive: [subject]}
+  resolves: {consumer: cohort-purchase, mode: change}
+  disambiguates: [change, group, receive]
+- id: ask/discounted-group-purchase-total
+  match:
+    question:
+    - {lit: how, at_start: true}
+    - {lit: much}
+    - {slot: aux, cat: auxiliary}
+    - {slot: group, cat: discourse_subject_group_pronoun}
+    - {slot: pay, cat: payment_verb, bare_form: true}
+    - opt:
+      - {slot: in, cat: group_total_preposition}
+      - {slot: total, cat: prepositional_group_total_marker}
+    - {lit: '?', consume_skipped: true}
+  satisfies: {group: [refers], pay: [subject], in: [object]}
+  resolves: {consumer: cohort-purchase, mode: total}

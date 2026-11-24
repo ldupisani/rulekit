@@ -51,7 +51,7 @@ class LexiconEntry(StrictModel):
     number: Literal["singular", "plural"] | None = None  # grammatical number of this surface
     anaphoric_form: AnaphoricForm | None = None
     verb: VerbInfo | None = None  # for verb senses: irregular lemma etc.
-    # An explicitly indivisible multiword noun/adverb. Unlike an ordinary
+    # An explicitly indivisible multiword expression. Unlike an ordinary
     # compositional compound, this phrase owns its full lexical identity.
     lexical_phrase: bool = False
     notes: str | None = None
@@ -75,8 +75,9 @@ class LexiconEntry(StrictModel):
             raise ValueError("anaphoric form on an entry without a pronoun sense")
         if self.plural is not None and "noun" not in self.senses:
             raise ValueError("plural on an entry without a noun sense")
-        if self.lexical_phrase and self.senses not in (["noun"], ["adverb"], ["adjective"]):
-            raise ValueError("lexical phrases require one noun, adjective or adverb sense")
+        if (self.lexical_phrase and self.senses not in (["noun"], ["adverb"], ["adjective"])
+                and not (self.senses == ["verb"] and self.verb and self.verb.lemma)):
+            raise ValueError("lexical phrases require one noun, adjective or adverb sense, or a verb with a declared lemma")
         return self
 
 
@@ -713,6 +714,8 @@ class MatchToken(StrictModel):
     # class/name. Per-item emission retains that nominal's scalar value and
     # reference; it does not flatten a count into a textual class key.
     enumeration_counted: bool = False
+    # Earlier scalar members may take their unit from the final measured member.
+    enumeration_shared_unit: bool = False
     enumeration_qualified: bool = False
     # OPT-IN, span-only: name a CATEGORY whose members may never be swallowed
     # into the captured phrase (e.g. packs/logic's `negation`) — a polarity
@@ -986,6 +989,8 @@ class MatchToken(StrictModel):
             raise ValueError("enumeration_min_members requires enumeration_cat")
         if self.enumeration_counted and self.enumeration_cat is None:
             raise ValueError("enumeration_counted requires enumeration_cat")
+        if self.enumeration_shared_unit and not self.enumeration_counted:
+            raise ValueError("enumeration_shared_unit requires enumeration_counted")
         if self.enumeration_qualified and self.enumeration_cat is None:
             raise ValueError("enumeration_qualified requires enumeration_cat")
         if self.enumeration_cat is not None and not self.span:
@@ -1662,7 +1667,7 @@ class AttributionSlots(StrictModel):
 
 class FactEmit(StrictModel):
     fact: Literal[
-        "batch_evidence", "activity_account_evidence", "region_evidence", "specification_evidence", "population_evidence", "mixture_evidence", "proportional_base_evidence",
+        "batch_evidence", "cohort_discount", "activity_account_evidence", "region_evidence", "specification_evidence", "population_evidence", "mixture_evidence", "proportional_base_evidence",
         "account_entry",
         "text_value", "text_prefix_split",
         "commercial_term",
