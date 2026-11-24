@@ -4013,6 +4013,7 @@ entries:
   in-game:
     senses:
     - adjective
+  incentive payment: {senses: [noun], plural: incentive payments, lexical_phrase: true}
   inch: {senses: [noun], plural: inches}
   including: {senses: [preposition]}
   income:

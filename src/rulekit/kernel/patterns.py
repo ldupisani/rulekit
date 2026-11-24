@@ -2467,7 +2467,7 @@ def _build_fact(
             kwargs[key] = value
             continue
         kwargs[key] = _resolve_field(raw, slots, reg, numeric, log, rule_id)
-    if cls in (Expenditure, AccountEntry, BatchEvidence, CohortDiscount, ActivityAccountEvidence,
+    if cls in (Expenditure, AccountEntry, EarningRate, BatchEvidence, CohortDiscount, ActivityAccountEvidence,
                SpecificationEvidence, PopulationEvidence, RegionEvidence):
         # Source positions are identifiers, not arithmetic operands.
         for key in ("position", "event", "lot_position", "quantity_position", "cost_factor_position"):

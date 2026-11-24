@@ -275,8 +275,9 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
     # Shared vocabulary includes the former alphabetic source dictionaries.
     # Count morphology and justified person/object/location roles expand this
     # domain; descriptor compatibility still follows declared category pairs.
-    assert len(plural_nouns) == 1076
+    assert len(plural_nouns) == 1077
     assert {
+        "incentive payment",
         "boy",
         "day",
         "fridge",

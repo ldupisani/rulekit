@@ -1018,7 +1018,7 @@ class AccumulationWindow(Fact):
 
 @dataclass(frozen=True)
 class EarningRate(Fact):
-    """A quoted periodic income or per-service tariff, never earned cash.
+    """A quoted periodic, service or excess rate, never earned cash.
 
     The Rate arithmetic protocol is shared; the distinct fact kind prevents
     ordinary holding/rate consumers from discarding its settlement scope.
@@ -1036,12 +1036,14 @@ class EarningRate(Fact):
     position: int = 0
     numerator: float | None = None
     denominator: float | None = None
+    entity_ref: ReferenceIdentity | None = field(default=None, metadata={"reference_for": "entity"})
 
     def key(self):
         return ("earning-rate", self.entity, self.provenance.sentence, self.position)
 
     def value_part(self):
-        return (self.measure, self.per, self.value, self.verb, self.basis, self.source)
+        return (self.measure, self.per, self.value, self.verb, self.basis, self.source,
+                self.entity_ref.key() if self.entity_ref else None)
 
 
 @dataclass(frozen=True)

@@ -422,6 +422,69 @@ def test_fixed_block_boundaries(reg, old, new):
     assert not solve(tariff().replace(old, new), reg).answer.committed
 
 
+@pytest.mark.parametrize("premium", [
+    "receives $18",
+    "gets $18 extra",
+    "gets another $18",
+    "a bonus of $18",
+    "an incentive payment of $18",
+    "receives a bonus of $18",
+])
+@pytest.mark.parametrize("block", [
+    "if she works for 30 hours a week and",
+    "for 30 hours of work per week, and",
+])
+def test_fixed_block_premium_phrasings(reg, block, premium):
+    text = (f"Nora earns $300 {block} {premium} for every hour of overtime work. "
+            "If she worked 40 hours during the last week, calculate her total income.")
+    number(reg, text, 480)
+
+
+@pytest.mark.parametrize("receipt", [
+    "She gets an additional £18",
+    "Nora receives £18 extra",
+    "She earns an incentive payment of £18",
+])
+def test_separately_stated_contractor_premium(reg, receipt):
+    from rulekit.kernel.model import EarningRate, RateThreshold
+
+    text = (f"Nora charges £300 for 30 hours of work per month. {receipt} for every hour of overtime. "
+            "If she worked 35 hours last month, calculate her total income.")
+    result = number(reg, text, 390)
+    rate, = result.store.by_kind(EarningRate)
+    block, = result.store.by_kind(RateThreshold)
+    assert rate.entity_ref.head == block.entity == "nora"
+    assert rate.basis == "excess" and rate.source == "overtime"
+    assert rate.provenance.sentence != block.provenance.sentence
+
+
+def test_overtime_unit_conversion_applies_only_to_excess(reg):
+    text = tariff().replace("and gets an extra $18 for every hour",
+                            ". Nora receives $1 for every minute")
+    number(reg, text, 900)
+
+
+def test_doubled_determiner_reports_the_correction(reg):
+    text = tariff().replace("an extra $18", "an another $18")
+    result = solve(text, reg)
+    assert not result.answer.committed
+    assert "Remove 'an' before 'another'" in result.answer.reason
+    assert result.deficiencies() == [result.answer.reason]
+    number(reg, text.replace("an another", "another"), 480)
+
+
+@pytest.mark.parametrize("quote", [
+    "Iris receives $18 for every hour of overtime.",
+    "She receives an extra $18.",
+    "She receives $18 for every hour of work.",
+    "She receives $18 for every hour of overtime. She receives $12 for every hour of overtime.",
+])
+def test_separate_premium_requires_one_compatible_tier_quote(reg, quote):
+    text = (f"Nora earns $300 if she works for 30 hours a week. {quote} "
+            "If Nora worked 40 hours last week, calculate her total income.")
+    assert not solve(text, reg).answer.committed
+
+
 def purchase():
     return (
         "Nora goes to the store to buy a soda. The soda costs $.50 an ounce. "

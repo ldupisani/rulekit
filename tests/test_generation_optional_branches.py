@@ -102,7 +102,7 @@ def test_recursive_optional_class_inventory() -> None:
     # Standalone portions, rates and cash observations reuse the modifiers of their joined forms.
     # Provision schedules and daily portions can name the material or its recipient complement.
     # Indexed comparisons share optional performance context, and duration can omit "for".
-    assert _optional_profile(project) == (580, 982, 88, 3)
+    assert _optional_profile(project) == (590, 1003, 88, 3)
 
 
 def test_optional_branches_rule_availability(curated_availability) -> None:

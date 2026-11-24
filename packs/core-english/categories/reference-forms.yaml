@@ -1,5 +1,8 @@
 format: rulekit/categories@1
 categories:
+  additive_indefinite_determiner:
+    parent: article
+    notes: Independently determines an additional item or amount.
   addressee_pronoun: {parent: pronoun}
   third_person_object_pronoun: {parent: pronoun}
   nonpersonal_actor_predicate: {parent: verb}
@@ -64,6 +67,7 @@ categories:
     includes:
     - organization
 members:
+  additive_indefinite_determiner: [another]
   addressee_pronoun: [you]
   third_person_object_pronoun: [it]
   nonpersonal_actor_predicate:

@@ -1,5 +1,6 @@
 format: rulekit/categories@1
 categories:
+  scheduled_activity_noun: {parent: noun}
   scheduled_activity_verb:
     parent: verb
     notes: An activity whose stated repeated duration describes one work session per period.
@@ -34,6 +35,7 @@ members:
   rate_hour_unit: [hour]
   rate_tier_noun: [overtime]
   repeated_activity_duration_auxiliary: [did, do, does]
+  scheduled_activity_noun: [work]
   scheduled_activity_verb: [work, worked, working, works]
   session_recurrence_period: [day]
 attribute_compatibility:

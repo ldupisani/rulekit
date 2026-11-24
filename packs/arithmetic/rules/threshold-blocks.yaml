@@ -1,124 +1,160 @@
 format: rulekit/rules@1
+templates:
+  fixed-block:
+    parameters:
+      schedule:
+        phrase:
+        - {lit: if, consume_skipped: true}
+        - {slot: subject, cat: anaphoric_person_subject}
+        - {slot: work, cat: scheduled_activity_verb, finite_form: true}
+        - {lit: for, consume_skipped: true}
+        - {slot: threshold, cat: duration_measure, counted: true, bare: true}
+        - {lit: a, consume_skipped: true}
+        - {slot: period, cat: duration_measure, uncounted: true, bare: true}
+        references: {subject: who}
+      link:
+      - opt: [{lit: ',', consume_skipped: true}]
+      - {lit: and, consume_skipped: true}
+      receipt:
+      - {slot: get, cat: periodic_income_verb, finite_form: true}
+      amount: &modified_amount
+      - {slot: rate, cat: currency_unit, counted: true, class_only: true, qualified: true, qualifier_cat: supplemental_amount_attribute, all_qualifiers: true}
+      pricing: &excess_pricing
+        phrase:
+        - {lit: for, consume_skipped: true}
+        - {slot: every, cat: distributive_quantifier}
+        - {slot: unit, cat: duration_measure, uncounted: true, bare: true}
+        - {lit: of, consume_skipped: true}
+        - {slot: tier, cat: rate_tier_noun, uncounted: true, bare: true}
+        - opt: [{slot: activity, cat: scheduled_activity_noun, uncounted: true, bare: true}]
+        facts:
+        - {fact: earning_rate, entity: '{who}', measure: '{rate}', per: '{unit}', value: rate, basis: excess,
+           source: '{tier}', verb: '{activity.optional}', position: '{rate.span_start}'}
+        tier: '{tier}'
+        senses: [rate, unit, tier, activity]
+        consumes: [rate]
+      receipt_slots: [get]
+      obligations: {earn: [subject], work: [subject], get: [subject], every: [collection]}
+    rule:
+      independent_clause: true
+      description: A participant quotes a fixed amount for a recurring block of work, optionally with an explicit price for excess usage.
+      match:
+        sentence:
+        - &participant {slot: who, type: entity, common_noun_cat: intentional_agent, referential: true, at_start: true}
+        - {slot: earn, cat: threshold_tariff_verb, finite_form: true}
+        - {slot: base, cat: currency_unit, counted: true, bare: true}
+        - {parameter: schedule.phrase}
+        - {parameter: link}
+        - {parameter: receipt}
+        - {parameter: amount}
+        - {parameter: pricing.phrase}
+        - {lit: ., consume_skipped: true}
+      emits:
+      - {fact: batch_evidence, kind: tariff-base, entity: '{who}', measure: '{base}', value: base,
+         position: '{who.span_start}', marker: '{period}', container: '{work}', verb: '{earn}'}
+      - {fact: rate_threshold, entity: '{who}', activity: '{work}', unit: '{threshold}', value: threshold, period: '{period}', tier: {parameter: pricing.tier}}
+      - {parameter: pricing.facts}
+      references: {parameter: schedule.references}
+      consumes: [earn, base, work, threshold, {parameter: receipt_slots}, {parameter: pricing.consumes}]
+      disambiguates: [earn, base, work, threshold, period, {parameter: receipt_slots}, {parameter: pricing.senses}]
+      satisfies: {parameter: obligations}
+
+  excess-rate:
+    parameters:
+      amount: *modified_amount
+      pricing: *excess_pricing
+    rule:
+      independent_clause: true
+      description: A participant states a rate restricted to one named tier of usage.
+      match:
+        sentence:
+        - *participant
+        - {slot: get, cat: periodic_income_verb, finite_form: true}
+        - {parameter: amount}
+        - {parameter: pricing.phrase}
+        - {lit: ., consume_skipped: true}
+      emits: {parameter: pricing.facts}
+      consumes: [get, {parameter: pricing.consumes}]
+      disambiguates: [get, {parameter: pricing.senses}]
+      satisfies: {get: [subject], every: [collection]}
+
+variants:
+- {id: arithmetic/fixed-block-with-excess-rate, template: fixed-block}
+- id: arithmetic/fixed-block-with-stated-excess-rate
+  template: fixed-block
+  arguments:
+    amount: &stated_amount
+    - {slot: rate, cat: currency_unit, counted: true, bare: true}
+    - opt: [{slot: extra, cat: supplemental_amount_attribute}]
+- id: arithmetic/fixed-block-with-named-supplement
+  template: fixed-block
+  arguments:
+    receipt: &named_supplement
+    - opt: [{slot: get, cat: periodic_income_verb, finite_form: true}]
+    - {slot: supplement, cat: supplemental_receipt_noun, uncounted: true, bare: true}
+    - {lit: of, consume_skipped: true}
+    amount: &bare_amount [{slot: rate, cat: currency_unit, counted: true, bare: true}]
+    receipt_slots: [get, supplement]
+    obligations: {earn: [subject], work: [subject], get: [subject], every: [collection]}
+- id: arithmetic/fixed-work-duration-with-excess-rate
+  template: fixed-block
+  arguments:
+    schedule: &nominal_schedule
+      phrase:
+      - {lit: for, consume_skipped: true}
+      - {slot: threshold, cat: duration_measure, counted: true, bare: true}
+      - {lit: of, consume_skipped: true}
+      - {slot: work, cat: scheduled_activity_noun, uncounted: true, bare: true}
+      - {lit: per, consume_skipped: true}
+      - {slot: period, cat: duration_measure, uncounted: true, bare: true}
+      references: {}
+    obligations: {earn: [subject], get: [subject], every: [collection]}
+- id: arithmetic/fixed-work-duration-with-stated-excess-rate
+  template: fixed-block
+  arguments:
+    schedule: *nominal_schedule
+    amount: *stated_amount
+    obligations: {earn: [subject], get: [subject], every: [collection]}
+- id: arithmetic/fixed-work-duration-with-named-supplement
+  template: fixed-block
+  arguments:
+    schedule: *nominal_schedule
+    receipt: *named_supplement
+    receipt_slots: [get, supplement]
+    amount: *bare_amount
+    obligations: {earn: [subject], get: [subject], every: [collection]}
+- id: arithmetic/fixed-block-for-schedule
+  template: fixed-block
+  arguments:
+    link: []
+    receipt: []
+    amount: []
+    receipt_slots: []
+    pricing: &no_excess_quote {phrase: [], facts: [], tier: '', senses: [], consumes: []}
+    obligations: {earn: [subject], work: [subject]}
+- id: arithmetic/fixed-block-for-work-duration
+  template: fixed-block
+  arguments:
+    schedule: *nominal_schedule
+    link: []
+    receipt: []
+    amount: []
+    receipt_slots: []
+    pricing: *no_excess_quote
+    obligations: {earn: [subject]}
+- {id: arithmetic/qualified-excess-rate, template: excess-rate}
+- id: arithmetic/stated-excess-rate
+  template: excess-rate
+  arguments: {amount: *stated_amount}
+- id: arithmetic/named-excess-payment-rate
+  template: excess-rate
+  arguments:
+    amount:
+    - {slot: supplement, cat: supplemental_receipt_noun, uncounted: true, bare: true}
+    - {lit: of, consume_skipped: true}
+    - {slot: rate, cat: currency_unit, counted: true, bare: true}
+
 rules:
-- id: arithmetic/fixed-block-with-excess-rate
-  phase: read
-  match:
-    sentence:
-    - slot: who
-      type: entity
-      common_noun_cat: intentional_agent
-      referential: true
-      at_start: true
-    - slot: earn
-      cat: threshold_tariff_verb
-      finite_form: true
-    - slot: base
-      cat: currency_unit
-      counted: true
-      bare: true
-    - lit: if
-      consume_skipped: true
-    - slot: subject
-      cat: anaphoric_person_subject
-    - slot: work
-      cat: scheduled_activity_verb
-      finite_form: true
-    - lit: for
-      consume_skipped: true
-    - slot: threshold
-      cat: duration_measure
-      counted: true
-      bare: true
-    - lit: a
-      consume_skipped: true
-    - slot: period
-      cat: duration_measure
-      uncounted: true
-      bare: true
-    - lit: and
-      consume_skipped: true
-    - slot: get
-      cat: acquire
-      finite_form: true
-    - lit: an
-      consume_skipped: true
-    - slot: rate
-      cat: currency_unit
-      counted: true
-      qualified: true
-      qualifier_cat: supplemental_amount_attribute
-      all_qualifiers: true
-    - lit: for
-      consume_skipped: true
-    - slot: every
-      cat: distributive_quantifier
-    - slot: unit
-      cat: duration_measure
-      uncounted: true
-      bare: true
-    - lit: of
-      consume_skipped: true
-    - slot: tier
-      cat: rate_tier_noun
-      uncounted: true
-      bare: true
-    - lit: .
-      consume_skipped: true
-  emits:
-  - fact: batch_evidence
-    kind: tariff-base
-    entity: '{who}'
-    measure: '{base}'
-    value: base
-    position: '{who.span_start}'
-    marker: '{period}'
-    container: '{work}'
-    verb: '{earn}'
-  - fact: rate_threshold
-    entity: '{who}'
-    activity: '{work}'
-    unit: '{threshold}'
-    value: threshold
-    period: '{period}'
-    tier: '{tier}'
-  - fact: rate
-    entity: '{who}'
-    measure: '{rate}'
-    per: '{unit}'
-    value: rate
-    verb: '{earn}'
-  consumes:
-  - earn
-  - base
-  - work
-  - threshold
-  - get
-  - rate
-  satisfies:
-    earn:
-    - subject
-    work:
-    - subject
-    get:
-    - subject
-    every:
-    - collection
-  references:
-    subject: who
-  where:
-  - same_lemma:
-    - threshold
-    - unit
-  disambiguates:
-  - earn
-  - base
-  - work
-  - threshold
-  - period
-  - get
-  - rate
-  - unit
-  - tier
 - id: arithmetic/completed-threshold-usage
   phase: read
   match:
@@ -135,6 +171,7 @@ rules:
       cat: duration_measure
       counted: true
       bare: true
+    - opt: [{slot: during, cat: retrospective_window_preposition}]
     - slot: period
       cat: duration_measure
       uncounted: true
@@ -157,6 +194,7 @@ rules:
   - work
   - amount
   satisfies:
+    during: [object]
     work:
     - subject
   question_assumption: true

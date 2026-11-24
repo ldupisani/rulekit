@@ -151,8 +151,8 @@ def check(
     clause_split: bool = False,
 ) -> GuardVeto | None:
     """Run all enabled guards against a proposed committed answer.
-    Returns the first veto, or None. A decline is already safe, so only
-    commitments are guarded — and each answer KIND gets its own guard set:
+    Returns the first veto, or None. Determiner conflicts provide a correction
+    for any outcome. Each committed answer kind has its own further checks:
 
     - `number` answers get the numeric guards below (unknown-word,
       value-accounting, unresolved-derivation, ...), unchanged.
@@ -166,6 +166,24 @@ def check(
       ignored is exactly how a disjunct or an antecedent gets asserted as a
       ground fact (the FOLIO if-antecedent leak, Phase 0a).
     """
+    # Quoted text can itself contain a grammatical error. This correction
+    # concerns determiners introducing a counted noun in a quantity problem.
+    if proposed.kind in {"number", "decline"} and _enabled(reg, "determiner-conflict"):
+        for reading in (*premises, question):
+            if reading is None:
+                continue
+            for index, second in enumerate(reading.units[1:-1], start=1):
+                if second.sense() != "article":
+                    continue
+                first, quantity = reading.units[index - 1], reading.units[index + 1]
+                if (first.sense() == "article"
+                        and quantity.features.get("value_kind") == "count"
+                        and reg.word_in_category(first.features.get("fold", ""), "indefinite_article")
+                        and reg.word_in_category(second.features.get("fold", ""), "additive_indefinite_determiner")):
+                    return GuardVeto(
+                        "determiner-conflict",
+                        f"Remove '{first.surface}' before '{second.surface}'.",
+                    )
     if not proposed.committed:
         return None
     if proposed.kind == "verdict":
